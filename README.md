@@ -5,17 +5,19 @@ To use [Inertia.js](https://github.com/inertiajs/inertia) you need both a server
 
 ## Installation
 
-Add this line to your application's Gemfile:
+## This gem is not currently published, but maybe that's where you come in! Check our our open issues if you can pitch in.
+
+~~Add this line to your application's Gemfile:~~
 
 ```ruby
 gem 'inertia-rails'
 ```
 
-And then execute:
+~~And then execute:~~
 
     $ bundle
 
-Or install it yourself as:
+~~Or install it yourself as:~~
 
     $ gem install inertia-rails
 
