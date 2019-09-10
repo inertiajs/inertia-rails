@@ -5,7 +5,7 @@ To use [Inertia.js](https://github.com/inertiajs/inertia) you need both a server
 
 ## Installation
 
-## This gem is not currently published, but maybe that's where you come in! Check our our open issues if you can pitch in.
+## This gem is not currently published, but maybe that's where you come in! Check out our open issues if you can pitch in.
 
 ~~Add this line to your application's Gemfile:~~
 
