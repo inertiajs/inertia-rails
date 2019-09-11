@@ -1,8 +1,8 @@
 module Inertia
-  class Controller
+  module Controller
     extend ActiveSupport::Concern
 
-    module class_methods
+    module ClassMethods
       def inertia_share(**args, &block)
         Inertia.instance.share(args) if args
         Inertia.instance.share_block(block) if block
