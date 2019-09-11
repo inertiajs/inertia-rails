@@ -1,3 +1,5 @@
+require_relative "inertia"
+
 module Inertia
   module Controller
     extend ActiveSupport::Concern

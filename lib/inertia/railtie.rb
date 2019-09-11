@@ -1,5 +1,5 @@
 require_relative "middleware"
-#require_relative "controller"
+require_relative "controller"
 #require_relative "inertia"
 
 module Inertia
@@ -8,11 +8,11 @@ module Inertia
       app.middleware.use Middleware
     end
 
-    #initializer "inertia.action_controller" do
-      #ActiveSupport.on_load(:action_controller) do
-        #include Controller
-      #end
-    #end
+    initializer "inertia.action_controller" do
+      ActiveSupport.on_load(:action_controller) do
+        include ::Inertia::Controller
+      end
+    end
 
     #initializer 'inertia.autoload', :before => :set_autoload_paths do |app|
       #app.config.autoload_paths << File.expand_path("./inertia.rb", __FILE__)
