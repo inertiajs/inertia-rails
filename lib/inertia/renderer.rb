@@ -1,31 +1,36 @@
+require_relative "inertia"
+
 module Inertia
   class Renderer
     attr_reader :component, :view_data
 
-    def initialize(component, props:, view_data:)
+    def initialize(component, request, response, render_method, props:, view_data:)
       @component = component
+      @request = request
+      @response = response
+      @render_method = render_method
       @props = props || {}
       @view_data = view_data || {}
     end
 
     def render
-      if request.headers['X-Inertia']
-        response.set_header('Vary', 'Accept')
-        response.set_header('X-Inertia', 'true')
-        render json: page, status: 200
+      if @request.headers['X-Inertia']
+        @response.set_header('Vary', 'Accept')
+        @response.set_header('X-Inertia', 'true')
+        @render_method.call json: page, status: 200
       else
-        render template: 'inertia', layout: Inertia.layout, locals: (view_data).merge({page: page}) 
+        @render_method.call template: 'inertia', layout: Inertia.layout, locals: (view_data).merge({page: page})
       end
     end
 
     private
 
     def props
-      only = (request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
+      only = (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
 
       _props = Inertia.instance.shared_data.merge(@props)
 
-      _props = (only.any? && request.headers['X-Inertia-Partial-Component'] == component) ?
+      _props = (only.any? && @request.headers['X-Inertia-Partial-Component'] == component) ?
         _props.select {|key| key.in? only} :
         _props
 
@@ -36,15 +41,15 @@ module Inertia
       {
         component: component,
         props: props,
-        url: request.original_url,
+        url: @request.original_url,
         version: Inertia.version,
       }
     end
-  end
 
-  def deep_transform_values(hash, proc)
-    return proc.call(hash) unless hash.is_a? Hash
-  
-    hash.transform_values {|value| deep_transform_values(value, proc)}
+    def deep_transform_values(hash, proc)
+      return proc.call(hash) unless hash.is_a? Hash
+
+      hash.transform_values {|value| deep_transform_values(value, proc)}
+    end
   end
 end
