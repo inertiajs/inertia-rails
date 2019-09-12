@@ -31,7 +31,9 @@ module Inertia
     end
   
     def stale?(request_method, inertia_version)
-      request_method == 'GET' && inertia_version != Inertia.version
+      sent_version = Inertia.version.is_a?(Numeric) ? inertia_version.to_f : inertia_version
+      saved_version = Inertia.version.is_a?(Numeric) ? Inertia.version.to_f : Inertia.version
+      request_method == 'GET' && sent_version != saved_version
     end
   
     def force_refresh(request)
