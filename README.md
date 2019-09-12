@@ -5,15 +5,16 @@ To use [Inertia.js](https://github.com/inertiajs/inertia) you need both a server
 
 ## Installation
 
-## This gem is not currently published, but maybe that's where you come in! Check out our open issues if you can pitch in.
 
-~~Add this line to your application's Gemfile:~~
+Add this line to your application's Gemfile:
 
 ```ruby
-gem 'inertia-rails'
+gem 'inertia', git: 'https://github.com/inertiajs/inertia-rails/'
 ```
 
-~~And then execute:~~
+TODO: Publish to RubyGems!
+
+And then execute:
 
     $ bundle
 
@@ -65,7 +66,7 @@ class UsersController < ApplicationController
 end
 ~~~
 
-Note, when redirecting after a `PUT`, `PATCH` or `DELETE` request you must use a `303` response code, otherwise the subsequent request will not be treated as a `GET` request. A `303` redirect is the same as a `302` except that the follow-up request is explicitly changed to a `GET` request.
+Note, when redirecting after a `PUT`, `PATCH` or `DELETE` request you must use a `303` response code, otherwise the subsequent request will not be treated as a `GET` request. A `303` redirect is the same as a `302` except that the follow-up request is explicitly changed to a `GET` request. The gem includes middleware which does this automatically.
 
 ## Sharing data
 
@@ -89,8 +90,7 @@ inertia_share user_count: lambda { User.count }
 ~~~
 
 ## Accessing data in root template
-
-There are situations where you may want to access your prop data in your root Blade template. For example, you may want to add a meta description tag, Twitter card meta tags, or Facebook Open Graph meta tags. These props are available via the `page` variable.
+There are situations where you may want to access your prop data in your root template. For example, you may want to add a meta description tag, Twitter card meta tags, or Facebook Open Graph meta tags. These props are available via the `page` variable.
 
 ~~~erb
 <meta name="twitter:title" content="<%= page['props']['event'].title %>">
@@ -128,6 +128,18 @@ Inertia.configure do |config|
 end
 ~~~
 
+## Configuring Axios to work with Rails CSRF protection
+
+Under the hood, Inertia uses Axios to make `POST`, `PATCH` and `DELETE` requests. By default, Rails will not trust those requests because Axios does not grab the Rails CSRF token from the page by default.
+
+In order to allow these requests, you must manually configure Axios by adding something like the following to your page's Javascript:
+
+```javascript
+window.addEventListener('DOMContentLoaded', () => {
+  const csrfToken = document.querySelector("meta[name=csrf-token]").content;
+  axios.defaults.headers.common['X-CSRF-Token'] = csrfToken;
+});
+```
 
 ## Development
 
