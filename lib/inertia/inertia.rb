@@ -1,59 +1,45 @@
 module Inertia
-  class Inertia
-    attr_reader :config 
-    include Singleton
-  
-    def self.configure
-      yield(self.instance.config)
+  mattr_accessor :shared_plain_data, default: {}
+  mattr_accessor :shared_blocks, default: []
+
+  def self.configure
+    yield(Configuration)
+  end
+
+  # "Getters"
+  def self.shared_data
+    shared_plain_data.merge!(evaluated_blocks(shared_blocks))
+  end
+
+  def self.version
+    Configuration.evaluated_version
+  end
+
+  def self.layout
+    Configuration.layout
+  end
+
+  # "Setters"
+  def self.share(**args)
+    shared_plain_data.merge!(args)
+  end
+
+  def self.share_block(block)
+    shared_blocks.push(block)
+  end
+
+  private
+
+  module Configuration
+    mattr_accessor :layout, default: 'application'
+    mattr_accessor :version, default: nil
+
+    def self.evaluated_version
+      version.respond_to?(:call) ? version.call : version
     end
-  
-    def initialize
-      @blocks = []
-      @config = Configuration.new
-      @shared_data = {}
-    end
-  
-    def share(**args)
-      @shared_data.merge!(args)
-    end
-  
-    def share_block(block)
-      @blocks.push(block)
-    end
-  
-    def shared_data
-      @shared_data.merge evaluated_blocks
-    end
-  
-    def self.version
-      self.instance.config.version
-    end
-  
-    def self.layout
-      self.instance.config.layout
-    end
-  
-    private 
-  
-    def evaluated_blocks
-      @blocks.flat_map(&:call).reduce(&:merge) || {}
-    end
-  
-    class Configuration
-      attr_accessor :layout
-  
-      def initialize
-        @version = nil
-        @layout = 'application'
-      end
-  
-      def version
-        @version.respond_to?(:call) ? @version.call : @version
-      end
-  
-      def version=(v)
-        @version = v
-      end
-    end
-  end  
+  end
+
+  def self.evaluated_blocks(blocks)
+    blocks.flat_map(&:call).reduce(&:merge) || {}
+  end
 end

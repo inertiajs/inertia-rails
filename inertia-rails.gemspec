@@ -1,10 +1,10 @@
 lib = File.expand_path("lib", __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "inertia/rails/version"
+require "inertia/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "inertia"
-  spec.version       = Inertia::Rails::VERSION
+  spec.version       = Inertia::VERSION
   spec.authors       = ["Brian Knoles", "Brandon Shar", "Eugene Granovsky"]
   spec.email         = ["brain@bellawatt.com", "brandon@bellawatt.com", "eugene@bellawatt.com"]
 
