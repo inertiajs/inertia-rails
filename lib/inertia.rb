@@ -13,4 +13,5 @@ ActionController::Renderers.add :inertia do |component, options|
 end
 
 module Inertia
+  class Error < StandardError; end
 end
