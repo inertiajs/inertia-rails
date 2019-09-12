@@ -1,5 +1,5 @@
 require 'inertia/renderer'
-require 'inertia/railtie'
+require 'inertia/engine'
 
 ActionController::Renderers.add :inertia do |component, options|
   Inertia::Renderer.new(
