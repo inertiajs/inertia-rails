@@ -128,7 +128,13 @@ Inertia.configure do |config|
 end
 ~~~
 
-## Configuring Axios to work with Rails CSRF protection
+## Javacript setup
+
+### Turbolinks
+
+IMPORTANT!! InertiaJS and Turbolinks do not play nicely together since they both intercept AJAX requests. If you want to use InertiaJS, you should leave Turbolinks out of your application.
+
+### CSRF tokens
 
 Under the hood, Inertia uses Axios to make `POST`, `PATCH` and `DELETE` requests. By default, Rails will not trust those requests because Axios does not grab the Rails CSRF token from the page by default.
 
@@ -139,6 +145,83 @@ window.addEventListener('DOMContentLoaded', () => {
   const csrfToken = document.querySelector("meta[name=csrf-token]").content;
   axios.defaults.headers.common['X-CSRF-Token'] = csrfToken;
 });
+```
+
+### Example: Using InertiaJS with React via Webpacker
+
+This gem is agnostic about how to use InertiaJS on the client side, but here is an example of how to configure this with React:
+
+Load inertiaJS on page load:
+
+```javascript
+// app/javascript/packs/inertia.jsx
+import { InertiaApp } from '@inertiajs/inertia-react'
+import React from 'react'
+import { render } from 'react-dom'
+import axios from 'axios';
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Make sure Inertia sends the Rails CSRF token with requests
+  const csrfToken = document.querySelector("meta[name=csrf-token]").content;
+  axios.defaults.headers.common['X-CSRF-Token'] = csrfToken;
+
+  const app = document.getElementById('app')
+
+  // Configured so that `render inertia: 'SomeComponent'` calls in the controllers
+  // will reference components within the `app/javascript/pages` directory
+  render(
+    <InertiaApp
+      initialPage={JSON.parse(app.dataset.page)}
+      resolveComponent={name => import(`../pages/${name}`).then(module => module.default)}
+    />,
+    app
+  )
+});
+```
+
+Include the javascript pack in the application layout:
+
+```html
+# app/views/layouts/application.rb
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>InertiajsOnRails</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag 'application', media: 'all' %>
+    <%= javascript_pack_tag 'inertia' %>
+  </head>
+
+  <body>
+    <%= yield %>
+  </body>
+</html>
+```
+
+Render via inertia in the controller:
+
+```ruby
+class HomeController < ApplicationController
+  def index
+    # Because of the way InertiaJS is rendered above, it will look for this
+    # component in `app/javascript/pages/App.js`
+    render inertia: 'App',
+      props: {
+        someData: "Hello World!"
+      }
+  end
+end
+```
+
+Define the React Component:
+
+```javascript
+// app/javascript/pages/MyPage.jsx
+const MyPage = ({ someData }) => <div>{someData}</div>
+
+export default MyPage;
 ```
 
 ## Development
