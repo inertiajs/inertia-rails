@@ -4,6 +4,7 @@ require 'inertia/engine'
 ActionController::Renderers.add :inertia do |component, options|
   Inertia::Renderer.new(
     component,
+    self,
     request,
     response,
     method(:render),

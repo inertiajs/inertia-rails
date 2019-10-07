@@ -7,8 +7,8 @@ module Inertia
   end
 
   # "Getters"
-  def self.shared_data
-    shared_plain_data.merge!(evaluated_blocks(shared_blocks))
+  def self.shared_data(controller)
+    shared_plain_data.merge!(evaluated_blocks(controller, shared_blocks))
   end
 
   def self.version
@@ -39,7 +39,7 @@ module Inertia
     end
   end
 
-  def self.evaluated_blocks(blocks)
-    blocks.flat_map(&:call).reduce(&:merge) || {}
+  def self.evaluated_blocks(controller,  blocks)
+    blocks.flat_map { |block| controller.instance_exec(&block) }.reduce(&:merge) || {}
   end
 end
