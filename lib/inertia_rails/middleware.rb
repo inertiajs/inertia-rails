@@ -1,4 +1,4 @@
-module Inertia
+module InertiaRails
   class Middleware
     def initialize(app)
       @app = app
@@ -31,8 +31,8 @@ module Inertia
     end
   
     def stale?(request_method, inertia_version)
-      sent_version = Inertia.version.is_a?(Numeric) ? inertia_version.to_f : inertia_version
-      saved_version = Inertia.version.is_a?(Numeric) ? Inertia.version.to_f : Inertia.version
+      sent_version = InertiaRails.version.is_a?(Numeric) ? inertia_version.to_f : inertia_version
+      saved_version = InertiaRails.version.is_a?(Numeric) ? InertiaRails.version.to_f : InertiaRails.version
       request_method == 'GET' && sent_version != saved_version
     end
   

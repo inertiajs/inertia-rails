@@ -1,6 +1,6 @@
-require_relative "inertia"
+require_relative "inertia_rails"
 
-module Inertia
+module InertiaRails
   class Renderer
     attr_reader :component, :view_data
 
@@ -19,7 +19,7 @@ module Inertia
         @response.set_header('X-Inertia', 'true')
         @render_method.call json: page, status: 200
       else
-        @render_method.call template: 'inertia', layout: ::Inertia.layout, locals: (view_data).merge({page: page})
+        @render_method.call template: 'inertia', layout: ::InertiaRails.layout, locals: (view_data).merge({page: page})
       end
     end
 
@@ -28,7 +28,7 @@ module Inertia
     def props
       only = (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
 
-      _props = ::Inertia.shared_data.merge(@props)
+      _props = ::InertiaRails.shared_data.merge(@props)
 
       _props = (only.any? && @request.headers['X-Inertia-Partial-Component'] == component) ?
         _props.select {|key| key.in? only} :
@@ -42,7 +42,7 @@ module Inertia
         component: component,
         props: props,
         url: @request.original_url,
-        version: ::Inertia.version,
+        version: ::InertiaRails.version,
       }
     end
 

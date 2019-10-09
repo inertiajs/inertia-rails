@@ -1,8 +1,8 @@
-require 'inertia/renderer'
-require 'inertia/engine'
+require 'inertia_rails/renderer'
+require 'inertia_rails/engine'
 
 ActionController::Renderers.add :inertia do |component, options|
-  Inertia::Renderer.new(
+  InertiaRails::Renderer.new(
     component,
     request,
     response,
@@ -12,6 +12,6 @@ ActionController::Renderers.add :inertia do |component, options|
   ).render
 end
 
-module Inertia
+module InertiaRails
   class Error < StandardError; end
 end

@@ -1,13 +1,13 @@
-require_relative "inertia"
+require_relative "inertia_rails"
 
-module Inertia
+module InertiaRails
   module Controller
     extend ActiveSupport::Concern
 
     module ClassMethods
       def inertia_share(**args, &block)
-        Inertia.share(args) if args
-        Inertia.share_block(block) if block
+        InertiaRails.share(args) if args
+        InertiaRails.share_block(block) if block
       end
     end
   end

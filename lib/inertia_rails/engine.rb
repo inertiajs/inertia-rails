@@ -1,15 +1,15 @@
 require_relative "middleware"
 require_relative "controller"
 
-module Inertia
+module InertiaRails
   class Engine < ::Rails::Engine
     initializer "inertia.configure_rails_initialization" do |app|
-      app.middleware.use ::Inertia::Middleware
+      app.middleware.use ::InertiaRails::Middleware
     end
 
     initializer "inertia.action_controller" do
       ActiveSupport.on_load(:action_controller) do
-        include ::Inertia::Controller
+        include ::InertiaRails::Controller
       end
     end
   end

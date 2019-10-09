@@ -3,8 +3,8 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "inertia/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "inertia"
-  spec.version       = Inertia::VERSION
+  spec.name          = "inertia_rails"
+  spec.version       = InertiaRails::VERSION
   spec.authors       = ["Brian Knoles", "Brandon Shar", "Eugene Granovsky"]
   spec.email         = ["brain@bellawatt.com", "brandon@bellawatt.com", "eugene@bellawatt.com"]
 
