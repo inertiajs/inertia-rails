@@ -1,4 +1,4 @@
-module Inertia
+module InertiaRails
   mattr_accessor :shared_plain_data, default: {}
   mattr_accessor :shared_blocks, default: []
 
