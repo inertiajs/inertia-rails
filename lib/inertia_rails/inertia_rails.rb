@@ -1,6 +1,6 @@
 module InertiaRails
-  mattr_accessor :shared_plain_data, default: {}
-  mattr_accessor :shared_blocks, default: []
+  mattr_accessor(:shared_plain_data) { Hash.new }
+  mattr_accessor(:shared_blocks) { [] }
 
   def self.configure
     yield(Configuration)
@@ -31,8 +31,8 @@ module InertiaRails
   private
 
   module Configuration
-    mattr_accessor :layout, default: 'application'
-    mattr_accessor :version, default: nil
+    mattr_accessor(:layout) { 'application' }
+    mattr_accessor(:version) { nil }
 
     def self.evaluated_version
       version.respond_to?(:call) ? version.call : version
