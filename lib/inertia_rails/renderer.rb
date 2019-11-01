@@ -21,7 +21,7 @@ module InertiaRails
         @render_method.call json: page, status: 200
       else
         @render_method.call template: 'inertia', layout: ::InertiaRails.layout, locals: (view_data).merge({page: page})
-      end.tap { ::InertiaRails.reset! }
+      end
     end
 
     private
