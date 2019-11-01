@@ -28,6 +28,11 @@ module InertiaRails
     shared_blocks.push(block)
   end
 
+  def self.reset!
+    self.shared_plain_data = {}
+    self.shared_blocks = []
+  end
+
   private
 
   module Configuration
@@ -35,7 +40,7 @@ module InertiaRails
     mattr_accessor(:version) { nil }
 
     def self.evaluated_version
-      version.respond_to?(:call) ? version.call : version
+      self.version.respond_to?(:call) ? self.version.call : self.version
     end
   end
 

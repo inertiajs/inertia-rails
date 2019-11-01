@@ -7,6 +7,8 @@ module InertiaRails
     def call(env)
       status, headers, body = @app.call(env)
       request = ActionDispatch::Request.new(env)
+
+      ::InertiaRails.reset!
   
       return [status, headers, body] unless env['HTTP_X_INERTIA'].present?
   
