@@ -66,7 +66,7 @@ RSpec.configure do |config|
   end
 end
 
-RSpec::Matchers.define :have_props do |expected_props|
+RSpec::Matchers.define :have_exact_props do |expected_props|
   match do |inertia|
     expect(inertia.props).to eq expected_props
   end
@@ -96,7 +96,7 @@ RSpec::Matchers.define :render_component do |expected_component|
   end
 end
 
-RSpec::Matchers.define :have_view_data do |expected_view_data|
+RSpec::Matchers.define :have_exact_view_data do |expected_view_data|
   match do |inertia|
     expect(inertia.view_data).to eq expected_view_data    
   end

@@ -6,7 +6,7 @@ RSpec.describe InertiaRails::RSpec, type: :request do
       before { get props_path }
 
       it 'has props' do
-        expect_inertia.to have_props({name: 'Brandon', sport: 'hockey'})
+        expect_inertia.to have_exact_props({name: 'Brandon', sport: 'hockey'})
       end
 
       it 'includes props' do
@@ -22,7 +22,7 @@ RSpec.describe InertiaRails::RSpec, type: :request do
       before { get view_data_path }
 
       it 'has view data' do
-        expect_inertia.to have_view_data({name: 'Brian', sport: 'basketball'})
+        expect_inertia.to have_exact_view_data({name: 'Brian', sport: 'basketball'})
       end
 
       it 'includes view data' do
