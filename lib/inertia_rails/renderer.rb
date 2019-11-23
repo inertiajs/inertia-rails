@@ -42,7 +42,7 @@ module InertiaRails
       {
         component: component,
         props: props,
-        url: @request.original_url,
+        url: @request.original_fullpath,
         version: ::InertiaRails.version,
       }
     end

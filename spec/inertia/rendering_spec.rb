@@ -39,6 +39,10 @@ RSpec.describe 'rendering inertia views', type: :request do
       expect(response.headers['Vary']).to eq 'Accept'
       expect(response.headers['Content-Type']).to eq 'application/json; charset=utf-8'
     end
+
+    it 'has the proper body' do
+      expect(JSON.parse(response.body)).to include('url' => '/props')
+    end
   end
 end
 
