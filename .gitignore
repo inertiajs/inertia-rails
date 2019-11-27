@@ -6,6 +6,7 @@
 /pkg/
 /spec/reports/
 /tmp/
+/Gemfile.lock
 
 /spec/dummy/db/*.sqlite3
 /spec/dummy/db/*.sqlite3-journal
