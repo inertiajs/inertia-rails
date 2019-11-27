@@ -6,8 +6,10 @@ module InertiaRails
 
     module ClassMethods
       def inertia_share(**args, &block)
-        InertiaRails.share(args) if args
-        InertiaRails.share_block(block) if block
+        before_action do
+          InertiaRails.share(args) if args
+          InertiaRails.share_block(block) if block
+        end
       end
     end
   end
