@@ -1,5 +1,6 @@
 require 'inertia_rails/renderer'
 require 'inertia_rails/engine'
+require 'inertia_rails/debug_exceptions'
 
 ActionController::Renderers.add :inertia do |component, options|
   InertiaRails::Renderer.new(
