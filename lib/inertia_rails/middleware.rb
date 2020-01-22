@@ -40,7 +40,7 @@ module InertiaRails
   
     def force_refresh(request)
       request.flash.keep
-      Rack::Response.new('', 409, {'X-Inertia-Location' => request.original_url})
+      Rack::Response.new('', 409, {'X-Inertia-Location' => request.original_url}).finish
     end
   end
 end
