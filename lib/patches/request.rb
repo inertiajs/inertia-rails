@@ -1,7 +1,5 @@
-if defined?(ActionDispatch::Request)
-  ActionDispatch::Request.class_eval do
-    def inertia?
-      headers['HTTP_X_INERTIA'].present?
-    end
+ActionDispatch::Request.class_eval do
+  def inertia?
+    key? 'HTTP_X_INERTIA'
   end
 end
