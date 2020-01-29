@@ -6,4 +6,12 @@ class InertiaTestController < ApplicationController
   def redirect_test
     redirect_to :empty_test
   end
+
+  def inertia_request_test
+    if request.inertia?
+      head 202
+    else
+      head 200
+    end
+  end
 end

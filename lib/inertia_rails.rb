@@ -3,6 +3,7 @@ require 'inertia_rails/engine'
 
 require 'patches/debug_exceptions'
 require 'patches/better_errors'
+require 'patches/request'
 
 ActionController::Renderers.add :inertia do |component, options|
   InertiaRails::Renderer.new(
