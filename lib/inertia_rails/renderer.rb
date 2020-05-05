@@ -42,9 +42,15 @@ module InertiaRails
       {
         component: component,
         props: props,
-        url: @request.original_fullpath,
+        url: page_url,
         version: ::InertiaRails.version,
       }
+    end
+
+    def page_url
+      ::InertiaRails.base_path ?
+        @request.original_fullpath.split(::InertiaRails.base_path)[1] :
+        @request.original_fullpath
     end
 
     def deep_transform_values(hash, proc)
