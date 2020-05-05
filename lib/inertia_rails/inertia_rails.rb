@@ -19,6 +19,10 @@ module InertiaRails
     Configuration.layout
   end
 
+  def self.base_path
+    Configuration.base_path
+  end
+
   # "Setters"
   def self.share(**args)
     shared_plain_data.merge!(args)
@@ -38,6 +42,7 @@ module InertiaRails
   module Configuration
     mattr_accessor(:layout) { 'application' }
     mattr_accessor(:version) { nil }
+    mattr_accessor(:base_path) { nil }
 
     def self.evaluated_version
       self.version.respond_to?(:call) ? self.version.call : self.version
