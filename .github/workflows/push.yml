@@ -12,10 +12,10 @@ jobs:
       - name: Setup System
         run: sudo apt-get install libsqlite3-dev
 
-      - name: Set up Ruby 2.6
+      - name: Set up Ruby 2.7
         uses: actions/setup-ruby@v1
         with:
-          ruby-version: 2.6.x
+          ruby-version: 2.7.x
 
       - name: Install gems
         run: |
