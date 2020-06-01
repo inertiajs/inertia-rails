@@ -14,4 +14,12 @@ class InertiaTestController < ApplicationController
       head 200
     end
   end
+
+  def inertia_partial_request_test
+    if request.inertia_partial?
+      head 202
+    else
+      head 200
+    end
+  end
 end
