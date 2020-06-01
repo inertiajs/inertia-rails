@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   get 'empty_test' => 'inertia_test#empty_test'
   get 'redirect_test' => 'inertia_test#redirect_test'
   get 'inertia_request_test' => 'inertia_test#inertia_request_test'
+  get 'inertia_partial_request_test' => 'inertia_test#inertia_partial_request_test'
   post 'redirect_test' => 'inertia_test#redirect_test'
   patch 'redirect_test' => 'inertia_test#redirect_test'
   put 'redirect_test' => 'inertia_test#redirect_test'
