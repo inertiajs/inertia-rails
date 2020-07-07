@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["brain@bellawatt.com", "brandon@bellawatt.com", "eugene@bellawatt.com"]
 
   spec.summary       = %q{Inertia adapter for Rails}
-  spec.homepage      = "https://github.com/inertiajs/inertia-rails/"
+  spec.homepage      = "https://github.com/inertiajs/inertia-rails"
   spec.license       = "MIT"
 
   spec.metadata["homepage_uri"] = spec.homepage
