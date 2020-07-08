@@ -7,6 +7,11 @@ class InertiaTestController < ApplicationController
     redirect_to :empty_test
   end
 
+  def long_request_test
+    sleep 1
+    render inertia: 'EmptyTestComponent'
+  end
+
   def inertia_request_test
     if request.inertia?
       head 202
