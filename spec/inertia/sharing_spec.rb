@@ -45,14 +45,14 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
       start_thread2 = false
 
       thread1 = Thread.new do
-        sleep 0.1 unless start_thread1
+        sleep 0.1 until start_thread1
 
         get share_multithreaded_path, headers: {'X-Inertia' => true}
         expect(subject).to eq props
       end
 
       thread2 = Thread.new do
-        sleep 0.1 unless start_thread2
+        sleep 0.1 until start_thread2
 
         # Would prefer to make this a second get request, but RSpec will overwrite
         # the @response variable if another request is made in the second thread.

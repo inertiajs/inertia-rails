@@ -39,11 +39,11 @@ RSpec.describe 'Inertia configuration', type: :request do
 
     context 'multithreaded' do
       it 'does not share the version across threads' do
-        thread1_waits = true
-        thread2_waits = true
+        start_thread1 = false
+        start_thread2 = false
 
         thread1 = Thread.new do
-          sleep 0.1 while thread1_waits
+          sleep 0.1 until start_thread1
 
           InertiaRails.configure do |config|
             config.version = 'The original version'
@@ -54,16 +54,16 @@ RSpec.describe 'Inertia configuration', type: :request do
         end
 
         thread2 = Thread.new do
-          sleep 0.1 while thread2_waits
+          sleep 0.1 until start_thread2
 
           InertiaRails.configure do |config|
             config.version = 'Not the original version'
           end
         end
 
-        thread1_waits = false
+        start_thread1 = true
         sleep 0.5
-        thread2_waits = false
+        start_thread2 = true
 
         # Make sure that both threads finish before the block returns
         thread1.join
@@ -100,7 +100,7 @@ RSpec.describe 'Inertia configuration', type: :request do
         start_thread2 = false
 
         thread1 = Thread.new do
-          sleep 0.1 unless start_thread1
+          sleep 0.1 until start_thread1
 
           get long_request_test_path
           expect(subject).not_to render_template 'testing'
@@ -108,7 +108,7 @@ RSpec.describe 'Inertia configuration', type: :request do
         end
 
         thread2 = Thread.new do
-          sleep 0.1 unless start_thread2
+          sleep 0.1 until start_thread2
 
           InertiaRails.configure do |config|
             config.layout = 'testing'
