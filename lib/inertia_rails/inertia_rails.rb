@@ -1,6 +1,6 @@
 module InertiaRails
-  mattr_accessor(:shared_plain_data) { Hash.new }
-  mattr_accessor(:shared_blocks) { [] }
+  thread_mattr_accessor :threadsafe_shared_plain_data
+  thread_mattr_accessor :threadsafe_shared_blocks
 
   def self.configure
     yield(Configuration)
@@ -21,11 +21,11 @@ module InertiaRails
 
   # "Setters"
   def self.share(**args)
-    shared_plain_data.merge!(args)
+    self.shared_plain_data = self.shared_plain_data.merge(args)
   end
 
   def self.share_block(block)
-    shared_blocks.push(block)
+    self.shared_blocks = self.shared_blocks + [block]
   end
 
   def self.reset!
@@ -36,12 +36,45 @@ module InertiaRails
   private
 
   module Configuration
-    mattr_accessor(:layout) { 'application' }
-    mattr_accessor(:version) { nil }
+    thread_mattr_accessor :threadsafe_layout
+    thread_mattr_accessor :threadsafe_version
 
     def self.evaluated_version
       self.version.respond_to?(:call) ? self.version.call : self.version
     end
+
+    def self.layout
+      self.threadsafe_layout || 'application'
+    end
+
+    def self.layout=(val)
+      self.threadsafe_layout = val
+    end
+
+    def self.version
+      self.threadsafe_version
+    end
+
+    def self.version=(val)
+      self.threadsafe_version = val
+    end
+  end
+
+  # Getters and setters to provide default values for the threadsafe attributes
+  def self.shared_plain_data
+    self.threadsafe_shared_plain_data || {}
+  end
+
+  def self.shared_plain_data=(val)
+    self.threadsafe_shared_plain_data = val
+  end
+
+  def self.shared_blocks
+    self.threadsafe_shared_blocks || []
+  end
+
+  def self.shared_blocks=(val)
+    self.threadsafe_shared_blocks = val
   end
 
   def self.evaluated_blocks(controller,  blocks)
