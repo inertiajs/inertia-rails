@@ -1,3 +1,6 @@
+# Needed for `thread_mattr_accessor`
+require 'active_support/core_ext/module/attribute_accessors_per_thread'
+
 module InertiaRails
   thread_mattr_accessor :threadsafe_shared_plain_data
   thread_mattr_accessor :threadsafe_shared_blocks
