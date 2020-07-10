@@ -11,13 +11,7 @@ if defined?(ActionDispatch::DebugExceptions)
     require 'patches/debug_exceptions/patch-5-1'
   elsif ActionPack.version.to_s >= '5.0'
     require 'patches/debug_exceptions/patch-5-0'
-  elsif ActionPack.version.to_s >= '4.2'
-    require 'patches/debug_exceptions/patch-4-2'
-  elsif ActionPack.version.to_s >= '4.1'
-    require 'patches/debug_exceptions/patch-4-1'
   else
-    # No patch required, because text rendering for
-    # XHR requests was introduced with Rails 4.1:
-    # https://github.com/rails/rails/pull/11960
+    # This gem supports Rails 5 or later
   end
 end
