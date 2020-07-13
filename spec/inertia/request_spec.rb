@@ -32,4 +32,38 @@ RSpec.describe 'Inertia::Request', type: :request do
       it { is_expected.to eq 200 }
     end
   end
+
+  describe 'it tests error 404' do
+    subject { response.status }
+    before { get '/error_404', headers: headers }
+
+    context 'it is a inertia call' do
+      let(:headers) { { 'X-Inertia' => true } }
+
+      it { is_expected.to eq 404 }
+    end
+
+    context 'it is not a inertia call' do
+      let(:headers) { {} }
+
+      it { is_expected.to eq 404 }
+    end
+  end
+
+  describe 'it tests error 500' do
+    subject { response.status }
+    before { get '/error_500', headers: headers }
+
+    context 'it is a inertia call' do
+      let(:headers) { { 'X-Inertia' => true } }
+
+      it { is_expected.to eq 500 }
+    end
+
+    context 'it is not a inertia call' do
+      let(:headers) { {} }
+
+      it { is_expected.to eq 500 }
+    end
+  end
 end
