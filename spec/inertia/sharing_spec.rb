@@ -50,40 +50,4 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
 
     it { is_expected.to eq props.merge({ errors: errors }) }
   end
-
-  context 'multithreaded intertia share' do
-    let(:props) { { name: 'Michael', has_goat_status: true } }
-    it 'is expected to render props even when another thread shares Inertia data' do
-      start_thread1 = false
-      start_thread2 = false
-
-      thread1 = Thread.new do
-        sleep 0.1 until start_thread1
-
-        get share_multithreaded_path, headers: {'X-Inertia' => true}
-        expect(subject).to eq props
-      end
-
-      thread2 = Thread.new do
-        sleep 0.1 until start_thread2
-
-        # Would prefer to make this a second get request, but RSpec will overwrite
-        # the @response variable if another request is made in the second thread.
-        # This simulates the relevant effects of another call to a different
-        # controller with different values for inertia_share
-        InertiaRails.reset!
-        InertiaRails.share(name: 'Brian', has_goat_status: false)
-      end
-
-      # Thread 1 starts. The controller method runs inertia_share, then sleeps.
-      # Thread 2 then modifies the shared inertia data before Thread 1 stops sleeping
-      start_thread1 = true
-      sleep 0.5
-      start_thread2 = true
-
-      # Make sure that both threads finish before the block returns
-      thread1.join
-      thread2.join
-    end
-  end
 end
