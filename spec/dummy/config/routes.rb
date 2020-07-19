@@ -16,4 +16,5 @@ Rails.application.routes.draw do
   delete 'redirect_test' => 'inertia_test#redirect_test'
   get 'my_location' => 'inertia_test#my_location'
   get 'share_multithreaded' => 'inertia_multithreaded_share#share_multithreaded'
+  get 'content_type_test' => 'inertia_test#content_type_test'
 end
