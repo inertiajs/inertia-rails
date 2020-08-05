@@ -36,40 +36,6 @@ RSpec.describe 'Inertia configuration', type: :request do
 
       it { is_expected.to eq 1.0 }
     end
-
-    context 'multithreaded' do
-      it 'does not share the version across threads' do
-        start_thread1 = false
-        start_thread2 = false
-
-        thread1 = Thread.new do
-          sleep 0.1 until start_thread1
-
-          InertiaRails.configure do |config|
-            config.version = 'The original version'
-          end
-          get long_request_test_path, headers: {'X-Inertia' => true, 'HTTP_X_INERTIA_VERSION' => 'The original version'}
-
-          expect(subject).to eq 'The original version'
-        end
-
-        thread2 = Thread.new do
-          sleep 0.1 until start_thread2
-
-          InertiaRails.configure do |config|
-            config.version = 'Not the original version'
-          end
-        end
-
-        start_thread1 = true
-        sleep 0.5
-        start_thread2 = true
-
-        # Make sure that both threads finish before the block returns
-        thread1.join
-        thread2.join
-      end
-    end
   end
 
   describe '.layout' do

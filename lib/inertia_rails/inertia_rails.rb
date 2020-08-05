@@ -40,7 +40,7 @@ module InertiaRails
 
   module Configuration
     thread_mattr_accessor :threadsafe_layout
-    thread_mattr_accessor :threadsafe_version
+    mattr_accessor(:version) { nil }
 
     def self.evaluated_version
       self.version.respond_to?(:call) ? self.version.call : self.version
@@ -52,14 +52,6 @@ module InertiaRails
 
     def self.layout=(val)
       self.threadsafe_layout = val
-    end
-
-    def self.version
-      self.threadsafe_version
-    end
-
-    def self.version=(val)
-      self.threadsafe_version = val
     end
   end
 
