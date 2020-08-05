@@ -8,7 +8,6 @@ Rails.application.routes.draw do
   get 'share_with_inherited' => 'inertia_child_share_test#share_with_inherited'
   get 'empty_test' => 'inertia_test#empty_test'
   get 'redirect_test' => 'inertia_test#redirect_test'
-  get 'long_request_test' => 'inertia_test#long_request_test'
   get 'inertia_request_test' => 'inertia_test#inertia_request_test'
   get 'inertia_partial_request_test' => 'inertia_test#inertia_partial_request_test'
   post 'redirect_test' => 'inertia_test#redirect_test'
