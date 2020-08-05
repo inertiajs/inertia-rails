@@ -36,11 +36,34 @@ RSpec.describe 'Inertia configuration', type: :request do
 
       it { is_expected.to eq 1.0 }
     end
+
+    context 'with a new version' do
+      before do
+        InertiaRails.configure { |c| c.version = '1.0' }
+      end
+
+      context 'request in same thread' do
+        before do
+          get empty_test_path, headers: {'X-Inertia' => true, 'X-Inertia-Version' => '1.0'}
+        end
+
+        it { is_expected.to eq '1.0' }
+      end
+
+      context 'request in other thread' do
+        before do
+          Thread.new do
+            get empty_test_path, headers: {'X-Inertia' => true, 'X-Inertia-Version' => '1.0'}
+          end.join
+        end
+
+        it { is_expected.to eq '1.0' }
+      end
+    end
   end
 
   describe '.layout' do
     subject { response.body }
-
 
     context 'base case' do
       before { get empty_test_path }
@@ -52,15 +75,31 @@ RSpec.describe 'Inertia configuration', type: :request do
     context 'with a new layout' do
       before do
         InertiaRails.configure {|c| c.layout = 'testing' }
-        get empty_test_path
       end
 
-      it { is_expected.to render_template 'inertia' }
-      it { is_expected.to render_template 'testing' }
-      it { is_expected.not_to render_template 'application' }
+      context 'request in same thread' do
+        before do
+          get empty_test_path
+        end
+
+        it { is_expected.to render_template 'inertia' }
+        it { is_expected.to render_template 'testing' }
+        it { is_expected.not_to render_template 'application' }
+      end
+
+      context 'request in other thread' do
+        before do
+          Thread.new do
+            get empty_test_path
+          end.join
+        end
+
+        it { is_expected.to render_template 'inertia' }
+        it { is_expected.to render_template 'testing' }
+        it { is_expected.not_to render_template 'application' }
+      end
     end
   end
-
 end
 
 def reset_config!
