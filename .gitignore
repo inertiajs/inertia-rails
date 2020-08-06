@@ -17,3 +17,6 @@
 
 # rspec failure tracking
 .rspec_status
+
+# Appraisal
+gemfiles/*.gemfile.lock
