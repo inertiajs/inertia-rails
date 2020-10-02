@@ -22,4 +22,9 @@ class InertiaTestController < ApplicationController
       head 200
     end
   end
+
+
+  def location
+    inertia_location empty_test_path
+  end
 end

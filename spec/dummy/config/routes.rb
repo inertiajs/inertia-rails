@@ -14,5 +14,6 @@ Rails.application.routes.draw do
   patch 'redirect_test' => 'inertia_test#redirect_test'
   put 'redirect_test' => 'inertia_test#redirect_test'
   delete 'redirect_test' => 'inertia_test#redirect_test'
+  get 'location' => 'inertia_test#location'
   get 'share_multithreaded' => 'inertia_multithreaded_share#share_multithreaded'
 end
