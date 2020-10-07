@@ -12,5 +12,10 @@ module InertiaRails
         end
       end
     end
+
+    def inertia_location(url)
+      headers['X-Inertia-Location'] = url
+      head :conflict
+    end
   end
 end
