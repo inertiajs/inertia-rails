@@ -38,6 +38,19 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
     it { is_expected.to eq props }
   end
 
+  context 'with errors' do
+    let(:props) { {name: 'Brandon', sport: 'hockey', position: 'center', number: 29} }
+    let(:errors) { 'rearview mirror is present' }
+    before {
+      allow_any_instance_of(ActionDispatch::Request).to receive(:session) {
+        { inertia_errors: errors }
+      }
+      get share_path, headers: {'X-Inertia' => true}
+    }
+
+    it { is_expected.to eq props.merge({ errors: errors }) }
+  end
+
   context 'multithreaded intertia share' do
     let(:props) { { name: 'Michael', has_goat_status: true } }
     it 'is expected to render props even when another thread shares Inertia data' do

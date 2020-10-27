@@ -30,4 +30,12 @@ class InertiaTestController < ApplicationController
     puts "Got to location for some reason?"
     inertia_location empty_test_path
   end
+
+  def regular_inertia_redirect_to
+    inertia_redirect_to empty_test_path
+  end
+
+  def inertia_redirect_to_with_errors
+    inertia_redirect_to empty_test_path, errors: 'oh bother'
+  end
 end
