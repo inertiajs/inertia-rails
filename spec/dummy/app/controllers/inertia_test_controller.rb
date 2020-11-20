@@ -40,4 +40,11 @@ class InertiaTestController < ApplicationController
   def error_500
     render inertia: 'ErrorComponent', status: 500
   end
+
+  def content_type_test
+    respond_to do |format|
+      format.html { render inertia: 'EmptyTestComponent' }
+      format.xml { render xml: [ 1, 2, 3 ] }
+    end
+  end
 end
