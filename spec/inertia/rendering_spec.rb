@@ -23,6 +23,11 @@ RSpec.describe 'rendering inertia views', type: :request do
 
       it { is_expected.to include inertia_div(page) }
     end
+
+    it 'has the proper status code' do
+      get component_path
+      expect(response.status).to eq 200
+    end
   end
 
   context 'subsequent requests' do
@@ -42,6 +47,10 @@ RSpec.describe 'rendering inertia views', type: :request do
 
     it 'has the proper body' do
       expect(JSON.parse(response.body)).to include('url' => '/props')
+    end
+
+    it 'has the proper status code' do
+      expect(response.status).to eq 200
     end
   end
 end
