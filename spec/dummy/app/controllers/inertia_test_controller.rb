@@ -30,11 +30,7 @@ class InertiaTestController < ApplicationController
     inertia_location empty_test_path
   end
 
-  def regular_inertia_redirect_to
-    inertia_redirect_to empty_test_path
-  end
-
-  def inertia_redirect_to_with_errors
-    inertia_redirect_to empty_test_path, errors: 'oh bother'
+  def redirect_with_inertia_errors
+    redirect_to empty_test_path, inertia: { errors: { uh: 'oh' } }
   end
 end

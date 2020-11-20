@@ -25,12 +25,12 @@ module InertiaRails
       head :conflict
     end
 
-    def inertia_redirect_to(options = {}, response_options = {})
-      if (errors = response_options.delete(:errors))
-        session[:inertia_errors] = errors
+    def redirect_to(options = {}, response_options = {})
+      if (inertia_errors = response_options.fetch(:inertia, {}).fetch(:errors, nil))
+        session[:inertia_errors] = inertia_errors
       end
 
-      redirect_to(options, response_options)
+      super(options, response_options)
     end
   end
 end

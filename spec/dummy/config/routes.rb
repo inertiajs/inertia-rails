@@ -16,8 +16,6 @@ Rails.application.routes.draw do
   delete 'redirect_test' => 'inertia_test#redirect_test'
   get 'my_location' => 'inertia_test#my_location'
   get 'share_multithreaded' => 'inertia_multithreaded_share#share_multithreaded'
-  post 'redirect_with_errors' => 'inertia_errors#redirect_with_errors'
-  post 'regular_inertia_redirect_to' => 'inertia_test#regular_inertia_redirect_to'
-  get 'inertia_redirect_to_with_errors' => 'inertia_test#inertia_redirect_to_with_errors'
-  post 'inertia_redirect_to_with_errors' => 'inertia_test#inertia_redirect_to_with_errors'
+  get 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
+  post 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
 end

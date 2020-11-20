@@ -7,7 +7,7 @@ RSpec.describe 'errors shared automatically', type: :request do
     after { InertiaRails.configure{|c| c.version = nil } }
 
     it 'automatically renders errors in inertia' do
-      post redirect_with_errors_path, headers: headers
+      post redirect_with_inertia_errors_path, headers: headers
       expect(response.headers['Location']).to eq(empty_test_url)
       expect(session[:inertia_errors]).to include({ uh: 'oh' })
 
@@ -18,7 +18,7 @@ RSpec.describe 'errors shared automatically', type: :request do
     end
 
     it 'keeps errors around when the post has a stale version' do
-      post redirect_with_errors_path, headers: headers
+      post redirect_with_inertia_errors_path, headers: headers
       expect(response.headers['Location']).to eq(empty_test_url)
       expect(session[:inertia_errors]).to include({ uh: 'oh' })
 
