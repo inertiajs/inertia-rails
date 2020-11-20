@@ -18,7 +18,7 @@ module InertiaRails
       if @request.headers['X-Inertia']
         @response.set_header('Vary', 'Accept')
         @response.set_header('X-Inertia', 'true')
-        @render_method.call json: page, status: @response.status
+        @render_method.call json: page, status: @response.status, content_type: Mime[:json]
       else
         @render_method.call template: 'inertia', layout: ::InertiaRails.layout, locals: (view_data).merge({page: page})
       end

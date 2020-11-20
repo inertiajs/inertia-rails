@@ -66,4 +66,27 @@ RSpec.describe 'Inertia::Request', type: :request do
       it { is_expected.to eq 500 }
     end
   end
+
+  describe 'it tests media_type of the response' do
+    subject { response.media_type }
+    before { get content_type_test_path, headers: headers }
+
+    context 'it is an inertia call' do
+      let(:headers) { {'X-Inertia' => true} }
+
+      it { is_expected.to eq 'application/json' }
+    end
+
+    context 'it is not an inertia call' do
+      let(:headers) { Hash.new }
+
+      it { is_expected.to eq 'text/html' }
+    end
+
+    context 'it is an XML request' do
+      let(:headers) { { accept: 'application/xml' } }
+
+      it { is_expected.to eq 'application/xml' }
+    end
+  end
 end

@@ -20,4 +20,5 @@ Rails.application.routes.draw do
   post 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
   get 'error_404' => 'inertia_test#error_404'
   get 'error_500' => 'inertia_test#error_500'
+  get 'content_type_test' => 'inertia_test#content_type_test'
 end
