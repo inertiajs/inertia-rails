@@ -23,7 +23,6 @@ class InertiaTestController < ApplicationController
     end
   end
 
-
   # Calling it my_location to avoid this in Rails 5.0
   # https://github.com/rails/rails/issues/28033
   def my_location
@@ -32,5 +31,13 @@ class InertiaTestController < ApplicationController
 
   def redirect_with_inertia_errors
     redirect_to empty_test_path, inertia: { errors: { uh: 'oh' } }
+  end
+
+  def error_404
+    render inertia: 'ErrorComponent', status: 404
+  end
+
+  def error_500
+    render inertia: 'ErrorComponent', status: 500
   end
 end
