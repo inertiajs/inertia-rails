@@ -50,4 +50,17 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
 
     it { is_expected.to eq props.merge({ errors: errors }) }
   end
+
+  context 'using inertia share in redirected requests' do
+    let(:props) { {name: 'Brandon', sport: 'hockey', position: 'center', number: 29} }
+
+    before do
+      post redirect_to_share_test_path, headers: {'X-Inertia' => true}
+      expect(response).to be_redirect
+
+      get response.location, headers: {'X-Inertia' => true}
+    end
+
+    it { is_expected.to eq props }
+  end
 end
