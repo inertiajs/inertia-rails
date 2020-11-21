@@ -27,11 +27,11 @@ module InertiaRails
     private
 
     def props
-      _props = ::InertiaRails.shared_data(@controller).merge(@props).select do |key|
+      _props = ::InertiaRails.shared_data(@controller).merge(@props).select do |key, prop|
         if rendering_partial_component?
           key.in? partial_keys
         else
-          true
+          !prop.is_a?(InertiaRails::Lazy)
         end
       end
 

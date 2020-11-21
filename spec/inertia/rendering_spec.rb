@@ -82,6 +82,32 @@ RSpec.describe 'rendering inertia views', type: :request do
       end
     end
   end
+
+  context 'lazy prop rendering' do
+    context 'on first load' do
+      let (:page) {
+        InertiaRails::Renderer.new('TestComponent', '', request, response, '', props: { name: 'Brian'}, view_data: nil).send(:page)
+      }
+      before { get lazy_props_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a partial reload' do
+      let (:page) {
+        InertiaRails::Renderer.new('TestComponent', '', request, response, '', props: { sport: 'basketball', level: 'worse than he believes', grit: 'intense'}, view_data: nil).send(:page)
+      }
+      let(:headers) {{
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'sport,level,grit',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      }}
+
+      before { get lazy_props_path, headers: headers }
+
+      it { is_expected.to eq page.to_json }
+    end
+  end
 end
 
 def inertia_div(page)

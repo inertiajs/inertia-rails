@@ -1,5 +1,6 @@
 # Needed for `thread_mattr_accessor`
 require 'active_support/core_ext/module/attribute_accessors_per_thread'
+require 'inertia_rails/lazy'
 
 module InertiaRails
   thread_mattr_accessor :threadsafe_shared_plain_data
@@ -34,6 +35,10 @@ module InertiaRails
   def self.reset!
     self.shared_plain_data = {}
     self.shared_blocks = []
+  end
+
+  def self.lazy(value = nil, &block)
+    InertiaRails::Lazy.new(value, &block)
   end
 
   private
