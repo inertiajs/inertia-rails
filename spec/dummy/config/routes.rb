@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   get 'view_data' => 'inertia_render_test#view_data'
   get 'component' => 'inertia_render_test#component'
   get 'share' => 'inertia_share_test#share'
+  get 'error' => 'inertia_share_test#error'
   get 'share_with_inherited' => 'inertia_child_share_test#share_with_inherited'
   get 'empty_test' => 'inertia_test#empty_test'
   get 'redirect_test' => 'inertia_test#redirect_test'

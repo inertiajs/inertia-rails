@@ -32,6 +32,15 @@ module Dummy
 
     # Required for Rails 5.0 and 5.1
     config.secret_key_base = SecureRandom.hex
+
+    config.exceptions_app = ->(env) do
+      Class.new(ActionController::Base) do
+        def show
+          render inertia: 'Error', props: {
+            status: request.path_info[1..-1].to_i
+          }
+        end
+      end.action(:show).call(env)
+    end
   end
 end
-
