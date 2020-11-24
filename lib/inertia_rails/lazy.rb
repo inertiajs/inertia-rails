@@ -9,7 +9,10 @@ class InertiaRails::Lazy
   end
 
   def to_proc
-    # copy to local variables so they are in scope for controller.instance_exec
+    # This is called by controller.instance_exec, which changes self to the
+    # controller instance. That makes the instance variables unavailable to the
+    # proc via closure. Copying the instance variables to local variables before
+    # the proc is returned keeps them in scope for the returned proc.
     value = @value
     block = @block
     if value.respond_to?(:call)
