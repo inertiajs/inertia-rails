@@ -27,13 +27,13 @@ module InertiaRails
     private
 
     def props
-      only = (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
-
-      _props = ::InertiaRails.shared_data(@controller).merge(@props)
-
-      _props = (only.any? && @request.headers['X-Inertia-Partial-Component'] == component) ?
-        _props.select {|key| key.in? only} :
-        _props
+      _props = ::InertiaRails.shared_data(@controller).merge(@props).select do |key, prop|
+        if rendering_partial_component?
+          key.in? partial_keys
+        else
+          !prop.is_a?(InertiaRails::Lazy)
+        end
+      end
 
       deep_transform_values(_props, lambda {|prop| prop.respond_to?(:call) ? @controller.instance_exec(&prop) : prop })
     end
@@ -51,6 +51,14 @@ module InertiaRails
       return proc.call(hash) unless hash.is_a? Hash
 
       hash.transform_values {|value| deep_transform_values(value, proc)}
+    end
+
+    def partial_keys
+      (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
+    end
+
+    def rendering_partial_component?
+      @request.inertia_partial? && @request.headers['X-Inertia-Partial-Component'] == component
     end
   end
 end

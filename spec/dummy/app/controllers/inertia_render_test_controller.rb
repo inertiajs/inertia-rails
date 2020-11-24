@@ -17,4 +17,15 @@ class InertiaRenderTestController < ApplicationController
   def component
     render inertia: 'TestComponent'
   end
+
+  def lazy_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      sport: InertiaRails.lazy('basketball'),
+      level: InertiaRails.lazy do
+        'worse than he believes'
+      end,
+      grit: InertiaRails.lazy(->{ 'intense' })
+    }
+  end
 end
