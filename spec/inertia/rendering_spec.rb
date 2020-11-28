@@ -28,6 +28,12 @@ RSpec.describe 'rendering inertia views', type: :request do
       get component_path
       expect(response.status).to eq 200
     end
+
+    context 'via an inertia route' do
+      before { get inertia_route_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
   end
 
   context 'subsequent requests' do

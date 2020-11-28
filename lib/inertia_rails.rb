@@ -20,3 +20,12 @@ end
 module InertiaRails
   class Error < StandardError; end
 end
+
+class ActionDispatch::Routing::Mapper
+  def inertia(args, &block)
+    route = args.keys.first
+    component = args.values.first
+
+    get(route => 'inertia_rails/static#static', defaults: {component: component})
+  end
+end
