@@ -30,4 +30,23 @@ RSpec.describe 'InertiaRails::Response', type: :request do
       end
     end
   end
+
+  describe 'redirect_back' do
+    context 'with an [:inertia][:errors] option' do
+      context 'with a post request' do
+        it 'adds :inertia_errors to the session' do
+          post(
+            redirect_back_with_inertia_errors_path,
+            headers: {
+              'X-Inertia' => true,
+              'HTTP_REFERER' => "http://example.com/current-path"
+            }
+          )
+          expect(response.status).to eq 302
+          expect(response.headers['Location']).to eq('http://example.com/current-path')
+          expect(session[:inertia_errors]).to include({ go: 'back!' })
+        end
+      end
+    end
+  end
 end
