@@ -33,6 +33,13 @@ class InertiaTestController < ApplicationController
     redirect_to empty_test_path, inertia: { errors: { uh: 'oh' } }
   end
 
+  def redirect_back_with_inertia_errors
+    redirect_back(
+      fallback_location: empty_test_path,
+      inertia: { errors: { go: 'back!' } }
+    )
+  end
+
   def error_404
     render inertia: 'ErrorComponent', status: 404
   end
