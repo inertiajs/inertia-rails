@@ -89,4 +89,11 @@ RSpec.describe 'Inertia::Request', type: :request do
       it { is_expected.to eq 'application/xml' }
     end
   end
+
+  describe 'it tests redirecting with responders gem' do
+    subject { response.status }
+    before { post redirect_with_responders_path }
+
+    it { is_expected.to eq 302 }
+  end
 end

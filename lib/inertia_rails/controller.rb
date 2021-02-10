@@ -20,13 +20,6 @@ module InertiaRails
       end
     end
 
-    private
-
-    def inertia_location(url)
-      headers['X-Inertia-Location'] = url
-      head :conflict
-    end
-
     def redirect_to(options = {}, response_options = {})
       capture_inertia_errors(response_options)
       super(options, response_options)
@@ -39,6 +32,13 @@ module InertiaRails
         allow_other_host: allow_other_host,
         **options,
       )
+    end
+
+    private
+
+    def inertia_location(url)
+      headers['X-Inertia-Location'] = url
+      head :conflict
     end
 
     def capture_inertia_errors(options)
