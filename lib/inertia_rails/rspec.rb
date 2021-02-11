@@ -49,7 +49,7 @@ module InertiaRails
       protected 
       
       def inertia_tests_setup?
-        @_inertia_render_wrapper.present?
+        ::RSpec.current_example.metadata.fetch(:inertia, false)
       end
     end
   end

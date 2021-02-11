@@ -54,4 +54,12 @@ RSpec.describe InertiaRails::RSpec, type: :request do
       expect { expect_inertia }.to raise_error(/inertia: true/)
     end
   end
+
+  describe 'expecting inertia on a non inertia route', inertia: true do
+    before { get non_inertiafied_path }
+
+    it 'does not complain about test helpers' do
+      expect { expect_inertia }.not_to raise_error
+    end
+  end
 end
