@@ -23,6 +23,10 @@ class InertiaTestController < ApplicationController
     end
   end
 
+  def non_inertiafied
+    render plain: 'hey'
+  end
+
   # Calling it my_location to avoid this in Rails 5.0
   # https://github.com/rails/rails/issues/28033
   def my_location
