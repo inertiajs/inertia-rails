@@ -8,13 +8,7 @@ module InertiaRails
     ]
 
     def install
-      unless options[:front_end].in? FRONT_END_INSTALLERS
-        say "Sorry, there is no generator for #{options[:front_end]}!\n\n", :red
-        say "If you are a #{options[:front_end]} developer, please help us improve inertia_rails by contributing an installer.\n\n"
-        say "https://github.com/inertiajs/inertia-rails/\n\n"
-
-        return
-      end
+      exit! unless installable?
 
       install_base!
 
@@ -24,6 +18,21 @@ module InertiaRails
     end
 
     protected
+
+    def installable?
+      unless run("./bin/rails webpacker:verify_install")
+        say "Sorry, you need to have webpacker installed for inertia_rails default setup.", :red
+        return false
+      end
+
+      unless options[:front_end].in? FRONT_END_INSTALLERS
+        say "Sorry, there is no generator for #{options[:front_end]}!\n\n", :red
+        say "If you are a #{options[:front_end]} developer, please help us improve inertia_rails by contributing an installer.\n\n"
+        say "https://github.com/inertiajs/inertia-rails/\n\n"
+
+        return false
+      end
+    end
 
     def install_base!
       say "Adding inertia pack tag to application layout", :blue
