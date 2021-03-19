@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
   InertiaProgress.init();
   const el = document.getElementById('app')
 
+  const csrfToken = document.querySelector('meta[name=csrf-token]').content;
+  axios.defaults.headers.common['X-CSRF-Token'] = csrfToken;
+
   render(
     <App
       initialPage={JSON.parse(el.dataset.page)}
@@ -15,7 +18,4 @@ document.addEventListener('DOMContentLoaded', () => {
     />,
     el
   )
-
-  const csrfToken = document.querySelector('meta[name=csrf-token]').content;
-  axios.defaults.headers.common['X-CSRF-Token'] = csrfToken;
 });
