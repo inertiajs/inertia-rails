@@ -5,6 +5,7 @@ module InertiaRails
 
     FRONT_END_INSTALLERS = [
       'react',
+      'vue',
     ]
 
     def install
@@ -32,6 +33,8 @@ module InertiaRails
 
         return false
       end
+
+      true
     end
 
     def install_base!
@@ -53,9 +56,18 @@ module InertiaRails
     def install_react!
       say "Creating a React page component...", :blue
       run 'yarn add @inertiajs/inertia-react'
-      template "react.jsx", Rails.root.join("app/javascript/Pages/InertiaExample.js").to_s
+      template "react/InertiaExample.jsx", Rails.root.join("app/javascript/Pages/InertiaExample.js").to_s
       say "Copying inertia.jsx into webpacker's packs folder...", :blue
-      template "inertia.jsx", Rails.root.join("app/javascript/packs/inertia.jsx").to_s
+      template "react/inertia.jsx", Rails.root.join("app/javascript/packs/inertia.jsx").to_s
+      say "done!", :green
+    end
+
+    def install_vue!
+      say "Creating a Vue page component...", :blue
+      run 'yarn add @inertiajs/inertia-vue'
+      template "vue/InertiaExample.vue", Rails.root.join("app/javascript/Pages/InertiaExample.vue").to_s
+      say "Copying inertia.js into webpacker's packs folder...", :blue
+      template "vue/inertia.js", Rails.root.join("app/javascript/packs/inertia.js").to_s
       say "done!", :green
     end
   end
