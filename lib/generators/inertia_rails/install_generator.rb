@@ -6,6 +6,7 @@ module InertiaRails
     FRONT_END_INSTALLERS = [
       'react',
       'vue',
+      'svelte',
     ]
 
     def install
@@ -68,6 +69,15 @@ module InertiaRails
       template "vue/InertiaExample.vue", Rails.root.join("app/javascript/Pages/InertiaExample.vue").to_s
       say "Copying inertia.js into webpacker's packs folder...", :blue
       template "vue/inertia.js", Rails.root.join("app/javascript/packs/inertia.js").to_s
+      say "done!", :green
+    end
+
+    def install_svelte!
+      say "Creating a Svelte page component...", :blue
+      run 'yarn add @inertiajs/inertia-svelte'
+      template "svelte/InertiaExample.svelte", Rails.root.join("app/javascript/Pages/InertiaExample.svelte").to_s
+      say "Copying inertia.js into webpacker's packs folder...", :blue
+      template "svelte/inertia.js", Rails.root.join("app/javascript/packs/inertia.js").to_s
       say "done!", :green
     end
   end
