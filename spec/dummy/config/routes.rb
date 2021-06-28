@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   get 'view_data' => 'inertia_render_test#view_data'
   get 'component' => 'inertia_render_test#component'
   get 'share' => 'inertia_share_test#share'
+  get 'error' => 'inertia_share_test#error'
   get 'share_with_inherited' => 'inertia_child_share_test#share_with_inherited'
   get 'empty_test' => 'inertia_test#empty_test'
   get 'redirect_test' => 'inertia_test#redirect_test'
@@ -16,7 +17,6 @@ Rails.application.routes.draw do
   put 'redirect_test' => 'inertia_test#redirect_test'
   delete 'redirect_test' => 'inertia_test#redirect_test'
   get 'my_location' => 'inertia_test#my_location'
-  get 'share_multithreaded' => 'inertia_multithreaded_share#share_multithreaded'
   get 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
   post 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
   post 'redirect_back_with_inertia_errors' => 'inertia_test#redirect_back_with_inertia_errors'
@@ -26,5 +26,6 @@ Rails.application.routes.draw do
   get 'lazy_props' => 'inertia_render_test#lazy_props'
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
 
+  post 'redirect_to_share_test' => 'inertia_test#redirect_to_share_test'
   inertia 'inertia_route' => 'TestComponent'
 end

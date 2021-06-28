@@ -27,7 +27,7 @@ module InertiaRails
     private
 
     def props
-      _props = ::InertiaRails.shared_data(@controller).merge(@props).select do |key, prop|
+      _props = @controller.shared_data.merge(@props).select do |key, prop|
         if rendering_partial_component?
           key.in? partial_keys
         else

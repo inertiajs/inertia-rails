@@ -58,4 +58,8 @@ class InertiaTestController < ApplicationController
       format.xml { render xml: [ 1, 2, 3 ] }
     end
   end
+
+  def redirect_to_share_test
+    redirect_to share_path
+  end
 end
