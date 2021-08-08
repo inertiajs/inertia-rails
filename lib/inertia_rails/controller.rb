@@ -9,6 +9,11 @@ module InertiaRails
         # :inertia_errors are deleted from the session by the middleware
         InertiaRails.share(errors: session[:inertia_errors]) if session[:inertia_errors].present?
       end
+
+      after_action do
+        # Axios by default looks for an XSRF-TOKEN cookie to use for POST requests
+        cookies['XSRF-TOKEN'] = form_authenticity_token unless request.inertia?
+      end
     end
 
     module ClassMethods

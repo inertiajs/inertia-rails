@@ -1,6 +1,7 @@
 require 'inertia_rails/renderer'
 require 'inertia_rails/engine'
 
+require 'patches/action_controller'
 require 'patches/debug_exceptions'
 require 'patches/better_errors'
 require 'patches/request'
