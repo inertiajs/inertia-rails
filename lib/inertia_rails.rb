@@ -15,9 +15,11 @@ ActionController::Renderers.add :inertia do |component, options|
     method(:render),
     props: options[:props],
     view_data: options[:view_data],
+    ssr: options[:ssr]
   ).render
 end
 
 module InertiaRails
   class Error < StandardError; end
+  mattr_accessor :ssr_enabled, :ssr_port, :ssr_host
 end
