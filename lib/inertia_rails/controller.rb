@@ -22,17 +22,31 @@ module InertiaRails
       end
     end
 
+    def redirect_to(options = {}, response_options = {})
+      capture_inertia_errors(response_options)
+      super(options, response_options)
+    end
+
+    def redirect_back(fallback_location:, allow_other_host: true, **options)
+      capture_inertia_errors(options)
+      super(
+        fallback_location: fallback_location,
+        allow_other_host: allow_other_host,
+        **options,
+      )
+    end
+
+    private
+
     def inertia_location(url)
       headers['X-Inertia-Location'] = url
       head :conflict
     end
 
-    def redirect_to(options = {}, response_options = {})
-      if (inertia_errors = response_options.fetch(:inertia, {}).fetch(:errors, nil))
+    def capture_inertia_errors(options)
+      if (inertia_errors = options.dig(:inertia, :errors))
         session[:inertia_errors] = inertia_errors
       end
-
-      super(options, response_options)
     end
   end
 end

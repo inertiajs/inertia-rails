@@ -35,6 +35,9 @@ module InertiaRails
       def inertia
         raise 'Inertia test helpers aren\'t set up! Make sure you add inertia: true to describe blocks using inertia tests.' unless inertia_tests_setup?
 
+        if @_inertia_render_wrapper.nil? && !::RSpec.configuration.inertia[:skip_missing_renderer_warnings]
+          warn 'WARNING: the test never created an Inertia renderer. Maybe the code wasn\'t able to reach a `render inertia:` call? If this was intended, or you don\'t want to see this message, set ::RSpec.configuration.inertia[:skip_missing_renderer_warnings] = true'
+        end
         @_inertia_render_wrapper
       end
 
@@ -49,7 +52,7 @@ module InertiaRails
       protected 
       
       def inertia_tests_setup?
-        @_inertia_render_wrapper.present?
+        ::RSpec.current_example.metadata.fetch(:inertia, false)
       end
     end
   end
@@ -57,6 +60,9 @@ end
 
 RSpec.configure do |config|
   config.include ::InertiaRails::RSpec::Helpers
+  config.add_setting :inertia, default: {
+    skip_missing_renderer_warnings: false
+  }
 
   config.before(:each, inertia: true) do
     new_renderer = InertiaRails::Renderer.method(:new)

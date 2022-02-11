@@ -28,6 +28,24 @@ RSpec.describe InertiaRails::Middleware, type: :request do
 
       it { is_expected.to eq 303 }
     end
+
+    it 'is thread safe' do
+      delete_request_proc = -> { delete redirect_test_path, headers: { 'X-Inertia' => true } }
+      get_request_proc = -> { get empty_test_path }
+
+      statusses = []
+
+      threads = []
+
+      100.times do
+        threads << Thread.new { statusses << delete_request_proc.call }
+        threads << Thread.new { get_request_proc.call }
+      end
+
+      threads.each(&:join)
+
+      expect(statusses.uniq).to eq([303])
+    end
   end
 
   context 'a request not originating from inertia' do

@@ -4,6 +4,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.1] - 2021-06-27
+
+* Fixed thread safety in the middleware. Thanks @caifara!
+
+## [1.11.0] - 2021-03-23
+
+* Fixed the install generator. `installable?` was always returning false, preventing it from actually running.
+* Added an install generator for Vue.
+
+## [1.10.0] - 2021-03-22
+
+* Added install generator to quickly add Inertia to existing rails apps via `rails inertia_rails:install:react`
+
+## [1.9.2] - 2021-02-23
+
+* Improve method for detecting whether a user used the RSpec helpers without adding `inertia: true` to the spec
+* Emit a warning when expecting an Inertia response in RSpec and never reaching a `render inertia:` call
+
+## [1.9.1] - 2021-02-10
+
+* Define `redirect_to` and `redirect_back` as public methods for compatibility with other code using them
+
+## [1.9.0] - 2021-01-17
+
+* Added the same inertia awareness that redirect_to has to redirect_back
+
+## [1.8.0] - 2020-12-08
+
+* Add `inertia` route helper feature
+
+## [1.7.1] - 2020-11-24
+
+* Fix the definition for InertiaRails::Lazy to avoid an uninitialized constant error when booting an application. 
+
 ## [1.7.0] - 2020-11-24
 
 * Add support for "lazy" props while rendering. These are props that never compute on the initial page load. The only render during a partial update that calls for them explicitly.

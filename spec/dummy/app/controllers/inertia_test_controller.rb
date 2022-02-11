@@ -23,6 +23,10 @@ class InertiaTestController < ApplicationController
     end
   end
 
+  def non_inertiafied
+    render plain: 'hey'
+  end
+
   # Calling it my_location to avoid this in Rails 5.0
   # https://github.com/rails/rails/issues/28033
   def my_location
@@ -31,6 +35,13 @@ class InertiaTestController < ApplicationController
 
   def redirect_with_inertia_errors
     redirect_to empty_test_path, inertia: { errors: { uh: 'oh' } }
+  end
+
+  def redirect_back_with_inertia_errors
+    redirect_back(
+      fallback_location: empty_test_path,
+      inertia: { errors: { go: 'back!' } }
+    )
   end
 
   def error_404
