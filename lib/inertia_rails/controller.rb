@@ -1,4 +1,5 @@
 require_relative "inertia_rails"
+require_relative "helper"
 
 module InertiaRails
   module Controller
@@ -9,6 +10,7 @@ module InertiaRails
         # :inertia_errors are deleted from the session by the middleware
         InertiaRails.share(errors: session[:inertia_errors]) if session[:inertia_errors].present?
       end
+      helper ::InertiaRails::Helper
     end
 
     module ClassMethods

@@ -1,3 +1,5 @@
+require 'net/http'
+require 'json'
 require_relative "inertia_rails"
 
 module InertiaRails
@@ -15,6 +17,8 @@ module InertiaRails
     end
 
     def render
+      render_ssr and return if ::InertiaRails.ssr?
+
       if @request.headers['X-Inertia']
         @response.set_header('Vary', 'Accept')
         @response.set_header('X-Inertia', 'true')
@@ -25,6 +29,15 @@ module InertiaRails
     end
 
     private
+
+    def render_ssr
+      uri = URI("http://localhost:#{::InertiaRails.ssr_port}/render")
+      res = Net::HTTP.post_form(uri, page)
+      raise StandardError, res.body
+
+      ::InertiaRails.html_headers = res['head']
+      @render_method.call inline: res['body'].html_safe, layout: ::InertiaRails.layout
+    end
 
     def props
       _props = ::InertiaRails.shared_data(@controller).merge(@props).select do |key, prop|
