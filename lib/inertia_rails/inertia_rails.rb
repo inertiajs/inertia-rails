@@ -24,12 +24,12 @@ module InertiaRails
     Configuration.layout
   end
 
-  def self.ssr?
-    Configuration.ssr
+  def self.ssr_enabled?
+    Configuration.ssr_enabled
   end
 
-  def self.ssr_port
-    Configuration.ssr_port
+  def self.ssr_url
+    Configuration.ssr_url
   end
 
   def self.html_headers
@@ -64,8 +64,8 @@ module InertiaRails
   module Configuration
     mattr_accessor(:layout) { 'application' }
     mattr_accessor(:version) { nil }
-    mattr_accessor(:ssr) { false }
-    mattr_accessor(:ssr_port) { 8080 }
+    mattr_accessor(:ssr_enabled) { false }
+    mattr_accessor(:ssr_url) { 'http://localhost:13714' }
 
     def self.evaluated_version
       self.version.respond_to?(:call) ? self.version.call : self.version

@@ -17,7 +17,7 @@ module InertiaRails
     end
 
     def render
-      render_ssr and return if ::InertiaRails.ssr?
+      return render_ssr if ::InertiaRails.ssr_enabled?
 
       if @request.headers['X-Inertia']
         @response.set_header('Vary', 'Accept')
@@ -31,12 +31,11 @@ module InertiaRails
     private
 
     def render_ssr
-      uri = URI("http://localhost:#{::InertiaRails.ssr_port}/render")
-      res = Net::HTTP.post_form(uri, page)
-      raise StandardError, res.body
-
+      uri = URI("#{::InertiaRails.ssr_url}/render")
+      res = JSON.parse(Net::HTTP.post(uri, page.to_json, 'Content-Type' => 'application/json').body)
+      
       ::InertiaRails.html_headers = res['head']
-      @render_method.call inline: res['body'].html_safe, layout: ::InertiaRails.layout
+      @render_method.call html: res['body'].html_safe, layout: ::InertiaRails.layout, locals: (view_data).merge({page: page})
     end
 
     def props
