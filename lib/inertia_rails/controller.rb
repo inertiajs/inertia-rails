@@ -10,7 +10,9 @@ module InertiaRails
         # :inertia_errors are deleted from the session by the middleware
         InertiaRails.share(errors: session[:inertia_errors]) if session[:inertia_errors].present?
       end
-      helper ::InertiaRails::Helper
+      if respond_to? :helper
+        helper ::InertiaRails::Helper
+      end
     end
 
     module ClassMethods
