@@ -43,7 +43,10 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
     let(:errors) { 'rearview mirror is present' }
     before {
       allow_any_instance_of(ActionDispatch::Request).to receive(:session) {
-        { inertia_errors: errors }
+        spy(ActionDispatch::Request::Session).tap do |spy|
+          allow(spy).to receive(:[])
+          allow(spy).to receive(:[]).with(:inertia_errors).and_return(errors)
+        end
       }
       get share_path, headers: {'X-Inertia' => true}
     }
