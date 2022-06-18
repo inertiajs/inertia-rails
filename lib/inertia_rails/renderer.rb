@@ -6,8 +6,8 @@ module InertiaRails
   class Renderer
     attr_reader :component, :view_data
 
-    def initialize(component, controller, request, response, render_method, props:, view_data:)
-      @component = component
+    def initialize(component = nil, controller, request, response, render_method, props:, view_data:)
+      @component = component || "#{controller.controller_path}/#{controller.action_name}"
       @controller = controller
       @request = request
       @response = response
@@ -38,7 +38,7 @@ module InertiaRails
     end
 
     def props
-      _props = ::InertiaRails.shared_data(@controller).merge(@props).select do |key, prop|
+      _props = ::InertiaRails.shared_data(@controller).merge(@controller.view_assigns).merge(@props).select do |key, prop|
         if rendering_partial_component?
           key.in? partial_keys
         else

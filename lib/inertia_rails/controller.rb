@@ -22,6 +22,18 @@ module InertiaRails
       end
     end
 
+    def render_inertia(component = nil)
+      render(inertia: component)
+    end
+
+    def default_render
+      if InertiaRails.default_render?
+        render_inertia
+      else
+        super
+      end
+    end
+
     def redirect_to(options = {}, response_options = {})
       capture_inertia_errors(response_options)
       super(options, response_options)
