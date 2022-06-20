@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2022-06-20
+
+* Fix an issue with Rails 7.0. Thanks @0xDing and @aviemet!
+* Drop support for Rails 5.0 (and mentally, though not literally drop support for Rails < 6)
+
 ## [1.12.1] - 2022-05-09
 
 * Allow inertia to take over after initial pageload when using ssr. Thanks @99monkey!
