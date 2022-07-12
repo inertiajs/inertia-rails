@@ -6,4 +6,8 @@ class InertiaMultithreadedShareController < ApplicationController
     sleep 1
     render inertia: 'ShareTestComponent'
   end
+
+  def share_multithreaded_error
+    raise Exception
+  end
 end
