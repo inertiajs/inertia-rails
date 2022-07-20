@@ -43,7 +43,10 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
     let(:errors) { 'rearview mirror is present' }
     before {
       allow_any_instance_of(ActionDispatch::Request).to receive(:session) {
-        { inertia_errors: errors }
+        spy(ActionDispatch::Request::Session).tap do |spy|
+          allow(spy).to receive(:[])
+          allow(spy).to receive(:[]).with(:inertia_errors).and_return(errors)
+        end
       }
       get share_path, headers: {'X-Inertia' => true}
     }
@@ -84,6 +87,16 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
       # Make sure that both threads finish before the block returns
       thread1.join
       thread2.join
+    end
+
+    it 'is expected not to leak shared data across requests' do
+      begin
+        get share_multithreaded_error_path, headers: {'X-Inertia' => true}
+      rescue Exception
+      end
+
+      expect(InertiaRails.shared_plain_data).to be_empty
+      expect(InertiaRails.shared_blocks).to be_empty
     end
   end
 end

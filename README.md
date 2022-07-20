@@ -20,7 +20,7 @@ Rails 7 specific frontend docs coming soon. For now, check out the official Iner
 
 ### Responses
 
-Render Inertia responses is simple, just use the inertia renderer in your controller methods. The renderer excepts two arguments, the first is the name of the component you want to render from within your pages directory (without extension). The second argument is an options hash where you can provide `props` to your components. This options hash also allows you to pass `view_data` to your layout, but this is much less common.
+Render Inertia responses is simple, just use the inertia renderer in your controller methods. The renderer accepts two arguments, the first is the name of the component you want to render from within your pages directory (without extension). The second argument is an options hash where you can provide `props` to your components. This options hash also allows you to pass `view_data` to your layout, but this is much less common.
 
 ```ruby
 def index
