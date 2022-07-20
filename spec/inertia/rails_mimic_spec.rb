@@ -6,7 +6,15 @@ RSpec.describe 'rendering when mimicking rails behavior', type: :request, inerti
     it 'has the props' do
       get instance_props_test_path
 
-      expect_inertia.to include_props({'name' => 'Brandon', 'sport' => 'hockey'})
+      expect_inertia.to have_exact_props({'name' => 'Brandon', 'sport' => 'hockey'})
+    end
+  end
+
+  context 'props are explicitly provided' do
+    it 'only includes the provided props' do
+      get provided_props_test_path
+
+      expect_inertia.to have_exact_props({'sport': 'basketball'})
     end
   end
 

@@ -31,6 +31,7 @@ Rails.application.routes.draw do
   get 'default_render_test' => 'inertia_rails_mimic#default_render_test'
   get 'default_component_test' => 'inertia_rails_mimic#default_component_test'
   get 'default_component_shortcut_test' => 'inertia_rails_mimic#default_component_shortcut_test'
+  get 'provided_props_test' => 'inertia_rails_mimic#provided_props_test'
 
   inertia 'inertia_route' => 'TestComponent'
 end

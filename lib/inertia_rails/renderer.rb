@@ -12,7 +12,7 @@ module InertiaRails
       @request = request
       @response = response
       @render_method = render_method
-      @props = props || {}
+      @props = props || controller.inertia_view_assigns
       @view_data = view_data || {}
     end
 
@@ -38,7 +38,7 @@ module InertiaRails
     end
 
     def props
-      _props = ::InertiaRails.shared_data(@controller).merge(controller_instance_variables).merge(@props).select do |key, prop|
+      _props = ::InertiaRails.shared_data(@controller).merge(@props).select do |key, prop|
         if rendering_partial_component?
           key.in? partial_keys
         else
@@ -56,10 +56,6 @@ module InertiaRails
         url: @request.original_fullpath,
         version: ::InertiaRails.version,
       }
-    end
-
-    def controller_instance_variables
-      @controller.view_assigns.except('rendered_format', 'marked_for_same_origin_verification')
     end
 
     def deep_transform_values(hash, proc)

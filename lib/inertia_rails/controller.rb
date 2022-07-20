@@ -20,6 +20,18 @@ module InertiaRails
           InertiaRails.share_block(block) if block
         end
       end
+
+      def inertia_instance_props
+        @inertia_instance_props = true
+        @inertia_exclude_props = view_assigns.keys
+      end
+
+      def use_inertia_instance_props
+        before_action do
+          @_inertia_instance_props = true
+          @_inertia_skip_props = view_assigns.keys + ['_inertia_skip_props']
+        end
+      end
     end
 
     def render_inertia(component = nil)
@@ -46,6 +58,11 @@ module InertiaRails
         allow_other_host: allow_other_host,
         **options,
       )
+    end
+
+    def inertia_view_assigns
+      return {} unless @_inertia_instance_props
+      view_assigns.except(*@_inertia_skip_props)
     end
 
     private
