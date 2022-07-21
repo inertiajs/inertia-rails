@@ -21,11 +21,6 @@ module InertiaRails
         end
       end
 
-      def inertia_instance_props
-        @inertia_instance_props = true
-        @inertia_exclude_props = view_assigns.keys
-      end
-
       def use_inertia_instance_props
         before_action do
           @_inertia_instance_props = true
