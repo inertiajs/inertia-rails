@@ -22,11 +22,7 @@ class InertiaRailsMimicController < ApplicationController
   end
 
   def default_component_test
-    render inertia: nil
-  end
-
-  def default_component_shortcut_test
-    render_inertia
+    render inertia: true
   end
 
   def enable_inertia_default

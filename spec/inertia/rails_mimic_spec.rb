@@ -24,12 +24,6 @@ RSpec.describe 'rendering when mimicking rails behavior', type: :request, inerti
 
       expect_inertia.to render_component('inertia_rails_mimic/default_component_test')
     end
-
-    it 'works with a neat shortcut' do
-      get default_component_shortcut_test_path
-
-      expect_inertia.to render_component('inertia_rails_mimic/default_component_shortcut_test')
-    end
   end
 
   context 'no render is done at all and default_render is enabled' do

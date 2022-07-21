@@ -6,8 +6,8 @@ module InertiaRails
   class Renderer
     attr_reader :component, :view_data
 
-    def initialize(component = nil, controller, request, response, render_method, props:, view_data:)
-      @component = component || "#{controller.controller_path}/#{controller.action_name}"
+    def initialize(component, controller, request, response, render_method, props:, view_data:)
+      @component = component.is_a?(TrueClass) ? "#{controller.controller_path}/#{controller.action_name}" : component
       @controller = controller
       @request = request
       @response = response

@@ -34,13 +34,9 @@ module InertiaRails
       end
     end
 
-    def render_inertia(component = nil)
-      render(inertia: component)
-    end
-
     def default_render
       if InertiaRails.default_render?
-        render_inertia
+        render(inertia: true)
       else
         super
       end
