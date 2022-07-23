@@ -38,7 +38,7 @@ RSpec.describe InertiaRails::RSpec, type: :request do
       before { get view_data_path }
 
       it 'has view data' do
-        expect_inertia.to have_exact_view_data({name: 'Brian', sport: 'basketball'})
+        expect_inertia.to have_exact_view_data({name: 'Brian', sport: 'basketball', ssr_html: nil})
       end
 
       it 'includes view data' do

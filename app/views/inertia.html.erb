@@ -1,1 +1,1 @@
-<div id="app" data-page="<%= page.to_json %>"></div>
+<div <% if ssr_html %> data-server-rendered="true" <% end %>id="app" data-page="<%= page.to_json %>"><%= ssr_html %></div>

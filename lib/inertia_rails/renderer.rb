@@ -22,8 +22,8 @@ module InertiaRails
         @response.set_header('X-Inertia', 'true')
         @render_method.call json: page, status: @response.status, content_type: Mime[:json]
       else
-        return render_ssr if ::InertiaRails.ssr_enabled? rescue nil
-        @render_method.call template: 'inertia', layout: ::InertiaRails.layout, locals: (view_data).merge({page: page})
+        ssr_html = render_ssr if ::InertiaRails.ssr_enabled? rescue nil
+        @render_method.call template: 'inertia', layout: ::InertiaRails.layout, locals: view_data.merge({ssr_html: ssr_html, page: page})
       end
     end
 
@@ -34,7 +34,7 @@ module InertiaRails
       res = JSON.parse(Net::HTTP.post(uri, page.to_json, 'Content-Type' => 'application/json').body)
       
       ::InertiaRails.html_headers = res['head']
-      @render_method.call html: res['body'].html_safe, layout: ::InertiaRails.layout, locals: (view_data).merge({page: page})
+      return res['body'].html_safe
     end
 
     def props

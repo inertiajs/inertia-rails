@@ -15,7 +15,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       before { get view_data_path }
 
       it { is_expected.to include inertia_div(page) }
-      it { is_expected.to include({name: 'Brian', sport: 'basketball'}.to_json) }
+      it { is_expected.to include({name: 'Brian', sport: 'basketball', ssr_html: nil}.to_json) }
     end
 
     context 'with no data' do
