@@ -40,6 +40,9 @@ module InertiaRails
 
     def inertia_layout
       layout = ::InertiaRails.layout
+
+      # When the global configuration is not set, let Rails decide which layout
+      # should be used based on the controller configuration.
       layout.nil? ? true : layout
     end
 
