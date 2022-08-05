@@ -1,5 +1,11 @@
 class InertiaTestController < ApplicationController
+  layout 'conditional', only: [:with_different_layout]
+
   def empty_test
+    render inertia: 'EmptyTestComponent'
+  end
+
+  def with_different_layout
     render inertia: 'EmptyTestComponent'
   end
 

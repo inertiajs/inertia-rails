@@ -38,6 +38,11 @@ module InertiaRails
 
     private
 
+    def inertia_layout
+      layout = ::InertiaRails.layout
+      layout.nil? ? true : layout
+    end
+
     def inertia_location(url)
       headers['X-Inertia-Location'] = url
       head :conflict

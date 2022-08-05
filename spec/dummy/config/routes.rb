@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get 'share' => 'inertia_share_test#share'
   get 'share_with_inherited' => 'inertia_child_share_test#share_with_inherited'
   get 'empty_test' => 'inertia_test#empty_test'
+  get 'with_different_layout' => 'inertia_test#with_different_layout'
   get 'redirect_test' => 'inertia_test#redirect_test'
   get 'inertia_request_test' => 'inertia_test#inertia_request_test'
   get 'inertia_partial_request_test' => 'inertia_test#inertia_partial_request_test'

@@ -98,6 +98,27 @@ RSpec.describe 'Inertia configuration', type: :request do
         it { is_expected.to render_template 'testing' }
         it { is_expected.not_to render_template 'application' }
       end
+
+      context 'opting out of a different layout for Inertia' do
+        before do
+          InertiaRails.configure {|c| c.layout = nil }
+        end
+
+        it 'uses default layout for controller' do
+          get empty_test_path
+          is_expected.to render_template 'inertia'
+          is_expected.to render_template 'application'
+          is_expected.not_to render_template 'testing'
+        end
+
+        it 'applies conditional layouts as needed' do
+          get with_different_layout_path
+          is_expected.to render_template 'inertia'
+          is_expected.to render_template 'conditional'
+          is_expected.not_to render_template 'application'
+          is_expected.not_to render_template 'testing'
+        end
+      end
     end
   end
 end
