@@ -34,4 +34,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "sqlite3"
   spec.add_development_dependency "appraisal"
   spec.add_development_dependency "responders"
+  spec.add_development_dependency "debug"
 end

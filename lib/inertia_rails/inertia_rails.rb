@@ -62,7 +62,7 @@ module InertiaRails
   private
 
   module Configuration
-    mattr_accessor(:layout) { 'application' }
+    mattr_accessor(:layout) { nil }
     mattr_accessor(:version) { nil }
     mattr_accessor(:ssr_enabled) { false }
     mattr_accessor(:ssr_url) { 'http://localhost:13714' }

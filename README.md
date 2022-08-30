@@ -73,9 +73,6 @@ InertiaRails.configure do |config|
   # set the current version for automatic asset refreshing. A string value should be used if any.
   config.version = nil
   
-  # set the layout you want inertia components to be rendered within. This layout must include any required inertia javascript.
-  config.layout = 'application'
-
   # ssr specific options
   config.ssr_enabled = false
   config.ssr_url = 'http://localhost:13714'

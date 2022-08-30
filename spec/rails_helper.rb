@@ -3,6 +3,8 @@ ENV['RAILS_ENV'] ||= 'test'
 
 require File.expand_path('../dummy/config/environment', __FILE__)
 
+# Allow using `debugger` to debug failing tests.
+require 'debug'
 
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
