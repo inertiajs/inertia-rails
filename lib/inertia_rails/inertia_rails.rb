@@ -32,6 +32,10 @@ module InertiaRails
     Configuration.ssr_url
   end
 
+  def self.default_render?
+    Configuration.default_render
+  end 
+
   def self.html_headers
     self.threadsafe_html_headers || []
   end
@@ -66,6 +70,7 @@ module InertiaRails
     mattr_accessor(:version) { nil }
     mattr_accessor(:ssr_enabled) { false }
     mattr_accessor(:ssr_url) { 'http://localhost:13714' }
+    mattr_accessor(:default_render) { false }
 
     def self.evaluated_version
       self.version.respond_to?(:call) ? self.version.call : self.version

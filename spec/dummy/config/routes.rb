@@ -28,5 +28,10 @@ Rails.application.routes.draw do
   get 'lazy_props' => 'inertia_render_test#lazy_props'
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
 
+  get 'instance_props_test' => 'inertia_rails_mimic#instance_props_test'
+  get 'default_render_test' => 'inertia_rails_mimic#default_render_test'
+  get 'default_component_test' => 'inertia_rails_mimic#default_component_test'
+  get 'provided_props_test' => 'inertia_rails_mimic#provided_props_test'
+
   inertia 'inertia_route' => 'TestComponent'
 end

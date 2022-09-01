@@ -7,12 +7,12 @@ module InertiaRails
     attr_reader :component, :view_data
 
     def initialize(component, controller, request, response, render_method, props:, view_data:)
-      @component = component
+      @component = component.is_a?(TrueClass) ? "#{controller.controller_path}/#{controller.action_name}" : component
       @controller = controller
       @request = request
       @response = response
       @render_method = render_method
-      @props = props || {}
+      @props = props || controller.inertia_view_assigns
       @view_data = view_data || {}
     end
 
