@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2022-09-22
+
+* Allow rails layout to set inertia layout. Thanks @ElMassimo!
+* Add the ability to set inertia props and components via rails conventions (see readme)
+
 ## [2.0.1] - 2022-07-12
 
 * Fix for a middleware issue where global state could be polluted if an exception occurs in a request. Thanks @ElMassimo!

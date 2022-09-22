@@ -14,7 +14,7 @@ gem 'inertia_rails'
 
 ### Frontend
 
-Rails 7 specific frontend docs coming soon. For now, check out the official Inertia docs at https://inertiajs.com/
+Rails 7 specific frontend docs coming soon. For now, check out the official Inertia docs at https://inertiajs.com/ or see an example using React/Vite [here](https://github.com/BrandonShar/inertia-rails-template)
 
 ## Usage
 
@@ -29,6 +29,53 @@ def index
   }
 end
 ```
+
+#### Rails Component and Instance Props 
+
+Starting in version 3.0, Inertia Rails allows you to provide your component name and props via common rails conventions. 
+
+```ruby
+class EventsController < ApplicationController
+  use_inertia_instance_props
+
+  def index
+    @events = Event.all
+  end
+
+end
+```
+
+is the same as 
+
+
+```ruby
+class EventsController < ApplicationController
+  def index
+    render inertia: 'events/index', props: {
+      events: Event.all
+    }
+  end
+end
+```
+
+#### Instance Props and Default Render Notes 
+
+In order to use instance props, you must call `use_inertia_instance_props` on the controller (or a base controller it inherits from). If any props are provided manually, instance props
+are automatically disabled for that response. Instance props are only included if they are defined after the before filter is set from `use_inertia_instance_props`.
+
+Automatic component name is also opt in, you must set the `default_render` config value to `true`. Otherwise, you can simply `render inertia: true` for the same behavior explicitly. 
+
+### Layout 
+
+Inertia layouts use the rails layout convention and can be set or changed in the same way. The original `layout` config option is still functional, but will likely be deprecated in the future in favor
+of using rails layouts.
+
+```ruby
+class EventsController < ApplicationController
+  layout 'inertia_application'
+end
+```
+
 
 ### Shared Data
 
@@ -54,6 +101,14 @@ class EventsController < ApplicationController
 end
 ```
 
+### Lazy Props
+
+On the front end, Inertia supports the concept of "partial reloads" where only the props requested are returned by the server. Sometimes, you may want to use this flow to avoid processing a particularly slow prop on the intial load. In this case, you can use Lazy props. Lazy props aren't evaluated unless they're specifically requested by name in a partial reload.
+
+```ruby
+  inertia_share some_data: InertiaRails.lazy(lambda { some_very_slow_method })
+```
+
 ### Routing
 
 If you don't need a controller to handle a static component, you can route directly to a component with the inertia route helper
@@ -61,6 +116,10 @@ If you don't need a controller to handle a static component, you can route direc
 ```ruby
 inertia 'about' => 'AboutComponent'
 ```
+
+### SSR
+
+Enable SSR via the config settings for `ssr_enabled` and `ssr_url`
 
 ## Configuration
 
@@ -72,6 +131,8 @@ InertiaRails.configure do |config|
   
   # set the current version for automatic asset refreshing. A string value should be used if any.
   config.version = nil
+  # enable default inertia rendering (warning! this will override rails default rendering behavior)
+  config.default_render = true
   
   # ssr specific options
   config.ssr_enabled = false
