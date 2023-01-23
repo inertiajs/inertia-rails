@@ -119,7 +119,9 @@ inertia 'about' => 'AboutComponent'
 
 ### SSR
 
-Enable SSR via the config settings for `ssr_enabled` and `ssr_url`
+Enable SSR via the config settings for `ssr_enabled` and `ssr_url`.
+
+When using SSR, don't forget to add `<%= inertia_headers %>` to the `<head>` of your `application.html.erb`.
 
 ## Configuration
 
