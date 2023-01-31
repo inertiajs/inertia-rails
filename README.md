@@ -79,7 +79,7 @@ end
 
 ### Shared Data
 
-If you have data that you want to be provided as a prop to every component (a common use-case is informationa about the authenticated user) you can use the `shared_data` controller method.
+If you have data that you want to be provided as a prop to every component (a common use-case is information about the authenticated user) you can use the `shared_data` controller method.
 
 ```ruby
 class EventsController < ApplicationController
