@@ -12,6 +12,7 @@ module InertiaRails
     def install
       exit! unless installable?
 
+      @vite_source_code_dir = vite_source_code_dir if @vite_installed?
       install_base!
 
       send "install_#{options[:front_end]}!"
@@ -22,8 +23,9 @@ module InertiaRails
     protected
 
     def installable?
-      unless run("./bin/rails webpacker:verify_install")
-        say "Sorry, you need to have webpacker installed for inertia_rails default setup.", :red
+      @vite_installed? = run("./bin/rails vite:verify_install")
+      unless @vite_installed? || run("./bin/rails webpacker:verify_install")
+        say "Sorry, you need to have vite or webpacker installed for inertia_rails default setup.", :red
         return false
       end
 
@@ -40,8 +42,14 @@ module InertiaRails
 
     def install_base!
       say "Adding inertia pack tag to application layout", :blue
-      insert_into_file Rails.root.join("app/views/layouts/application.html.erb").to_s, after: "<%= javascript_pack_tag 'application' %>\n" do
-        "\t\t<%= javascript_pack_tag 'inertia' %>\n"
+      if @vite_installed?
+        insert_into_file Rails.root.join("app/views/layouts/application.html.erb").to_s, after: "<%= vite_javascript_tag 'application' %>\n" do
+          "\t\t<%= vite_javascript_tag 'inertia' %>\n"
+        end
+      else
+        insert_into_file Rails.root.join("app/views/layouts/application.html.erb").to_s, after: "<%= javascript_pack_tag 'application' %>\n" do
+          "\t\t<%= javascript_pack_tag 'inertia' %>\n"
+        end
       end
 
       say "Installing inertia client packages", :blue
@@ -57,28 +65,44 @@ module InertiaRails
     def install_react!
       say "Creating a React page component...", :blue
       run 'yarn add @inertiajs/inertia-react'
-      template "react/InertiaExample.jsx", Rails.root.join("app/javascript/Pages/InertiaExample.js").to_s
-      say "Copying inertia.jsx into webpacker's packs folder...", :blue
-      template "react/inertia.jsx", Rails.root.join("app/javascript/packs/inertia.jsx").to_s
+      template "react/InertiaExample.jsx", Rails.root.join("#{ source_code_path }Pages/InertiaExample.js").to_s
+      say "Copying inertia.jsx into #{ @vite_installed ? "vite's entrypoints folder" : "webpacker's packs folder" }...", :blue
+      template "react/inertia.jsx", Rails.root.join("#{ packs_path }inertia.jsx").to_s
       say "done!", :green
     end
 
     def install_vue!
       say "Creating a Vue page component...", :blue
       run 'yarn add @inertiajs/inertia-vue'
-      template "vue/InertiaExample.vue", Rails.root.join("app/javascript/Pages/InertiaExample.vue").to_s
-      say "Copying inertia.js into webpacker's packs folder...", :blue
-      template "vue/inertia.js", Rails.root.join("app/javascript/packs/inertia.js").to_s
+      template "vue/InertiaExample.vue", Rails.root.join("#{ source_code_path }Pages/InertiaExample.vue").to_s
+      say "Copying inertia.js into #{ @vite_installed ? "vite's entrypoints folder" : "webpacker's packs folder" }...", :blue
+      template "vue/inertia.js", Rails.root.join("#{ packs_path }inertia.js").to_s
       say "done!", :green
     end
 
     def install_svelte!
       say "Creating a Svelte page component...", :blue
       run 'yarn add @inertiajs/inertia-svelte'
-      template "svelte/InertiaExample.svelte", Rails.root.join("app/javascript/Pages/InertiaExample.svelte").to_s
-      say "Copying inertia.js into webpacker's packs folder...", :blue
-      template "svelte/inertia.js", Rails.root.join("app/javascript/packs/inertia.js").to_s
+      template "svelte/InertiaExample.svelte", Rails.root.join("#{source_code_path}Pages/InertiaExample.svelte").to_s
+      say "Copying inertia.js into #{ @vite_installed ? "vite's entrypoints folder" : "webpacker's packs folder" }...", :blue
+      template "svelte/inertia.js", Rails.root.join("#{packs_path}inertia.js").to_s
       say "done!", :green
+    end
+
+    def vite_source_code_dir
+      vite_config = JSON.parse(File.read("config/vite.json"))
+      source_code_dir = vite_config["all"]["sourceCodeDir"]
+      source_code_dir = "#{source_code_dir}/" unless source_code_dir.last == "/"
+
+      source_code_dir
+    end
+
+    def source_code_path
+      @vite_installed? ? @vite_source_code_dir : "app/javascript/"
+    end
+
+    def packs_path
+      @vite_installed? ? "#{ @vite_source_code_dir }entrypoints/" : "app/javascript/packs/"
     end
   end
 end
