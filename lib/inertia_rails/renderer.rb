@@ -6,7 +6,7 @@ module InertiaRails
   class Renderer
     attr_reader :component, :view_data
 
-    def initialize(component, controller, request, response, render_method, props:, view_data:, deep_merge:)
+    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil)
       @component = component.is_a?(TrueClass) ? "#{controller.controller_path}/#{controller.action_name}" : component
       @controller = controller
       @request = request
