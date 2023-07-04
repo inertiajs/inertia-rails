@@ -101,6 +101,67 @@ class EventsController < ApplicationController
 end
 ```
 
+#### Deep Merging Shared Data
+
+By default, Inertia will shallow merge data defined in an action with the shared data. You might want a deep merge. Imagine using shared data to represent defaults you'll override sometimes.
+
+```ruby
+class ApplicationController
+  inertia_share do
+    { basketball_data: { points: 50, rebounds: 100 } }
+  end
+end
+```
+
+Let's say we want a particular action to change only part of that data structure. The renderer accepts a `deep_merge` option:
+
+```ruby
+class CrazyScorersController < ApplicationController
+  def index
+    render inertia: 'CrazyScorersComponent',
+    props: { basketball_data: { points: 100 } },
+    deep_merge: true
+  end
+end
+
+# The renderer will send this to the frontend:
+{
+  basketball_data: {
+    points: 100,
+    rebounds: 100,
+  }
+}
+```
+
+Deep merging can be set as the project wide default via the InertiaRails configuration:
+
+```ruby
+# config/initializers/some_initializer.rb
+InertiaRails.configure do |config|
+  config.deep_merge_shared_data = true
+end
+
+```
+
+If deep merging is enabled by default, it's possible to opt out within the action:
+
+```ruby
+class CrazyScorersController < ApplicationController
+  def index
+    render inertia: 'CrazyScorersComponent',
+    props: { basketball_data: { points: 100 } },
+    deep_merge: false
+  end
+end
+
+# Even if deep merging is set by default, since the renderer has `deep_merge: false`, it will send a shallow merge to the frontend:
+{
+  basketball_data: {
+    points: 100,
+  }
+}
+```
+
 ### Lazy Props
 
 On the front end, Inertia supports the concept of "partial reloads" where only the props requested are returned by the server. Sometimes, you may want to use this flow to avoid processing a particularly slow prop on the intial load. In this case, you can use Lazy props. Lazy props aren't evaluated unless they're specifically requested by name in a partial reload.
@@ -139,6 +200,8 @@ InertiaRails.configure do |config|
   # ssr specific options
   config.ssr_enabled = false
   config.ssr_url = 'http://localhost:13714'
+
+  config.deep_merge_shared_data = false
   
 end
 ```
