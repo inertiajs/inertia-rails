@@ -42,7 +42,7 @@ module InertiaRails
       @controller.send(:inertia_layout)
     end
 
-    def props
+    def computed_props
       _props = ::InertiaRails.shared_data(@controller).send(prop_merge_method, @props).select do |key, prop|
         if rendering_partial_component?
           key.in? partial_keys
@@ -57,7 +57,7 @@ module InertiaRails
     def page
       {
         component: component,
-        props: props,
+        props: computed_props,
         url: @request.original_fullpath,
         version: ::InertiaRails.version,
       }
