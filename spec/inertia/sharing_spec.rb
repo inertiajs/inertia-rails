@@ -1,5 +1,5 @@
 RSpec.describe 'using inertia share when rendering views', type: :request do
-  subject { JSON.parse(response.body)['props'].symbolize_keys }
+  subject { JSON.parse(response.body)['props'].deep_symbolize_keys }
 
   context 'using inertia share' do
     let(:props) { {name: 'Brandon', sport: 'hockey', position: 'center', number: 29} }
@@ -98,5 +98,11 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
       expect(InertiaRails.shared_plain_data).to be_empty
       expect(InertiaRails.shared_blocks).to be_empty
     end
+  end
+
+  describe 'deep merging with shared data' do
+    let(:props) { { nested: { goals: 100, assists: 200 } } }
+    before { get merge_shared_path, headers: {'X-Inertia' => true} }
+    it { is_expected.to eq props }
   end
 end

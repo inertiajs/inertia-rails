@@ -34,4 +34,6 @@ Rails.application.routes.draw do
   get 'provided_props_test' => 'inertia_rails_mimic#provided_props_test'
 
   inertia 'inertia_route' => 'TestComponent'
+
+  get 'merge_shared' => 'inertia_merge_shared#merge_shared'
 end
