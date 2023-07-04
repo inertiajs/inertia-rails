@@ -100,12 +100,6 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
     end
   end
 
-  # Tests:
-  # 1. By default, merging is shallow
-  # 2. You can concifgure InertiaRails to deep merge by default
-  # 3. You can override shallow merging in a specific action
-  # 4. You can override deep merging in a specific action
-  # 5. Make sure that the shorthand @thing-goes-to-props works
   describe 'deep or shallow merging shared data' do
     context 'with default settings (shallow merge)' do
       describe 'shallow merging by default' do
