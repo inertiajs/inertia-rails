@@ -15,6 +15,7 @@ ActionController::Renderers.add :inertia do |component, options|
     method(:render),
     props: options[:props],
     view_data: options[:view_data],
+    deep_merge: options[:deep_merge],
   ).render
 end
 

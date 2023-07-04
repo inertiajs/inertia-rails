@@ -100,9 +100,51 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
     end
   end
 
-  describe 'deep merging with shared data' do
-    let(:props) { { nested: { goals: 100, assists: 200 } } }
-    before { get merge_shared_path, headers: {'X-Inertia' => true} }
-    it { is_expected.to eq props }
+  # Tests:
+  # 1. By default, merging is shallow
+  # 2. You can concifgure InertiaRails to deep merge by default
+  # 3. You can override shallow merging in a specific action
+  # 4. You can override deep merging in a specific action
+  # 5. Make sure that the shorthand @thing-goes-to-props works
+  describe 'deep or shallow merging shared data' do
+    context 'with default settings (shallow merge)' do
+      describe 'shallow merging by default' do
+        let(:props) { { nested: { assists: 200 } } }
+        before { get merge_shared_path, headers: {'X-Inertia' => true} }
+        it { is_expected.to eq props }
+      end
+
+      context 'with deep merge added to the renderer' do
+        let(:props) { { nested: { goals: 100, assists: 300 } } }
+        before { get deep_merge_shared_path, headers: {'X-Inertia' => true} }
+        it { is_expected.to eq props }
+      end
+    end
+
+    context 'with deep merge configured as the default' do
+      before {
+        InertiaRails.configure { |config| config.deep_merge_shared_data = true }
+      }
+      after {
+        InertiaRails.configure { |config| config.deep_merge_shared_data = false }
+      }
+      describe 'deep merging by default' do
+        let(:props) { { nested: { goals: 100, assists: 200 } } }
+        before { get merge_shared_path, headers: {'X-Inertia' => true} }
+        it { is_expected.to eq props }
+      end
+
+      describe 'overriding deep merge in a specific action' do
+        let(:props) { { nested: { assists: 200 } } }
+        before { get shallow_merge_shared_path, headers: {'X-Inertia' => true} }
+        it { is_expected.to eq props }
+      end
+    end
+
+    context 'merging with instance props' do
+      let(:props) { { nested: { points: 100, rebounds: 10 } } }
+      before { get merge_instance_props_path, headers: {'X-Inertia' => true} }
+      it { is_expected.to eq props }
+    end
   end
 end

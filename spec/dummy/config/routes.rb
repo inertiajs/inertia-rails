@@ -36,4 +36,7 @@ Rails.application.routes.draw do
   inertia 'inertia_route' => 'TestComponent'
 
   get 'merge_shared' => 'inertia_merge_shared#merge_shared'
+  get 'deep_merge_shared' => 'inertia_merge_shared#deep_merge_shared'
+  get 'shallow_merge_shared' => 'inertia_merge_shared#shallow_merge_shared'
+  get 'merge_instance_props' => 'inertia_merge_instance_props#merge_instance_props'
 end
