@@ -147,6 +147,15 @@ If deep merging is enabled by default, it's possible to opt out within the actio
 
 ```ruby
 class CrazyScorersController < ApplicationController
+  inertia_share do
+    {
+      basketball_data: {
+        points: 50,
+        rebounds: 10,
+      }
+    }
+  end
+
   def index
     render inertia: 'CrazyScorersComponent',
     props: { basketball_data: { points: 100 } },
