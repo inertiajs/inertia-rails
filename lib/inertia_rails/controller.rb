@@ -11,6 +11,10 @@ module InertiaRails
         InertiaRails.share(errors: session[:inertia_errors]) if session[:inertia_errors].present?
       end
       helper ::InertiaRails::Helper
+
+      after_action do
+        cookies['XSRF-TOKEN'] = form_authenticity_token unless request.inertia? || !protect_against_forgery?
+      end
     end
 
     module ClassMethods
