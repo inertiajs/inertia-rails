@@ -13,7 +13,9 @@ module InertiaRails
 
   # "Getters"
   def self.shared_data(controller)
-    shared_plain_data.merge!(evaluated_blocks(controller, shared_blocks))
+    shared_plain_data.
+      merge!(evaluated_blocks(controller, shared_blocks)).
+      with_indifferent_access
   end
 
   def self.version
@@ -38,6 +40,10 @@ module InertiaRails
 
   def self.html_headers
     self.threadsafe_html_headers || []
+  end
+
+  def self.deep_merge_shared_data?
+    Configuration.deep_merge_shared_data
   end
 
   # "Setters"
@@ -71,6 +77,7 @@ module InertiaRails
     mattr_accessor(:ssr_enabled) { false }
     mattr_accessor(:ssr_url) { 'http://localhost:13714' }
     mattr_accessor(:default_render) { false }
+    mattr_accessor(:deep_merge_shared_data) { false }
 
     def self.evaluated_version
       self.version.respond_to?(:call) ? self.version.call : self.version

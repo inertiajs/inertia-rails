@@ -6,14 +6,15 @@ module InertiaRails
   class Renderer
     attr_reader :component, :view_data
 
-    def initialize(component, controller, request, response, render_method, props:, view_data:)
+    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil)
       @component = component.is_a?(TrueClass) ? "#{controller.controller_path}/#{controller.action_name}" : component
       @controller = controller
       @request = request
       @response = response
       @render_method = render_method
-      @props = props || controller.inertia_view_assigns
+      @props = props ? props.with_indifferent_access : controller.inertia_view_assigns.with_indifferent_access
       @view_data = view_data || {}
+      @deep_merge = !deep_merge.nil? ? deep_merge : InertiaRails.deep_merge_shared_data?
     end
 
     def render
@@ -41,8 +42,8 @@ module InertiaRails
       @controller.send(:inertia_layout)
     end
 
-    def props
-      _props = ::InertiaRails.shared_data(@controller).merge(@props).select do |key, prop|
+    def computed_props
+      _props = ::InertiaRails.shared_data(@controller).send(prop_merge_method, @props).select do |key, prop|
         if rendering_partial_component?
           key.in? partial_keys
         else
@@ -50,13 +51,13 @@ module InertiaRails
         end
       end
 
-      deep_transform_values(_props, lambda {|prop| prop.respond_to?(:call) ? @controller.instance_exec(&prop) : prop })
+      deep_transform_values(_props, lambda {|prop| prop.respond_to?(:call) ? @controller.instance_exec(&prop) : prop }).with_indifferent_access
     end
 
     def page
       {
         component: component,
-        props: props,
+        props: computed_props,
         url: @request.original_fullpath,
         version: ::InertiaRails.version,
       }
@@ -74,6 +75,10 @@ module InertiaRails
 
     def rendering_partial_component?
       @request.inertia_partial? && @request.headers['X-Inertia-Partial-Component'] == component
+    end
+
+    def prop_merge_method
+      @deep_merge ? :deep_merge : :merge
     end
   end
 end

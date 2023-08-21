@@ -1,5 +1,5 @@
 RSpec.describe 'using inertia share when rendering views', type: :request do
-  subject { JSON.parse(response.body)['props'].symbolize_keys }
+  subject { JSON.parse(response.body)['props'].deep_symbolize_keys }
 
   context 'using inertia share' do
     let(:props) { {name: 'Brandon', sport: 'hockey', position: 'center', number: 29} }
@@ -97,6 +97,48 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
 
       expect(InertiaRails.shared_plain_data).to be_empty
       expect(InertiaRails.shared_blocks).to be_empty
+    end
+  end
+
+  describe 'deep or shallow merging shared data' do
+    context 'with default settings (shallow merge)' do
+      describe 'shallow merging by default' do
+        let(:props) { { nested: { assists: 200 } } }
+        before { get merge_shared_path, headers: {'X-Inertia' => true} }
+        it { is_expected.to eq props }
+      end
+
+      context 'with deep merge added to the renderer' do
+        let(:props) { { nested: { goals: 100, assists: 300 } } }
+        before { get deep_merge_shared_path, headers: {'X-Inertia' => true} }
+        it { is_expected.to eq props }
+      end
+    end
+
+    context 'with deep merge configured as the default' do
+      before {
+        InertiaRails.configure { |config| config.deep_merge_shared_data = true }
+      }
+      after {
+        InertiaRails.configure { |config| config.deep_merge_shared_data = false }
+      }
+      describe 'deep merging by default' do
+        let(:props) { { nested: { goals: 100, assists: 200 } } }
+        before { get merge_shared_path, headers: {'X-Inertia' => true} }
+        it { is_expected.to eq props }
+      end
+
+      describe 'overriding deep merge in a specific action' do
+        let(:props) { { nested: { assists: 200 } } }
+        before { get shallow_merge_shared_path, headers: {'X-Inertia' => true} }
+        it { is_expected.to eq props }
+      end
+    end
+
+    context 'merging with instance props' do
+      let(:props) { { nested: { points: 100, rebounds: 10 } } }
+      before { get merge_instance_props_path, headers: {'X-Inertia' => true} }
+      it { is_expected.to eq props }
     end
   end
 end
