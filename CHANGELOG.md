@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2023-08-21
+
+### Features
+
+* CSRF protection works without additional configuration now.
+* Optional deep merging of shared props.
+
+### Fixes
+
+* Document Inertia headers. @buhrmi
+* Documentation typo fix. @lujanfernaud
+* Changelog URI fix. @PedroAugustoRamalhoDuarte
+
 ## [3.0.0] - 2022-09-22
 
 * Allow rails layout to set inertia layout. Thanks @ElMassimo!
