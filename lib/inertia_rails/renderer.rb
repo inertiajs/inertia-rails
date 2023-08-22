@@ -45,7 +45,7 @@ module InertiaRails
     def computed_props
       _props = ::InertiaRails.shared_data(@controller).send(prop_merge_method, @props).select do |key, prop|
         if rendering_partial_component?
-          key.in? partial_keys
+          key.to_sym.in? partial_keys
         else
           !prop.is_a?(InertiaRails::Lazy)
         end

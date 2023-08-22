@@ -64,7 +64,7 @@ RSpec.describe 'rendering inertia views', type: :request do
 
   context 'partial rendering' do
     let (:page) {
-      InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { sport: 'hockey'}).send(:page)
+      InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { sport: 'hockey' }).send(:page)
     }
     let(:headers) {{
       'X-Inertia' => true,
@@ -76,6 +76,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       before { get props_path, headers: headers }
 
       it { is_expected.to eq page.to_json }
+      it { is_expected.to include('hockey') }
     end
 
     context 'with a non matching partial component header' do
@@ -107,13 +108,16 @@ RSpec.describe 'rendering inertia views', type: :request do
       }
       let(:headers) {{
         'X-Inertia' => true,
-        'X-Inertia-Partial-Data' => 'sport,level,grit',
+        'X-Inertia-Partial-Data' => 'sport,level',
         'X-Inertia-Partial-Component' => 'TestComponent',
       }}
 
       before { get lazy_props_path, headers: headers }
 
       it { is_expected.to eq page.to_json }
+      it { is_expected.to include('basketball') }
+      it { is_expected.to include('worse') }
+      it { is_expected.not_to include('intense') }
     end
   end
 end
