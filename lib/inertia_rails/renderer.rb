@@ -12,7 +12,7 @@ module InertiaRails
       @request = request
       @response = response
       @render_method = render_method
-      @props = props ? props.with_indifferent_access : controller.inertia_view_assigns.with_indifferent_access
+      @props = props ? props : controller.inertia_view_assigns
       @view_data = view_data || {}
       @deep_merge = !deep_merge.nil? ? deep_merge : InertiaRails.deep_merge_shared_data?
     end
@@ -43,7 +43,12 @@ module InertiaRails
     end
 
     def computed_props
-      _props = ::InertiaRails.shared_data(@controller).send(prop_merge_method, @props).select do |key, prop|
+      # Cast props to symbol keyed hash before merging so that we have a consistent data structure and
+      # avoid duplicate keys after merging.
+      #
+      # Functionally, this permits using either string or symbol keys in the controller. Since the results
+      # is cast to json, we should treat string/symbol keys as identical.
+      _props = ::InertiaRails.shared_data(@controller).deep_symbolize_keys.send(prop_merge_method, @props.deep_symbolize_keys).select do |key, prop|
         if rendering_partial_component?
           key.to_sym.in? partial_keys
         else
@@ -51,7 +56,12 @@ module InertiaRails
         end
       end
 
-      deep_transform_values(_props, lambda {|prop| prop.respond_to?(:call) ? @controller.instance_exec(&prop) : prop }).with_indifferent_access
+      deep_transform_values(
+        _props,
+        lambda do |prop|
+          prop.respond_to?(:call) ? @controller.instance_exec(&prop) : prop
+        end
+      )
     end
 
     def page

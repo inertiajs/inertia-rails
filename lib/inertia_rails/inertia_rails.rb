@@ -14,8 +14,7 @@ module InertiaRails
   # "Getters"
   def self.shared_data(controller)
     shared_plain_data.
-      merge!(evaluated_blocks(controller, shared_blocks)).
-      with_indifferent_access
+      merge!(evaluated_blocks(controller, shared_blocks))
   end
 
   def self.version

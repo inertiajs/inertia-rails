@@ -39,4 +39,6 @@ Rails.application.routes.draw do
   get 'deep_merge_shared' => 'inertia_merge_shared#deep_merge_shared'
   get 'shallow_merge_shared' => 'inertia_merge_shared#shallow_merge_shared'
   get 'merge_instance_props' => 'inertia_merge_instance_props#merge_instance_props'
+
+  get 'lamda_shared_props' => 'inertia_lambda_shared_props#lamda_shared_props'
 end
