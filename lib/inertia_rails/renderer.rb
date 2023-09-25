@@ -50,7 +50,7 @@ module InertiaRails
       # is cast to json, we should treat string/symbol keys as identical.
       _props = ::InertiaRails.shared_data(@controller).deep_symbolize_keys.send(prop_merge_method, @props.deep_symbolize_keys).select do |key, prop|
         if rendering_partial_component?
-          key.to_sym.in? partial_keys
+          key.in? partial_keys
         else
           !prop.is_a?(InertiaRails::Lazy)
         end
