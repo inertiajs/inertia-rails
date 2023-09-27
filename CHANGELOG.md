@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.2] - 2023-09-26
+
+* Fix `have_exact_props` RSpec matcher in the situation where shared props are defined in a lambda that outputs a hash with symbolized keys
+
 ## [3.1.1] - 2023-08-21
 
 * Fix broken partial reloads caused by comparing a list of symbolized keys with string keys from HashWithIndifferentAccess
