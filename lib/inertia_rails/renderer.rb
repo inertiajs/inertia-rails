@@ -32,7 +32,7 @@ module InertiaRails
       uri = URI("#{::InertiaRails.ssr_url}/render")
       res = JSON.parse(Net::HTTP.post(uri, page.to_json, 'Content-Type' => 'application/json').body)
 
-      ::InertiaRails.html_headers = res['head']
+      @controller.inertia_html_headers = res['head']
       @render_method.call html: res['body'].html_safe, layout: layout, locals: (view_data).merge({page: page})
     end
 
@@ -46,7 +46,7 @@ module InertiaRails
       #
       # Functionally, this permits using either string or symbol keys in the controller. Since the results
       # is cast to json, we should treat string/symbol keys as identical.
-      _props = @controller.shared_data.merge.deep_symbolize_keys.send(prop_merge_method, @props.deep_symbolize_keys).select do |key, prop|
+      _props = @controller.send(:shared_data).merge.deep_symbolize_keys.send(prop_merge_method, @props.deep_symbolize_keys).select do |key, prop|
         if rendering_partial_component?
           key.in? partial_keys
         else

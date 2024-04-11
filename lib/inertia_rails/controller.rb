@@ -1,5 +1,4 @@
 require_relative "inertia_rails"
-require_relative "helper"
 
 module InertiaRails
   module Controller
@@ -14,13 +13,15 @@ module InertiaRails
           {}
         end
       end
-      helper ::InertiaRails::Helper
+      helper_method :inertia_headers
 
       class_attribute :shared_plain_data
       class_attribute :shared_blocks
+      class_attribute :inertia_html_headers
 
       self.shared_plain_data = {}
       self.shared_blocks = [error_sharing]
+      self.inertia_html_headers = []
 
       after_action do
         cookies['XSRF-TOKEN'] = form_authenticity_token unless request.inertia? || !protect_against_forgery?
@@ -45,8 +46,12 @@ module InertiaRails
       end
 
       def share_block(&block)
-        self.shared_blocks = shared_blocks + [ block ]
+        self.shared_blocks = shared_blocks + [block]
       end
+    end
+
+    def inertia_headers
+      inertia_html_headers.join.html_safe
     end
 
     def default_render
