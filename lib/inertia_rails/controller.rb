@@ -1,4 +1,5 @@
 require_relative "inertia_rails"
+require_relative "helper"
 
 module InertiaRails
   module Controller
@@ -13,25 +14,30 @@ module InertiaRails
           {}
         end
       end
+      helper ::InertiaRails::Helper
 
-      if Gem::Version.new(Rails::VERSION::STRING) >= Gem::Version.new('5.2.0')
-        class_attribute :shared_plain_data, default: {}
-        class_attribute :shared_blocks, default: [error_sharing]
-      else
-        # In older Rails there is no `default` for class_attribute. This was
-        # introduced with Rails 5.2: https://github.com/rails/rails/pull/29270
-        class_attribute :shared_plain_data
-        class_attribute :shared_blocks
+      class_attribute :shared_plain_data
+      class_attribute :shared_blocks
 
-        self.shared_plain_data = {}
-        self.shared_blocks = [error_sharing]
+      self.shared_plain_data = {}
+      self.shared_blocks = [error_sharing]
+
+      after_action do
+        cookies['XSRF-TOKEN'] = form_authenticity_token unless request.inertia? || !protect_against_forgery?
       end
     end
 
-    class_methods do
+    module ClassMethods
       def inertia_share(hash = nil, &block)
         share_plain_data(hash) if hash
         share_block(&block) if block_given?
+      end
+
+      def use_inertia_instance_props
+        before_action do
+          @_inertia_instance_props = true
+          @_inertia_skip_props = view_assigns.keys + ['_inertia_skip_props']
+        end
       end
 
       def share_plain_data(hash)
@@ -40,6 +46,14 @@ module InertiaRails
 
       def share_block(&block)
         self.shared_blocks = shared_blocks + [ block ]
+      end
+    end
+
+    def default_render
+      if InertiaRails.default_render?
+        render(inertia: true)
+      else
+        super
       end
     end
 
@@ -61,7 +75,20 @@ module InertiaRails
       )
     end
 
+    def inertia_view_assigns
+      return {} unless @_inertia_instance_props
+      view_assigns.except(*@_inertia_skip_props)
+    end
+
     private
+
+    def inertia_layout
+      layout = ::InertiaRails.layout
+
+      # When the global configuration is not set, let Rails decide which layout
+      # should be used based on the controller configuration.
+      layout.nil? ? true : layout
+    end
 
     def inertia_location(url)
       headers['X-Inertia-Location'] = url
@@ -73,8 +100,6 @@ module InertiaRails
         session[:inertia_errors] = inertia_errors
       end
     end
-
-    private
 
     def evaluated_blocks
       shared_blocks.map { |block| instance_exec(&block) }.reduce(&:merge) || {}

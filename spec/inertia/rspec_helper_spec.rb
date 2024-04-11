@@ -114,4 +114,20 @@ RSpec.describe InertiaRails::RSpec, type: :request do
       end
     end
   end
+
+  describe '.have_exact_props' do
+    context 'when shared props are wrapped in a callable', inertia: true do
+      it 'compares props with either string or symbol keys' do
+        get lamda_shared_props_path
+
+        expect_inertia.to have_exact_props({
+          someProperty: {
+            property_a: "some value",
+            'property_b' => "this value",
+          },
+          property_c: "some other value"
+        })
+      end
+    end
+  end
 end

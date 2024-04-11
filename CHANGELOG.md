@@ -4,6 +4,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.3] - 2023-11-03
+
+* Depend on railties instead of rails so that applications which only use pieces of Rails can avoid a full Rails installation. Thanks @BenMorganMY!
+
+## [3.1.2] - 2023-09-26
+
+* Fix `have_exact_props` RSpec matcher in the situation where shared props are defined in a lambda that outputs a hash with symbolized keys
+
+## [3.1.1] - 2023-08-21
+
+* Fix broken partial reloads caused by comparing a list of symbolized keys with string keys from HashWithIndifferentAccess
+
+## [3.1.0] - 2023-08-21
+
+### Features
+
+* CSRF protection works without additional configuration now.
+* Optional deep merging of shared props.
+
+### Fixes
+
+* Document Inertia headers. @buhrmi
+* Documentation typo fix. @lujanfernaud
+* Changelog URI fix. @PedroAugustoRamalhoDuarte
+
+## [3.0.0] - 2022-09-22
+
+* Allow rails layout to set inertia layout. Thanks @ElMassimo!
+* Add the ability to set inertia props and components via rails conventions (see readme)
+
+## [2.0.1] - 2022-07-12
+
+* Fix for a middleware issue where global state could be polluted if an exception occurs in a request. Thanks @ElMassimo!
+
+## [2.0.0] - 2022-06-20
+
+* Fix an issue with Rails 7.0. Thanks @0xDing and @aviemet!
+* Drop support for Rails 5.0 (and mentally, though not literally drop support for Rails < 6)
+
+## [1.12.1] - 2022-05-09
+
+* Allow inertia to take over after initial pageload when using ssr. Thanks @99monkey!
+
+## [1.12.0] - 2022-05-04
+
+* SSR!
+
 ## [1.11.1] - 2021-06-27
 
 * Fixed thread safety in the middleware. Thanks @caifara!

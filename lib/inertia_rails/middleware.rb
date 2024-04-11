@@ -16,6 +16,7 @@ module InertiaRails
       end
 
       def response
+        copy_xsrf_to_csrf!
         status, headers, body = @app.call(@env)
         request = ActionDispatch::Request.new(@env)
 
@@ -86,6 +87,10 @@ module InertiaRails
       def force_refresh(request)
         request.flash.keep
         Rack::Response.new('', 409, {'X-Inertia-Location' => request.original_url}).finish
+      end
+
+      def copy_xsrf_to_csrf!
+        @env['HTTP_X_CSRF_TOKEN'] = @env['HTTP_X_XSRF_TOKEN'] if @env['HTTP_X_XSRF_TOKEN'] && inertia_request?
       end
     end
   end

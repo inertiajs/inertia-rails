@@ -74,7 +74,8 @@ end
 
 RSpec::Matchers.define :have_exact_props do |expected_props|
   match do |inertia|
-    expect(inertia.props).to eq expected_props
+  # Computed props have symbolized keys. 
+    expect(inertia.props).to eq expected_props.deep_symbolize_keys
   end
 
   failure_message do |inertia|
@@ -84,7 +85,8 @@ end
 
 RSpec::Matchers.define :include_props do |expected_props|
   match do |inertia|
-      expect(inertia.props).to include expected_props
+  # Computed props have symbolized keys. 
+    expect(inertia.props).to include expected_props.deep_symbolize_keys
   end
 
   failure_message do |inertia|

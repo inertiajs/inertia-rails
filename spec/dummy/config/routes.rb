@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   get 'error' => 'inertia_share_test#error'
   get 'share_with_inherited' => 'inertia_child_share_test#share_with_inherited'
   get 'empty_test' => 'inertia_test#empty_test'
+  get 'with_different_layout' => 'inertia_test#with_different_layout'
   get 'redirect_test' => 'inertia_test#redirect_test'
   get 'inertia_request_test' => 'inertia_test#inertia_request_test'
   get 'inertia_partial_request_test' => 'inertia_test#inertia_partial_request_test'
@@ -17,6 +18,8 @@ Rails.application.routes.draw do
   put 'redirect_test' => 'inertia_test#redirect_test'
   delete 'redirect_test' => 'inertia_test#redirect_test'
   get 'my_location' => 'inertia_test#my_location'
+  get 'share_multithreaded' => 'inertia_multithreaded_share#share_multithreaded'
+  get 'share_multithreaded_error' => 'inertia_multithreaded_share#share_multithreaded_error'
   get 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
   post 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
   post 'redirect_back_with_inertia_errors' => 'inertia_test#redirect_back_with_inertia_errors'
@@ -26,6 +29,18 @@ Rails.application.routes.draw do
   get 'lazy_props' => 'inertia_render_test#lazy_props'
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
 
+  get 'instance_props_test' => 'inertia_rails_mimic#instance_props_test'
+  get 'default_render_test' => 'inertia_rails_mimic#default_render_test'
+  get 'default_component_test' => 'inertia_rails_mimic#default_component_test'
+  get 'provided_props_test' => 'inertia_rails_mimic#provided_props_test'
+
   post 'redirect_to_share_test' => 'inertia_test#redirect_to_share_test'
   inertia 'inertia_route' => 'TestComponent'
+
+  get 'merge_shared' => 'inertia_merge_shared#merge_shared'
+  get 'deep_merge_shared' => 'inertia_merge_shared#deep_merge_shared'
+  get 'shallow_merge_shared' => 'inertia_merge_shared#shallow_merge_shared'
+  get 'merge_instance_props' => 'inertia_merge_instance_props#merge_instance_props'
+
+  get 'lamda_shared_props' => 'inertia_lambda_shared_props#lamda_shared_props'
 end

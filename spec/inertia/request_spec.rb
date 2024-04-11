@@ -96,4 +96,40 @@ RSpec.describe 'Inertia::Request', type: :request do
 
     it { is_expected.to eq 302 }
   end
+
+  describe 'CSRF' do
+    describe 'it sets the XSRF-TOKEN in the cookies' do
+      subject { response.cookies }
+      before do
+        with_forgery_protection do
+          get inertia_request_test_path, headers: headers
+        end
+      end
+
+      context 'it is not an inertia call' do
+        let(:headers) { Hash.new }
+        it { is_expected.to include('XSRF-TOKEN') }
+      end
+
+      context 'it is an inertia call' do
+        let(:headers){ { 'X-Inertia' => true } }
+        it { is_expected.not_to include('XSRF-TOKEN') }
+      end
+    end
+
+    describe 'copying an X-XSRF-Token header (like Axios sends by default) into the X-CSRF-Token header (that Rails looks for by default)' do
+      subject { request.headers['X-CSRF-Token'] }
+      before { get inertia_request_test_path, headers: headers }
+
+      context 'it is an inertia call' do
+        let(:headers) {{ 'X-Inertia' => true, 'X-XSRF-Token' => 'foo' }}
+        it { is_expected.to eq 'foo' }
+      end
+
+      context 'it is not an inertia call' do
+        let(:headers) { { 'X-XSRF-Token' => 'foo' } }
+        it { is_expected.to be_nil }
+      end
+    end
+  end
 end

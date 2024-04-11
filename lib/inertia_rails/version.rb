@@ -1,3 +1,3 @@
 module InertiaRails
-  VERSION = "1.11.1"
+  VERSION = "3.1.3"
 end
