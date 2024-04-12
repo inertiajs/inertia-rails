@@ -54,41 +54,29 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
     it { is_expected.to eq props.merge({ errors: errors }) }
   end
 
-  context 'multithreaded intertia share' do
+  context 'when multithreaded with shared data' do
     let(:props) { { name: 'Michael', has_goat_status: true } }
-    it 'is expected to render props even when another thread shares Inertia data' do
-      start_thread1 = false
-      start_thread2 = false
 
-      thread1 = Thread.new do
-        sleep 0.1 until start_thread1
+      it 'is expected to not share data from other requests' do
+        threads = []
+        threads << Thread.new do
+          # Its takes one second
+          get share_multithreaded_path, headers: {'X-Inertia' => true}
+          body = response.body.dup
+          props = JSON.parse(body)['props'].deep_symbolize_keys
+          expect(props).to eq({ name: 'Michael', has_goat_status: true })
+        end
+        threads << Thread.new do
+          # Its take half a second
+          get share_without_name_path, headers: {'X-Inertia' => true}
+          body = response.body.dup
+          props = JSON.parse(body)['props'].deep_symbolize_keys
+          expect(props).to eq({ someGroupsControllerData: true })
+        end
 
-        get share_multithreaded_path, headers: {'X-Inertia' => true}
-        expect(subject).to eq props
+
+        threads.each(&:join)
       end
-
-      thread2 = Thread.new do
-        sleep 0.1 until start_thread2
-
-        # Would prefer to make this a second get request, but RSpec will overwrite
-        # the @response variable if another request is made in the second thread.
-        # This simulates the relevant effects of another call to a different
-        # controller with different values for inertia_share
-        # TODO: Make this test work
-        # InertiaRails.reset!
-        # InertiaRails.share(name: 'Brian', has_goat_status: false)
-      end
-
-      # Thread 1 starts. The controller method runs inertia_share, then sleeps.
-      # Thread 2 then modifies the shared inertia data before Thread 1 stops sleeping
-      start_thread1 = true
-      sleep 0.5
-      start_thread2 = true
-
-      # Make sure that both threads finish before the block returns
-      thread1.join
-      thread2.join
-    end
 
     describe 'deep or shallow merging shared data' do
       context 'with default settings (shallow merge)' do
@@ -138,7 +126,7 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
       rescue Exception
       end
 
-      # TODO: Comment test
+      # TODO: How to test this? We really neeed?
       # expect(InertiaRails.shared_plain_data).to be_empty
       # expect(InertiaRails.shared_blocks).to be_empty
     end

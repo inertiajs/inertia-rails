@@ -20,6 +20,8 @@ Rails.application.routes.draw do
   get 'my_location' => 'inertia_test#my_location'
   get 'share_multithreaded' => 'inertia_multithreaded_share#share_multithreaded'
   get 'share_multithreaded_error' => 'inertia_multithreaded_share#share_multithreaded_error'
+  get 'share_without_name' => 'inertia_share#share_without_name'
+  get 'share_without_inertia' => 'inertia_share#share_without_inertia'
   get 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
   post 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
   post 'redirect_back_with_inertia_errors' => 'inertia_test#redirect_back_with_inertia_errors'
