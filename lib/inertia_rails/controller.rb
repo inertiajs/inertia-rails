@@ -5,23 +5,22 @@ module InertiaRails
     extend ActiveSupport::Concern
 
     included do
-      error_sharing = proc do
-        # :inertia_errors are deleted from the session by the middleware
-        if @_request && session[:inertia_errors].present?
-          { errors: session[:inertia_errors] }
-        else
-          {}
-        end
-      end
       helper_method :inertia_headers
 
-      class_attribute :shared_plain_data
-      class_attribute :shared_blocks
-      class_attribute :inertia_html_headers
+      before_action do
+        error_sharing = proc do
+          # :inertia_errors are deleted from the session by the middleware
+          if @_request && session[:inertia_errors].present?
+            { errors: session[:inertia_errors] }
+          else
+            {}
+          end
+        end
 
-      self.shared_plain_data = {}
-      self.shared_blocks = [error_sharing]
-      self.inertia_html_headers = []
+        @_inertia_shared_plain_data ||= {}
+        @_inertia_shared_blocks ||= [error_sharing]
+        @_inertia_html_headers ||= []
+      end
 
       after_action do
         cookies['XSRF-TOKEN'] = form_authenticity_token unless request.inertia? || !protect_against_forgery?
@@ -30,8 +29,10 @@ module InertiaRails
 
     module ClassMethods
       def inertia_share(hash = nil, &block)
-        share_plain_data(hash) if hash
-        share_block(&block) if block_given?
+        before_action do
+          @_inertia_shared_plain_data = @_inertia_shared_plain_data.merge(hash) if hash
+          @_inertia_shared_blocks = @_inertia_shared_blocks + [block] if block_given?
+        end
       end
 
       def use_inertia_instance_props
@@ -42,16 +43,16 @@ module InertiaRails
       end
 
       def share_plain_data(hash)
-        self.shared_plain_data = shared_plain_data.merge(hash)
+        @_inertia_shared_plain_data = @_inertia_shared_plain_data.merge(hash)
       end
 
       def share_block(&block)
-        self.shared_blocks = shared_blocks + [block]
+        @_inertia_shared_blocks = @_inertia_shared_blocks + [block]
       end
     end
 
     def inertia_headers
-      inertia_html_headers.join.html_safe
+      @_inertia_html_headers.join.html_safe
     end
 
     def default_render
@@ -63,7 +64,8 @@ module InertiaRails
     end
 
     def shared_data
-      shared_plain_data.merge(evaluated_blocks)
+      return {} unless @_inertia_shared_plain_data
+      @_inertia_shared_plain_data.merge(evaluated_blocks)
     end
 
     def redirect_to(options = {}, response_options = {})
@@ -107,7 +109,7 @@ module InertiaRails
     end
 
     def evaluated_blocks
-      shared_blocks.map { |block| instance_exec(&block) }.reduce(&:merge) || {}
+      @_inertia_shared_blocks&.map { |block| instance_exec(&block) }&.reduce(&:merge) || {}
     end
   end
 end
