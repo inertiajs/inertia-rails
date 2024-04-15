@@ -23,14 +23,11 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-
-      - name: Install gems
+          bundler-cache: true
         env:
-          MATRIX_RAILS_VERSION: ${{ matrix.rails }}
-        run: |
-          export BUNDLE_GEMFILE="${GITHUB_WORKSPACE}/gemfiles/rails_${MATRIX_RAILS_VERSION}.gemfile"
-          gem install bundler
-          bundle install --jobs 4 --retry 3
+          RAILS_VERSION:  ${{ matrix.rails }}
 
       - name: Run tests
         run: bundle exec rake
+        env:
+          RAILS_VERSION: ${{ matrix.rails }}
