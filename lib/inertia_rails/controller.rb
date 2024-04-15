@@ -1,4 +1,5 @@
 require_relative "inertia_rails"
+require_relative "helper"
 
 module InertiaRails
   module Controller
@@ -9,6 +10,11 @@ module InertiaRails
         # :inertia_errors are deleted from the session by the middleware
         InertiaRails.share(errors: session[:inertia_errors]) if session[:inertia_errors].present?
       end
+      helper ::InertiaRails::Helper
+
+      after_action do
+        cookies['XSRF-TOKEN'] = form_authenticity_token unless request.inertia? || !protect_against_forgery?
+      end
     end
 
     module ClassMethods
@@ -17,6 +23,21 @@ module InertiaRails
           InertiaRails.share(**args) if args
           InertiaRails.share_block(block) if block
         end
+      end
+
+      def use_inertia_instance_props
+        before_action do
+          @_inertia_instance_props = true
+          @_inertia_skip_props = view_assigns.keys + ['_inertia_skip_props']
+        end
+      end
+    end
+
+    def default_render
+      if InertiaRails.default_render?
+        render(inertia: true)
+      else
+        super
       end
     end
 
@@ -34,7 +55,20 @@ module InertiaRails
       )
     end
 
+    def inertia_view_assigns
+      return {} unless @_inertia_instance_props
+      view_assigns.except(*@_inertia_skip_props)
+    end
+
     private
+
+    def inertia_layout
+      layout = ::InertiaRails.layout
+
+      # When the global configuration is not set, let Rails decide which layout
+      # should be used based on the controller configuration.
+      layout.nil? ? true : layout
+    end
 
     def inertia_location(url)
       headers['X-Inertia-Location'] = url

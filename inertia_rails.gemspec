@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
-  spec.metadata["changelog_uri"] = "#{spec.homepage}/CHANGELOG.md"
+  spec.metadata["changelog_uri"] = "#{spec.homepage}/blob/master/CHANGELOG.md"
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "rails", '>= 5'
+  spec.add_runtime_dependency "railties", '>= 5'
 
   spec.add_development_dependency "bundler", "~> 2.0"
   spec.add_development_dependency "rake", "~> 13.0"
@@ -34,4 +34,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "sqlite3"
   spec.add_development_dependency "appraisal"
   spec.add_development_dependency "responders"
+  spec.add_development_dependency "debug"
 end

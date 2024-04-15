@@ -7,6 +7,8 @@ module InertiaRails
     def call(env)
       InertiaRailsRequest.new(@app, env)
                          .response
+    ensure
+      ::InertiaRails.reset!
     end
 
     class InertiaRailsRequest
@@ -16,10 +18,9 @@ module InertiaRails
       end
 
       def response
+        copy_xsrf_to_csrf!
         status, headers, body = @app.call(@env)
         request = ActionDispatch::Request.new(@env)
-
-        ::InertiaRails.reset!
 
         # Inertia errors are added to the session via redirect_to 
         request.session.delete(:inertia_errors) unless keep_inertia_errors?(status)
@@ -88,6 +89,10 @@ module InertiaRails
       def force_refresh(request)
         request.flash.keep
         Rack::Response.new('', 409, {'X-Inertia-Location' => request.original_url}).finish
+      end
+
+      def copy_xsrf_to_csrf!
+        @env['HTTP_X_CSRF_TOKEN'] = @env['HTTP_X_XSRF_TOKEN'] if @env['HTTP_X_XSRF_TOKEN'] && inertia_request?
       end
     end
   end
