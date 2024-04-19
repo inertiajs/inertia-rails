@@ -8,4 +8,8 @@ module HelperModule
       ActionController::Base.allow_forgery_protection = orig
     end
   end
+
+  def render_view_file(view_path, **kargs)
+    ActionController::Base.new.render_to_string(template: view_path, **kargs)
+  end
 end
