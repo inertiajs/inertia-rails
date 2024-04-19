@@ -7,8 +7,11 @@ module InertiaRails
     attr_reader :component, :view_data
 
     def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil)
-      @component = component.is_a?(TrueClass) ? "#{controller.controller_path}/#{controller.action_name}" : component
+      component.deep_symbolize_keys! if component.is_a?(Hash)
+
       @controller = controller
+      @static = component.is_a?(Hash) && component.key?(:static)
+      @component = extract_component(component)
       @request = request
       @response = response
       @render_method = render_method
@@ -66,8 +69,8 @@ module InertiaRails
 
     def page
       {
-        component: component,
-        props: computed_props,
+        component: @static ? inertia_static_component : component,
+        props: computed_props.merge(@static ? static_rendered_view : {}),
         url: @request.original_fullpath,
         version: ::InertiaRails.version,
       }
@@ -85,6 +88,26 @@ module InertiaRails
 
     def rendering_partial_component?
       @request.inertia_partial? && @request.headers['X-Inertia-Partial-Component'] == component
+    end
+
+    def extract_component(component)
+      value = component.is_a?(Hash) ? component[:component] || component[:static] : component
+
+      return "#{@controller.controller_path}/#{@controller.action_name}" if value.is_a?(TrueClass)
+
+      value
+    end
+
+    def static_rendered_view
+      return nil unless @static
+
+      { body: @controller.render_to_string(component, layout: false) }
+    end
+
+    def inertia_static_component
+      return @controller.send(:inertia_static_component) if @controller.respond_to? :inertia_static_component
+
+      "static"
     end
 
     def prop_merge_method
