@@ -107,7 +107,7 @@ module InertiaRails
     def inertia_static_component
       return @controller.send(:inertia_static_component) if @controller.respond_to? :inertia_static_component
 
-      "static"
+      nil
     end
 
     def prop_merge_method
