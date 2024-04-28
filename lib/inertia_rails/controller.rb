@@ -55,6 +55,10 @@ module InertiaRails
       @_inertia_html_headers.join.html_safe
     end
 
+    def inertia_headers=(value)
+      @_inertia_html_headers = value
+    end
+
     def default_render
       if InertiaRails.default_render?
         render(inertia: true)
