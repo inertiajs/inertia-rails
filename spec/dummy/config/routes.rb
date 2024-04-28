@@ -45,4 +45,7 @@ Rails.application.routes.draw do
   get 'merge_instance_props' => 'inertia_merge_instance_props#merge_instance_props'
 
   get 'lamda_shared_props' => 'inertia_lambda_shared_props#lamda_shared_props'
+
+  get 'conditional_share_index' => 'inertia_conditional_sharing#index'
+  get 'conditional_share_show' => 'inertia_conditional_sharing#show'
 end
