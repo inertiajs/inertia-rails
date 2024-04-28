@@ -64,7 +64,10 @@ module InertiaRails
     end
 
     def shared_data
-      return {} unless @_inertia_shared_plain_data
+      # Theses variables are set in the before_action, but we need to ensure they are initialized when using renderer alone
+      @_inertia_shared_plain_data ||= {}
+      @_inertia_shared_blocks ||= []
+
       @_inertia_shared_plain_data.merge(evaluated_blocks)
     end
 
