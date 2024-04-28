@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.4] - 2024-04-28
+
+* Reset Inertia shared data after each RSpec example where `inertia: true` is used. Thanks @coreyaus!
+* Update Github Actions workflows to use currently supported Ruby/Rails versions. Thanks @PedroAugustoRamalhoDuarte!
+
 ## [3.1.3] - 2023-11-03
 
 * Depend on railties instead of rails so that applications which only use pieces of Rails can avoid a full Rails installation. Thanks @BenMorganMY!
