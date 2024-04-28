@@ -7,13 +7,9 @@ class InertiaShareTestController < ApplicationController
       number: number,
     }
   end
-  
+
   def share
     render inertia: 'ShareTestComponent'
-  end
-
-  def error
-    raise RuntimeError
   end
 
   private
