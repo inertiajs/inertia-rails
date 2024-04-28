@@ -48,4 +48,7 @@ Rails.application.routes.draw do
   get 'initialize_session' => 'inertia_session_continuity_test#initialize_session'
   post 'submit_form_to_test_csrf' => 'inertia_session_continuity_test#submit_form_to_test_csrf'
   delete 'clear_session' => 'inertia_session_continuity_test#clear_session'
+
+  get 'conditional_share_index' => 'inertia_conditional_sharing#index'
+  get 'conditional_share_show' => 'inertia_conditional_sharing#show'
 end
