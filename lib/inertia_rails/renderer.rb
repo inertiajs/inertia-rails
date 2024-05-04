@@ -19,7 +19,7 @@ module InertiaRails
 
     def render
       if @request.headers['X-Inertia']
-        @response.set_header('Vary', 'Accept')
+        @response.set_header('Vary', 'X-Inertia')
         @response.set_header('X-Inertia', 'true')
         @render_method.call json: page, status: @response.status, content_type: Mime[:json]
       else
