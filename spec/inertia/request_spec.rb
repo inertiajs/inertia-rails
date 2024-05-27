@@ -113,7 +113,7 @@ RSpec.describe 'Inertia::Request', type: :request do
 
       context 'it is an inertia call' do
         let(:headers){ { 'X-Inertia' => true } }
-        it { is_expected.not_to include('XSRF-TOKEN') }
+        it { is_expected.to include('XSRF-TOKEN') }
       end
     end
 
@@ -129,6 +129,28 @@ RSpec.describe 'Inertia::Request', type: :request do
       context 'it is not an inertia call' do
         let(:headers) { { 'X-XSRF-Token' => 'foo' } }
         it { is_expected.to be_nil }
+      end
+    end
+
+    it 'sets the XSRF-TOKEN cookie after the session is cleared during an inertia call' do
+      with_forgery_protection do
+        get initialize_session_path
+        expect(response).to have_http_status(:ok)
+        initial_xsrf_token_cookie = response.cookies['XSRF-TOKEN']
+
+        post submit_form_to_test_csrf_path, headers: { 'X-Inertia' => true, 'X-XSRF-Token' => initial_xsrf_token_cookie }
+        expect(response).to have_http_status(:ok)
+
+        delete clear_session_path, headers: { 'X-Inertia' => true, 'X-XSRF-Token' => initial_xsrf_token_cookie }
+        expect(response).to have_http_status(:see_other)
+        expect(response.headers['Location']).to eq('http://www.example.com/initialize_session')
+
+        post_logout_xsrf_token_cookie = response.cookies['XSRF-TOKEN']
+        expect(post_logout_xsrf_token_cookie).not_to be_nil
+        expect(post_logout_xsrf_token_cookie).not_to eq(initial_xsrf_token_cookie)
+
+        post submit_form_to_test_csrf_path, headers: { 'X-Inertia' => true, 'X-XSRF-Token' => post_logout_xsrf_token_cookie }
+        expect(response).to have_http_status(:ok)
       end
     end
   end
