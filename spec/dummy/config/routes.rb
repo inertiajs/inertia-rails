@@ -41,4 +41,8 @@ Rails.application.routes.draw do
   get 'merge_instance_props' => 'inertia_merge_instance_props#merge_instance_props'
 
   get 'lamda_shared_props' => 'inertia_lambda_shared_props#lamda_shared_props'
+
+  get 'initialize_session' => 'inertia_session_continuity_test#initialize_session'
+  post 'submit_form_to_test_csrf' => 'inertia_session_continuity_test#submit_form_to_test_csrf'
+  delete 'clear_session' => 'inertia_session_continuity_test#clear_session'
 end
