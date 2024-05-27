@@ -113,7 +113,7 @@ RSpec.describe 'Inertia::Request', type: :request do
 
       context 'it is an inertia call' do
         let(:headers){ { 'X-Inertia' => true } }
-        it { is_expected.not_to include('XSRF-TOKEN') }
+        it { is_expected.to include('XSRF-TOKEN') }
       end
     end
 
