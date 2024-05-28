@@ -46,7 +46,7 @@ module InertiaRails
       #
       # Functionally, this permits using either string or symbol keys in the controller. Since the results
       # is cast to json, we should treat string/symbol keys as identical.
-      _props = @controller.send(:shared_data).merge.deep_symbolize_keys.send(prop_merge_method, @props.deep_symbolize_keys).select do |key, prop|
+      _props = @controller.shared_data.merge.deep_symbolize_keys.send(prop_merge_method, @props.deep_symbolize_keys).select do |key, prop|
         if rendering_partial_component?
           key.in? partial_keys
         else
