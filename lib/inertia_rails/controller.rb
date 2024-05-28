@@ -23,7 +23,7 @@ module InertiaRails
       end
 
       after_action do
-        cookies['XSRF-TOKEN'] = form_authenticity_token unless request.inertia? || !protect_against_forgery?
+        cookies['XSRF-TOKEN'] = form_authenticity_token unless !protect_against_forgery?
       end
     end
 
