@@ -21,6 +21,7 @@ RSpec.describe "conditionally shared data in a controller", type: :request do
     expect(JSON.parse(response.body)['props'].deep_symbolize_keys).to eq({
       index_only_prop: 1,
       normal_shared_prop: 1,
+      conditionally_shared_show_prop: 1, # TODO: Because we call before_action twice, this is leaking.
     })
   end
 end
