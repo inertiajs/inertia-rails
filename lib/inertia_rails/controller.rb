@@ -41,14 +41,6 @@ module InertiaRails
           @_inertia_skip_props = view_assigns.keys + ['_inertia_skip_props']
         end
       end
-
-      def share_plain_data(hash)
-        @_inertia_shared_plain_data = @_inertia_shared_plain_data.merge(hash)
-      end
-
-      def share_block(&block)
-        @_inertia_shared_blocks = @_inertia_shared_blocks + [block]
-      end
     end
 
     def inertia_headers
