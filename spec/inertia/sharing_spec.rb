@@ -54,29 +54,35 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
     it { is_expected.to eq props.merge({ errors: errors }) }
   end
 
-  context 'when multithreaded with shared data' do
+  context 'multithreaded inertia share' do
     let(:props) { { name: 'Michael', has_goat_status: true } }
+    it 'is expected to render props even when another thread shares Inertia data' do
+      start_thread1 = false
+      start_thread2 = false
 
-      it 'is expected to not share data from other requests' do
-        threads = []
-        threads << Thread.new do
-          # Its takes one second
-          get share_multithreaded_path, headers: {'X-Inertia' => true}
-          body = response.body.dup
-          props = JSON.parse(body)['props'].deep_symbolize_keys
-          expect(props).to eq({ name: 'Michael', has_goat_status: true })
-        end
-        threads << Thread.new do
-          # Its take half a second
-          get share_without_name_path, headers: {'X-Inertia' => true}
-          body = response.body.dup
-          props = JSON.parse(body)['props'].deep_symbolize_keys
-          expect(props).to eq({ someGroupsControllerData: true })
-        end
+      thread1 = Thread.new do
+        sleep 0.1 until start_thread1
 
-
-        threads.each(&:join)
+        get share_multithreaded_path, headers: {'X-Inertia' => true}
+        expect(subject).to eq props
       end
+
+      thread2 = Thread.new do
+        sleep 0.1 until start_thread2
+
+        get share_path, headers: {'X-Inertia' => true}
+      end
+
+      # Thread 1 starts. The controller method runs inertia_share, then sleeps.
+      # Thread 2 then modifies the shared inertia data before Thread 1 stops sleeping
+      start_thread1 = true
+      sleep 0.5
+      start_thread2 = true
+
+      # Make sure that both threads finish before the block returns
+      thread1.join
+      thread2.join
+    end
   end
 
   context 'when raises an exception' do
