@@ -1,14 +1,21 @@
 # Needed for `thread_mattr_accessor`
 require 'active_support/core_ext/module/attribute_accessors_per_thread'
 require 'inertia_rails/lazy'
+require 'inertia_rails/configuration'
 
 module InertiaRails
   thread_mattr_accessor :threadsafe_shared_plain_data
   thread_mattr_accessor :threadsafe_shared_blocks
   thread_mattr_accessor :threadsafe_html_headers
 
+  CONFIGURATION = Configuration.default
+
   def self.configure
-    yield(Configuration)
+    yield(CONFIGURATION)
+  end
+
+  def self.configuration
+    CONFIGURATION
   end
 
   # "Getters"
@@ -18,23 +25,23 @@ module InertiaRails
   end
 
   def self.version
-    Configuration.evaluated_version
+    configuration.version
   end
 
   def self.layout
-    Configuration.layout
+    configuration.layout
   end
 
   def self.ssr_enabled?
-    Configuration.ssr_enabled
+    configuration.ssr_enabled
   end
 
   def self.ssr_url
-    Configuration.ssr_url
+    configuration.ssr_url
   end
 
   def self.default_render?
-    Configuration.default_render
+    configuration.default_render
   end 
 
   def self.html_headers
@@ -42,7 +49,7 @@ module InertiaRails
   end
 
   def self.deep_merge_shared_data?
-    Configuration.deep_merge_shared_data
+    configuration.deep_merge_shared_data
   end
 
   # "Setters"
@@ -69,19 +76,6 @@ module InertiaRails
   end
 
   private
-
-  module Configuration
-    mattr_accessor(:layout) { nil }
-    mattr_accessor(:version) { nil }
-    mattr_accessor(:ssr_enabled) { false }
-    mattr_accessor(:ssr_url) { 'http://localhost:13714' }
-    mattr_accessor(:default_render) { false }
-    mattr_accessor(:deep_merge_shared_data) { false }
-
-    def self.evaluated_version
-      self.version.respond_to?(:call) ? self.version.call : self.version
-    end
-  end
 
   # Getters and setters to provide default values for the threadsafe attributes
   def self.shared_plain_data
