@@ -62,6 +62,10 @@ module InertiaRails
 
     private
 
+    def inertia_configuration
+      ::InertiaRails.configuration
+    end
+
     def inertia_layout
       layout = ::InertiaRails.layout
 
