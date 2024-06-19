@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2024-06-19
+
+* Refactor the internals of shared Inertia data to use controller instance variables instead of module level variables that run a higher risk of being leaked between requests. Big thanks to @ledermann for the initial work many years ago and to @PedroAugustoRamalhoDuarte for finishing it up!
+* Change the Inertia response to set the `Vary` header to `X-Inertia` instead of `Accept`, Thanks @osbre!
+* Always set the `XSRF-TOKEN` in an `after_action` request instead of only on non-Inertia requests. This fixes a bug where logging out (and resetting the session) via Inertia would create a CSRF token mismatch on a subsequent Inertia request (until you manually hard refreshed the page). Thanks @jordanhiltunen!
+
 ## [3.1.4] - 2024-04-28
 
 * Reset Inertia shared data after each RSpec example where `inertia: true` is used. Thanks @coreyaus!
