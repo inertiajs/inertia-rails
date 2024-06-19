@@ -34,4 +34,3 @@ module Dummy
     config.secret_key_base = SecureRandom.hex
   end
 end
-

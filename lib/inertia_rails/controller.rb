@@ -1,16 +1,26 @@
 require_relative "inertia_rails"
-require_relative "helper"
 
 module InertiaRails
   module Controller
     extend ActiveSupport::Concern
 
     included do
+      helper_method :inertia_headers
+
       before_action do
-        # :inertia_errors are deleted from the session by the middleware
-        InertiaRails.share(errors: session[:inertia_errors]) if session[:inertia_errors].present?
+        error_sharing = proc do
+          # :inertia_errors are deleted from the session by the middleware
+          if @_request && session[:inertia_errors].present?
+            { errors: session[:inertia_errors] }
+          else
+            {}
+          end
+        end
+
+        @_inertia_shared_plain_data ||= {}
+        @_inertia_shared_blocks ||= [error_sharing]
+        @_inertia_html_headers ||= []
       end
-      helper ::InertiaRails::Helper
 
       after_action do
         cookies['XSRF-TOKEN'] = form_authenticity_token unless !protect_against_forgery?
@@ -18,10 +28,10 @@ module InertiaRails
     end
 
     module ClassMethods
-      def inertia_share(**args, &block)
+      def inertia_share(hash = nil, &block)
         before_action do
-          InertiaRails.share(**args) if args
-          InertiaRails.share_block(block) if block
+          @_inertia_shared_plain_data = @_inertia_shared_plain_data.merge(hash) if hash
+          @_inertia_shared_blocks = @_inertia_shared_blocks + [block] if block_given?
         end
       end
 
@@ -33,12 +43,24 @@ module InertiaRails
       end
     end
 
+    def inertia_headers
+      @_inertia_html_headers.join.html_safe
+    end
+
+    def inertia_headers=(value)
+      @_inertia_html_headers = value
+    end
+
     def default_render
       if InertiaRails.default_render?
         render(inertia: true)
       else
         super
       end
+    end
+
+    def shared_data
+      (@_inertia_shared_plain_data || {}).merge(evaluated_blocks)
     end
 
     def redirect_to(options = {}, response_options = {})
@@ -79,6 +101,10 @@ module InertiaRails
       if (inertia_errors = options.dig(:inertia, :errors))
         session[:inertia_errors] = inertia_errors
       end
+    end
+
+    def evaluated_blocks
+      (@_inertia_shared_blocks || []).map { |block| instance_exec(&block) }.reduce(&:merge) || {}
     end
   end
 end

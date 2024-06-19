@@ -54,7 +54,7 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
     it { is_expected.to eq props.merge({ errors: errors }) }
   end
 
-  context 'multithreaded intertia share' do
+  context 'multithreaded inertia share' do
     let(:props) { { name: 'Michael', has_goat_status: true } }
     it 'is expected to render props even when another thread shares Inertia data' do
       start_thread1 = false
@@ -70,12 +70,7 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
       thread2 = Thread.new do
         sleep 0.1 until start_thread2
 
-        # Would prefer to make this a second get request, but RSpec will overwrite
-        # the @response variable if another request is made in the second thread.
-        # This simulates the relevant effects of another call to a different
-        # controller with different values for inertia_share
-        InertiaRails.reset!
-        InertiaRails.share(name: 'Brian', has_goat_status: false)
+        get share_path, headers: {'X-Inertia' => true}
       end
 
       # Thread 1 starts. The controller method runs inertia_share, then sleeps.
@@ -88,16 +83,32 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
       thread1.join
       thread2.join
     end
+  end
 
+  context 'when raises an exception' do
     it 'is expected not to leak shared data across requests' do
       begin
         get share_multithreaded_error_path, headers: {'X-Inertia' => true}
       rescue Exception
       end
 
-      expect(InertiaRails.shared_plain_data).to be_empty
-      expect(InertiaRails.shared_blocks).to be_empty
+      get share_path, headers: {'X-Inertia' => true}
+
+      is_expected.to eq({name: 'Brandon', sport: 'hockey', position: 'center', number: 29})
     end
+  end
+
+  context 'using inertia share in redirected requests' do
+    let(:props) { {name: 'Brandon', sport: 'hockey', position: 'center', number: 29} }
+
+    before do
+      post redirect_to_share_test_path, headers: {'X-Inertia' => true}
+      expect(response).to be_redirect
+
+      get response.location, headers: {'X-Inertia' => true}
+    end
+
+    it { is_expected.to eq props }
   end
 
   describe 'deep or shallow merging shared data' do
