@@ -49,7 +49,7 @@ RSpec.describe 'rendering inertia views', type: :request do
 
     it 'has the proper headers' do
       expect(response.headers['X-Inertia']).to eq 'true'
-      expect(response.headers['Vary']).to eq 'Accept'
+      expect(response.headers['Vary']).to eq 'X-Inertia'
       expect(response.headers['Content-Type']).to eq 'application/json; charset=utf-8'
     end
 
