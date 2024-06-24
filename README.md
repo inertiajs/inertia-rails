@@ -14,7 +14,9 @@ gem 'inertia_rails'
 
 ### Frontend
 
-Rails 7 specific frontend docs coming soon. For now, check out the official Inertia docs at https://inertiajs.com/ or see an example using React/Vite [here](https://github.com/BrandonShar/inertia-rails-template)
+Rails 7 specific frontend docs coming soon. For now, check out the [official Inertia docs](https://inertiajs.com) or these project examples:
+- [PingCRM with Vue and Vite](https://github.com/ledermann/pingcrm)
+- [Starter template with React and Vite](https://github.com/BrandonShar/inertia-rails-template)
 
 ## Usage
 
