@@ -5,22 +5,16 @@ module InertiaRails
     extend ActiveSupport::Concern
 
     included do
-      before_action do
-        # :inertia_errors are deleted from the session by the middleware
-        InertiaRails.share(errors: session[:inertia_errors]) if session[:inertia_errors].present?
-      end
-
       after_action do
         cookies['XSRF-TOKEN'] = form_authenticity_token if protect_against_forgery?
       end
     end
 
     module ClassMethods
-      def inertia_share(**args, &block)
-        before_action do
-          InertiaRails.share(**args) if args
-          InertiaRails.share_block(block) if block
-        end
+      def inertia_share(**attrs, &block)
+        @inertia_shared_data ||= []
+        @inertia_shared_data << attrs unless attrs.empty?
+        @inertia_shared_data << block if block
       end
 
       def inertia_config(**attrs)
@@ -43,6 +37,10 @@ module InertiaRails
       def _inertia_configuration
         config = superclass.try(:_inertia_configuration) || ::InertiaRails.configuration
         @inertia_configuration ? config.merge(@inertia_configuration) : config
+      end
+
+      def _inertia_shared_data
+        [*superclass.try(:_inertia_shared_data), *@inertia_shared_data]
       end
     end
 
@@ -80,7 +78,15 @@ module InertiaRails
     end
 
     def inertia_shared_data
-      ::InertiaRails.shared_data(self)
+      initial_data = session[:inertia_errors].present? ? {errors: session[:inertia_errors]} : {}
+
+      self.class._inertia_shared_data.filter_map { |shared_data|
+        if shared_data.respond_to?(:call)
+          instance_exec(&shared_data)
+        else
+          shared_data
+        end
+      }.reduce(initial_data, &:merge)
     end
 
     def inertia_location(url)
