@@ -53,13 +53,17 @@ module InertiaRails
       controller.__send__(:inertia_shared_data)
     end
 
+    # Cast props to symbol keyed hash before merging so that we have a consistent data structure and
+    # avoid duplicate keys after merging.
+    #
+    # Functionally, this permits using either string or symbol keys in the controller. Since the results
+    # is cast to json, we should treat string/symbol keys as identical.
+    def merge_props(shared_data, props)
+      shared_data.deep_symbolize_keys.send(@deep_merge ? :deep_merge : :merge, props.deep_symbolize_keys)
+    end
+
     def computed_props
-      # Cast props to symbol keyed hash before merging so that we have a consistent data structure and
-      # avoid duplicate keys after merging.
-      #
-      # Functionally, this permits using either string or symbol keys in the controller. Since the results
-      # is cast to json, we should treat string/symbol keys as identical.
-      _props = shared_data.deep_symbolize_keys.send(prop_merge_method, props.deep_symbolize_keys).select do |key, prop|
+      _props = merge_props(shared_data, props).select do |key, prop|
         if rendering_partial_component?
           key.in? partial_keys
         else
@@ -96,10 +100,6 @@ module InertiaRails
 
     def rendering_partial_component?
       @request.inertia_partial? && @request.headers['X-Inertia-Partial-Component'] == component
-    end
-
-    def prop_merge_method
-      @deep_merge ? :deep_merge : :merge
     end
   end
 end
