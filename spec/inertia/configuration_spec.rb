@@ -1,6 +1,21 @@
 RSpec.describe 'Inertia configuration', type: :request do
   after { reset_config! }
 
+  describe 'inertia_config' do
+    it 'overrides the global values' do
+      get configuration_path
+
+      expect(response.parsed_body.symbolize_keys).to eq(
+        deep_merge_shared_data: true,
+        default_render: false,
+        layout: "test",
+        ssr_enabled: true,
+        ssr_url: "http://localhost:7777",
+        version: "2.0",
+      )
+    end
+  end
+
   describe '.version' do
     subject { JSON.parse(response.body)['version'] }
 

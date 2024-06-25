@@ -23,11 +23,26 @@ module InertiaRails
         end
       end
 
+      def inertia_config(**attrs)
+        config = InertiaRails::Configuration.new(**attrs)
+
+        if @inertia_configuration
+          @inertia_configuration.merge!(config)
+        else
+          @inertia_configuration = config
+        end
+      end
+
       def use_inertia_instance_props
         before_action do
           @_inertia_instance_props = true
           @_inertia_skip_props = view_assigns.keys + ['_inertia_skip_props']
         end
+      end
+
+      def _inertia_configuration
+        config = superclass.try(:_inertia_configuration) || ::InertiaRails.configuration
+        @inertia_configuration ? config.merge(@inertia_configuration) : config
       end
     end
 
@@ -61,7 +76,7 @@ module InertiaRails
     end
 
     def inertia_configuration
-      ::InertiaRails.configuration
+      self.class._inertia_configuration.bind_controller(self)
     end
 
     def inertia_shared_data

@@ -16,14 +16,20 @@ module InertiaRails
 
     OPTION_NAMES = DEFAULTS.keys.freeze
 
+    protected attr_reader :controller
     protected attr_reader :options
 
-    def initialize(**attrs)
+    def initialize(controller: nil, **attrs)
+      @controller = controller
       @options = attrs.extract!(*OPTION_NAMES)
 
       unless attrs.empty?
         raise ArgumentError, "Unknown options for #{self.class}: #{attrs.keys}"
       end
+    end
+
+    def bind_controller(controller)
+      Configuration.new(**@options, controller: controller)
     end
 
     def to_h
@@ -36,8 +42,7 @@ module InertiaRails
 
     OPTION_NAMES.each do |option|
       define_method(option) {
-        value = @options[option]
-        value.respond_to?(:call) ? value.call : value
+        evaluate_option @options[option]
       }
       define_method("#{option}=") { |value|
         @options[option] = value
@@ -46,6 +51,14 @@ module InertiaRails
 
     def self.default
       new(**DEFAULTS)
+    end
+
+  private
+
+    def evaluate_option(value)
+      return value unless value.respond_to?(:call)
+      return value.call unless controller
+      controller.instance_exec(&value)
     end
   end
 end
