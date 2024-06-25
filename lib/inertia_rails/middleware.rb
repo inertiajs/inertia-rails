@@ -6,8 +6,6 @@ module InertiaRails
 
     def call(env)
       InertiaRailsRequest.new(@app, env).response
-    ensure
-      ::InertiaRails.reset!
     end
 
     class InertiaRailsRequest

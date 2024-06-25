@@ -14,9 +14,6 @@ module InertiaRails
     CONFIGURATION
   end
 
-  def self.reset!
-  end
-
   def self.lazy(value = nil, &block)
     InertiaRails::Lazy.new(value, &block)
   end

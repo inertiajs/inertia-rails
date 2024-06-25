@@ -1,7 +1,6 @@
 RSpec.describe 'inertia ssr', type: :request do
   context 'ssr is enabled' do
     before do
-      InertiaRails.reset!
       InertiaRails.configure do |config|
         config.ssr_enabled = true
         config.ssr_url = 'ssr-url'
