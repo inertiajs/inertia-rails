@@ -53,15 +53,19 @@ module InertiaRails
       )
     end
 
+    private
+
     def inertia_view_assigns
       return {} unless @_inertia_instance_props
       view_assigns.except(*@_inertia_skip_props)
     end
 
-    private
-
     def inertia_configuration
       ::InertiaRails.configuration
+    end
+
+    def inertia_shared_data
+      ::InertiaRails.shared_data(self)
     end
 
     def inertia_location(url)

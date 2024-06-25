@@ -1,7 +1,14 @@
 RSpec.describe 'rendering inertia views', type: :request do
   subject { response.body }
 
-  let(:controller) { double('Controller', inertia_view_assigns: {}, inertia_configuration: InertiaRails.configuration)}
+  let(:controller) {
+    instance_double(
+      InertiaRails::Controller,
+      inertia_view_assigns: {},
+      inertia_configuration: InertiaRails.configuration,
+      inertia_shared_data: {},
+    )
+  }
 
   context 'first load' do
     let(:page) { InertiaRails::Renderer.new('TestComponent', controller, request, response, '').send(:page) }

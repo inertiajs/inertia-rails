@@ -4,16 +4,22 @@ require_relative "inertia_rails"
 
 module InertiaRails
   class Renderer
-    attr_reader :component, :view_data, :configuration
+    attr_reader(
+      :component,
+      :configuration,
+      :controller,
+      :props,
+      :view_data,
+    )
 
     def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil)
       @component = component.is_a?(TrueClass) ? "#{controller.controller_path}/#{controller.action_name}" : component
       @controller = controller
-      @configuration = controller.send(:inertia_configuration)
+      @configuration = controller.__send__(:inertia_configuration)
       @request = request
       @response = response
       @render_method = render_method
-      @props = props ? props : controller.inertia_view_assigns
+      @props = props || controller.__send__(:inertia_view_assigns)
       @view_data = view_data || {}
       @deep_merge = !deep_merge.nil? ? deep_merge : configuration.deep_merge_shared_data
     end
@@ -25,7 +31,7 @@ module InertiaRails
         @render_method.call json: page, status: @response.status, content_type: Mime[:json]
       else
         return render_ssr if configuration.ssr_enabled rescue nil
-        @render_method.call template: 'inertia', layout: layout, locals: (view_data).merge({page: page})
+        @render_method.call template: 'inertia', layout: layout, locals: view_data.merge(page: page)
       end
     end
 
@@ -43,13 +49,17 @@ module InertiaRails
       configuration.layout
     end
 
+    def shared_data
+      controller.__send__(:inertia_shared_data)
+    end
+
     def computed_props
       # Cast props to symbol keyed hash before merging so that we have a consistent data structure and
       # avoid duplicate keys after merging.
       #
       # Functionally, this permits using either string or symbol keys in the controller. Since the results
       # is cast to json, we should treat string/symbol keys as identical.
-      _props = ::InertiaRails.shared_data(@controller).deep_symbolize_keys.send(prop_merge_method, @props.deep_symbolize_keys).select do |key, prop|
+      _props = shared_data.deep_symbolize_keys.send(prop_merge_method, props.deep_symbolize_keys).select do |key, prop|
         if rendering_partial_component?
           key.in? partial_keys
         else
@@ -60,7 +70,7 @@ module InertiaRails
       deep_transform_values(
         _props,
         lambda do |prop|
-          prop.respond_to?(:call) ? @controller.instance_exec(&prop) : prop
+          prop.respond_to?(:call) ? controller.instance_exec(&prop) : prop
         end
       )
     end
