@@ -6,7 +6,6 @@ require 'inertia_rails/configuration'
 module InertiaRails
   thread_mattr_accessor :threadsafe_shared_plain_data
   thread_mattr_accessor :threadsafe_shared_blocks
-  thread_mattr_accessor :threadsafe_html_headers
 
   CONFIGURATION = Configuration.default
 
@@ -24,10 +23,6 @@ module InertiaRails
       merge!(evaluated_blocks(controller, shared_blocks))
   end
 
-  def self.html_headers
-    self.threadsafe_html_headers || []
-  end
-
   # "Setters"
   def self.share(**args)
     self.shared_plain_data = self.shared_plain_data.merge(args)
@@ -37,14 +32,9 @@ module InertiaRails
     self.shared_blocks = self.shared_blocks + [block]
   end
 
-  def self.html_headers=(headers)
-    self.threadsafe_html_headers = headers
-  end
-
   def self.reset!
     self.shared_plain_data = {}
     self.shared_blocks = []
-    self.html_headers = []
   end
 
   def self.lazy(value = nil, &block)
