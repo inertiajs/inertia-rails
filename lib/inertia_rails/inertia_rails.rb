@@ -24,32 +24,8 @@ module InertiaRails
       merge!(evaluated_blocks(controller, shared_blocks))
   end
 
-  def self.version
-    configuration.version
-  end
-
-  def self.layout
-    configuration.layout
-  end
-
-  def self.ssr_enabled?
-    configuration.ssr_enabled
-  end
-
-  def self.ssr_url
-    configuration.ssr_url
-  end
-
-  def self.default_render?
-    configuration.default_render
-  end 
-
   def self.html_headers
     self.threadsafe_html_headers || []
-  end
-
-  def self.deep_merge_shared_data?
-    configuration.deep_merge_shared_data
   end
 
   # "Setters"

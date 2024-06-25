@@ -101,7 +101,7 @@ RSpec.describe 'Inertia configuration', type: :request do
 
       context 'opting out of a different layout for Inertia' do
         before do
-          InertiaRails.configure {|c| c.layout = nil }
+          InertiaRails.configure {|c| c.layout = true }
         end
 
         it 'uses default layout for controller' do

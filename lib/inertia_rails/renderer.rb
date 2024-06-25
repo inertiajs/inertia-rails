@@ -4,17 +4,18 @@ require_relative "inertia_rails"
 
 module InertiaRails
   class Renderer
-    attr_reader :component, :view_data
+    attr_reader :component, :view_data, :configuration
 
     def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil)
       @component = component.is_a?(TrueClass) ? "#{controller.controller_path}/#{controller.action_name}" : component
       @controller = controller
+      @configuration = controller.send(:inertia_configuration)
       @request = request
       @response = response
       @render_method = render_method
       @props = props ? props : controller.inertia_view_assigns
       @view_data = view_data || {}
-      @deep_merge = !deep_merge.nil? ? deep_merge : InertiaRails.deep_merge_shared_data?
+      @deep_merge = !deep_merge.nil? ? deep_merge : configuration.deep_merge_shared_data
     end
 
     def render
@@ -23,7 +24,7 @@ module InertiaRails
         @response.set_header('X-Inertia', 'true')
         @render_method.call json: page, status: @response.status, content_type: Mime[:json]
       else
-        return render_ssr if ::InertiaRails.ssr_enabled? rescue nil
+        return render_ssr if configuration.ssr_enabled rescue nil
         @render_method.call template: 'inertia', layout: layout, locals: (view_data).merge({page: page})
       end
     end
@@ -31,7 +32,7 @@ module InertiaRails
     private
 
     def render_ssr
-      uri = URI("#{::InertiaRails.ssr_url}/render")
+      uri = URI("#{configuration.ssr_url}/render")
       res = JSON.parse(Net::HTTP.post(uri, page.to_json, 'Content-Type' => 'application/json').body)
       
       ::InertiaRails.html_headers = res['head']
@@ -39,7 +40,7 @@ module InertiaRails
     end
 
     def layout
-      @controller.send(:inertia_layout)
+      configuration.layout
     end
 
     def computed_props
@@ -69,7 +70,7 @@ module InertiaRails
         component: component,
         props: computed_props,
         url: @request.original_fullpath,
-        version: ::InertiaRails.version,
+        version: configuration.version,
       }
     end
 

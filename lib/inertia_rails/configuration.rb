@@ -4,9 +4,11 @@ module InertiaRails
   class Configuration
     DEFAULTS = {
       default_render: false,
-      layout: nil,
+
+      # Let Rails decide which layout should be used based on the controller configuration.
+      layout: true,
+
       deep_merge_shared_data: false,
-      merge_props_with: ->(shared_data, props) { shared_data.merge(props) },
       ssr_enabled: false,
       ssr_url: 'http://localhost:13714',
       version: nil,
