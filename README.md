@@ -63,7 +63,7 @@ end
 In order to use instance props, you must call `use_inertia_instance_props` on the controller (or a base controller it inherits from). If any props are provided manually, instance props
 are automatically disabled for that response. Instance props are only included if they are defined after the before filter is set from `use_inertia_instance_props`.
 
-Automatic component name is also opt in, you must set the `default_render` config value to `true`. Otherwise, you can simply `render inertia: true` for the same behavior explicitly. 
+Automatic component name is also opt in, you must set the [`default_render`](#default_render) config value to `true`. Otherwise, you can simply `render inertia: true` for the same behavior explicitly.
 
 ### Layout 
 
@@ -132,7 +132,7 @@ end
 }
 ```
 
-Deep merging can be configured using the `deep_merge_shared_data` configuration option.
+Deep merging can be configured using the [`deep_merge_shared_data`](#deep_merge_shared_data) configuration option.
 
 If deep merging is enabled, you can still opt-out within the action:
 
@@ -182,7 +182,7 @@ inertia 'about' => 'AboutComponent'
 
 ### SSR _(experimental)_
 
-Enable SSR via the configuration options for `ssr_enabled` and `ssr_url`.
+Enable SSR via the configuration options for [`ssr_enabled`](#ssr_enabled-experimental) and [`ssr_url`](#ssr_url-experimental).
 
 When using SSR, don't forget to add `<%= inertia_ssr_head %>` to the `<head>` of your layout (i.e. `application.html.erb`).
 
