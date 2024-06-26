@@ -34,6 +34,7 @@ Rails.application.routes.draw do
   get 'default_component_test' => 'inertia_rails_mimic#default_component_test'
   get 'provided_props_test' => 'inertia_rails_mimic#provided_props_test'
 
+  post 'redirect_to_share_test' => 'inertia_test#redirect_to_share_test'
   inertia 'inertia_route' => 'TestComponent'
 
   get 'merge_shared' => 'inertia_merge_shared#merge_shared'
@@ -46,4 +47,7 @@ Rails.application.routes.draw do
   get 'initialize_session' => 'inertia_session_continuity_test#initialize_session'
   post 'submit_form_to_test_csrf' => 'inertia_session_continuity_test#submit_form_to_test_csrf'
   delete 'clear_session' => 'inertia_session_continuity_test#clear_session'
+
+  get 'conditional_share_index' => 'inertia_conditional_sharing#index'
+  get 'conditional_share_show' => 'inertia_conditional_sharing#show'
 end

@@ -4,11 +4,17 @@ class InertiaShareTestController < ApplicationController
   inertia_share do
     {
       position: 'center',
-      number: 29,
+      number: number,
     }
   end
-  
+
   def share
     render inertia: 'ShareTestComponent'
+  end
+
+  private
+
+  def number
+    29
   end
 end

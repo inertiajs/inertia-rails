@@ -19,7 +19,7 @@ module InertiaRails
         status, headers, body = @app.call(@env)
         request = ActionDispatch::Request.new(@env)
 
-        # Inertia errors are added to the session via redirect_to 
+        # Inertia errors are added to the session via redirect_to
         request.session.delete(:inertia_errors) unless keep_inertia_errors?(status)
 
         status = 303 if inertia_non_post_redirect?(status)
@@ -96,4 +96,3 @@ module InertiaRails
     end
   end
 end
-
