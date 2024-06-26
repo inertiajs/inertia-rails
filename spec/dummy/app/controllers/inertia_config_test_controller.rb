@@ -7,6 +7,11 @@ class InertiaConfigTestController < ApplicationController
     version: "2.0",
   )
 
+  # Test that modules included in the same class can also call it.
+  inertia_config(
+    version: "2.0",
+  )
+
   def configuration
     render json: inertia_configuration.to_h
   end

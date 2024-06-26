@@ -1,6 +1,23 @@
 RSpec.describe 'Inertia configuration', type: :request do
   after { reset_config! }
 
+  describe "InertiaRails::Configuration" do
+    it "does not allow to modify options after frozen" do
+      config = InertiaRails::Configuration.default
+      config.ssr_enabled = true
+      expect(config.ssr_enabled).to eq true
+
+      config.freeze
+      expect { config.ssr_enabled = false }.to raise_error(FrozenError)
+      expect { config.merge!(InertiaRails::Configuration.default) }.to raise_error(FrozenError)
+
+      expect {
+        merged_config = config.merge(InertiaRails::Configuration.default)
+        expect(merged_config.ssr_enabled).to eq false
+      }.not_to raise_error
+    end
+  end
+
   describe 'inertia_config' do
     it 'overrides the global values' do
       get configuration_path

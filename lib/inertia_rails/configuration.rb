@@ -32,8 +32,18 @@ module InertiaRails
       Configuration.new(**@options, controller: controller)
     end
 
+    def freeze
+      @options.freeze
+      super
+    end
+
     def to_h
       @options.to_h
+    end
+
+    def merge!(config)
+      @options.merge!(config.options)
+      self
     end
 
     def merge(config)

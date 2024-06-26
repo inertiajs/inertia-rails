@@ -15,18 +15,18 @@ module InertiaRails
 
     module ClassMethods
       def inertia_share(**attrs, &block)
-        @inertia_shared_data ||= []
-        @inertia_shared_data << attrs unless attrs.empty?
-        @inertia_shared_data << block if block
+        @inertia_share ||= []
+        @inertia_share << attrs.freeze unless attrs.empty?
+        @inertia_share << block if block
       end
 
       def inertia_config(**attrs)
         config = InertiaRails::Configuration.new(**attrs)
 
-        if @inertia_configuration
-          @inertia_configuration.merge!(config)
+        if @inertia_config
+          @inertia_config.merge!(config)
         else
-          @inertia_configuration = config
+          @inertia_config = config
         end
       end
 
@@ -38,12 +38,14 @@ module InertiaRails
       end
 
       def _inertia_configuration
-        config = superclass.try(:_inertia_configuration) || ::InertiaRails.configuration
-        @inertia_configuration ? config.merge(@inertia_configuration) : config
+        @_inertia_configuration ||= begin
+          config = superclass.try(:_inertia_configuration) || ::InertiaRails.configuration
+          @inertia_config ? config.merge(@inertia_config).freeze : config
+        end
       end
 
       def _inertia_shared_data
-        [*superclass.try(:_inertia_shared_data), *@inertia_shared_data]
+        @_inertia_shared_data ||= [*superclass.try(:_inertia_shared_data), *@inertia_share].freeze
       end
     end
 
