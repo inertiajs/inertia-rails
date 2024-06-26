@@ -46,7 +46,8 @@ module InertiaRails
     end
 
     def layout
-      configuration.layout
+      layout = configuration.layout
+      layout.nil? ? true : layout
     end
 
     def shared_data
