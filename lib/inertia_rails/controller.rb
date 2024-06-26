@@ -40,7 +40,7 @@ module InertiaRails
       def _inertia_configuration
         @_inertia_configuration ||= begin
           config = superclass.try(:_inertia_configuration) || ::InertiaRails.configuration
-          @inertia_config ? config.merge(@inertia_config.freeze).freeze : config
+          @inertia_config&.with_defaults(config) || config
         end
       end
 

@@ -53,6 +53,12 @@ module InertiaRails
       Configuration.new(**@options.merge(config.options))
     end
 
+    # Internal: Finalizes the configuration for a specific controller.
+    def with_defaults(config)
+      @options = config.options.merge(@options)
+      freeze
+    end
+
     OPTION_NAMES.each do |option|
       define_method(option) {
         evaluate_option @options[option]
