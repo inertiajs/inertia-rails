@@ -1,10 +1,13 @@
 require_relative "inertia_rails"
+require_relative "helper"
 
 module InertiaRails
   module Controller
     extend ActiveSupport::Concern
 
     included do
+      helper ::InertiaRails::Helper
+
       after_action do
         cookies['XSRF-TOKEN'] = form_authenticity_token if protect_against_forgery?
       end

@@ -41,8 +41,8 @@ module InertiaRails
       uri = URI("#{configuration.ssr_url}/render")
       res = JSON.parse(Net::HTTP.post(uri, page.to_json, 'Content-Type' => 'application/json').body)
 
-      locals = view_data.merge(page: page, inertia_ssr_head: res['head'].join.html_safe)
-      @render_method.call html: res['body'].html_safe, layout: layout, locals: locals
+      controller.instance_variable_set("@_inertia_ssr_head", res['head'].join.html_safe)
+      @render_method.call html: res['body'].html_safe, layout: layout, locals: view_data.merge(page: page)
     end
 
     def layout
