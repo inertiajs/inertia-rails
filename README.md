@@ -7,14 +7,25 @@
 
 ### Backend
 
-Just add the inertia rails gem to your Gemfile
+Add the `inertia_rails` gem to your Gemfile.
+
 ```ruby
 gem 'inertia_rails'
 ```
 
+For more instructions, see [Server-side setup](https://inertia-rails.netlify.app/guide/server-side-setup.html).
+
 ### Frontend
 
-Rails 7 specific frontend docs coming soon. For now, check out the official Inertia docs at https://inertiajs.com/ or see an example using React/Vite [here](https://github.com/BrandonShar/inertia-rails-template)
+We are discussing on bringing official docs for Inertia Rails to this repo, as
+the [official docs](https://inertiajs.com/client-side-setup) are specific to Laravel.
+
+In the meantime, you can refer to the community-maintained [Client-side setup](https://inertia-rails.netlify.app/guide/client-side-setup.html).
+
+Examples:
+
+- [React/Vite](https://github.com/BrandonShar/inertia-rails-template)
+- [React/Vite + SSR](https://github.com/ElMassimo/inertia-rails-ssr-template)
 
 ## Usage
 
