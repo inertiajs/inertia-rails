@@ -3,14 +3,21 @@
 module InertiaRails
   class Configuration
     DEFAULTS = {
+      # Whether to combine hashes with the same keys instead of replacing them.
+      deep_merge_shared_data: false,
+
+      # Overrides Rails default rendering behavior to render using Inertia by default.
       default_render: false,
 
-      # Let Rails decide which layout should be used based on the controller configuration.
+      # DEPRECATED: Let Rails decide which layout should be used based on the
+      # controller configuration.
       layout: true,
 
-      deep_merge_shared_data: false,
+      # SSR options.
       ssr_enabled: false,
       ssr_url: 'http://localhost:13714',
+
+      # Used to detect version drift between server and client.
       version: nil,
     }.freeze
 
