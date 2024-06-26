@@ -40,12 +40,20 @@ module InertiaRails
       def _inertia_configuration
         @_inertia_configuration ||= begin
           config = superclass.try(:_inertia_configuration) || ::InertiaRails.configuration
-          @inertia_config ? config.merge(@inertia_config).freeze : config
+          @inertia_config ? config.merge(@inertia_config.freeze).freeze : config
         end
       end
 
       def _inertia_shared_data
-        @_inertia_shared_data ||= [*superclass.try(:_inertia_shared_data), *@inertia_share].freeze
+        @_inertia_shared_data ||= begin
+          shared_data = superclass.try(:_inertia_shared_data)
+
+          if @inertia_share && shared_data.present?
+            shared_data + @inertia_share.freeze
+          else
+            @inertia_share || shared_data || []
+          end.freeze
+        end
       end
     end
 
