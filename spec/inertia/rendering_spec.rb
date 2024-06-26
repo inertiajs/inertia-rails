@@ -1,7 +1,7 @@
 RSpec.describe 'rendering inertia views', type: :request do
   subject { response.body }
 
-  let(:controller) { ApplicationController.new }
+  let(:controller) { ApplicationController.new.tap { |controller| controller.set_request!(request) } }
 
   context 'first load' do
     let(:page) { InertiaRails::Renderer.new('TestComponent', controller, request, response, '').send(:page) }

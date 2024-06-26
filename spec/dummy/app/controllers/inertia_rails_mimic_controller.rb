@@ -1,5 +1,7 @@
 class InertiaRailsMimicController < ApplicationController
-  before_action :enable_inertia_default, only: :default_render_test
+  inertia_config(
+    default_render: -> { action_name == "default_render_test" },
+  )
   use_inertia_instance_props
 
   def instance_props_test
@@ -23,11 +25,5 @@ class InertiaRailsMimicController < ApplicationController
 
   def default_component_test
     render inertia: true
-  end
-
-  def enable_inertia_default
-    InertiaRails.configure do |config|
-      config.default_render = true
-    end
   end
 end

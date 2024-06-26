@@ -21,4 +21,8 @@ end
 
 module InertiaRails
   class Error < StandardError; end
+
+  def self.deprecator # :nodoc:
+    @deprecator ||= ActiveSupport::Deprecation.new
+  end
 end
