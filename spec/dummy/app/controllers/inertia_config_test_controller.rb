@@ -4,7 +4,7 @@ class InertiaConfigTestController < ApplicationController
     ssr_enabled: true,
     ssr_url: "http://localhost:7777",
     layout: "test",
-    version: "2.0",
+    version: "1.0",
   )
 
   # Test that modules included in the same class can also call it.
@@ -13,6 +13,6 @@ class InertiaConfigTestController < ApplicationController
   )
 
   def configuration
-    render json: inertia_configuration.to_h
+    render json: inertia_configuration.send(:options)
   end
 end
