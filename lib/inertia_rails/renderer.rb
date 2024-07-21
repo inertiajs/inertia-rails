@@ -16,8 +16,8 @@ module InertiaRails
     end
 
     def render
+      @response.set_header('Vary', 'X-Inertia')
       if @request.headers['X-Inertia']
-        @response.set_header('Vary', 'X-Inertia')
         @response.set_header('X-Inertia', 'true')
         @render_method.call json: page, status: @response.status, content_type: Mime[:json]
       else

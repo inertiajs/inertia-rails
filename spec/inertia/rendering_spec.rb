@@ -31,6 +31,14 @@ RSpec.describe 'rendering inertia views', type: :request do
       expect(response.status).to eq 200
     end
 
+    it 'has the proper headers' do
+      get component_path
+
+      expect(response.headers['X-Inertia']).to be_nil
+      expect(response.headers['Vary']).to eq 'X-Inertia'
+      expect(response.headers['Content-Type']).to eq 'text/html; charset=utf-8'
+    end
+
     context 'via an inertia route' do
       before { get inertia_route_path }
 
