@@ -63,18 +63,32 @@ module InertiaRails
     end
 
     def page
-      {
+      default_page = {
         component: component,
         props: computed_props,
         url: @request.original_fullpath,
         version: ::InertiaRails.version,
       }
+
+      deferred_props = deferred_props_keys
+      default_page[:deferredProps] = deferred_props if deferred_props.present?
+
+      default_page
     end
 
     def deep_transform_values(hash, proc)
       return proc.call(hash) unless hash.is_a? Hash
 
       hash.transform_values {|value| deep_transform_values(value, proc)}
+    end
+
+    def deferred_props_keys
+      return if rendering_partial_component?
+
+      @props.select { |_, prop| prop.is_a?(DeferProp) }
+            .map { |key, prop| { key: key, group: prop.group } }
+            .group_by { |prop| prop[:group] }
+            .transform_values { |props| props.map { |prop| prop[:key].to_s } }
     end
 
     def partial_keys

@@ -120,6 +120,29 @@ RSpec.describe 'rendering inertia views', type: :request do
       it { is_expected.not_to include('intense') }
     end
   end
+
+  context 'deferred prop rendering' do
+    context 'on first load' do
+      let (:page) {
+        InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { name: 'Brian', sport: 'basketball', level: 'worse than he believes', grit: 'intense'}).send(:page)
+      }
+      let(:headers) {{
+        'X-Inertia' => true,
+      }}
+      before { get deferred_props_path, headers: headers }
+
+      it "does not include defer props inside props in first load"  do
+        expect(JSON.parse(response.body)["props"]).to eq({"name" => 'Brian'})
+      end
+
+      it "returns deferredProps" do
+        expect(JSON.parse(response.body)["deferredProps"]).to eq(
+                                                                "default" => ["level", "grit"],
+                                                                "other" => ["sport"]
+                                                              )
+      end
+    end
+  end
 end
 
 def inertia_div(page)

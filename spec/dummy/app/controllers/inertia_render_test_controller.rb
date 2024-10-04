@@ -28,4 +28,15 @@ class InertiaRenderTestController < ApplicationController
       grit: InertiaRails.lazy(->{ 'intense' })
     }
   end
+
+  def deferred_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      sport: InertiaRails.defer('basketball', 'other'),
+      level: InertiaRails.defer do
+        'worse than he believes'
+      end,
+      grit: InertiaRails.defer(->{ 'intense' })
+    }
+  end
 end
