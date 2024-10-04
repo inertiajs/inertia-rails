@@ -1,6 +1,7 @@
 # Needed for `thread_mattr_accessor`
 require 'active_support/core_ext/module/attribute_accessors_per_thread'
 require 'inertia_rails/ignore_first_load_prop'
+require 'inertia_rails/defer_prop'
 
 module InertiaRails
   def self.configure
@@ -35,8 +36,8 @@ module InertiaRails
     InertiaRails::IgnoreFirstLoadProp.new(value, &block)
   end
 
-  def self.defer(value = nil, &block)
-    InertiaRails::IgnoreFirstLoadProp.new(value, &block)
+  def self.defer(value = nil, group = nil, &block)
+    InertiaRails::DeferProp.new(value, group, &block)
   end
 
   private
