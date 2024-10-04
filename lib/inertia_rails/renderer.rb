@@ -50,7 +50,7 @@ module InertiaRails
         if rendering_partial_component?
           key.in? partial_keys
         else
-          !prop.is_a?(InertiaRails::Lazy)
+          !prop.is_a?(InertiaRails::IgnoreFirstLoadProp)
         end
       end
 

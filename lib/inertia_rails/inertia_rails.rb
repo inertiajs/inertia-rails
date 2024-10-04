@@ -1,6 +1,6 @@
 # Needed for `thread_mattr_accessor`
 require 'active_support/core_ext/module/attribute_accessors_per_thread'
-require 'inertia_rails/lazy'
+require 'inertia_rails/ignore_first_load_prop'
 
 module InertiaRails
   def self.configure
@@ -32,7 +32,7 @@ module InertiaRails
   end
 
   def self.lazy(value = nil, &block)
-    InertiaRails::Lazy.new(value, &block)
+    InertiaRails::IgnoreFirstLoadProp.new(value, &block)
   end
 
   private
