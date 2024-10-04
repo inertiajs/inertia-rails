@@ -17,4 +17,8 @@ module InertiaRails
   def self.lazy(value = nil, &block)
     InertiaRails::IgnoreFirstLoadProp.new(value, &block)
   end
+
+  def self.deffer(value = nil, &block)
+    InertiaRails::IgnoreFirstLoadProp.new(value, &block)
+  end
 end
