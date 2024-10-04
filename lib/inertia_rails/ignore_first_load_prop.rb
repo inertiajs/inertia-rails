@@ -1,5 +1,5 @@
 module InertiaRails
-  class Lazy
+  class IgnoreFirstLoadProp
     def initialize(value = nil, &block)
       @value = value
       @block = block
