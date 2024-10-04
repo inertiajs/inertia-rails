@@ -393,6 +393,48 @@ RSpec.describe 'rendering inertia views', type: :request do
       end
     end
   end
+
+  context 'deferred prop rendering' do
+    context 'on first load' do
+      let (:page) {
+        InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { name: 'Brian', sport: 'basketball', level: 'worse than he believes', grit: 'intense' }).send(:page)
+      }
+      let(:headers) { { 'X-Inertia' => true } }
+      before { get deferred_props_path, headers: headers }
+
+      it "does not include defer props inside props in first load" do
+        expect(JSON.parse(response.body)["props"]).to eq({ "name" => 'Brian' })
+      end
+
+      it "returns deferredProps" do
+        expect(JSON.parse(response.body)["deferredProps"]).to eq(
+          "default" => ["level", "grit"],
+          "other" => ["sport"]
+        )
+      end
+    end
+
+    context 'with a partial reload' do
+      let (:page) {
+        InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { sport: 'basketball', level: 'worse than he believes', grit: 'intense' }).send(:page)
+      }
+      let(:headers) { {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'level,grit', # Simulate default group
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      } }
+
+      before { get deferred_props_path, headers: headers }
+
+      it { is_expected.to eq page.to_json }
+      it { is_expected.to include('intense') }
+      it { is_expected.to include('worse') }
+      it { is_expected.not_to include('basketball') }
+      it "does not deferredProps key in json" do
+        expect(JSON.parse(response.body)["deferredProps"]).to eq(nil)
+      end
+    end
+  end
 end
 
 def inertia_div(page)

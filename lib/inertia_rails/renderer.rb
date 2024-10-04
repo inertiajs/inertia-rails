@@ -96,12 +96,17 @@ module InertiaRails
     end
 
     def page
-      {
+      default_page = {
         component: component,
         props: computed_props,
         url: @request.original_fullpath,
         version: configuration.version,
       }
+
+      deferred_props = deferred_props_keys
+      default_page[:deferredProps] = deferred_props if deferred_props.present?
+
+      default_page
     end
 
     def deep_transform_props(props, parent_path = [], &block)
@@ -118,6 +123,15 @@ module InertiaRails
 
         transformed_props
       end
+    end
+
+    def deferred_props_keys
+      return if rendering_partial_component?
+
+      @props.select { |_, prop| prop.is_a?(DeferProp) }
+            .map { |key, prop| { key: key, group: prop.group } }
+            .group_by { |prop| prop[:group] }
+            .transform_values { |props| props.map { |prop| prop[:key].to_s } }
     end
 
     def partial_keys
@@ -148,7 +162,7 @@ module InertiaRails
       end
 
       # Precedence: Evaluate LazyProp only after partial keys have been checked
-      return false if prop.is_a?(LazyProp) && !rendering_partial_component?
+      return false if prop.is_a?(IgnoreOnFirstLoadProp) && !rendering_partial_component?
 
       true
     end
