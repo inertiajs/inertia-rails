@@ -35,6 +35,10 @@ module InertiaRails
     InertiaRails::IgnoreFirstLoadProp.new(value, &block)
   end
 
+  def self.deffer(value = nil, &block)
+    InertiaRails::IgnoreFirstLoadProp.new(value, &block)
+  end
+
   private
 
   module Configuration
