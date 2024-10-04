@@ -18,7 +18,7 @@ module InertiaRails
     InertiaRails::IgnoreFirstLoadProp.new(value, &block)
   end
 
-  def self.deffer(value = nil, &block)
+  def self.defer(value = nil, &block)
     InertiaRails::IgnoreFirstLoadProp.new(value, &block)
   end
 end
