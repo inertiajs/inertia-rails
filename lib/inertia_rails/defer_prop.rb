@@ -1,15 +1,15 @@
 module InertiaRails
   class DeferProp < IgnoreFirstLoadProp
+    include MergeableProp
+
     DEFAULT_GROUP = "default".freeze
 
-    def initialize(value = nil, group = nil, &block)
-      @group = group || DEFAULT_GROUP
-      @value = value
-      @block = block
-    end
+    attr_reader :group
 
-    def group
-      @group
+    def initialize(value = nil, group = nil, &block)
+      super(value, &block)
+
+      @group = group || DEFAULT_GROUP
     end
   end
 end

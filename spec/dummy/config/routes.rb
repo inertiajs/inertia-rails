@@ -27,6 +27,8 @@ Rails.application.routes.draw do
   get 'error_500' => 'inertia_test#error_500'
   get 'content_type_test' => 'inertia_test#content_type_test'
   get 'lazy_props' => 'inertia_render_test#lazy_props'
+  get 'always_props' => 'inertia_render_test#always_props'
+  get 'merge_props' => 'inertia_render_test#merge_props'
   get 'deferred_props' => 'inertia_render_test#deferred_props'
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
 

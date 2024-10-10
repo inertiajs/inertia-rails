@@ -29,6 +29,26 @@ class InertiaRenderTestController < ApplicationController
     }
   end
 
+  def always_props
+    render inertia: 'TestComponent', props: {
+      always: InertiaRails.always('always prop'),
+      regular: 'regular prop',
+      optional: InertiaRails.optional do
+        'optional prop'
+      end,
+      another_optional: InertiaRails.optional(->{ 'another optional prop' })
+    }
+  end
+
+  def merge_props
+    render inertia: 'TestComponent', props: {
+      merge: InertiaRails.merge('merge prop'),
+      regular: 'regular prop',
+      deferred_merge: InertiaRails.defer('deferred and merge prop').merge,
+      deferred: InertiaRails.defer('deferred'),
+    }
+  end
+
   def deferred_props
     render inertia: 'TestComponent', props: {
       name: 'Brian',

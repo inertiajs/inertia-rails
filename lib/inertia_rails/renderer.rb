@@ -10,9 +10,11 @@ module InertiaRails
       :controller,
       :props,
       :view_data,
+      :encrypt_history,
+      :clear_history
     )
 
-    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil)
+    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil, encrypt_history: nil, clear_history: nil)
       @component = component.is_a?(TrueClass) ? "#{controller.controller_path}/#{controller.action_name}" : component
       @controller = controller
       @configuration = controller.__send__(:inertia_configuration)
@@ -22,6 +24,8 @@ module InertiaRails
       @props = props || controller.__send__(:inertia_view_assigns)
       @view_data = view_data || {}
       @deep_merge = !deep_merge.nil? ? deep_merge : configuration.deep_merge_shared_data
+      @encrypt_history = !encrypt_history.nil? ? encrypt_history : configuration.encrypt_history
+      @clear_history = clear_history || false
     end
 
     def render
@@ -60,15 +64,17 @@ module InertiaRails
     # Functionally, this permits using either string or symbol keys in the controller. Since the results
     # is cast to json, we should treat string/symbol keys as identical.
     def merge_props(shared_data, props)
-      shared_data.deep_symbolize_keys.send(@deep_merge ? :deep_merge : :merge, props.deep_symbolize_keys)
+      @deep_merge ?
+        shared_data.deep_symbolize_keys.deep_merge(props.deep_symbolize_keys)
+        : shared_data.symbolize_keys.merge(props.symbolize_keys)
     end
 
     def computed_props
       _props = merge_props(shared_data, props).select do |key, prop|
         if rendering_partial_component?
-          key.in? partial_keys
+          key.in?(partial_keys) || prop.is_a?(AlwaysProp)
         else
-          !prop.is_a?(InertiaRails::IgnoreFirstLoadProp)
+          !prop.is_a?(IgnoreFirstLoadProp)
         end
       end
 
@@ -86,10 +92,15 @@ module InertiaRails
         props: computed_props,
         url: @request.original_fullpath,
         version: configuration.version,
+        encryptHistory: encrypt_history,
+        clearHistory: clear_history,
       }
 
       deferred_props = deferred_props_keys
       default_page[:deferredProps] = deferred_props if deferred_props.present?
+
+      merge_props = merge_props_keys
+      default_page[:mergeProps] = merge_props if merge_props.present?
 
       default_page
     end
@@ -103,14 +114,25 @@ module InertiaRails
     def deferred_props_keys
       return if rendering_partial_component?
 
-      @props.select { |_, prop| prop.is_a?(DeferProp) }
-            .map { |key, prop| { key: key, group: prop.group } }
-            .group_by { |prop| prop[:group] }
-            .transform_values { |props| props.map { |prop| prop[:key].to_s } }
+      @props.each_with_object({}) do |(key, prop), result|
+        (result[prop.group] ||= []) << key if prop.is_a?(DeferProp)
+      end
+    end
+
+    def merge_props_keys
+      @props.each_with_object([]) do |(key, prop), result|
+        if prop.class.include?(MergeableProp) && prop.merge? && reset_keys.exclude?(key)
+          result << key
+        end
+      end
     end
 
     def partial_keys
-      (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
+      @partial_keys ||= (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
+    end
+
+    def reset_keys
+      @reset_keys ||= (@request.headers['X-Inertia-Reset'] || '').split(',').compact.map(&:to_sym)
     end
 
     def rendering_partial_component?
