@@ -54,4 +54,9 @@ Rails.application.routes.draw do
 
   get 'conditional_share_index' => 'inertia_conditional_sharing#index'
   get 'conditional_share_show' => 'inertia_conditional_sharing#show'
+
+  get 'encrypt_history_default_config' => 'inertia_encrypt_history#default_config'
+  get 'encrypt_history_encrypt_history' => 'inertia_encrypt_history#encrypt_history'
+  get 'encrypt_history_override_config' => 'inertia_encrypt_history#override_config'
+  get 'encrypt_history_clear_history' => 'inertia_encrypt_history#clear_history'
 end
