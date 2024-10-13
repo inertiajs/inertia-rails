@@ -166,12 +166,12 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
-  context 'lazy prop rendering' do
+  context 'optional prop rendering' do
     context 'on first load' do
       let(:page) {
         InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { name: 'Brian'}).send(:page)
       }
-      before { get lazy_props_path }
+      before { get optional_props_path }
 
       it { is_expected.to include inertia_div(page) }
     end
@@ -186,7 +186,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         'X-Inertia-Partial-Component' => 'TestComponent',
       }}
 
-      before { get lazy_props_path, headers: headers }
+      before { get optional_props_path, headers: headers }
 
       it { is_expected.to eq page.to_json }
       it { is_expected.to include('basketball') }
