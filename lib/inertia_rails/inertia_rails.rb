@@ -1,52 +1,47 @@
 # Needed for `thread_mattr_accessor`
 require 'active_support/core_ext/module/attribute_accessors_per_thread'
-require 'inertia_rails/lazy'
+require 'inertia_rails/mergeable_prop'
+require 'inertia_rails/base_prop'
+require 'inertia_rails/ignore_first_load_prop'
+require 'inertia_rails/optional_prop'
+require 'inertia_rails/always_prop'
+require 'inertia_rails/merge_prop'
+require 'inertia_rails/defer_prop'
+require 'inertia_rails/configuration'
 
 module InertiaRails
-  def self.configure
-    yield(Configuration)
-  end
+  class << self
+    CONFIGURATION = Configuration.default
 
-  def self.version
-    Configuration.evaluated_version
-  end
+    def configure
+      yield(CONFIGURATION)
+    end
 
-  def self.layout
-    Configuration.layout
-  end
+    def configuration
+      CONFIGURATION
+    end
 
-  def self.ssr_enabled?
-    Configuration.ssr_enabled
-  end
+    def optional(value = nil, &block)
+      OptionalProp.new(value, &block)
+    end
 
-  def self.ssr_url
-    Configuration.ssr_url
-  end
+    def lazy(value = nil, &block)
+      InertiaRails.deprecator.warn(
+        "`lazy` is deprecated and will be removed in InertiaRails 4.0, use `optional` instead."
+      )
+      OptionalProp.new(value, &block)
+    end
 
-  def self.default_render?
-    Configuration.default_render
-  end
+    def defer(value = nil, group = nil, &block)
+      DeferProp.new(value, group, &block)
+    end
 
-  def self.deep_merge_shared_data?
-    Configuration.deep_merge_shared_data
-  end
+    def merge(value = nil, &block)
+      MergeProp.new(value, &block)
+    end
 
-  def self.lazy(value = nil, &block)
-    InertiaRails::Lazy.new(value, &block)
-  end
-
-  private
-
-  module Configuration
-    mattr_accessor(:layout) { nil }
-    mattr_accessor(:version) { nil }
-    mattr_accessor(:ssr_enabled) { false }
-    mattr_accessor(:ssr_url) { 'http://localhost:13714' }
-    mattr_accessor(:default_render) { false }
-    mattr_accessor(:deep_merge_shared_data) { false }
-
-    def self.evaluated_version
-      self.version.respond_to?(:call) ? self.version.call : self.version
+    def always(value = nil, &block)
+      AlwaysProp.new(value, &block)
     end
   end
 end
