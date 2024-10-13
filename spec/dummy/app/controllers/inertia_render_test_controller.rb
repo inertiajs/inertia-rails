@@ -35,14 +35,14 @@ class InertiaRenderTestController < ApplicationController
     render inertia: 'TestComponent'
   end
 
-  def lazy_props
+  def optional_props
     render inertia: 'TestComponent', props: {
       name: 'Brian',
-      sport: InertiaRails.lazy('basketball'),
-      level: InertiaRails.lazy do
+      sport: InertiaRails.optional('basketball'),
+      level: InertiaRails.optional do
         'worse than he believes'
       end,
-      grit: InertiaRails.lazy(->{ 'intense' })
+      grit: InertiaRails.optional(->{ 'intense' })
     }
   end
 

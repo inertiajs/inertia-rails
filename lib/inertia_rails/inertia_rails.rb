@@ -24,7 +24,13 @@ module InertiaRails
     def optional(value = nil, &block)
       OptionalProp.new(value, &block)
     end
-    alias_method :lazy, :optional
+
+    def lazy(value = nil, &block)
+      InertiaRails.deprecator.warn(
+        "`lazy` is deprecated and will be removed in InertiaRails 4.0, use `optional` instead."
+      )
+      OptionalProp.new(value, &block)
+    end
 
     def defer(value = nil, group = nil, &block)
       DeferProp.new(value, group, &block)
