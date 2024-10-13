@@ -7,6 +7,23 @@ class InertiaRenderTestController < ApplicationController
     }
   end
 
+  def except_props
+    render inertia: 'TestComponent', props: {
+      flat: 'flat param',
+      optional: InertiaRails.optional('optional param'),
+      nested_optional: InertiaRails.optional do
+        {
+          first: 'first nested optional param',
+        }
+      end,
+      nested: {
+        first: 'first nested param',
+        second: 'second nested param'
+      },
+      always: InertiaRails.always('always prop')
+    }
+  end
+
   def view_data
     render inertia: 'TestComponent', view_data: {
       name: 'Brian',
