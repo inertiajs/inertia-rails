@@ -20,3 +20,6 @@
 
 # Appraisal
 gemfiles/*.gemfile.lock
+
+# Local files, such as .env.development.local
+*.local

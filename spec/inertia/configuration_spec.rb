@@ -1,6 +1,38 @@
 RSpec.describe 'Inertia configuration', type: :request do
   after { reset_config! }
 
+  describe "InertiaRails::Configuration" do
+    it "does not allow to modify options after frozen" do
+      config = InertiaRails::Configuration.default
+      config.ssr_enabled = true
+      expect(config.ssr_enabled).to eq true
+
+      config.freeze
+      expect { config.ssr_enabled = false }.to raise_error(FrozenError)
+      expect { config.merge!(InertiaRails::Configuration.default) }.to raise_error(FrozenError)
+
+      expect {
+        merged_config = config.merge(InertiaRails::Configuration.default)
+        expect(merged_config.ssr_enabled).to eq false
+      }.not_to raise_error
+    end
+  end
+
+  describe 'inertia_config' do
+    it 'overrides the global values' do
+      get configuration_path
+
+      expect(response.parsed_body.symbolize_keys).to eq(
+        deep_merge_shared_data: true,
+        default_render: false,
+        layout: "test",
+        ssr_enabled: true,
+        ssr_url: "http://localhost:7777",
+        version: "2.0",
+      )
+    end
+  end
+
   describe '.version' do
     subject { JSON.parse(response.body)['version'] }
 
@@ -101,7 +133,7 @@ RSpec.describe 'Inertia configuration', type: :request do
 
       context 'opting out of a different layout for Inertia' do
         before do
-          InertiaRails.configure {|c| c.layout = nil }
+          InertiaRails.configure {|c| c.layout = true }
         end
 
         it 'uses default layout for controller' do
