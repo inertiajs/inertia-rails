@@ -177,6 +177,9 @@ On the front end, Inertia supports the concept of "partial reloads" where only t
 
 ```ruby
   inertia_share some_data: InertiaRails.lazy(lambda { some_very_slow_method })
+
+  # Using a Ruby block syntax
+  inertia_share some_data: InertiaRails.lazy { some_very_slow_method }
 ```
 
 ### Routing
