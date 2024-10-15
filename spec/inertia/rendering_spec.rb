@@ -5,7 +5,7 @@ RSpec.describe 'rendering inertia views', type: :request do
 
   context 'first load' do
     let(:page) { InertiaRails::Renderer.new('TestComponent', controller, request, response, '').send(:page) }
-    
+
     context 'with props' do
       let(:page) { InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: {name: 'Brandon', sport: 'hockey'}).send(:page) }
       before { get props_path }
@@ -31,12 +31,26 @@ RSpec.describe 'rendering inertia views', type: :request do
       expect(response.status).to eq 200
     end
 
-    it 'has the proper headers' do
-      get component_path
+    describe 'headers' do
+      context 'when no other Vary header is present' do
+        it 'has the proper headers' do
+          get component_path
 
-      expect(response.headers['X-Inertia']).to be_nil
-      expect(response.headers['Vary']).to eq 'X-Inertia'
-      expect(response.headers['Content-Type']).to eq 'text/html; charset=utf-8'
+          expect(response.headers['X-Inertia']).to be_nil
+          expect(response.headers['Vary']).to eq 'X-Inertia'
+          expect(response.headers['Content-Type']).to eq 'text/html; charset=utf-8'
+        end
+      end
+
+      context 'when another Vary header is present' do
+        it 'has the proper headers' do
+          get component_path, headers: {'Vary' => 'Accept'}
+
+          expect(response.headers['X-Inertia']).to be_nil
+          expect(response.headers['Vary']).to eq 'Accept, X-Inertia'
+          expect(response.headers['Content-Type']).to eq 'text/html; charset=utf-8'
+        end
+      end
     end
 
     context 'via an inertia route' do
