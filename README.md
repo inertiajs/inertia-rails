@@ -26,6 +26,7 @@ Examples:
 
 - [React/Vite](https://github.com/BrandonShar/inertia-rails-template)
 - [React/Vite + SSR](https://github.com/ElMassimo/inertia-rails-ssr-template)
+- [PingCRM with Vue and Vite](https://github.com/ledermann/pingcrm)
 
 ## Usage
 
