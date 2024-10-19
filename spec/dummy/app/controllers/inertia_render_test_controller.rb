@@ -69,7 +69,7 @@ class InertiaRenderTestController < ApplicationController
   def deferred_props
     render inertia: 'TestComponent', props: {
       name: 'Brian',
-      sport: InertiaRails.defer('basketball', 'other'),
+      sport: InertiaRails.defer('basketball', group: 'other'),
       level: InertiaRails.defer do
         'worse than he believes'
       end,

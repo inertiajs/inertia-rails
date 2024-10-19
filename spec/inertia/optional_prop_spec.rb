@@ -14,7 +14,7 @@ RSpec.describe InertiaRails::OptionalProp do
 
     context 'with a block' do
       it 'returns the result of the block' do
-        expect(InertiaRails::OptionalProp.new{'thing'}.call).to eq('thing')
+        expect(InertiaRails::OptionalProp.new {'thing'}.call).to eq('thing')
       end
     end
   end

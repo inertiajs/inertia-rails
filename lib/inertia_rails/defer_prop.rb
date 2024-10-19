@@ -6,7 +6,7 @@ module InertiaRails
 
     attr_reader :group
 
-    def initialize(value = nil, group = nil, &block)
+    def initialize(value = nil, group: nil, &block)
       super(value, &block)
 
       @group = group || DEFAULT_GROUP

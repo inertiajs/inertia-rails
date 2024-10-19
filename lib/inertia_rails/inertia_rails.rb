@@ -32,8 +32,8 @@ module InertiaRails
       OptionalProp.new(value, &block)
     end
 
-    def defer(value = nil, group = nil, &block)
-      DeferProp.new(value, group, &block)
+    def defer(value = nil, group: nil, &block)
+      DeferProp.new(value, group:, &block)
     end
 
     def merge(value = nil, &block)
