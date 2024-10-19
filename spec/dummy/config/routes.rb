@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   get 'props' => 'inertia_render_test#props'
   get 'view_data' => 'inertia_render_test#view_data'
   get 'component' => 'inertia_render_test#component'
+  get 'vary_header' => 'inertia_render_test#vary_header'
   get 'share' => 'inertia_share_test#share'
   get 'share_with_inherited' => 'inertia_child_share_test#share_with_inherited'
   get 'empty_test' => 'inertia_test#empty_test'

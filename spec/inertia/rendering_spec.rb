@@ -44,10 +44,10 @@ RSpec.describe 'rendering inertia views', type: :request do
 
       context 'when another Vary header is present' do
         it 'has the proper headers' do
-          get component_path, headers: {'Vary' => 'Accept'}
+          get vary_header_path
 
           expect(response.headers['X-Inertia']).to be_nil
-          expect(response.headers['Vary']).to eq 'Accept, X-Inertia'
+          expect(response.headers['Vary']).to eq 'Accept-Language, X-Inertia'
           expect(response.headers['Content-Type']).to eq 'text/html; charset=utf-8'
         end
       end
