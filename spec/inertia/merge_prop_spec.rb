@@ -1,24 +1,11 @@
 RSpec.describe InertiaRails::MergeProp do
-  describe '#call' do
-    subject(:call) { prop.call }
-    let(:prop) { described_class.new('value') }
+  let(:prop) { described_class.new('value') }
 
-    it { is_expected.to eq('value') }
+  describe '#merge?' do
+    subject { prop.merge? }
 
-    context 'with a callable value' do
-      let(:prop) { described_class.new(-> { 'callable' }) }
-
-      it { is_expected.to eq('callable') }
-    end
-
-    context 'with a block' do
-      let(:prop) { described_class.new { 'block' } }
-
-      it { is_expected.to eq('block') }
-    end
-
-    it 'returns the merge flag' do
-      expect(prop.merge?).to eq(true)
-    end
+    it { is_expected.to be(true) }
   end
+
+  it_behaves_like 'callable prop'
 end

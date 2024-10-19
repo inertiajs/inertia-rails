@@ -1,42 +1,31 @@
 RSpec.describe InertiaRails::DeferProp do
-  describe '#call' do
-    subject(:call) { prop.call }
-    let(:prop) { described_class.new('value') }
+  let(:prop) { described_class.new('value') }
 
-    it { is_expected.to eq('value') }
+  it_behaves_like 'callable prop'
+
+  describe '#group' do
+    subject(:group) { prop.group }
 
     it 'returns the default group' do
-      expect(prop.group).to eq('default')
+      expect(group).to eq('default')
     end
 
-    context "with group" do
+    context "with a custom group" do
       let(:prop) { described_class.new('value', group: 'custom') }
 
       it 'returns the group' do
-        expect(prop.group).to eq('custom')
+        expect(group).to eq('custom')
       end
-    end
 
-    context 'with a callable value' do
-      let(:prop) { described_class.new(-> { 'callable' }) }
-
-      it { is_expected.to eq('callable') }
-
-      context "with group" do
+      context 'with a callable value' do
         let(:prop) { described_class.new(-> { 'callable' }, group: 'custom') }
 
         it 'returns the group' do
-          expect(prop.group).to eq('custom')
+          expect(group).to eq('custom')
         end
       end
-    end
 
-    context 'with a block' do
-      let(:prop) { described_class.new { 'block' } }
-
-      it { is_expected.to eq('block') }
-
-      context "with group" do
+      context 'with a block' do
         let(:prop) { described_class.new(group: 'custom') { 'block' } }
 
         it 'returns the group' do
@@ -44,8 +33,10 @@ RSpec.describe InertiaRails::DeferProp do
         end
       end
     end
+  end
 
-    it 'returns the merge flag' do
+  describe '#merge' do
+    it 'updates the merge value' do
       expect(prop.merge?).to be_falsey
       prop.merge
 

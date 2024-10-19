@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'net/http'
 require 'json'
 require_relative "inertia_rails"
@@ -80,12 +82,16 @@ module InertiaRails
 
       drop_partial_except_keys(_props) if rendering_partial_component?
 
-      deep_transform_values(
-        _props,
-        lambda do |prop|
-          prop.respond_to?(:call) ? controller.instance_exec(&prop) : prop
+      deep_transform_values _props do |prop|
+        case prop
+        when BaseProp
+          prop.call(controller)
+        when Proc
+          controller.instance_exec(&prop)
+        else
+          prop
         end
-      )
+      end
     end
 
     def page
@@ -107,10 +113,10 @@ module InertiaRails
       default_page
     end
 
-    def deep_transform_values(hash, proc)
-      return proc.call(hash) unless hash.is_a? Hash
+    def deep_transform_values(hash, &block)
+      return block.call(hash) unless hash.is_a? Hash
 
-      hash.transform_values {|value| deep_transform_values(value, proc)}
+      hash.transform_values {|value| deep_transform_values(value, &block)}
     end
 
     def drop_partial_except_keys(hash)

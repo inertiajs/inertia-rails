@@ -5,22 +5,12 @@ module InertiaRails
       @block = block
     end
 
-    def call
-      to_proc.call
+    def call(controller)
+      value.respond_to?(:call) ? controller.instance_exec(&value) : value
     end
 
-    private
-
-    def to_proc
-      # This is called by controller.instance_exec, which changes self to the
-      # controller instance. That makes the instance variables unavailable to the
-      # proc via closure. Copying the instance variables to local variables before
-      # the proc is returned keeps them in scope for the returned proc.
-      value = @value
-      return value if value.respond_to?(:call)
-      return Proc.new { value } if value
-
-      @block
+    def value
+      @value.nil? ? @block : @value
     end
   end
 end
