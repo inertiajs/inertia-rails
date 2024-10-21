@@ -7,16 +7,26 @@
 
 ### Backend
 
-Just add the inertia rails gem to your Gemfile
+Add the `inertia_rails` gem to your Gemfile.
+
 ```ruby
 gem 'inertia_rails'
 ```
 
+For more instructions, see [Server-side setup](https://inertia-rails.netlify.app/guide/server-side-setup.html).
+
 ### Frontend
 
-Rails 7 specific frontend docs coming soon. For now, check out the [official Inertia docs](https://inertiajs.com) or these project examples:
+We are discussing on bringing official docs for Inertia Rails to this repo, as
+the [official docs](https://inertiajs.com/client-side-setup) are specific to Laravel.
+
+In the meantime, you can refer to the community-maintained [Client-side setup](https://inertia-rails.netlify.app/guide/client-side-setup.html).
+
+Examples:
+
+- [React/Vite](https://github.com/BrandonShar/inertia-rails-template)
+- [React/Vite + SSR](https://github.com/ElMassimo/inertia-rails-ssr-template)
 - [PingCRM with Vue and Vite](https://github.com/ledermann/pingcrm)
-- [Starter template with React and Vite](https://github.com/BrandonShar/inertia-rails-template)
 
 ## Usage
 
@@ -65,12 +75,11 @@ end
 In order to use instance props, you must call `use_inertia_instance_props` on the controller (or a base controller it inherits from). If any props are provided manually, instance props
 are automatically disabled for that response. Instance props are only included if they are defined after the before filter is set from `use_inertia_instance_props`.
 
-Automatic component name is also opt in, you must set the `default_render` config value to `true`. Otherwise, you can simply `render inertia: true` for the same behavior explicitly. 
+Automatic component name is also opt in, you must set the [`default_render`](#default_render) config value to `true`. Otherwise, you can simply `render inertia: true` for the same behavior explicitly.
 
 ### Layout 
 
-Inertia layouts use the rails layout convention and can be set or changed in the same way. The original `layout` config option is still functional, but will likely be deprecated in the future in favor
-of using rails layouts.
+Inertia layouts use the rails layout convention and can be set or changed in the same way.
 
 ```ruby
 class EventsController < ApplicationController
@@ -135,20 +144,14 @@ end
 }
 ```
 
-Deep merging can be set as the project wide default via the InertiaRails configuration:
+Deep merging can be configured using the [`deep_merge_shared_data`](#deep_merge_shared_data) configuration option.
 
-```ruby
-# config/initializers/some_initializer.rb
-InertiaRails.configure do |config|
-  config.deep_merge_shared_data = true
-end
-
-```
-
-If deep merging is enabled by default, it's possible to opt out within the action:
+If deep merging is enabled, you can still opt-out within the action:
 
 ```ruby
 class CrazyScorersController < ApplicationController
+  inertia_config(deep_merge_shared_data: true)
+
   inertia_share do
     {
       basketball_data: {
@@ -165,7 +168,7 @@ class CrazyScorersController < ApplicationController
   end
 end
 
-# Even if deep merging is set by default, since the renderer has `deep_merge: false`, it will send a shallow merge to the frontend:
+# `deep_merge: false` overrides the default:
 {
   basketball_data: {
     points: 100,
@@ -189,33 +192,84 @@ If you don't need a controller to handle a static component, you can route direc
 inertia 'about' => 'AboutComponent'
 ```
 
-### SSR
+### SSR _(experimental)_
 
-Enable SSR via the config settings for `ssr_enabled` and `ssr_url`.
+Enable SSR via the configuration options for [`ssr_enabled`](#ssr_enabled-experimental) and [`ssr_url`](#ssr_url-experimental).
 
-When using SSR, don't forget to add `<%= inertia_headers %>` to the `<head>` of your `application.html.erb`.
+When using SSR, don't forget to add `<%= inertia_ssr_head %>` to the `<head>` of your layout (i.e. `application.html.erb`).
 
-## Configuration
+## Configuration ⚙️
 
-Inertia Rails has a few different configuration options that can be set anywhere, but the most common location is from within an initializer.
+Inertia Rails can be configured globally or in a specific controller (and subclasses).
 
-The default config is shown below
+### Global Configuration
+
+If using global configuration, we recommend you place the code inside an initializer:
+
 ```ruby
-InertiaRails.configure do |config|
-  
-  # set the current version for automatic asset refreshing. A string value should be used if any.
-  config.version = nil
-  # enable default inertia rendering (warning! this will override rails default rendering behavior)
-  config.default_render = true
-  
-  # ssr specific options
-  config.ssr_enabled = false
-  config.ssr_url = 'http://localhost:13714'
+# config/initializers/inertia.rb
 
-  config.deep_merge_shared_data = false
-  
+InertiaRails.configure do |config|
+  # Example: force a full-reload if the deployed assets change.
+  config.version = ViteRuby.digest
 end
 ```
+
+The default configuration can be found [here](https://github.com/inertiajs/inertia-rails/blob/master/lib/inertia_rails/configuration.rb#L5-L22).
+
+### Local Configuration
+
+Use `inertia_config` in your controllers to override global settings:
+
+```ruby
+class EventsController < ApplicationController
+  inertia_config(
+    version: "events-#{InertiaRails.configuration.version}",
+    ssr_enabled: -> { action_name == "index" },
+  )
+end
+```
+
+### Configuration Options
+
+#### `version` _(recommended)_
+
+  This allows Inertia to detect if the app running in the client is oudated,
+  forcing a full page visit instead of an XHR visit on the next request.
+
+  See [assets versioning](https://inertiajs.com/asset-versioning).
+
+  __Default__: `nil`
+
+#### `deep_merge_shared_data`
+
+  When enabled, props will be deep merged with shared data, combining hashes
+  with the same keys instead of replacing them.
+
+  __Default__: `false`
+
+#### `default_render`
+
+  Overrides Rails default rendering behavior to render using Inertia by default.
+
+  __Default__: `false`
+
+#### `ssr_enabled` _(experimental)_
+
+  Whether to use a JavaScript server to pre-render your JavaScript pages,
+  allowing your visitors to receive fully rendered HTML when they first visit
+  your application.
+
+  Requires a JS server to be available at `ssr_url`. [_Example_](https://github.com/ElMassimo/inertia-rails-ssr-template)
+
+  __Default__: `false`
+
+#### `ssr_url` _(experimental)_
+
+  The URL of the JS server that will pre-render the app using the specified
+  component and props.
+
+  __Default__: `"http://localhost:13714"`
 
 ## Testing
 

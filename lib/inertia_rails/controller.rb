@@ -1,37 +1,32 @@
 require_relative "inertia_rails"
+require_relative "helper"
 
 module InertiaRails
   module Controller
     extend ActiveSupport::Concern
 
     included do
-      helper_method :inertia_headers
-
-      before_action do
-        error_sharing = proc do
-          # :inertia_errors are deleted from the session by the middleware
-          if @_request && session[:inertia_errors].present?
-            { errors: session[:inertia_errors] }
-          else
-            {}
-          end
-        end
-
-        @_inertia_shared_plain_data ||= {}
-        @_inertia_shared_blocks ||= [error_sharing]
-        @_inertia_html_headers ||= []
-      end
+      helper ::InertiaRails::Helper
 
       after_action do
-        cookies['XSRF-TOKEN'] = form_authenticity_token unless !protect_against_forgery?
+        cookies['XSRF-TOKEN'] = form_authenticity_token if protect_against_forgery?
       end
     end
 
     module ClassMethods
-      def inertia_share(hash = nil, &block)
-        before_action do
-          @_inertia_shared_plain_data = @_inertia_shared_plain_data.merge(hash) if hash
-          @_inertia_shared_blocks = @_inertia_shared_blocks + [block] if block_given?
+      def inertia_share(attrs = {}, &block)
+        @inertia_share ||= []
+        @inertia_share << attrs.freeze unless attrs.empty?
+        @inertia_share << block if block
+      end
+
+      def inertia_config(**attrs)
+        config = InertiaRails::Configuration.new(**attrs)
+
+        if @inertia_config
+          @inertia_config.merge!(config)
+        else
+          @inertia_config = config
         end
       end
 
@@ -41,26 +36,33 @@ module InertiaRails
           @_inertia_skip_props = view_assigns.keys + ['_inertia_skip_props']
         end
       end
-    end
 
-    def inertia_headers
-      @_inertia_html_headers.join.html_safe
-    end
+      def _inertia_configuration
+        @_inertia_configuration ||= begin
+          config = superclass.try(:_inertia_configuration) || ::InertiaRails.configuration
+          @inertia_config&.with_defaults(config) || config
+        end
+      end
 
-    def inertia_headers=(value)
-      @_inertia_html_headers = value
+      def _inertia_shared_data
+        @_inertia_shared_data ||= begin
+          shared_data = superclass.try(:_inertia_shared_data)
+
+          if @inertia_share && shared_data.present?
+            shared_data + @inertia_share.freeze
+          else
+            @inertia_share || shared_data || []
+          end.freeze
+        end
+      end
     end
 
     def default_render
-      if InertiaRails.default_render?
+      if inertia_configuration.default_render
         render(inertia: true)
       else
         super
       end
-    end
-
-    def shared_data
-      (@_inertia_shared_plain_data || {}).merge(evaluated_blocks)
     end
 
     def redirect_to(options = {}, response_options = {})
@@ -77,19 +79,27 @@ module InertiaRails
       )
     end
 
+    private
+
     def inertia_view_assigns
       return {} unless @_inertia_instance_props
       view_assigns.except(*@_inertia_skip_props)
     end
 
-    private
+    def inertia_configuration
+      self.class._inertia_configuration.bind_controller(self)
+    end
 
-    def inertia_layout
-      layout = ::InertiaRails.layout
+    def inertia_shared_data
+      initial_data = session[:inertia_errors].present? ? {errors: session[:inertia_errors]} : {}
 
-      # When the global configuration is not set, let Rails decide which layout
-      # should be used based on the controller configuration.
-      layout.nil? ? true : layout
+      self.class._inertia_shared_data.filter_map { |shared_data|
+        if shared_data.respond_to?(:call)
+          instance_exec(&shared_data)
+        else
+          shared_data
+        end
+      }.reduce(initial_data, &:merge)
     end
 
     def inertia_location(url)
@@ -101,10 +111,6 @@ module InertiaRails
       if (inertia_errors = options.dig(:inertia, :errors))
         session[:inertia_errors] = inertia_errors
       end
-    end
-
-    def evaluated_blocks
-      (@_inertia_shared_blocks || []).map { |block| instance_exec(&block) }.reduce(&:merge) || {}
     end
   end
 end

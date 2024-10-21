@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   mount InertiaRails::Engine => "/inertia-rails"
 
+  get 'configuration' => 'inertia_config_test#configuration'
   get 'props' => 'inertia_render_test#props'
   get 'view_data' => 'inertia_render_test#view_data'
   get 'component' => 'inertia_render_test#component'
