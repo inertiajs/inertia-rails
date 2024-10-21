@@ -14,7 +14,7 @@ module InertiaRails
     end
 
     module ClassMethods
-      def inertia_share(**attrs, &block)
+      def inertia_share(attrs = {}, &block)
         @inertia_share ||= []
         @inertia_share << attrs.freeze unless attrs.empty?
         @inertia_share << block if block
