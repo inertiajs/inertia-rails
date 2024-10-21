@@ -78,7 +78,7 @@ module InertiaRails
       end
 
       def server_version
-        controller.send(:inertia_configuration).version
+        controller&.send(:inertia_configuration)&.version
       end
 
       def coerce_version(version)
