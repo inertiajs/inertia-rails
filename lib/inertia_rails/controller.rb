@@ -1,5 +1,6 @@
 require_relative "inertia_rails"
 require_relative "helper"
+require_relative "action_filter"
 
 module InertiaRails
   module Controller
@@ -94,7 +95,7 @@ module InertiaRails
 
       def extract_inertia_share_option(options, from, to)
         if (from_value = options.delete(from))
-          filter = AbstractController::Callbacks::ActionFilter.new([:inertia_share], from, from_value)
+          filter = InertiaRails::ActionFilter.new(from, from_value)
           options[to] = Array(options[to]).unshift(filter)
         end
       end
@@ -105,7 +106,7 @@ module InertiaRails
           -> { send(filter) }
         when Proc
           filter
-        when AbstractController::Callbacks::ActionFilter
+        when InertiaRails::ActionFilter
           -> { filter.match?(self) }
         else
           raise ArgumentError, "You must pass a symbol or a proc as a filter."
