@@ -1,3 +1,7 @@
+class MyError
+  def to_hash() { uh: 'oh' } end
+end
+
 class InertiaTestController < ApplicationController
   layout 'conditional', only: [:with_different_layout]
 
@@ -41,6 +45,10 @@ class InertiaTestController < ApplicationController
 
   def redirect_with_inertia_errors
     redirect_to empty_test_path, inertia: { errors: { uh: 'oh' } }
+  end
+
+  def redirect_with_inertia_error_object
+    redirect_to empty_test_path, inertia: { errors: MyError.new }
   end
 
   def redirect_back_with_inertia_errors

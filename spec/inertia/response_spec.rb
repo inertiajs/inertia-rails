@@ -27,6 +27,15 @@ RSpec.describe 'InertiaRails::Response', type: :request do
           expect(response.headers['Location']).to eq(empty_test_url)
           expect(session[:inertia_errors]).to include({ uh: 'oh' })
         end
+
+        it 'serializes :inertia_errors to the session' do
+          post redirect_with_inertia_error_object_path,
+            headers: { 'X-Inertia' => true }
+
+          expect(response.status).to eq 302
+          expect(response.headers['Location']).to eq(empty_test_url)
+          expect(session[:inertia_errors]).to include({ uh: 'oh' })
+        end
       end
     end
   end
