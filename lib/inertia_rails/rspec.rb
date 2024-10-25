@@ -5,29 +5,29 @@ module InertiaRails
   module RSpec
     class InertiaRenderWrapper
       attr_reader :view_data, :props, :component
-    
+
       def initialize
         @view_data = nil
         @props = nil
         @component = nil
       end
-    
+
       def call(params)
         set_values(params)
         @render_method&.call(params)
       end
-    
+
       def wrap_render(render_method)
         @render_method = render_method
         self
       end
-    
+
       protected
-    
+
       def set_values(params)
-        @view_data = params[:locals].except(:page)
-        @props = params[:locals][:page][:props]
-        @component = params[:locals][:page][:component]
+        @view_data = (params[:locals] || params).except(:page, :json)
+        @props = params.dig(:locals, :page, :props) || params.dig(:json, :props)
+        @component = params.dig(:locals, :page, :component) || params.dig(:json, :component)
       end
     end
 
@@ -49,8 +49,8 @@ module InertiaRails
         @_inertia_render_wrapper = InertiaRenderWrapper.new.wrap_render(render)
       end
 
-      protected 
-      
+      protected
+
       def inertia_tests_setup?
         ::RSpec.current_example.metadata.fetch(:inertia, false)
       end
@@ -74,7 +74,7 @@ end
 
 RSpec::Matchers.define :have_exact_props do |expected_props|
   match do |inertia|
-  # Computed props have symbolized keys. 
+    # Computed props have symbolized keys.
     expect(inertia.props).to eq expected_props.deep_symbolize_keys
   end
 
@@ -85,7 +85,7 @@ end
 
 RSpec::Matchers.define :include_props do |expected_props|
   match do |inertia|
-  # Computed props have symbolized keys. 
+    # Computed props have symbolized keys.
     expect(inertia.props).to include expected_props.deep_symbolize_keys
   end
 
@@ -106,7 +106,7 @@ end
 
 RSpec::Matchers.define :have_exact_view_data do |expected_view_data|
   match do |inertia|
-    expect(inertia.view_data).to eq expected_view_data    
+    expect(inertia.view_data).to eq expected_view_data
   end
 
   failure_message do |inertia|
