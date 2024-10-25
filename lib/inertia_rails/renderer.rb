@@ -75,7 +75,8 @@ module InertiaRails
       deep_transform_values(
         _props,
         lambda do |prop|
-          prop.respond_to?(:call) ? controller.instance_exec(&prop) : prop
+          result = prop.respond_to?(:call) ? @controller.instance_exec(&prop) : prop
+          result.respond_to?(:to_hash) ? result.to_hash : result
         end
       )
     end
