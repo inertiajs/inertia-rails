@@ -34,6 +34,22 @@ RSpec.describe InertiaRails::RSpec, type: :request do
       end
     end
 
+    context 'with props during sequential request' do
+      before { get props_path, headers: {'X-Inertia': true} }
+
+      it 'has props' do
+        expect_inertia.to have_exact_props({name: 'Brandon', sport: 'hockey'})
+      end
+
+      it 'includes props' do
+        expect_inertia.to include_props({sport: 'hockey'})
+      end
+
+      it 'can retrieve props' do
+        expect(inertia.props[:name]).to eq 'Brandon'
+      end
+    end
+
     context 'with view data' do
       before { get view_data_path }
 

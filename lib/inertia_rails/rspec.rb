@@ -25,9 +25,16 @@ module InertiaRails
       protected
     
       def set_values(params)
-        @view_data = params[:locals].except(:page)
-        @props = params[:locals][:page][:props]
-        @component = params[:locals][:page][:component]
+        if params[:locals].present?
+          @view_data = params[:locals].except(:page)
+          @props = params[:locals][:page][:props]
+          @component = params[:locals][:page][:component]
+        else
+          # Sequential Inertia request
+          @view_data = {}
+          @props = params[:json][:props]
+          @component = params[:json][:component]
+        end
       end
     end
 
