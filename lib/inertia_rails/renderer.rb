@@ -110,7 +110,7 @@ module InertiaRails
     def resolve_component(component)
       return component unless component.is_a? TrueClass
 
-      configuration.component_path_resolver(controller.controller_path, controller.action_name)
+      configuration.component_path_resolver(path: controller.controller_path, action: controller.action_name)
     end
   end
 end
