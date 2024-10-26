@@ -77,6 +77,19 @@ are automatically disabled for that response. Instance props are only included i
 
 Automatic component name is also opt in, you must set the [`default_render`](#default_render) config value to `true`. Otherwise, you can simply `render inertia: true` for the same behavior explicitly.
 
+If the default component naming doesn't match your convention, you can define a method to resolve it however you like via the `component_path_resolver` config value. The value of this should be callable and will receive the path and action and should return a string component path.
+
+```ruby
+inertia_config(
+  component_path_resolver: ->(path, action) do
+    "Storefront/#{path.camelize}/#{action.camelize}"
+  end
+)
+
+```
+
+
+
 ### Layout 
 
 Inertia layouts use the rails layout convention and can be set or changed in the same way.

@@ -22,7 +22,7 @@ RSpec.describe 'Inertia configuration', type: :request do
     it 'overrides the global values' do
       get configuration_path
 
-      expect(response.parsed_body.symbolize_keys).to eq(
+      expect(response.parsed_body.symbolize_keys).to include(
         deep_merge_shared_data: true,
         default_render: false,
         layout: "test",

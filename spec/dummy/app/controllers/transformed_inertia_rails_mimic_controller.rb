@@ -1,7 +1,7 @@
 class TransformedInertiaRailsMimicController < ApplicationController
   inertia_config(
     default_render: true,
-    render_transformer: ->(path, action) do
+    component_path_resolver: ->(path, action) do
       "#{path.camelize}/#{action.camelize}"
     end
   )
