@@ -33,6 +33,14 @@ RSpec.describe 'rendering when mimicking rails behavior', type: :request, inerti
       expect_inertia.to render_component('inertia_rails_mimic/default_render_test')
       expect_inertia.to include_props({'name' => 'Brian'})
     end
+
+    context 'a rendering transformation is provided' do
+      it 'renders based on the transformation' do
+        get transformed_default_render_test_path
+
+        expect_inertia.to render_component('TransformedInertiaRailsMimic/RenderTest')
+      end
+    end
   end
 end
 

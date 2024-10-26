@@ -9,6 +9,9 @@ module InertiaRails
       # Overrides Rails default rendering behavior to render using Inertia by default.
       default_render: false,
 
+      # Allows the user to hook into the default rendering behavior and change it to fit their needs
+      component_path_resolver: ->(path:, action:) { "#{path}/#{action}" },
+
       # DEPRECATED: Let Rails decide which layout should be used based on the
       # controller configuration.
       layout: true,
@@ -59,10 +62,14 @@ module InertiaRails
       freeze
     end
 
+    def component_path_resolver(path:, action:)
+      @options[:component_path_resolver].call(path:, action:)
+    end
+
     OPTION_NAMES.each do |option|
       define_method(option) {
         evaluate_option @options[option]
-      }
+      } unless method_defined?(option)
       define_method("#{option}=") { |value|
         @options[option] = value
       }
