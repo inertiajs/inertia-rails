@@ -65,6 +65,10 @@ module InertiaRails
       end
     end
 
+    def inertia_render_transformer(path, action)
+      "#{path}/#{action}"
+    end
+
     def redirect_to(options = {}, response_options = {})
       capture_inertia_errors(response_options)
       super(options, response_options)

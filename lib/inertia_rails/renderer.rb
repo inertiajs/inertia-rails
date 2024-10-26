@@ -110,7 +110,7 @@ module InertiaRails
     def resolve_component(component)
       return component unless component.is_a? TrueClass
 
-      configuration.render_transformer(controller.controller_path, controller.action_name)
+      controller.inertia_render_transformer(controller.controller_path, controller.action_name)
     end
   end
 end
