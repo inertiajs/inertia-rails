@@ -13,9 +13,9 @@ module InertiaRails
     )
 
     def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil)
-      @component = component.is_a?(TrueClass) ? "#{controller.controller_path}/#{controller.action_name}" : component
       @controller = controller
       @configuration = controller.__send__(:inertia_configuration)
+      @component = resolve_component(component)
       @request = request
       @response = response
       @render_method = render_method
@@ -105,6 +105,12 @@ module InertiaRails
 
     def rendering_partial_component?
       @request.inertia_partial? && @request.headers['X-Inertia-Partial-Component'] == component
+    end
+
+    def resolve_component(component)
+      return component unless component.is_a? TrueClass
+
+      configuration.render_transformer(controller.controller_path, controller.action_name)
     end
   end
 end
