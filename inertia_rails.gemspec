@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.name          = "inertia_rails"
   spec.version       = InertiaRails::VERSION
   spec.authors       = ["Brian Knoles", "Brandon Shar", "Eugene Granovsky"]
-  spec.email         = ["brain@bellawatt.com", "brandon@bellawatt.com", "eugene@bellawatt.com"]
+  spec.email         = ["brian@bellawatt.com", "brandon@bellawatt.com", "eugene@bellawatt.com"]
 
   spec.summary       = %q{Inertia adapter for Rails}
   spec.homepage      = "https://github.com/inertiajs/inertia-rails"
