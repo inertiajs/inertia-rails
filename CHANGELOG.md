@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2024-10-27
+
+* Refactor Inertia configuration into a controller class method. Thanks @ElMassimo!
+* Documentation updates. Thanks @osbre and @austenmadden!
+* Further fixes to the `Vary` header. Thanks @skryukov!
+* Add configuration option for the component path in the renderer.
+
 ## [3.2.0] - 2024-06-19
 
 * Refactor the internals of shared Inertia data to use controller instance variables instead of module level variables that run a higher risk of being leaked between requests. Big thanks to @ledermann for the initial work many years ago and to @PedroAugustoRamalhoDuarte for finishing it up!
