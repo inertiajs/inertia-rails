@@ -52,4 +52,5 @@ Rails.application.routes.draw do
 
   get 'conditional_share_index' => 'inertia_conditional_sharing#index'
   get 'conditional_share_show' => 'inertia_conditional_sharing#show'
+  get 'conditional_share_show_with_a_problem' => 'inertia_conditional_sharing#show_with_a_problem'
 end

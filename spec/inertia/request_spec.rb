@@ -154,4 +154,12 @@ RSpec.describe 'Inertia::Request', type: :request do
       end
     end
   end
+
+  describe 'a non existent route' do
+    it 'raises a 404 exception' do
+      expect {
+        get '/non_existent_route', headers: { 'X-Inertia' => true }
+      }.to raise_error(ActionController::RoutingError,  /No route matches/)
+    end
+  end
 end
