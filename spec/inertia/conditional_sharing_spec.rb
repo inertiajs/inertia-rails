@@ -19,10 +19,8 @@ RSpec.describe "conditionally shared data in a controller", type: :request do
 
   context "when there is conditional data shared via before_action" do
     it "raises an error because it is frozen" do
-      # Rails < 7.1 won't raise the error unless we load the controller before the request we actually want to test.
-      #
-      # This can be removed when we drop support for Rails < 7.1.
-      get conditional_share_show_path, headers: {'X-Inertia' => true}
+      # InertiaSharedData isn't frozen until after the first time it's accessed.
+      InertiaConditionalSharingController.send(:_inertia_shared_data)
 
       expect {
         get conditional_share_show_with_a_problem_path, headers: {'X-Inertia' => true}
