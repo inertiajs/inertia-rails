@@ -50,6 +50,13 @@ class InertiaTestController < ApplicationController
     )
   end
 
+  def redirect_back_or_to_with_inertia_errors
+    redirect_back_or_to(
+      empty_test_path,
+      inertia: { errors: { go: 'back!' } }
+    )
+  end
+
   def error_404
     render inertia: 'ErrorComponent', status: 404
   end
