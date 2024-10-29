@@ -70,16 +70,6 @@ module InertiaRails
       super
     end
 
-    def redirect_back(**options)
-      capture_inertia_errors(options)
-      super
-    end
-
-    def redirect_back_or_to(_fallback_location, **options)
-      capture_inertia_errors(options)
-      super
-    end
-
     private
 
     def inertia_view_assigns
