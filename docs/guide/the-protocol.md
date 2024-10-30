@@ -66,7 +66,9 @@ X-Inertia: true
     }
   },
   "url": "/events/80",
-  "version": "c32b8e4965f418ad16eaebba1d4e960f"
+  "version": "c32b8e4965f418ad16eaebba1d4e960f",
+  "encryptHistory": true,
+  "clearHistory": false
 }
 ```
 
@@ -78,6 +80,8 @@ Inertia shares data between the server and client via a page object. This object
 2. `props`: The page props (data).
 3. `url`: The page URL.
 4. `version`: The current asset version.
+5. `encryptHistory`: Whether or not to encrypt the current page's history state.
+6. `clearHistory`: Whether or not to clear any encrypted history state.
 
 On standard full page visits, the page object is JSON encoded into the `data-page` attribute in the root `<div>`. On Inertia visits, the page object is returned as the JSON payload.
 

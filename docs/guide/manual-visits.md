@@ -20,6 +20,12 @@ router.visit(url, {
   errorBag: null,
   forceFormData: false,
   queryStringArrayFormat: 'brackets',
+  async: false,
+  showProgress: true,
+  fresh: false,
+  reset: [],
+  preserveUrl: false,
+  prefetch: false,
   onCancelToken: (cancelToken) => {},
   onCancel: () => {},
   onBefore: (visit) => {},
@@ -28,6 +34,8 @@ router.visit(url, {
   onSuccess: (page) => {},
   onError: (errors) => {},
   onFinish: (visit) => {},
+  onPrefetching: () => {},
+  onPrefetched: () => {},
 })
 ```
 
@@ -48,6 +56,12 @@ router.visit(url, {
   errorBag: null,
   forceFormData: false,
   queryStringArrayFormat: 'brackets',
+  async: false,
+  showProgress: true,
+  fresh: false,
+  reset: [],
+  preserveUrl: false,
+  prefetch: false,
   onCancelToken: (cancelToken) => {},
   onCancel: () => {},
   onBefore: (visit) => {},
@@ -56,6 +70,8 @@ router.visit(url, {
   onSuccess: (page) => {},
   onError: (errors) => {},
   onFinish: (visit) => {},
+  onPrefetching: () => {},
+  onPrefetched: () => {},
 })
 ```
 
@@ -76,6 +92,12 @@ router.visit(url, {
   errorBag: null,
   forceFormData: false,
   queryStringArrayFormat: 'brackets',
+  async: false,
+  showProgress: true,
+  fresh: false,
+  reset: [],
+  preserveUrl: false,
+  prefetch: false,
   onCancelToken: (cancelToken) => {},
   onCancel: () => {},
   onBefore: (visit) => {},
@@ -84,6 +106,8 @@ router.visit(url, {
   onSuccess: (page) => {},
   onError: (errors) => {},
   onFinish: (visit) => {},
+  onPrefetching: () => {},
+  onPrefetched: () => {},
 })
 ```
 
