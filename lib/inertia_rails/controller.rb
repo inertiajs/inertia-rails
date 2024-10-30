@@ -109,7 +109,7 @@ module InertiaRails
 
     def capture_inertia_errors(options)
       if (inertia_errors = options.dig(:inertia, :errors))
-        session[:inertia_errors] = inertia_errors
+        session[:inertia_errors] = inertia_errors.to_hash
       end
     end
   end

@@ -23,6 +23,7 @@ Rails.application.routes.draw do
   get 'share_multithreaded_error' => 'inertia_multithreaded_share#share_multithreaded_error'
   get 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
   post 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
+  post 'redirect_with_inertia_error_object' => 'inertia_test#redirect_with_inertia_error_object'
   post 'redirect_back_with_inertia_errors' => 'inertia_test#redirect_back_with_inertia_errors'
   get 'error_404' => 'inertia_test#error_404'
   get 'error_500' => 'inertia_test#error_500'
