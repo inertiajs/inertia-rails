@@ -67,16 +67,7 @@ module InertiaRails
 
     def redirect_to(options = {}, response_options = {})
       capture_inertia_errors(response_options)
-      super(options, response_options)
-    end
-
-    def redirect_back(fallback_location:, allow_other_host: true, **options)
-      capture_inertia_errors(options)
-      super(
-        fallback_location: fallback_location,
-        allow_other_host: allow_other_host,
-        **options,
-      )
+      super
     end
 
     private
