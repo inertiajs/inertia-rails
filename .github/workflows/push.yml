@@ -1,6 +1,18 @@
 name: Testing
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+      - '**.md'
 
 jobs:
   test:
