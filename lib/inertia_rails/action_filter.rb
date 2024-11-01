@@ -18,7 +18,7 @@ module InertiaRails
           #{@conditional_key.inspect} option.
         MSG
 
-        raise ActionNotFound.new(message, controller, missing_action)
+        raise AbstractController::ActionNotFound.new(message, controller, missing_action)
       end
 
       @actions.include?(controller.action_name)

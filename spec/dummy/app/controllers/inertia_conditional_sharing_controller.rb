@@ -8,30 +8,30 @@ class InertiaConditionalSharingController < ApplicationController
   end
 
   inertia_share only: :edit do
-    {only_block_prop: 1}
+    {edit_only_only_block_prop: 1}
   end
 
   inertia_share except: [:show, :index] do
-    {except_block_prop: 1}
+    {edit_only_except_block_prop: 1}
   end
 
   inertia_share if: -> { is_edit? } do
-    {if_proc_prop: 1}
+    {edit_only_if_proc_prop: 1}
   end
 
   inertia_share unless: -> { !is_edit? } do
-    {unless_proc_prop: 1}
+    {edit_only_unless_proc_prop: 1}
   end
 
-  inertia_share({only_prop: 1}, only: :edit)
+  inertia_share({edit_only_only_prop: 1}, only: :edit)
 
-  inertia_share({if_prop: 1}, if: [:is_edit?, -> { true }])
+  inertia_share({edit_only_if_prop: 1}, if: [:is_edit?, -> { true }])
 
-  inertia_share({unless_prop: 1}, unless: :not_edit?)
+  inertia_share({edit_only_unless_prop: 1}, unless: :not_edit?)
 
-  inertia_share({only_if_prop: 1}, only: :edit, if: -> { true })
+  inertia_share({edit_only_only_if_prop: 1}, only: :edit, if: -> { true })
 
-  inertia_share({except_if_prop: 1}, except: [:index, :show], if: -> { true })
+  inertia_share({edit_only_except_if_prop: 1}, except: [:index, :show], if: -> { true })
 
   def index
     render inertia: 'EmptyTestComponent', props: {
