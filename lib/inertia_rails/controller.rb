@@ -83,8 +83,8 @@ module InertiaRails
           raise ArgumentError, "You must not mix shared data and [:if, :unless, :only, :except] options, pass data as a hash or a block."
         end
 
-        extract_inertia_share_option(options, :only, :if)
-        extract_inertia_share_option(options, :except, :unless)
+        transform_inertia_share_option(options, :only, :if)
+        transform_inertia_share_option(options, :except, :unless)
 
         options.transform_values! do |filters|
           Array(filters).map!(&method(:filter_to_proc))
@@ -93,7 +93,7 @@ module InertiaRails
         options
       end
 
-      def extract_inertia_share_option(options, from, to)
+      def transform_inertia_share_option(options, from, to)
         if (from_value = options.delete(from))
           filter = InertiaRails::ActionFilter.new(from, from_value)
           options[to] = Array(options[to]).unshift(filter)
