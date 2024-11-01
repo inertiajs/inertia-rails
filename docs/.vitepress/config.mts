@@ -138,7 +138,12 @@ export default defineConfig({
     },
 
     search: {
-      provider: 'local',
+      provider: 'algolia',
+      options: {
+        appId: 'BWKGTG68ZO',
+        apiKey: '06bc959e3f6ab7eb186cd27653408b04',
+        indexName: 'inertia-rails',
+      },
     },
 
     editLink: {
