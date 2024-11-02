@@ -76,12 +76,16 @@ module InertiaRails
         end
       end
 
-      deep_transform_values(
-        _props,
-        lambda do |prop|
-          prop.respond_to?(:call) ? controller.instance_exec(&prop) : prop
+      deep_transform_values _props do |prop|
+        case prop
+        when Lazy
+          prop.call(controller)
+        when Proc
+          controller.instance_exec(&prop)
+        else
+          prop
         end
-      )
+      end
     end
 
     def page
@@ -93,10 +97,10 @@ module InertiaRails
       }
     end
 
-    def deep_transform_values(hash, proc)
-      return proc.call(hash) unless hash.is_a? Hash
+    def deep_transform_values(hash, &block)
+      return block.call(hash) unless hash.is_a? Hash
 
-      hash.transform_values {|value| deep_transform_values(value, proc)}
+      hash.transform_values {|value| deep_transform_values(value, &block)}
     end
 
     def partial_keys

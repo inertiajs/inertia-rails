@@ -1,28 +1,20 @@
+# frozen_string_literal: true
+
 module InertiaRails
   class Lazy
     def initialize(value = nil, &block)
+      raise ArgumentError, 'You must provide either a value or a block, not both' if value && block
+
       @value = value
       @block = block
     end
 
-    def call
-      to_proc.call
+    def call(controller)
+      value.respond_to?(:call) ? controller.instance_exec(&value) : value
     end
 
-    def to_proc
-      # This is called by controller.instance_exec, which changes self to the
-      # controller instance. That makes the instance variables unavailable to the
-      # proc via closure. Copying the instance variables to local variables before
-      # the proc is returned keeps them in scope for the returned proc.
-      value = @value
-      block = @block
-      if value.respond_to?(:call)
-        value
-      elsif value
-        Proc.new { value }
-      else
-        block
-      end
+    def value
+      @value.nil? ? @block : @value
     end
   end
 end
