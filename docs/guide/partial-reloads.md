@@ -46,9 +46,6 @@ router.visit(url, {
 
 ## Except certain props
 
-> [!WARNING]
-> The `except` option is not yet supported by the Inertia Rails.
-
 :::tabs key:frameworks
 == Vue
 
@@ -236,6 +233,11 @@ class UsersController < ApplicationController
       # OPTIONALLY included on partial reloads
       # ONLY evaluated when needed
       users: InertiaRails.lazy { User.all },
+
+      # ALWAYS included on standard visits
+      # ALWAYS included on partial reloads
+      # ALWAYS evaluated
+      users: InertiaRails.always(User.all),
     }
   end
 end
