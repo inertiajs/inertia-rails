@@ -11,6 +11,8 @@ export default defineConfig({
   title,
   description,
 
+  cleanUrls: true,
+
   markdown: {
     config(md) {
       md.use(tabsMarkdownPlugin)
@@ -33,6 +35,7 @@ export default defineConfig({
     ['meta', { property: 'og:image', content: image }],
     ['meta', { property: 'og:description', content: description }],
   ],
+
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
