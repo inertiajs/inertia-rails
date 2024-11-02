@@ -78,6 +78,8 @@ module InertiaRails
         end
       end
 
+      drop_partial_except_keys(_props) if rendering_partial_component?
+
       deep_transform_values _props do |prop|
         case prop
         when BaseProp
@@ -105,8 +107,22 @@ module InertiaRails
       hash.transform_values {|value| deep_transform_values(value, &block)}
     end
 
+    def drop_partial_except_keys(hash)
+      partial_except_keys.each do |key|
+        parts = key.to_s.split('.').map(&:to_sym)
+        *initial_keys, last_key = parts
+        current = initial_keys.any? ? hash.dig(*initial_keys) : hash
+
+        current.delete(last_key) if current.is_a?(Hash) && !current[last_key].is_a?(AlwaysProp)
+      end
+    end
+
     def partial_keys
       (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
+    end
+
+    def partial_except_keys
+      (@request.headers['X-Inertia-Partial-Except'] || '').split(',').filter_map(&:to_sym)
     end
 
     def rendering_partial_component?

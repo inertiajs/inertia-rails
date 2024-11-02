@@ -113,6 +113,79 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'partial except rendering' do
+    let(:headers) do
+      {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'nested,nested_lazy',
+        'X-Inertia-Partial-Except' => 'nested',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      }
+    end
+
+    before { get except_props_path, headers: headers }
+
+    it 'returns listed props without excepted' do
+      expect(response.parsed_body['props']).to eq(
+        'always' => 'always prop',
+        'nested_lazy' => { 'first' => 'first nested lazy param' },
+      )
+    end
+
+    context 'when except always prop' do
+      let(:headers) {{
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'nested_lazy',
+        'X-Inertia-Partial-Except' => 'always_prop',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      }}
+
+      it 'returns always prop anyway' do
+        expect(response.parsed_body['props']).to eq(
+          'always' => 'always prop',
+          'nested_lazy' => { 'first' => 'first nested lazy param' },
+        )
+      end
+    end
+
+    context 'when except unknown prop' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'nested_lazy',
+          'X-Inertia-Partial-Except' => 'unknown',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      it 'returns props' do
+        expect(response.parsed_body['props']).to eq(
+          'always' => 'always prop',
+          'nested_lazy' => { 'first' => 'first nested lazy param' },
+        )
+      end
+    end
+
+    context 'when excludes with dot notation' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'nested,nested_lazy',
+          'X-Inertia-Partial-Except' => 'nested.first,nested_lazy.first',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      it 'works with dot notation only with simple props' do
+        expect(response.parsed_body['props']).to eq(
+          'always' => 'always prop',
+          'nested' => { 'second' => 'second nested param' },
+          'nested_lazy' => { 'first' => 'first nested lazy param' },
+        )
+      end
+    end
+  end
+
   context 'lazy prop rendering' do
     context 'on first load' do
       let(:page) {
