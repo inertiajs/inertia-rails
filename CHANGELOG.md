@@ -3,11 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-## Unreleased
 
-### Added
+## [3.4.0] - 2024-11-02
 
 * Inertia Rails documentation (@skryukov)
+* Add specs for config refactor (#139)
+* New feature: if/unless/only/except options for inertia_share. Enables per-action sharing! (#137, @skryukov)
+* Bugfix: for inertia errors when using message_pack to serialize cookies. (#143, @BenMorganMY)
+* Test Rails 7.2 in CI/CD (#145, @skryukov)
+* Bring redirect behavior in line with Rails 7.0 behavior (#146, @skryukov)
+* Gemspec cleanup (#149, @skryukov)
 
 ## [3.3.0] - 2024-10-27
 
