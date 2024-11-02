@@ -7,6 +7,23 @@ class InertiaRenderTestController < ApplicationController
     }
   end
 
+  def except_props
+    render inertia: 'TestComponent', props: {
+      flat: 'flat param',
+      lazy: InertiaRails.lazy('lazy param'),
+      nested_lazy: InertiaRails.lazy do
+        {
+          first: 'first nested lazy param',
+        }
+      end,
+      nested: {
+        first: 'first nested param',
+        second: 'second nested param'
+      },
+      always: InertiaRails.always('always prop')
+    }
+  end
+
   def view_data
     render inertia: 'TestComponent', view_data: {
       name: 'Brian',
@@ -32,6 +49,17 @@ class InertiaRenderTestController < ApplicationController
         'worse than he believes'
       end,
       grit: InertiaRails.lazy(->{ 'intense' })
+    }
+  end
+
+  def always_props
+    render inertia: 'TestComponent', props: {
+      always: InertiaRails.always('always prop'),
+      regular: 'regular prop',
+      lazy: InertiaRails.lazy do
+        'lazy prop'
+      end,
+      another_lazy: InertiaRails.lazy(->{ 'another lazy prop' })
     }
   end
 end

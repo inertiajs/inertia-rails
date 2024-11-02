@@ -68,7 +68,6 @@ RSpec.describe 'rendering inertia views', type: :request do
 
     it { is_expected.to eq page.to_json }
 
-
     it 'has the proper headers' do
       expect(response.headers['X-Inertia']).to eq 'true'
       expect(response.headers['Vary']).to eq 'X-Inertia'
@@ -76,7 +75,7 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
 
     it 'has the proper body' do
-      expect(JSON.parse(response.body)).to include('url' => '/props')
+      expect(response.parsed_body).to include('url' => '/props')
     end
 
     it 'has the proper status code' do
@@ -85,7 +84,7 @@ RSpec.describe 'rendering inertia views', type: :request do
   end
 
   context 'partial rendering' do
-    let (:page) {
+    let(:page) {
       InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { sport: 'hockey' }).send(:page)
     }
     let(:headers) {{
@@ -116,7 +115,7 @@ RSpec.describe 'rendering inertia views', type: :request do
 
   context 'lazy prop rendering' do
     context 'on first load' do
-      let (:page) {
+      let(:page) {
         InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { name: 'Brian'}).send(:page)
       }
       before { get lazy_props_path }
@@ -125,7 +124,7 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
 
     context 'with a partial reload' do
-      let (:page) {
+      let(:page) {
         InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { sport: 'basketball', level: 'worse than he believes', grit: 'intense'}).send(:page)
       }
       let(:headers) {{
@@ -140,6 +139,28 @@ RSpec.describe 'rendering inertia views', type: :request do
       it { is_expected.to include('basketball') }
       it { is_expected.to include('worse') }
       it { is_expected.not_to include('intense') }
+    end
+  end
+
+  context 'always prop rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    before { get always_props_path, headers: headers }
+
+    it "returns non-optional props on first load" do
+      expect(response.parsed_body["props"]).to eq({"always" => 'always prop', "regular" => 'regular prop' })
+    end
+
+    context 'with a partial reload' do
+      let(:headers) {{
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'lazy',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      }}
+
+      it "returns listed and always props" do
+        expect(response.parsed_body["props"]).to eq({"always" => 'always prop', "lazy" => 'lazy prop' })
+      end
     end
   end
 end

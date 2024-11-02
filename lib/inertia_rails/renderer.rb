@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'net/http'
 require 'json'
 require_relative "inertia_rails"
@@ -70,15 +72,15 @@ module InertiaRails
     def computed_props
       _props = merge_props(shared_data, props).select do |key, prop|
         if rendering_partial_component?
-          key.in? partial_keys
+          key.in?(partial_keys) || prop.is_a?(AlwaysProp)
         else
-          !prop.is_a?(InertiaRails::Lazy)
+          !prop.is_a?(LazyProp)
         end
       end
 
       deep_transform_values _props do |prop|
         case prop
-        when Lazy
+        when BaseProp
           prop.call(controller)
         when Proc
           controller.instance_exec(&prop)

@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 module InertiaRails
-  class Lazy
+  # Base class for all props.
+  class BaseProp
     def initialize(value = nil, &block)
       raise ArgumentError, 'You must provide either a value or a block, not both' if value && block
 
