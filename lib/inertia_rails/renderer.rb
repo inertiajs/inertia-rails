@@ -66,7 +66,11 @@ module InertiaRails
     # Functionally, this permits using either string or symbol keys in the controller. Since the results
     # is cast to json, we should treat string/symbol keys as identical.
     def merge_props(shared_data, props)
-      shared_data.deep_symbolize_keys.send(@deep_merge ? :deep_merge : :merge, props.deep_symbolize_keys)
+      if @deep_merge
+        shared_data.deep_symbolize_keys.deep_merge!(props.deep_symbolize_keys)
+      else
+        shared_data.symbolize_keys.merge(props.symbolize_keys)
+      end
     end
 
     def computed_props
