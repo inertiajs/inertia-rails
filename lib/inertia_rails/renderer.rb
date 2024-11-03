@@ -68,6 +68,14 @@ module InertiaRails
     end
 
     def computed_props
+      unrequested_value_props = props.select do |key, prop|
+        !prop.respond_to?(:call) && !key.in?(partial_keys)
+      end
+
+      if rendering_partial_component? && unrequested_value_props.present?
+        InertiaRails.warn "The #{unrequested_value_props.keys.map{|k| ":#{k}"}.join(', ')} #{unrequested_value_props.length > 1 ? "props are" : "prop is"} being computed even though your partial reload did not request #{unrequested_value_props.length > 1 ? "them because they are defined as values" : "it because it is defined as a value"}. You might want to wrap these in a callable like a proc or InertiaRails::Lazy()."
+      end
+
       _props = merge_props(shared_data, props).select do |key, prop|
         if rendering_partial_component?
           key.in? partial_keys

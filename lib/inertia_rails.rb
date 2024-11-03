@@ -25,4 +25,10 @@ module InertiaRails
   def self.deprecator # :nodoc:
     @deprecator ||= ActiveSupport::Deprecation.new
   end
+
+  def self.warn(message)
+    full_message = "[InertiaRails]: WARNING! #{message}"
+    Kernel.warn full_message if Rails.env.development? || Rails.env.test?
+    Rails.logger.warn full_message
+  end
 end

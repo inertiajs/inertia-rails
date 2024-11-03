@@ -56,4 +56,7 @@ Rails.application.routes.draw do
   get 'conditional_share_show' => 'inertia_conditional_sharing#show'
   get 'conditional_share_edit' => 'inertia_conditional_sharing#edit'
   get 'conditional_share_show_with_a_problem' => 'inertia_conditional_sharing#show_with_a_problem'
+
+  get 'unoptimized_partial_reloads' => 'inertia_unoptimized_partial_reloads#index'
+  get 'unoptimized_partial_reloads_with_exception' => 'inertia_unoptimized_partial_reloads#with_exception'
 end
