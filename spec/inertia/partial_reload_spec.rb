@@ -73,7 +73,7 @@ RSpec.describe 'partial reloads', type: :request do
       end
 
       context 'when the controller is configured to raise_on_unoptimized_partial_reloads' do
-        it 'emits a warning' do
+        it 'raises an error' do
           expect {
             get has_searchable_path, headers: {
               'X-Inertia' => true,
