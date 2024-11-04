@@ -68,15 +68,10 @@ module InertiaRails
     end
 
     def computed_props
-      unrequested_value_props = props.select do |key, prop|
-        !prop.respond_to?(:call) && !key.in?(partial_keys)
-      end
+      _merged_props = merge_props(shared_data, props)
+      validate_partial_props(_merged_props)
 
-      if rendering_partial_component? && unrequested_value_props.present?
-        InertiaRails.warn "The #{unrequested_value_props.keys.map{|k| ":#{k}"}.join(', ')} #{unrequested_value_props.length > 1 ? "props are" : "prop is"} being computed even though your partial reload did not request #{unrequested_value_props.length > 1 ? "them because they are defined as values" : "it because it is defined as a value"}. You might want to wrap these in a callable like a proc or InertiaRails::Lazy()."
-      end
-
-      _props = merge_props(shared_data, props).select do |key, prop|
+      _filtered_props = _merged_props.select do |key, prop|
         if rendering_partial_component?
           key.in? partial_keys
         else
@@ -85,7 +80,7 @@ module InertiaRails
       end
 
       deep_transform_values(
-        _props,
+        _filtered_props,
         lambda do |prop|
           prop.respond_to?(:call) ? controller.instance_exec(&prop) : prop
         end
@@ -119,6 +114,29 @@ module InertiaRails
       return component unless component.is_a? TrueClass
 
       configuration.component_path_resolver(path: controller.controller_path, action: controller.action_name)
+    end
+
+    def validate_partial_props(merged_props)
+      return unless rendering_partial_component?
+
+      unrequested_props = merged_props.select do |key, prop|
+        !key.in?(partial_keys)
+      end
+
+      props_that_will_unecessarily_compute = unrequested_props.select do |key, prop|
+        !prop.respond_to?(:call)
+      end
+
+      if props_that_will_unecessarily_compute.present?
+        props = props_that_will_unecessarily_compute.keys.map { |k| ":#{k}" }.join(', ')
+        is_plural = props_that_will_unecessarily_compute.length > 1
+        verb = is_plural ? "props are" : "prop is"
+        pronoun = is_plural ? "them because they are defined as values" : "it because it is defined as a value"
+
+        warning_message = "The #{props} #{verb} being computed even though your partial reload did not request #{pronoun}. You might want to wrap these in a callable like a lambda ->{} or InertiaRails::Lazy()."
+
+        InertiaRails.warn warning_message
+      end
     end
   end
 end
