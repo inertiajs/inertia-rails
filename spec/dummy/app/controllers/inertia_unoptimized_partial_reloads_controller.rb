@@ -7,9 +7,10 @@ class InertiaUnoptimizedPartialReloadsController < ApplicationController
     }
   end
 
-  def with_exception
+  def with_multiple
     render inertia: 'TestComponent', props: {
       expensive_prop: expensive_prop,
+      another_expensive_prop: "another one",
     }
   end
 

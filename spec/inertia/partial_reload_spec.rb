@@ -3,6 +3,7 @@ RSpec.describe 'partial reloads', type: :request do
     context 'when a non-requested prop is defined as a value' do
       let (:fake_std_err) {FakeStdErr.new}
       let (:warn_message) {'[InertiaRails]: WARNING! The :expensive_prop prop is being computed even though your partial reload did not request it because it is defined as a value. You might want to wrap these in a callable like a proc or InertiaRails::Lazy().'}
+      let (:warn_message_with_multiple) {'[InertiaRails]: WARNING! The :expensive_prop, :another_expensive_prop props are being computed even though your partial reload did not request them because they are defined as values. You might want to wrap these in a callable like a proc or InertiaRails::Lazy().'}
 
       around(:each) do |example|
         begin
@@ -47,6 +48,18 @@ RSpec.describe 'partial reloads', type: :request do
           'X-Inertia-Partial-Component' => 'TestComponent',
         }
         expect(fake_std_err.messages[0].chomp).to(eq(warn_message))
+      end
+
+      context 'when there are multiple non-requested props defined as values' do
+        it 'emits a different warning' do
+          get unoptimized_partial_reloads_with_mutiple_path, headers: {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'search',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+
+          expect(fake_std_err.messages[0].chomp).to(eq(warn_message_with_multiple))
+        end
       end
     end
   end

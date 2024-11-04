@@ -59,4 +59,5 @@ Rails.application.routes.draw do
 
   get 'unoptimized_partial_reloads' => 'inertia_unoptimized_partial_reloads#index'
   get 'unoptimized_partial_reloads_with_exception' => 'inertia_unoptimized_partial_reloads#with_exception'
+  get 'unoptimized_partial_reloads_with_mutiple' => 'inertia_unoptimized_partial_reloads#with_multiple'
 end
