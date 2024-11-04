@@ -11,6 +11,7 @@ class InertiaUnoptimizedPartialReloadsController < ApplicationController
     render inertia: 'TestComponent', props: {
       expensive_prop: expensive_prop,
       another_expensive_prop: "another one",
+      callable_prop: -> { 'This is a callable prop' },
     }
   end
 

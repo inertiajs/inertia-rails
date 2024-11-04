@@ -50,6 +50,16 @@ RSpec.describe 'partial reloads', type: :request do
         expect(fake_std_err.messages[0].chomp).to(eq(warn_message))
       end
 
+      it 'does not warn about callable props' do
+        get unoptimized_partial_reloads_path, headers: {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'search',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+
+        expect(fake_std_err.messages[0].chomp).not_to include('callable_prop')
+      end
+
       context 'when there are multiple non-requested props defined as values' do
         it 'emits a different warning' do
           get unoptimized_partial_reloads_with_mutiple_path, headers: {
