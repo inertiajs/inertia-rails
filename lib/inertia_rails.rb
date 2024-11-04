@@ -21,6 +21,7 @@ end
 
 module InertiaRails
   class Error < StandardError; end
+  class UnoptimizedPartialReloadError < StandardError; end
 
   def self.deprecator # :nodoc:
     @deprecator ||= ActiveSupport::Deprecation.new

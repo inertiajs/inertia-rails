@@ -135,7 +135,11 @@ module InertiaRails
 
         warning_message = "The #{props} #{verb} being computed even though your partial reload did not request #{pronoun}. You might want to wrap these in a callable like a lambda ->{} or InertiaRails::Lazy()."
 
-        InertiaRails.warn warning_message
+        if configuration.raise_on_unoptimized_partial_reloads
+          raise InertiaRails::UnoptimizedPartialReloadError, warning_message
+        else
+          InertiaRails.warn warning_message
+        end
       end
     end
   end

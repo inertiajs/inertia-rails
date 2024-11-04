@@ -61,6 +61,18 @@ RSpec.describe 'partial reloads', type: :request do
           expect(fake_std_err.messages[0].chomp).to(eq(warn_message_with_multiple))
         end
       end
+
+      context 'when the controller is configured to raise_on_unoptimized_partial_reloads' do
+        it 'emits a warning' do
+          expect {
+            get has_searchable_path, headers: {
+              'X-Inertia' => true,
+              'X-Inertia-Partial-Data' => 'search',
+              'X-Inertia-Partial-Component' => 'TestComponent',
+            }
+          }.to raise_error(InertiaRails::UnoptimizedPartialReloadError, /unrequested_prop/)
+        end
+      end
     end
   end
 end

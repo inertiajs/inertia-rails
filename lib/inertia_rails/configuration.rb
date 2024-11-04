@@ -22,6 +22,8 @@ module InertiaRails
 
       # Used to detect version drift between server and client.
       version: nil,
+
+      raise_on_unoptimized_partial_reloads: false,
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze
