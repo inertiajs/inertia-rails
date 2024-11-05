@@ -20,7 +20,7 @@ class InertiaRenderTestController < ApplicationController
         first: 'first nested param',
         second: 'second nested param'
       },
-      always: InertiaRails.always('always prop')
+      always: InertiaRails.always { 'always prop' }
     }
   end
 
@@ -54,7 +54,7 @@ class InertiaRenderTestController < ApplicationController
 
   def always_props
     render inertia: 'TestComponent', props: {
-      always: InertiaRails.always('always prop'),
+      always: InertiaRails.always { 'always prop' },
       regular: 'regular prop',
       lazy: InertiaRails.lazy do
         'lazy prop'

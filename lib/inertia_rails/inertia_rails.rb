@@ -19,8 +19,8 @@ module InertiaRails
       LazyProp.new(value, &block)
     end
 
-    def always(value = nil, &block)
-      AlwaysProp.new(value, &block)
+    def always(&block)
+      AlwaysProp.new(&block)
     end
   end
 end

@@ -201,13 +201,7 @@ On the inverse, you can use the `InertiaRails.always` method to specify that a p
 class UsersController < ApplicationController
   def index
     render inertia: 'Users/Index', props: {
-      users: InertiaRails.always(User.all),
-
-      # Also works with block:
-      # users: InertiaRails.always { User.all },
-
-      # Also works with a lambda:
-      # users: InertiaRails.always(-> { User.all }),
+      users: InertiaRails.always { User.all },
     }
   end
 end

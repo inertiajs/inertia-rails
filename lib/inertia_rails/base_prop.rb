@@ -3,19 +3,12 @@
 module InertiaRails
   # Base class for all props.
   class BaseProp
-    def initialize(value = nil, &block)
-      raise ArgumentError, 'You must provide either a value or a block, not both' if value && block
-
-      @value = value
+    def initialize(&block)
       @block = block
     end
 
     def call(controller)
-      value.respond_to?(:call) ? controller.instance_exec(&value) : value
-    end
-
-    def value
-      @value.nil? ? @block : @value
+      controller.instance_exec(&@block)
     end
   end
 end
