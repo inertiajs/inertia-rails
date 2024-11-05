@@ -76,7 +76,7 @@ module InertiaRails
     def computed_props
       _props = merge_props(shared_data, props).select do |key, prop|
         if rendering_partial_component?
-          key.in?(partial_keys) || prop.is_a?(AlwaysProp)
+          partial_keys.none? || key.in?(partial_keys) || prop.is_a?(AlwaysProp)
         else
           !prop.is_a?(LazyProp)
         end
@@ -130,7 +130,7 @@ module InertiaRails
     end
 
     def rendering_partial_component?
-      @request.inertia_partial? && @request.headers['X-Inertia-Partial-Component'] == component
+      @request.headers['X-Inertia-Partial-Component'] == component
     end
 
     def resolve_component(component)

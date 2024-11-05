@@ -21,7 +21,7 @@ RSpec.describe 'Inertia::Request', type: :request do
     before { get inertia_partial_request_test_path, headers: headers }
 
     context 'it is a partial inertia call' do
-      let(:headers) { { 'X-Inertia' => true, 'X-Inertia-Partial-Data' => 'foo,bar,baz' } }
+      let(:headers) { { 'X-Inertia' => true, 'X-Inertia-Partial-Component' => 'Component', 'X-Inertia-Partial-Data' => 'foo,bar,baz' } }
 
       it { is_expected.to eq 202 }
     end

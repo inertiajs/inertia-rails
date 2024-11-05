@@ -132,6 +132,23 @@ RSpec.describe 'rendering inertia views', type: :request do
       )
     end
 
+    context 'when except without X-Inertia-Partial-Data' do
+      let(:headers) {{
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Except' => 'nested',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      }}
+
+      it 'returns all regular and partial props except excepted' do
+        expect(response.parsed_body['props']).to eq(
+          'flat' => 'flat param',
+          'lazy' => 'lazy param',
+          'always' => 'always prop',
+          'nested_lazy' => { 'first' => 'first nested lazy param' },
+        )
+      end
+    end
+
     context 'when except always prop' do
       let(:headers) {{
         'X-Inertia' => true,
