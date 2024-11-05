@@ -588,7 +588,7 @@ The `only` option allows you to request a subset of the props (data) from the se
 ```js
 import { router } from '@inertiajs/vue3'
 
-router.visit('/users', { search: 'John' }, { only: ['users'] })
+router.visit('/users', { data: { search: 'John' }, only: ['users'] })
 ```
 
 == React
@@ -596,7 +596,7 @@ router.visit('/users', { search: 'John' }, { only: ['users'] })
 ```js
 import { router } from '@inertiajs/react'
 
-router.visit('/users', { search: 'John' }, { only: ['users'] })
+router.visit('/users', { data: { search: 'John' }, only: ['users'] })
 ```
 
 == Svelte 4|Svelte 5
@@ -604,7 +604,7 @@ router.visit('/users', { search: 'John' }, { only: ['users'] })
 ```js
 import { router } from '@inertiajs/svelte'
 
-router.visit('/users', { search: 'John' }, { only: ['users'] })
+router.visit('/users', { data: { search: 'John' }, only: ['users'] })
 ```
 
 :::
