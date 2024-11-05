@@ -13,16 +13,15 @@ Add the `inertia_rails` gem to your Gemfile.
 gem 'inertia_rails'
 ```
 
-For more instructions, see [Server-side setup](https://inertia-rails.netlify.app/guide/server-side-setup.html).
+Follow the complete [Server-side setup](https://inertia-rails.dev/guide/server-side-setup) in the official documentation.
 
 ### Frontend
 
-We are discussing on bringing official docs for Inertia Rails to this repo, as
-the [official docs](https://inertiajs.com/client-side-setup) are specific to Laravel.
+Follow the [Client-side setup](https://inertia-rails.dev/guide/client-side-setup) guide for detailed configuration steps.
 
-In the meantime, you can refer to the community-maintained [Client-side setup](https://inertia-rails.netlify.app/guide/client-side-setup.html).
+### Example Projects:
 
-Examples:
+Reference these sample implementations:
 
 - [React/Vite](https://github.com/BrandonShar/inertia-rails-template)
 - [React/Vite + SSR](https://github.com/ElMassimo/inertia-rails-ssr-template)
@@ -103,11 +102,11 @@ end
 
 ### Shared Data
 
-If you have data that you want to be provided as a prop to every component (a common use-case is information about the authenticated user) you can use the `shared_data` controller method.
+If you have data that you want to be provided as a prop to every component (a common use-case is information about the authenticated user) you can use the `inertia_share` controller method.
 
 ```ruby
 class EventsController < ApplicationController
-  # share syncronously
+  # share synchronously
   inertia_share app_name: env['app.name']
   
   # share lazily, evaluated at render time
