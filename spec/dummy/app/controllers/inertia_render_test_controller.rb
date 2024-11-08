@@ -67,7 +67,7 @@ class InertiaRenderTestController < ApplicationController
   end
 
   def vary_header
-    response.headers["Vary"] = 'Accept-Language'
+    response.headers['Vary'] = 'Accept-Language'
 
     render inertia: 'TestComponent'
   end
