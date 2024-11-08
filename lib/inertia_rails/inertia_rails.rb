@@ -3,6 +3,7 @@ require 'inertia_rails/ignore_on_first_load_prop'
 require 'inertia_rails/always_prop'
 require 'inertia_rails/lazy_prop'
 require 'inertia_rails/defer_prop'
+require 'inertia_rails/merge_prop'
 require 'inertia_rails/configuration'
 
 module InertiaRails
@@ -25,8 +26,12 @@ module InertiaRails
       AlwaysProp.new(&block)
     end
 
-    def defer(group: nil, &block)
-      DeferProp.new(group:, &block)
+    def merge(&block)
+      MergeProp.new(&block)
+    end
+
+    def defer(group: nil, merge: nil, &block)
+      DeferProp.new(group: group, merge: merge, &block)
     end
   end
 end

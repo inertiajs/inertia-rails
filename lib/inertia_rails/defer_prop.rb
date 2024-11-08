@@ -1,12 +1,19 @@
+# frozen_string_literal: true
+
 module InertiaRails
   class DeferProp < IgnoreOnFirstLoadProp
-    DEFAULT_GROUP = "default".freeze
+    DEFAULT_GROUP = "default"
 
     attr_reader :group
 
-    def initialize(group: nil, &block)
+    def initialize(group: nil, merge: nil, &block)
       @group = group || DEFAULT_GROUP
+      @merge = merge
       @block = block
+    end
+
+    def merge?
+      @merge
     end
   end
 end
