@@ -10,10 +10,10 @@ class InertiaRenderTestController < ApplicationController
   def except_props
     render inertia: 'TestComponent', props: {
       flat: 'flat param',
-      lazy: InertiaRails.lazy('lazy param'),
-      nested_lazy: InertiaRails.lazy do
+      optional: InertiaRails.optional { 'optional param' },
+      nested_optional: InertiaRails.optional do
         {
-          first: 'first nested lazy param',
+          first: 'first nested optional param',
         }
       end,
       nested: {
@@ -83,14 +83,22 @@ class InertiaRenderTestController < ApplicationController
     }
   end
 
+  def optional_props
+    render inertia: 'TestComponent', props: {
+      regular: 1,
+      optional: InertiaRails.optional { 1 },
+      another_optional: InertiaRails.optional { 1 },
+    }
+  end
+
   def always_props
     render inertia: 'TestComponent', props: {
       always: InertiaRails.always { 'always prop' },
       regular: 'regular prop',
-      lazy: InertiaRails.lazy do
-        'lazy prop'
+      optional: InertiaRails.optional do
+        'optional prop'
       end,
-      another_lazy: InertiaRails.lazy(->{ 'another lazy prop' })
+      another_optional: InertiaRails.optional { 'another optional prop' }
     }
   end
 

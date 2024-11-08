@@ -257,7 +257,7 @@ RSpec.describe 'rendering inertia views', type: :request do
     let(:headers) do
       {
         'X-Inertia' => true,
-        'X-Inertia-Partial-Data' => 'nested,nested_lazy',
+        'X-Inertia-Partial-Data' => 'nested,nested_optional',
         'X-Inertia-Partial-Except' => 'nested',
         'X-Inertia-Partial-Component' => 'TestComponent',
       }
@@ -268,7 +268,7 @@ RSpec.describe 'rendering inertia views', type: :request do
     it 'returns listed props without excepted' do
       expect(response.parsed_body['props']).to eq(
         'always' => 'always prop',
-        'nested_lazy' => { 'first' => 'first nested lazy param' },
+        'nested_optional' => { 'first' => 'first nested optional param' },
       )
     end
 
@@ -282,9 +282,9 @@ RSpec.describe 'rendering inertia views', type: :request do
       it 'returns all regular and partial props except excepted' do
         expect(response.parsed_body['props']).to eq(
           'flat' => 'flat param',
-          'lazy' => 'lazy param',
+          'optional' => 'optional param',
           'always' => 'always prop',
-          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested_optional' => { 'first' => 'first nested optional param' },
         )
       end
     end
@@ -292,7 +292,7 @@ RSpec.describe 'rendering inertia views', type: :request do
     context 'when except always prop' do
       let(:headers) {{
         'X-Inertia' => true,
-        'X-Inertia-Partial-Data' => 'nested_lazy',
+        'X-Inertia-Partial-Data' => 'nested_optional',
         'X-Inertia-Partial-Except' => 'always_prop',
         'X-Inertia-Partial-Component' => 'TestComponent',
       }}
@@ -300,7 +300,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       it 'returns always prop anyway' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
-          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested_optional' => { 'first' => 'first nested optional param' },
         )
       end
     end
@@ -309,7 +309,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       let(:headers) do
         {
           'X-Inertia' => true,
-          'X-Inertia-Partial-Data' => 'nested_lazy',
+          'X-Inertia-Partial-Data' => 'nested_optional',
           'X-Inertia-Partial-Except' => 'unknown',
           'X-Inertia-Partial-Component' => 'TestComponent',
         }
@@ -318,7 +318,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       it 'returns props' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
-          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested_optional' => { 'first' => 'first nested optional param' },
         )
       end
     end
@@ -327,8 +327,8 @@ RSpec.describe 'rendering inertia views', type: :request do
       let(:headers) do
         {
           'X-Inertia' => true,
-          'X-Inertia-Partial-Data' => 'nested,nested_lazy',
-          'X-Inertia-Partial-Except' => 'nested.first,nested_lazy.first',
+          'X-Inertia-Partial-Data' => 'nested,nested_optional',
+          'X-Inertia-Partial-Except' => 'nested.first,nested_optional.first',
           'X-Inertia-Partial-Component' => 'TestComponent',
         }
       end
@@ -337,7 +337,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
           'nested' => { 'second' => 'second nested param' },
-          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested_optional' => { 'first' => 'first nested optional param' },
         )
       end
     end
@@ -372,6 +372,32 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'optional prop rendering' do
+    context 'on first load' do
+      let(:page) {
+        InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { regular: 1}).send(:page)
+      }
+      before { get optional_props_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a partial reload' do
+      let(:page) {
+        InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { regular: 1, optional: 1}).send(:page)
+      }
+      let(:headers) {{
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'optional',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      }}
+
+      before { get optional_props_path, headers: headers }
+
+      it { is_expected.to eq page.to_json }
+    end
+  end
+
   context 'always prop rendering' do
     let(:headers) { { 'X-Inertia' => true } }
 
@@ -384,12 +410,12 @@ RSpec.describe 'rendering inertia views', type: :request do
     context 'with a partial reload' do
       let(:headers) {{
         'X-Inertia' => true,
-        'X-Inertia-Partial-Data' => 'lazy',
+        'X-Inertia-Partial-Data' => 'optional',
         'X-Inertia-Partial-Component' => 'TestComponent',
       }}
 
       it "returns listed and always props" do
-        expect(response.parsed_body["props"]).to eq({"always" => 'always prop', "lazy" => 'lazy prop' })
+        expect(response.parsed_body["props"]).to eq({"always" => 'always prop', "optional" => 'optional prop' })
       end
     end
   end
