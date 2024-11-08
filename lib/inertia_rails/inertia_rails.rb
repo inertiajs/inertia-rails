@@ -1,20 +1,26 @@
-# Needed for `thread_mattr_accessor`
-require 'active_support/core_ext/module/attribute_accessors_per_thread'
-require 'inertia_rails/lazy'
+require 'inertia_rails/base_prop'
+require 'inertia_rails/always_prop'
+require 'inertia_rails/lazy_prop'
 require 'inertia_rails/configuration'
 
 module InertiaRails
-  CONFIGURATION = Configuration.default
+  class << self
+    CONFIGURATION = Configuration.default
 
-  def self.configure
-    yield(CONFIGURATION)
-  end
+    def configure
+      yield(CONFIGURATION)
+    end
 
-  def self.configuration
-    CONFIGURATION
-  end
+    def configuration
+      CONFIGURATION
+    end
 
-  def self.lazy(value = nil, &block)
-    InertiaRails::Lazy.new(value, &block)
+    def lazy(value = nil, &block)
+      LazyProp.new(value, &block)
+    end
+
+    def always(&block)
+      AlwaysProp.new(&block)
+    end
   end
 end

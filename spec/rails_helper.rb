@@ -10,9 +10,8 @@ require 'debug'
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require 'rspec/rails'
 # Require the spec/support directory and its subdirectories.
-Dir[Rails.root.join('spec', 'support', '**', '*.rb')].each { |f| require f }
+Dir[Pathname.new(__dir__).join('support', '**', '*.rb')].each { |f| require f }
 
-require_relative './support/helper_module'
 # Add additional requires below this line. Rails is not loaded until this point!
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are

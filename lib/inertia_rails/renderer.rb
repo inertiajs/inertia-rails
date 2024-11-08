@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'net/http'
 require 'json'
 require_relative "inertia_rails"
@@ -64,24 +66,34 @@ module InertiaRails
     # Functionally, this permits using either string or symbol keys in the controller. Since the results
     # is cast to json, we should treat string/symbol keys as identical.
     def merge_props(shared_data, props)
-      shared_data.deep_symbolize_keys.send(@deep_merge ? :deep_merge : :merge, props.deep_symbolize_keys)
+      if @deep_merge
+        shared_data.deep_symbolize_keys.deep_merge!(props.deep_symbolize_keys)
+      else
+        shared_data.symbolize_keys.merge(props.symbolize_keys)
+      end
     end
 
     def computed_props
       _props = merge_props(shared_data, props).select do |key, prop|
         if rendering_partial_component?
-          key.in? partial_keys
+          partial_keys.none? || key.in?(partial_keys) || prop.is_a?(AlwaysProp)
         else
-          !prop.is_a?(InertiaRails::Lazy)
+          !prop.is_a?(LazyProp)
         end
       end
 
-      deep_transform_values(
-        _props,
-        lambda do |prop|
-          prop.respond_to?(:call) ? controller.instance_exec(&prop) : prop
+      drop_partial_except_keys(_props) if rendering_partial_component?
+
+      deep_transform_values _props do |prop|
+        case prop
+        when BaseProp
+          prop.call(controller)
+        when Proc
+          controller.instance_exec(&prop)
+        else
+          prop
         end
-      )
+      end
     end
 
     def page
@@ -93,18 +105,32 @@ module InertiaRails
       }
     end
 
-    def deep_transform_values(hash, proc)
-      return proc.call(hash) unless hash.is_a? Hash
+    def deep_transform_values(hash, &block)
+      return block.call(hash) unless hash.is_a? Hash
 
-      hash.transform_values {|value| deep_transform_values(value, proc)}
+      hash.transform_values {|value| deep_transform_values(value, &block)}
+    end
+
+    def drop_partial_except_keys(hash)
+      partial_except_keys.each do |key|
+        parts = key.to_s.split('.').map(&:to_sym)
+        *initial_keys, last_key = parts
+        current = initial_keys.any? ? hash.dig(*initial_keys) : hash
+
+        current.delete(last_key) if current.is_a?(Hash) && !current[last_key].is_a?(AlwaysProp)
+      end
     end
 
     def partial_keys
       (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
     end
 
+    def partial_except_keys
+      (@request.headers['X-Inertia-Partial-Except'] || '').split(',').filter_map(&:to_sym)
+    end
+
     def rendering_partial_component?
-      @request.inertia_partial? && @request.headers['X-Inertia-Partial-Component'] == component
+      @request.headers['X-Inertia-Partial-Component'] == component
     end
 
     def resolve_component(component)
