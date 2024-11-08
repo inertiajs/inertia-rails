@@ -2,7 +2,7 @@
 
 require 'net/http'
 require 'json'
-require_relative "inertia_rails"
+require_relative 'inertia_rails'
 
 module InertiaRails
   class Renderer
@@ -113,6 +113,9 @@ module InertiaRails
       deferred_props = deferred_props_keys
       default_page[:deferredProps] = deferred_props if deferred_props.present?
 
+      merge_props = merge_props_keys
+      default_page[:mergeProps] = merge_props if merge_props.present?
+
       default_page
     end
 
@@ -135,14 +138,25 @@ module InertiaRails
     def deferred_props_keys
       return if rendering_partial_component?
 
-      @props.select { |_, prop| prop.is_a?(DeferProp) }
-            .map { |key, prop| { key: key, group: prop.group } }
-            .group_by { |prop| prop[:group] }
-            .transform_values { |props| props.map { |prop| prop[:key].to_s } }
+      @props.each_with_object({}) do |(key, prop), result|
+        (result[prop.group] ||= []) << key if prop.is_a?(DeferProp)
+      end
+    end
+
+    def merge_props_keys
+      @props.each_with_object([]) do |(key, prop), result|
+        if prop.try(:merge?) && reset_keys.exclude?(key)
+          result << key
+        end
+      end
     end
 
     def partial_keys
-      (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
+      @partial_keys ||= (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
+    end
+
+    def reset_keys
+      (@request.headers['X-Inertia-Reset'] || '').split(',').compact.map(&:to_sym)
     end
 
     def partial_except_keys

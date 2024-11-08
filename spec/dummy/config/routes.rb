@@ -32,6 +32,7 @@ Rails.application.routes.draw do
   get 'lazy_props' => 'inertia_render_test#lazy_props'
   get 'always_props' => 'inertia_render_test#always_props'
   get 'except_props' => 'inertia_render_test#except_props'
+  get 'merge_props' => 'inertia_render_test#merge_props'
   get 'deferred_props' => 'inertia_render_test#deferred_props'
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
 

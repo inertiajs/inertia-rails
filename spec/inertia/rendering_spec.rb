@@ -254,6 +254,47 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'merged prop rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    before { get merge_props_path, headers: headers }
+
+    it 'returns non-optional props and meta on first load' do
+      expect(response.parsed_body['props']).to eq('merge' => 'merge prop', 'regular' => 'regular prop')
+      expect(response.parsed_body['mergeProps']).to match_array(%w[merge deferred_merge])
+      expect(response.parsed_body['deferredProps']).to eq('default' => %w[deferred_merge deferred])
+    end
+
+    context 'with a partial reload' do
+      let(:headers) {{
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'deferred_merge',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      }}
+
+      it 'returns listed and merge props' do
+        expect(response.parsed_body['props']).to eq({'deferred_merge' => 'deferred and merge prop'})
+        expect(response.parsed_body['mergeProps']).to match_array(%w[merge deferred_merge])
+        expect(response.parsed_body['deferredProps']).to be_nil
+      end
+    end
+
+    context 'with a reset header' do
+      let(:headers) {{
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'deferred_merge',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Reset' => 'deferred_merge'
+      }}
+
+      it 'returns listed and merge props' do
+        expect(response.parsed_body['props']).to eq({'deferred_merge' => 'deferred and merge prop'})
+        expect(response.parsed_body['mergeProps']).to match_array(%w[merge])
+        expect(response.parsed_body['deferredProps']).to be_nil
+      end
+    end
+  end
+
   context 'deferred prop rendering' do
     context 'on first load' do
       let (:page) {
