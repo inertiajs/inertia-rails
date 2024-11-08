@@ -1,4 +1,5 @@
 require 'net/http'
+# require 'ostruct
 
 RSpec.describe 'inertia ssr', type: :request do
   context 'ssr is enabled' do
