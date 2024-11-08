@@ -16,6 +16,9 @@ module InertiaRails
       # controller configuration.
       layout: true,
 
+      # Whether to encrypt the history state in the client.
+      encrypt_history: false,
+
       # SSR options.
       ssr_enabled: false,
       ssr_url: 'http://localhost:13714',

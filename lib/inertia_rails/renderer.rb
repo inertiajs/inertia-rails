@@ -15,9 +15,11 @@ module InertiaRails
       :controller,
       :props,
       :view_data,
+      :encrypt_history,
+      :clear_history
     )
 
-    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil)
+    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil, encrypt_history: nil, clear_history: nil)
       @controller = controller
       @configuration = controller.__send__(:inertia_configuration)
       @component = resolve_component(component)
@@ -27,6 +29,8 @@ module InertiaRails
       @props = props || controller.__send__(:inertia_view_assigns)
       @view_data = view_data || {}
       @deep_merge = !deep_merge.nil? ? deep_merge : configuration.deep_merge_shared_data
+      @encrypt_history = !encrypt_history.nil? ? encrypt_history : configuration.encrypt_history
+      @clear_history = clear_history || controller.session[:inertia_clear_history] || false
     end
 
     def render
@@ -101,6 +105,8 @@ module InertiaRails
         props: computed_props,
         url: @request.original_fullpath,
         version: configuration.version,
+        encryptHistory: encrypt_history,
+        clearHistory: clear_history,
       }
 
       deferred_props = deferred_props_keys
