@@ -14,15 +14,22 @@ module InertiaRails
 
       def copy_view_files
         available_views.each do |view|
-          filename = "#{view}.#{extension}"
+          filename = "#{view}.#{template_extension}"
           template "#{options.frontend_framework}/#{filename}", File.join(base_path, filename)
         end
 
-        template "#{options.frontend_framework}/#{partial_name}.#{extension}",
+        template "#{options.frontend_framework}/#{partial_name}.#{template_extension}",
                  File.join(base_path, "#{inertia_component_name}.#{extension}")
       end
 
       private
+
+      def template_extension
+        return extension unless typescript?
+        return 'tsx' if options.frontend_framework == 'react'
+
+        "ts.#{extension}"
+      end
 
       def available_views
         %w[Index Edit Show New Form]
