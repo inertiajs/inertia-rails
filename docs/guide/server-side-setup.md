@@ -15,12 +15,11 @@ bundle add inertia_rails
 
 ## Rails generator
 
-If you plan to use Vite as your frontend build tool, you can use the `inertia_rails-contrib` gem to install and set up Inertia in a Rails application. It automatically detects if the [Vite Rails](https://vite-ruby.netlify.app/guide/rails.html) gem is installed and will attempt to install it if not present.
+If you plan to use Vite as your frontend build tool, you can use the built-in generator to install and set up Inertia in a Rails application. It automatically detects if the [Vite Rails](https://vite-ruby.netlify.app/guide/rails.html) gem is installed and will attempt to install it if not present.
 
 To install and setup Inertia in a Rails application, execute the following command in the terminal:
 
 ```bash
-bundle add inertia_rails-contrib
 bin/rails generate inertia:install
 ```
 
@@ -38,7 +37,7 @@ This command will:
 > To use TypeScript with Svelte, you need to install `@inertiajs/svelte` version `1.3.0-beta.2` or higher. You can use the `--inertia-version` option to specify the version.
 
 > [!NOTE]
-> The `inertia_rails-contrib` gem doesn't include [Rails scaffold generators](/guide/responses#rails-generators) for TypeScript yet.
+> The built-in generator doesn't include [Rails scaffold generators](/guide/responses#rails-generators) for TypeScript yet.
 
 Example output:
 

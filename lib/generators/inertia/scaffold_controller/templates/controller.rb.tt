@@ -1,0 +1,100 @@
+<% module_namespacing do -%>
+class <%= controller_class_name %>Controller < ApplicationController
+  before_action :set_<%= singular_table_name %>, only: %i[ show edit update destroy ]
+
+<% if regular_class_path.any? -%>
+  wrap_parameters :<%= singular_table_name %>
+
+<% end -%>
+  inertia_share flash: -> { flash.to_hash }
+
+  # GET <%= route_url %>
+  def index
+    @<%= plural_table_name %> = <%= orm_class.all(class_name) %>
+    render inertia: '<%= "#{inertia_base_path}/Index" %>', props: {
+      <%= plural_table_name %>: @<%= plural_table_name %>.map do |<%= singular_table_name %>|
+        <%= "serialize_#{singular_table_name}" %>(<%= singular_table_name %>)
+      end
+    }
+  end
+
+  # GET <%= route_url %>/1
+  def show
+    render inertia: '<%= "#{inertia_base_path}/Show" %>', props: {
+      <%= singular_table_name %>: <%= "serialize_#{singular_table_name}" %>(@<%= singular_table_name %>)
+    }
+  end
+
+  # GET <%= route_url %>/new
+  def new
+    @<%= singular_table_name %> = <%= orm_class.build(class_name) %>
+    render inertia: '<%= "#{inertia_base_path}/New" %>', props: {
+      <%= singular_table_name %>: <%= "serialize_#{singular_table_name}" %>(@<%= singular_table_name %>)
+    }
+  end
+
+  # GET <%= route_url %>/1/edit
+  def edit
+    render inertia: '<%= "#{inertia_base_path}/Edit" %>', props: {
+      <%= singular_table_name %>: <%= "serialize_#{singular_table_name}" %>(@<%= singular_table_name %>)
+    }
+  end
+
+  # POST <%= route_url %>
+  def create
+    @<%= singular_table_name %> = <%= orm_class.build(class_name, "#{singular_table_name}_params") %>
+
+    if @<%= orm_instance.save %>
+      redirect_to <%= redirect_resource_name %>, notice: <%= %("#{human_name} was successfully created.") %>
+    else
+      redirect_to <%= new_helper %>, inertia: { errors: @<%= singular_table_name %>.errors }
+    end
+  end
+
+  # PATCH/PUT <%= route_url %>/1
+  def update
+    if @<%= orm_instance.update("#{singular_table_name}_params") %>
+      redirect_to <%= redirect_resource_name %>, notice: <%= %("#{human_name} was successfully updated.") %>
+    else
+      redirect_to <%= edit_helper %>, inertia: { errors: @<%= singular_table_name %>.errors }
+    end
+  end
+
+  # DELETE <%= route_url %>/1
+  def destroy
+    @<%= orm_instance.destroy %>
+    redirect_to <%= index_helper %>_url, notice: <%= %("#{human_name} was successfully destroyed.") %>
+  end
+
+  private
+    # Use callbacks to share common setup or constraints between actions.
+    def set_<%= singular_table_name %>
+      @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:id]") %>
+    end
+
+    # Only allow a list of trusted parameters through.
+    def <%= "#{singular_table_name}_params" %>
+      <%- if attributes_names.empty? -%>
+      params.fetch(:<%= singular_table_name %>, {})
+      <%- else -%>
+      params.require(:<%= singular_table_name %>).permit(<%= permitted_params %>)
+      <%- end -%>
+    end
+
+    def <%= "serialize_#{singular_table_name}" %>(<%= singular_table_name %>)
+      <%= singular_table_name %>.as_json(only: [
+        <%= attributes_to_serialize.map { |attribute| ":#{attribute}" }.join(", ") %>
+      ])<%- if attributes.any?(&:attachment?) || attributes.any?(&:attachments?) -%>.tap do |hash|
+          <%- attributes.filter(&:attachment?).map do |attribute| -%>
+        hash["<%= attribute.column_name %>"] = {filename: <%= singular_table_name %>.<%= attribute.column_name %>.filename, url: url_for(<%= singular_table_name %>.<%= attribute.column_name %>)} if <%= singular_table_name %>.<%= attribute.column_name %>.attached?
+          <%- end -%>
+          <%- attributes.filter(&:attachments?).map do |attribute| -%>
+        hash["<%= attribute.column_name %>"] =
+          <%= singular_table_name %>.<%= attribute.column_name %>.flat_map do |file|
+            {filename: file.filename.to_s, url: url_for(file)}
+          end
+          <%- end -%>
+      end<% end %>
+    end
+end
+<% end -%>

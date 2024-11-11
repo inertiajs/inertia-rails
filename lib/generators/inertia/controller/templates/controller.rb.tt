@@ -1,0 +1,10 @@
+<% module_namespacing do -%>
+class <%= class_name %>Controller < <%= parent_class_name.classify %>
+<% actions.each do |action| -%>
+  def <%= action %>
+    render inertia: '<%= "#{inertia_base_path}/#{action.camelize}" %>'
+  end
+<%= "\n" unless action == actions.last -%>
+<% end -%>
+end
+<% end -%>
