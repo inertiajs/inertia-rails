@@ -1,0 +1,30 @@
+<template>
+  <Head title="New <%= human_name.downcase %>" />
+
+  <h1>New <%= human_name.downcase %></h1>
+
+  <Form
+    :<%= singular_table_name %>="<%= singular_table_name %>"
+    submitText="Create <%= human_name.downcase %>"
+    @onSubmit="handleSubmit"
+  />
+
+  <br />
+
+  <div>
+    <Link href="<%= js_resources_path %>">Back to <%= human_name.pluralize.downcase %></Link>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { Link, Head, InertiaForm } from '@inertiajs/vue3'
+import Form, { <%= inertia_component_name %>FormType } from './Form.vue'
+import { <%= inertia_model_type %> } from './<%= inertia_component_name %>.vue'
+
+const { <%= singular_table_name %> } = defineProps<{ <%= singular_table_name %>: <%= inertia_model_type %> }>()
+
+const handleSubmit = (form: InertiaForm<<%= inertia_component_name %>FormType>) => {
+  form.transform((data) => ({ <%= singular_table_name %>: data }))
+  form.post('<%= js_resources_path %>')
+}
+</script>

@@ -3,7 +3,7 @@ import <%= inertia_component_name %>, { <%= inertia_model_type %> } from './<%= 
 
 interface IndexProps {
   <%= plural_table_name %>: <%= inertia_model_type %>[]
-  flash: { notice: string }
+  flash: { notice?: string }
 }
 
 export default function Index({ <%= plural_table_name %>, flash }: IndexProps) {

@@ -14,8 +14,8 @@ module InertiaRails
 
       def copy_view_files
         available_views.each do |view|
-          filename = "#{view}.#{template_extension}"
-          template "#{options.frontend_framework}/#{filename}", File.join(base_path, filename)
+          template "#{options.frontend_framework}/#{view}.#{template_extension}",
+                   File.join(base_path, "#{view}.#{extension}")
         end
 
         template "#{options.frontend_framework}/#{partial_name}.#{template_extension}",
