@@ -1,6 +1,7 @@
 import { MouseEvent } from 'react'
 import { Link, Head } from '@inertiajs/react'
-import <%= inertia_component_name %>, { <%= inertia_model_type %> } from './<%= inertia_component_name %>'
+import { <%= inertia_model_type %> } from './types'
+import <%= inertia_component_name %> from './<%= inertia_component_name %>'
 
 interface ShowProps {
   <%= singular_table_name %>: <%= inertia_model_type %>

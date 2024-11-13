@@ -22,12 +22,7 @@
 </template>
 
 <script setup lang="ts">
-export interface <%= inertia_model_type %> {
-  id: number
-<% attributes.reject(&:password_digest?).each do |attribute| -%>
-  <%= attribute.column_name %>: <%= ts_type(attribute) %>
-<% end -%>
-}
+import { <%= inertia_model_type %> } from './types'
 
 const { <%= singular_table_name %> } = defineProps<{ <%= singular_table_name %>: <%= inertia_model_type %> }>()
 </script>

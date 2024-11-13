@@ -27,12 +27,12 @@
 
 <script setup lang="ts">
 import { Link, Head, InertiaForm } from '@inertiajs/vue3'
-import Form, { <%= inertia_component_name %>FormType } from './Form.vue'
-import { <%= inertia_model_type %> } from './<%= inertia_component_name %>.vue'
+import { <%= inertia_model_type %>, <%= inertia_model_form_type %> } from './types'
+import Form from './Form.vue'
 
 const { <%= singular_table_name %> } = defineProps<{ <%= singular_table_name %>: <%= inertia_model_type %> }>()
 
-const handleSubmit = (form: InertiaForm<<%= inertia_component_name %>FormType>) => {
+const handleSubmit = (form: InertiaForm<<%= inertia_model_form_type %>>) => {
   form.transform((data) => ({ <%= singular_table_name %>: data }))
 <% if attributes.any?(&:attachments?) -%>
   form.post(`<%= js_resource_path %>`, {

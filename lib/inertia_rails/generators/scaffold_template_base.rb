@@ -20,6 +20,8 @@ module InertiaRails
 
         template "#{options.frontend_framework}/#{partial_name}.#{template_extension}",
                  File.join(base_path, "#{inertia_component_name}.#{extension}")
+
+        template "#{options.frontend_framework}/types.ts", File.join(base_path, 'types.ts') if typescript?
       end
 
       private

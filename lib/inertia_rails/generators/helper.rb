@@ -43,6 +43,10 @@ module InertiaRails
         "#{inertia_component_name}Type"
       end
 
+      def inertia_model_form_type
+        "#{inertia_component_name}FormType"
+      end
+
       def attributes_to_serialize
         [:id] + attributes.reject do |attribute|
           attribute.password_digest? ||

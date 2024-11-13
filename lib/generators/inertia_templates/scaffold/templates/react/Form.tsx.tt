@@ -1,28 +1,15 @@
 import { FormEvent } from 'react'
 import { useForm, InertiaFormProps } from '@inertiajs/react'
-import { <%= inertia_model_type %> } from './<%= inertia_component_name %>'
+import { <%= inertia_model_type %>, <%= inertia_model_form_type %> } from './types'
 
 interface FormProps {
   <%= singular_table_name %>: <%= inertia_model_type %>
-  onSubmit: (form: InertiaFormProps<<%= inertia_component_name %>FormType>) => void
+  onSubmit: (form: InertiaFormProps<<%= inertia_model_form_type %>>) => void
   submitText: string
 }
 
-type <%= inertia_component_name %>FormType = Omit<<%= inertia_model_type %>, <%= omit_input_attributes.map { |a| "'#{a}'" }.join(' | ') %>><% if custom_form_attributes.any? -%> & {
-<% custom_form_attributes.map do |attribute| -%>
-<% if attribute.password_digest? -%>
-    password: string
-    password_confirmation: string
-<% elsif attribute.attachment? -%>
-    <%= attribute.column_name %>?: File
-<% elsif attribute.attachments? -%>
-    <%= attribute.column_name %>?: File[]
-<% end -%>
-<% end -%>
-}<% end -%>
-
 export default function Form({ <%= singular_table_name %>, onSubmit, submitText }: FormProps) {
-  const form = useForm<<%= inertia_component_name %>FormType>({
+  const form = useForm<<%= inertia_model_form_type %>>({
 <% attributes.reject { |a| a.attachment? || a.attachments? }.each do |attribute| -%>
 <% if attribute.password_digest? -%>
     password: '',
