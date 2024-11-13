@@ -57,7 +57,7 @@
       type="file"
       name="<%= attribute.singular_name %>"
       id="<%= attribute.singular_name %>"
-      oninput={(e) => ($form.<%= attribute.column_name %> = e.target.files[0])}
+      on:input={(e) => ($form.<%= attribute.column_name %> = e.target.files[0])}
     />
 <% elsif attribute.attachments? -%>
     <input
@@ -65,7 +65,7 @@
       multiple
       name="<%= attribute.singular_name %>[]"
       id="<%= attribute.singular_name %>"
-      oninput={(e) => ($form.<%= attribute.column_name %> = Array.from(e.target.files))}
+      on:input={(e) => ($form.<%= attribute.column_name %> = Array.from(e.target.files))}
     />
 <% else -%>
     <input
