@@ -1,0 +1,39 @@
+<script lang="ts">
+  import { Link } from '@inertiajs/svelte'
+  import <%= inertia_component_name %> from './<%= inertia_component_name %>.svelte'
+  import type { <%= inertia_model_type %> } from './types'
+
+  let { <%= plural_table_name %>, flash } = $props<{
+    <%= plural_table_name %>: <%= inertia_model_type %>[]
+    flash: { notice?: string }
+  }>()
+</script>
+
+<svelte:head>
+  <title><%= human_name.pluralize %></title>
+</svelte:head>
+
+{#if flash.notice}
+  <p class="notice">{flash.notice}</p>
+{/if}
+
+<h1><%= human_name.pluralize %></h1>
+
+<div>
+  {#each <%= plural_table_name %> as <%= singular_table_name %> (<%= singular_table_name %>.id)}
+    <div>
+      <<%= inertia_component_name %> {<%= singular_table_name %>} />
+      <p>
+        <Link href={`<%= js_resource_path %>`}>Show this <%= human_name.downcase %></Link>
+      </p>
+    </div>
+  {/each}
+</div>
+
+<Link href="<%= js_new_resource_path %>">New <%= human_name.downcase %></Link>
+
+<style>
+  .notice {
+    color: green;
+  }
+</style>

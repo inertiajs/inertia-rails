@@ -1,7 +1,12 @@
-<script>
-  import { useForm } from '@inertiajs/svelte'
+<script lang="ts">
+  import { useForm, type InertiaFormProps } from '@inertiajs/svelte'
+  import type { <%= inertia_model_type %>, <%= inertia_model_form_type %> } from './types'
 
-  let { <%= singular_table_name %>, submitText, onSubmit } = $props()
+  let { <%= singular_table_name %>, submitText, onSubmit } = $props<{
+    <%= singular_table_name %>: <%= inertia_model_type %>
+    onSubmit: (props: { form: InertiaFormProps<<%= inertia_model_form_type %>> }) => void
+    submitText: string
+  }>()
 
   const form = useForm({
 <% attributes.each do |attribute| -%>
@@ -14,7 +19,7 @@
 <% end -%>
   })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault()
     onSubmit({form: $form })
   }
@@ -32,7 +37,7 @@
       bind:value={$form.password}
     />
     {#if $form.errors.password}
-      <div class="error">{$form.errors.password.join(', ')}</div>
+      <div class="error">{$form.errors.password}</div>
     {/if}
   </div>
 
@@ -45,7 +50,7 @@
       bind:value={$form.password_confirmation}
     />
     {#if $form.errors.password_confirmation}
-      <div class="error">{$form.errors.password_confirmation.join(', ')}</div>
+      <div class="error">{$form.errors.password_confirmation}</div>
     {/if}
   </div>
 <% else -%>
@@ -58,7 +63,7 @@
       type="file"
       name="<%= attribute.singular_name %>"
       id="<%= attribute.singular_name %>"
-      oninput={(e) => ($form.<%= attribute.column_name %> = e.target.files[0])}
+      oninput={(e) => ($form.<%= attribute.column_name %> = ((e.target as HTMLInputElement).files || [])[0])}
     />
 <% elsif attribute.attachments? -%>
     <input
@@ -66,7 +71,7 @@
       multiple
       name="<%= attribute.singular_name %>[]"
       id="<%= attribute.singular_name %>"
-      oninput={(e) => ($form.<%= attribute.column_name %> = Array.from(e.target.files))}
+      oninput={(e) => ($form.<%= attribute.column_name %> = Array.from((e.target as HTMLInputElement).files || []))}
     />
 <% else -%>
     <input
@@ -77,7 +82,7 @@
     />
 <% end -%>
     {#if $form.errors.<%= attribute.column_name %>}
-      <div class="error">{$form.errors.<%= attribute.column_name %>.join(', ')}</div>
+      <div class="error">{$form.errors.<%= attribute.column_name %>}</div>
     {/if}
   </div>
 <% end -%>

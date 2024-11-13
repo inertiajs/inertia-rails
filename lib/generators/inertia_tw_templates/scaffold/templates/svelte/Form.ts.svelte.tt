@@ -1,7 +1,12 @@
-<script>
-  import { useForm } from '@inertiajs/svelte'
+<script lang="ts">
+  import { useForm, type InertiaFormProps } from '@inertiajs/svelte'
+  import type { <%= inertia_model_type %>, <%= inertia_model_form_type %> } from './types'
 
-  let { <%= singular_table_name %>, submitText, onSubmit } = $props()
+  let { <%= singular_table_name %>, submitText, onSubmit } = $props<{
+    <%= singular_table_name %>: <%= inertia_model_type %>
+    onSubmit: (props: { form: InertiaFormProps<<%= inertia_model_form_type %>> }) => void
+    submitText: string
+  }>()
 
   const form = useForm({
 <% attributes.each do |attribute| -%>
@@ -14,7 +19,7 @@
 <% end -%>
   })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault()
     onSubmit({form: $form })
   }
@@ -34,7 +39,7 @@
     />
     {#if $form.errors.password}
       <div class="text-red-500 px-3 py-2 font-medium">
-        {$form.errors.password.join(', ')}
+        {$form.errors.password}
       </div>
     {/if}
   </div>
@@ -50,7 +55,7 @@
     />
     {#if $form.errors.password_confirmation}
       <div class="text-red-500 px-3 py-2 font-medium">
-        {$form.errors.password_confirmation.join(', ')}
+        {$form.errors.password_confirmation}
       </div>
     {/if}
 <% else -%>
@@ -68,7 +73,7 @@
       type="file"
       name="<%= attribute.singular_name %>"
       id="<%= attribute.singular_name %>"
-      oninput={(e) => ($form.<%= attribute.column_name %> = e.target.files[0])}
+      oninput={(e) => ($form.<%= attribute.column_name %> = ((e.target as HTMLInputElement).files || [])[0])}
       class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
     />
 <% elsif attribute.attachments? -%>
@@ -77,7 +82,7 @@
       multiple
       name="<%= attribute.singular_name %>[]"
       id="<%= attribute.singular_name %>"
-      oninput={(e) => ($form.<%= attribute.column_name %> = Array.from(e.target.files))}
+      oninput={(e) => ($form.<%= attribute.column_name %> = Array.from((e.target as HTMLInputElement).files || []))}
       class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
     />
 <% elsif input_type(attribute) == "checkbox" -%>
@@ -99,7 +104,7 @@
 <% end -%>
     {#if $form.errors.<%= attribute.column_name %>}
       <div class="text-red-500 px-3 py-2 font-medium">
-        {$form.errors.<%= attribute.column_name %>.join(', ')}
+        {$form.errors.<%= attribute.column_name %>}
       </div>
     {/if}
 <% end -%>
