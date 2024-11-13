@@ -1,6 +1,18 @@
 RSpec.describe InertiaRails::LazyProp do
   it_behaves_like 'base prop'
 
+  let(:deprecator) do
+    double(warn: nil).tap do |deprecator|
+      allow(InertiaRails).to receive(:deprecator).and_return(deprecator)
+    end
+  end
+
+  it "is deprecated" do
+    expect(deprecator).to receive(:warn).with("`lazy` is deprecated and will be removed in InertiaRails 4.0, use `optional` instead.")
+
+    described_class.new('value')
+  end
+
   describe '#call' do
     subject(:call) { prop.call(controller) }
     let(:prop) { described_class.new('value') }

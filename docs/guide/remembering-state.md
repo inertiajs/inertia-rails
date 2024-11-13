@@ -8,7 +8,7 @@ To mitigate this issue, you can tell Inertia which local component state to save
 
 ## Saving local state
 
-To save local component state to the history state, use the `remember` feature to tell Inertia which data it should remember.
+To save local component state to the history state, use the "useRemember" hook to tell Inertia which data it should remember.
 
 :::tabs key:frameworks
 == Vue
@@ -41,9 +41,9 @@ export default function Profile() {
 == Svelte 4|Svelte 5
 
 ```js
-import { remember } from '@inertiajs/svelte'
+import { useRemember } from '@inertiajs/svelte'
 
-const form = remember({
+const form = useRemember({
   first_name: null,
   last_name: null,
 })
@@ -93,9 +93,9 @@ export default function Profile() {
 == Svelte 4|Svelte 5
 
 ```js
-import { page, remember } from '@inertiajs/svelte'
+import { page, useRemember } from '@inertiajs/svelte'
 
-let form = remember(
+let form = useRemember(
   {
     first_name: null,
     last_name: null,
@@ -144,9 +144,9 @@ export default function Profile() {
 == Svelte 4|Svelte 5
 
 ```js
-import { page, remember } from '@inertiajs/svelte'
+import { page, useRemember } from '@inertiajs/svelte'
 
-let form = remember(
+let form = useRemember(
   {
     first_name: $page.props.user.first_name,
     last_name: $page.props.user.last_name,
@@ -193,7 +193,7 @@ const form = useForm(`EditUser:${user.id}`, data)
 
 ## Manually saving state
 
-The `remember` property in Vue 2, and the `useRemember` hook in Vue 3, React, and Svelte all watch for data changes and automatically save those changes to the history state. Then, Inertia will restore the data on page load.
+The `useRemember` hook watches for data changes and automatically saves them to the history state. When navigating back to the page, Inertia will restore this data.
 
 However, it's also possible to manage this manually using the underlying `remember()` and `restore()` methods in Inertia.
 

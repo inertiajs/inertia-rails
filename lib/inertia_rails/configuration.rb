@@ -16,6 +16,9 @@ module InertiaRails
       # controller configuration.
       layout: true,
 
+      # Whether to encrypt the history state in the client.
+      encrypt_history: false,
+
       # SSR options.
       ssr_enabled: false,
       ssr_url: 'http://localhost:13714',
@@ -63,7 +66,7 @@ module InertiaRails
     end
 
     def component_path_resolver(path:, action:)
-      @options[:component_path_resolver].call(path:, action:)
+      @options[:component_path_resolver].call(path: path, action: action)
     end
 
     OPTION_NAMES.each do |option|

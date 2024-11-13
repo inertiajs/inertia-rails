@@ -2,7 +2,7 @@
 
 require 'net/http'
 require 'json'
-require_relative "inertia_rails"
+require_relative 'inertia_rails'
 
 module InertiaRails
   class Renderer
@@ -12,9 +12,11 @@ module InertiaRails
       :controller,
       :props,
       :view_data,
+      :encrypt_history,
+      :clear_history
     )
 
-    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil)
+    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil, encrypt_history: nil, clear_history: nil)
       @controller = controller
       @configuration = controller.__send__(:inertia_configuration)
       @component = resolve_component(component)
@@ -24,6 +26,8 @@ module InertiaRails
       @props = props || controller.__send__(:inertia_view_assigns)
       @view_data = view_data || {}
       @deep_merge = !deep_merge.nil? ? deep_merge : configuration.deep_merge_shared_data
+      @encrypt_history = !encrypt_history.nil? ? encrypt_history : configuration.encrypt_history
+      @clear_history = clear_history || controller.session[:inertia_clear_history] || false
     end
 
     def render
@@ -78,7 +82,7 @@ module InertiaRails
         if rendering_partial_component?
           partial_keys.none? || key.in?(partial_keys) || prop.is_a?(AlwaysProp)
         else
-          !prop.is_a?(LazyProp)
+          !prop.is_a?(IgnoreOnFirstLoadProp)
         end
       end
 
@@ -97,12 +101,22 @@ module InertiaRails
     end
 
     def page
-      {
+      default_page = {
         component: component,
         props: computed_props,
         url: @request.original_fullpath,
         version: configuration.version,
+        encryptHistory: encrypt_history,
+        clearHistory: clear_history,
       }
+
+      deferred_props = deferred_props_keys
+      default_page[:deferredProps] = deferred_props if deferred_props.present?
+
+      merge_props = merge_props_keys
+      default_page[:mergeProps] = merge_props if merge_props.present?
+
+      default_page
     end
 
     def deep_transform_values(hash, &block)
@@ -121,8 +135,28 @@ module InertiaRails
       end
     end
 
+    def deferred_props_keys
+      return if rendering_partial_component?
+
+      @props.each_with_object({}) do |(key, prop), result|
+        (result[prop.group] ||= []) << key if prop.is_a?(DeferProp)
+      end
+    end
+
+    def merge_props_keys
+      @props.each_with_object([]) do |(key, prop), result|
+        if prop.try(:merge?) && reset_keys.exclude?(key)
+          result << key
+        end
+      end
+    end
+
     def partial_keys
-      (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
+      @partial_keys ||= (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
+    end
+
+    def reset_keys
+      (@request.headers['X-Inertia-Reset'] || '').split(',').compact.map(&:to_sym)
     end
 
     def partial_except_keys

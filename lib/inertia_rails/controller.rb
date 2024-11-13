@@ -123,7 +123,7 @@ module InertiaRails
     end
 
     def redirect_to(options = {}, response_options = {})
-      capture_inertia_errors(response_options)
+      capture_inertia_session_options(response_options)
       super
     end
 
@@ -155,10 +155,11 @@ module InertiaRails
       head :conflict
     end
 
-    def capture_inertia_errors(options)
-      if (inertia_errors = options.dig(:inertia, :errors))
-        session[:inertia_errors] = inertia_errors.to_hash
-      end
+    def capture_inertia_session_options(options)
+      return unless (inertia = options[:inertia])
+
+      session[:inertia_errors] = inertia[:errors].to_hash if inertia[:errors]
+      session[:inertia_clear_history] = inertia[:clear_history] if inertia[:clear_history]
     end
   end
 end
