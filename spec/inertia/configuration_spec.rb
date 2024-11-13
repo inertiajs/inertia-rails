@@ -29,6 +29,7 @@ RSpec.describe 'Inertia configuration', type: :request do
         ssr_enabled: true,
         ssr_url: "http://localhost:7777",
         version: "2.0",
+        encrypt_history: false,
       )
     end
   end

@@ -188,15 +188,12 @@ end
 }
 ```
 
-### Lazy Props
+### Optional Props
 
-On the front end, Inertia supports the concept of "partial reloads" where only the props requested are returned by the server. Sometimes, you may want to use this flow to avoid processing a particularly slow prop on the intial load. In this case, you can use Lazy props. Lazy props aren't evaluated unless they're specifically requested by name in a partial reload.
+On the frontend, Inertia supports the concept of "partial reloads" where only the props requested are returned by the server. Sometimes, you may want to use this flow to avoid processing a particularly slow prop on the initial load. In this case, you can use Optional props. Optional props aren't evaluated unless they're specifically requested by name in a partial reload.
 
 ```ruby
-  inertia_share some_data: InertiaRails.lazy(lambda { some_very_slow_method })
-
-  # Using a Ruby block syntax
-  inertia_share some_data: InertiaRails.lazy { some_very_slow_method }
+  inertia_share some_data: InertiaRails.optional { some_very_slow_method }
 ```
 
 ### Routing
@@ -266,6 +263,14 @@ end
 #### `default_render`
 
   Overrides Rails default rendering behavior to render using Inertia by default.
+
+  __Default__: `false`
+
+#### `encrypt_history`
+
+  When enabled, you instruct Inertia to encrypt your app's history, it uses
+  the browser's built-in [`crypto` api](https://developer.mozilla.org/en-US/docs/Web/API/Crypto)
+  to encrypt the current page's data before pushing it to the history state.
 
   __Default__: `false`
 
