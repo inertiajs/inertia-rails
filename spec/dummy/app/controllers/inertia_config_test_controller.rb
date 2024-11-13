@@ -5,6 +5,7 @@ class InertiaConfigTestController < ApplicationController
     ssr_url: "http://localhost:7777",
     layout: "test",
     version: "1.0",
+    encrypt_history: false,
   )
 
   # Test that modules included in the same class can also call it.

@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 require 'net/http'
 require 'json'
-require_relative "inertia_rails"
+require_relative 'inertia_rails'
 
 module InertiaRails
   class Renderer
@@ -10,9 +12,11 @@ module InertiaRails
       :controller,
       :props,
       :view_data,
+      :encrypt_history,
+      :clear_history
     )
 
-    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil)
+    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil, encrypt_history: nil, clear_history: nil)
       @controller = controller
       @configuration = controller.__send__(:inertia_configuration)
       @component = resolve_component(component)
@@ -22,6 +26,8 @@ module InertiaRails
       @props = props || controller.__send__(:inertia_view_assigns)
       @view_data = view_data || {}
       @deep_merge = !deep_merge.nil? ? deep_merge : configuration.deep_merge_shared_data
+      @encrypt_history = !encrypt_history.nil? ? encrypt_history : configuration.encrypt_history
+      @clear_history = clear_history || controller.session[:inertia_clear_history] || false
     end
 
     def render
@@ -64,47 +70,101 @@ module InertiaRails
     # Functionally, this permits using either string or symbol keys in the controller. Since the results
     # is cast to json, we should treat string/symbol keys as identical.
     def merge_props(shared_data, props)
-      shared_data.deep_symbolize_keys.send(@deep_merge ? :deep_merge : :merge, props.deep_symbolize_keys)
+      if @deep_merge
+        shared_data.deep_symbolize_keys.deep_merge!(props.deep_symbolize_keys)
+      else
+        shared_data.symbolize_keys.merge(props.symbolize_keys)
+      end
     end
 
     def computed_props
       _props = merge_props(shared_data, props).select do |key, prop|
         if rendering_partial_component?
-          key.in? partial_keys
+          partial_keys.none? || key.in?(partial_keys) || prop.is_a?(AlwaysProp)
         else
-          !prop.is_a?(InertiaRails::Lazy)
+          !prop.is_a?(IgnoreOnFirstLoadProp)
         end
       end
 
-      deep_transform_values(
-        _props,
-        lambda do |prop|
-          prop.respond_to?(:call) ? controller.instance_exec(&prop) : prop
+      drop_partial_except_keys(_props) if rendering_partial_component?
+
+      deep_transform_values _props do |prop|
+        case prop
+        when BaseProp
+          prop.call(controller)
+        when Proc
+          controller.instance_exec(&prop)
+        else
+          prop
         end
-      )
+      end
     end
 
     def page
-      {
+      default_page = {
         component: component,
         props: computed_props,
         url: @request.original_fullpath,
         version: configuration.version,
+        encryptHistory: encrypt_history,
+        clearHistory: clear_history,
       }
+
+      deferred_props = deferred_props_keys
+      default_page[:deferredProps] = deferred_props if deferred_props.present?
+
+      merge_props = merge_props_keys
+      default_page[:mergeProps] = merge_props if merge_props.present?
+
+      default_page
     end
 
-    def deep_transform_values(hash, proc)
-      return proc.call(hash) unless hash.is_a? Hash
+    def deep_transform_values(hash, &block)
+      return block.call(hash) unless hash.is_a? Hash
 
-      hash.transform_values {|value| deep_transform_values(value, proc)}
+      hash.transform_values {|value| deep_transform_values(value, &block)}
+    end
+
+    def drop_partial_except_keys(hash)
+      partial_except_keys.each do |key|
+        parts = key.to_s.split('.').map(&:to_sym)
+        *initial_keys, last_key = parts
+        current = initial_keys.any? ? hash.dig(*initial_keys) : hash
+
+        current.delete(last_key) if current.is_a?(Hash) && !current[last_key].is_a?(AlwaysProp)
+      end
+    end
+
+    def deferred_props_keys
+      return if rendering_partial_component?
+
+      @props.each_with_object({}) do |(key, prop), result|
+        (result[prop.group] ||= []) << key if prop.is_a?(DeferProp)
+      end
+    end
+
+    def merge_props_keys
+      @props.each_with_object([]) do |(key, prop), result|
+        if prop.try(:merge?) && reset_keys.exclude?(key)
+          result << key
+        end
+      end
     end
 
     def partial_keys
-      (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
+      @partial_keys ||= (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
+    end
+
+    def reset_keys
+      (@request.headers['X-Inertia-Reset'] || '').split(',').compact.map(&:to_sym)
+    end
+
+    def partial_except_keys
+      (@request.headers['X-Inertia-Partial-Except'] || '').split(',').filter_map(&:to_sym)
     end
 
     def rendering_partial_component?
-      @request.inertia_partial? && @request.headers['X-Inertia-Partial-Component'] == component
+      @request.headers['X-Inertia-Partial-Component'] == component
     end
 
     def resolve_component(component)

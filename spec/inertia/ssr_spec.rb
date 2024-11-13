@@ -1,4 +1,5 @@
 require 'net/http'
+require 'ostruct'
 
 RSpec.describe 'inertia ssr', type: :request do
   context 'ssr is enabled' do
@@ -20,6 +21,8 @@ RSpec.describe 'inertia ssr', type: :request do
             props: {name: 'Brandon', sport: 'hockey'},
             url: props_path,
             version: '1.0',
+            encryptHistory: false,
+            clearHistory: false,
           }.to_json,
           'Content-Type' => 'application/json'
         )
@@ -57,6 +60,8 @@ RSpec.describe 'inertia ssr', type: :request do
             props: {name: 'Brandon', sport: 'hockey'},
             url: props_path,
             version: '1.0',
+            encryptHistory: false,
+            clearHistory: false,
           }.to_json,
           'Content-Type' => 'application/json'
         )
@@ -66,7 +71,7 @@ RSpec.describe 'inertia ssr', type: :request do
       it 'renders inertia without ssr as a fallback' do
         get props_path
 
-        expect(response.body).to include '<div id="app" data-page="{&quot;component&quot;:&quot;TestComponent&quot;,&quot;props&quot;:{&quot;name&quot;:&quot;Brandon&quot;,&quot;sport&quot;:&quot;hockey&quot;},&quot;url&quot;:&quot;/props&quot;,&quot;version&quot;:&quot;1.0&quot;}"></div>'
+        expect(response.body).to include '<div id="app" data-page="{&quot;component&quot;:&quot;TestComponent&quot;,&quot;props&quot;:{&quot;name&quot;:&quot;Brandon&quot;,&quot;sport&quot;:&quot;hockey&quot;},&quot;url&quot;:&quot;/props&quot;,&quot;version&quot;:&quot;1.0&quot;,&quot;encryptHistory&quot;:false,&quot;clearHistory&quot;:false}"></div>'
       end
     end
   end

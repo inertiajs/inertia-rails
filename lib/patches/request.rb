@@ -4,6 +4,6 @@ ActionDispatch::Request.class_eval do
   end
 
   def inertia_partial?
-    key? 'HTTP_X_INERTIA_PARTIAL_DATA'
+    key?('HTTP_X_INERTIA_PARTIAL_COMPONENT')
   end
 end
