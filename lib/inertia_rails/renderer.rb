@@ -74,18 +74,12 @@ module InertiaRails
     end
 
     def computed_props
-      _props = merge_props(shared_data, props).select do |key, prop|
-        if rendering_partial_component?
-          partial_keys.none? || key.in?(partial_keys) || prop.is_a?(AlwaysProp)
-        else
-          !prop.is_a?(LazyProp)
-        end
-      end
+      _props = merge_props(shared_data, props)
 
-      drop_partial_except_keys(_props) if rendering_partial_component?
+      deep_transform_props _props do |prop, path|
+        next [:dont_keep] unless keep_prop?(prop, path)
 
-      deep_transform_values _props do |prop|
-        case prop
+        transformed_prop = case prop
         when BaseProp
           prop.call(controller)
         when Proc
@@ -93,6 +87,8 @@ module InertiaRails
         else
           prop
         end
+
+        [:keep, transformed_prop]
       end
     end
 
@@ -103,6 +99,22 @@ module InertiaRails
         url: @request.original_fullpath,
         version: configuration.version,
       }
+    end
+
+    def deep_transform_props(props, parent_path = '', &block)
+      props.reduce({}) do |transformed_props, (key, prop)|
+        current_path = [parent_path, key].reject(&:empty?).join('.')
+
+        if prop.is_a?(Hash)
+          nested = deep_transform_props(prop, current_path, &block)
+          transformed_props.merge!(key => nested) unless nested.empty?
+        else
+          action, transformed_prop = block.call(prop, current_path)
+          transformed_props.merge!(key => transformed_prop) if action == :keep
+        end
+
+        transformed_props
+      end
     end
 
     def deep_transform_values(hash, &block)
@@ -137,6 +149,36 @@ module InertiaRails
       return component unless component.is_a? TrueClass
 
       configuration.component_path_resolver(path: controller.controller_path, action: controller.action_name)
+    end
+
+    def keep_prop?(prop, path)
+      return true if prop.is_a?(AlwaysProp)
+
+      if rendering_partial_component?
+        path_with_prefixes = path_prefixes(path)
+        return false if excluded_by_only_partial_keys?(path_with_prefixes)
+        return false if excluded_by_except_partial_keys?(path_with_prefixes)
+      end
+
+      # Precedence: Evaluate LazyProp only after partial keys have been checked
+      return false if prop.is_a?(LazyProp) && !rendering_partial_component?
+
+      true
+    end
+
+    def path_prefixes(path)
+      parts = path.split('.')
+      (0...parts.length).map do |i|
+        parts[0..i].join('.')
+      end
+    end
+
+    def excluded_by_only_partial_keys?(path_with_prefixes)
+      partial_keys.present? && (path_with_prefixes & partial_keys.map(&:to_s)).empty?
+    end
+
+    def excluded_by_except_partial_keys?(path_with_prefixes)
+      partial_except_keys.present? && (path_with_prefixes & partial_except_keys.map(&:to_s)).any?
     end
   end
 end

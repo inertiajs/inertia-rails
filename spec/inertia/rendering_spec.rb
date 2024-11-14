@@ -111,6 +111,32 @@ RSpec.describe 'rendering inertia views', type: :request do
         is_expected.to include('Brandon')
       end
     end
+
+    context 'with dot notation' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'nested.first,nested.deeply_nested.second,nested.deeply_nested.what_about_nil',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      before { get deeply_nested_props_path, headers: headers }
+
+      it 'only renders the dot notated props' do
+        expect(response.parsed_body['props']).to eq(
+          'always' => 'always prop',
+          'nested' => {
+            'first' => 'first nested param',
+            'deeply_nested' => {
+              'second' => false,
+              'what_about_nil' => nil,
+              'deeply_nested_always' => 'deeply nested always prop',
+            },
+          },
+        )
+      end
+    end
   end
 
   context 'partial except rendering' do
