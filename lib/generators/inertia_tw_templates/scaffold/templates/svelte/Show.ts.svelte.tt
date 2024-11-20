@@ -7,12 +7,6 @@
     <%= singular_table_name %>: <%= inertia_model_type %>
     flash: { notice?: string }
   }>()
-
-  const onDestroy = (e: MouseEvent) => {
-    if (!confirm('Are you sure you want to delete this <%= human_name.downcase %>?')) {
-      e.preventDefault()
-    }
-  }
 </script>
 
 <svelte:head>
@@ -47,7 +41,6 @@
       <Link
         href={`<%= js_resource_path %>`}
         method="delete"
-        onclick={onDestroy}
         class="mt-2 rounded-lg py-3 px-5 bg-gray-100 font-medium"
       >
         Destroy this <%= human_name.downcase %>

@@ -2,12 +2,6 @@ import { Link, Head } from '@inertiajs/react'
 import <%= inertia_component_name %> from './<%= inertia_component_name %>'
 
 export default function Show({ <%= singular_table_name %>, flash }) {
-  const onDestroy = (e) => {
-    if (!confirm('Are you sure you want to delete this <%= human_name.downcase %>?')) {
-      e.preventDefault()
-    }
-  }
-
   return (
     <>
       <Head title={`<%= human_name %> #${<%= singular_table_name %>.id}`} />
@@ -27,7 +21,6 @@ export default function Show({ <%= singular_table_name %>, flash }) {
 
         <Link
           href={`<%= js_resource_path %>`}
-          onClick={onDestroy}
           as="button"
           method="delete"
         >

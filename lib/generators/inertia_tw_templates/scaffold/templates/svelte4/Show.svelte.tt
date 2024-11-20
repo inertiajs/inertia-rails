@@ -4,12 +4,6 @@
 
   export let <%= singular_table_name %>
   export let flash
-
-  const onDestroy = (e) => {
-    if (!confirm('Are you sure you want to delete this <%= human_name.downcase %>?')) {
-      e.preventDefault()
-    }
-  }
 </script>
 
 <svelte:head>
@@ -43,7 +37,6 @@
     <div class="inline-block ml-2">
       <button
         use:inertia={{ href: `<%= js_resource_path %>`, method: 'delete' }}
-        on:click={onDestroy}
         type="button"
         class="mt-2 rounded-lg py-3 px-5 bg-gray-100 font-medium"
       >

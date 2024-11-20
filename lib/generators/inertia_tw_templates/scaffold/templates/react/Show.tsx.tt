@@ -9,12 +9,6 @@ interface ShowProps {
 }
 
 export default function Show({ <%= singular_table_name %>, flash }: ShowProps) {
-  const onDestroy = (e: MouseEvent) => {
-    if (!confirm('Are you sure you want to delete this <%= human_name.downcase %>?')) {
-      e.preventDefault()
-    }
-  }
-
   return (
     <>
       <Head title={`<%= human_name %> #${<%= singular_table_name %>.id}`} />
@@ -46,7 +40,6 @@ export default function Show({ <%= singular_table_name %>, flash }: ShowProps) {
           <div className="inline-block ml-2">
             <Link
               href={`<%= js_resource_path %>`}
-              onClick={onDestroy}
               as="button"
               method="delete"
               className="mt-2 rounded-lg py-3 px-5 bg-gray-100 font-medium"

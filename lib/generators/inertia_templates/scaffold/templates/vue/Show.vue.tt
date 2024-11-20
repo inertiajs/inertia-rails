@@ -15,7 +15,6 @@
 
     <Link
       :href="`<%= js_resource_path %>`"
-      @click="onDestroy"
       as="button"
       method="delete"
     >
@@ -29,12 +28,6 @@ import { Link, Head } from '@inertiajs/vue3'
 import <%= inertia_component_name %> from './<%= inertia_component_name %>.vue'
 
 const { <%= singular_table_name %>, flash } = defineProps(['<%= singular_table_name %>', 'flash'])
-
-const onDestroy = (e) => {
-  if (!confirm('Are you sure you want to delete this <%= human_name.downcase %>?')) {
-    e.preventDefault()
-  }
-}
 </script>
 
 <style scoped>
