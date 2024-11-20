@@ -26,7 +26,7 @@
 
   <Form
     {<%= singular_table_name %>}
-    submitText="Update <%= human_name.downcase %>"
+    submitText="Update <%= human_name %>"
     onSubmit={handleSubmit}
   />
 

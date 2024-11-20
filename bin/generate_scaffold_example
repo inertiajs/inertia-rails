@@ -1,0 +1,81 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'fileutils'
+require 'optparse'
+
+# Parse command line options
+options = {
+  framework: 'react',
+  typescript: true,
+  tailwind: true,
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$PROGRAM_NAME} [options]"
+
+  opts.on('--framework FRAMEWORK', %w[react vue svelte svelte4],
+          'Choose framework (react/vue/svelte4/svelte)') do |f|
+    options[:framework] = f
+  end
+
+  opts.on('--[no-]typescript', 'Enable/disable TypeScript') do |t|
+    options[:typescript] = t
+  end
+
+  opts.on('--[no-]tailwind', 'Enable/disable Tailwind') do |t|
+    options[:tailwind] = t
+  end
+end.parse!
+
+# Build generator args string
+generator_args = "--framework=#{options[:framework]}"
+generator_args += ' --typescript' if options[:typescript]
+generator_args += ' --install-vite'
+generator_args += ' --install-tailwind' if options[:tailwind]
+
+# Setup paths relative to project root
+project_root = File.expand_path('..', __dir__)
+working_dir = File.join(project_root, 'tmp')
+gem_cache = File.join(working_dir, 'bundle_cache')
+npm_cache = File.join(working_dir, 'npm_cache')
+
+# Create cache directories if they don't exist
+[gem_cache, npm_cache, working_dir].each do |dir|
+  FileUtils.mkdir_p(dir) unless File.directory?(dir)
+end
+
+# Clean working directory
+FileUtils.rm_r(working_dir) if File.directory?(working_dir)
+FileUtils.mkdir_p(working_dir)
+
+# Generate a new Rails app
+app_name = 'scaffold_example'
+app_dir = File.join(working_dir, app_name)
+system("rails new #{app_dir} -J")
+
+# Install and configure with caching
+Dir.chdir(app_dir) do
+  # Configure bundler to use cache in project root
+  system("bundle config set --local path '#{gem_cache}'")
+
+  # Configure npm to use cache in project root
+  system("npm config set cache '#{npm_cache}'")
+
+  # Install dependencies
+  system('bundle add inertia_rails --path ../../')
+  system('bundle add bcrypt')
+  system('bin/rails active_storage:install')
+
+  # Run install generator with configured options
+  system("bin/rails g inertia:install --no-interactive --force #{generator_args}")
+
+  # Generate a scaffold
+  system('bin/rails g inertia:scaffold user name email admin:boolean password:digest avatar:attachment')
+  system('bin/rails g inertia:scaffold post content:text published_at:date gallery:attachments')
+  system('bin/rails db:migrate')
+
+  # Run tests
+  system('bin/rails test')
+  system('bin/rails test:system')
+end

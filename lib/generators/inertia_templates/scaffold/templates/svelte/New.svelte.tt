@@ -18,7 +18,7 @@
 
 <Form
   {<%= singular_table_name %>}
-  submitText="Create <%= human_name.downcase %>"
+  submitText="Create <%= human_name %>"
   onSubmit={handleSubmit}
 />
 

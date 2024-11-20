@@ -21,7 +21,7 @@ export default function Edit({ <%= singular_table_name %> }) {
             form.patch(`<%= js_resource_path %>`)
 <% end -%>
           }}
-          submitText="Update <%= human_name.downcase %>"
+          submitText="Update <%= human_name %>"
         />
 
         <Link

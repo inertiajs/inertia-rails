@@ -122,7 +122,7 @@ First, setup the root template that will be loaded on the first page visit. This
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csp_meta_tag %>
 
-    <%= inertia_headers %>
+    <%= inertia_ssr_head %>
 
     <%# If you want to use React add `vite_react_refresh_tag` %>
     <%= vite_client_tag %>
@@ -144,7 +144,7 @@ First, setup the root template that will be loaded on the first page visit. This
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csp_meta_tag %>
 
-    <%= inertia_headers %>
+    <%= inertia_ssr_head %>
 
     <%= stylesheet_pack_tag 'application' %>
     <%= javascript_pack_tag 'application', defer: true %>
@@ -157,7 +157,7 @@ First, setup the root template that will be loaded on the first page visit. This
 
 :::
 
-This template should include your assets, as well as the `yield` method to render the Inertia page. The `inertia_headers` method is used to include the Inertia headers in the response, it's required when [SSR](/guide/server-side-rendering.md) is enabled.
+This template should include your assets, as well as the `yield` method to render the Inertia page. The `inertia_ssr_head` method is used to include the Inertia headers in the response, it's required when [SSR](/guide/server-side-rendering.md) is enabled.
 
 Inertia's adapter will use standard Rails layout inheritance, with `view/layouts/application.html.erb` as a default layout. If you would like to use a different default layout, you can change it using the `InertiaRails.configure`.
 

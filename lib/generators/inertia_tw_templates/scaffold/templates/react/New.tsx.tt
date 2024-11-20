@@ -20,7 +20,7 @@ export default function New({ <%= singular_table_name %> }: NewProps) {
             form.transform((data) => ({ <%= singular_table_name %>: data }))
             form.post('<%= js_resources_path %>')
           }}
-          submitText="Create <%= human_name.downcase %>"
+          submitText="Create <%= human_name %>"
         />
 
         <Link

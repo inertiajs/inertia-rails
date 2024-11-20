@@ -39,7 +39,7 @@ export default function Form({ <%= singular_table_name %>, onSubmit, submitText 
 
       <div>
         <label style={{ display: 'block' }} htmlFor="password_confirmation">
-          Password Confirmation
+          Password confirmation
         </label>
         <input
           type="password"

@@ -47,7 +47,7 @@ export default function Form({ <%= singular_table_name %>, onSubmit, submitText 
       </div>
 
       <div className="my-5">
-        <label htmlFor="password_confirmation">Password Confirmation</label>
+        <label htmlFor="password_confirmation">Password confirmation</label>
         <input
           type="password"
           name="password_confirmation"

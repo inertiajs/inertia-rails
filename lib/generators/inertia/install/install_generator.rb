@@ -94,7 +94,7 @@ module Inertia
           say "Adding #{inertia_entrypoint} script tag to the application layout"
           headers = <<-ERB
     <%= #{vite_tag} "inertia" %>
-    <%= inertia_headers %>
+    <%= inertia_ssr_head %>
           ERB
           insert_into_file application_layout.to_s, headers, after: "<%= vite_client_tag %>\n"
 
@@ -109,7 +109,7 @@ module Inertia
           say_error 'Could not find the application layout file. Please add the following tags manually:', :red
           say_error '-  <title>...</title>'
           say_error '+  <title inertia>...</title>'
-          say_error '+  <%= inertia_headers %>'
+          say_error '+  <%= inertia_ssr_head %>'
           say_error '+  <%= vite_react_refresh_tag %>' if framework == 'react'
           say_error "+  <%= #{vite_tag} \"inertia\" %>"
         end

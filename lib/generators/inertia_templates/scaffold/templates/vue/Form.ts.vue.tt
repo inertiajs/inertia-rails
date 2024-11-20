@@ -17,7 +17,7 @@
 
     <div>
       <label class="label" for="password_confirmation">
-        Password Confirmation
+        Password confirmation
       </label>
       <input
         type="password"
