@@ -36,6 +36,12 @@ class InertiaRenderTestController < ApplicationController
       nested: {
         first: 'first nested param',
         second: 'second nested param',
+        evaluated: -> do
+          {
+            first: 'first evaluated nested param',
+            second: 'second evaluated nested param'
+          }
+        end,
         deeply_nested: {
           first: 'first deeply nested param',
           second: false,

@@ -191,6 +191,66 @@ RSpec.describe 'rendering inertia views', type: :request do
         )
       end
     end
+
+    context 'with only props that target transformed data' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Component' => 'TestComponent',
+          'X-Inertia-Partial-Data' => 'nested.evaluated.first',
+        }
+      end
+
+      before { get deeply_nested_props_path, headers: headers }
+
+      it 'filters out the entire evaluated prop' do
+        expect(response.parsed_body['props']).to eq(
+          'always' => 'always prop',
+          'nested' => {
+            'deeply_nested' => {
+              'deeply_nested_always' => 'deeply nested always prop',
+            },
+          },
+        )
+      end
+    end
+
+    context 'with except props that target transformed data' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Component' => 'TestComponent',
+          'X-Inertia-Partial-Except' => 'nested.evaluated.first',
+        }
+      end
+
+      before { get deeply_nested_props_path, headers: headers }
+
+      it 'renders the entire evaluated prop' do
+        expect(response.parsed_body['props']).to eq(
+          'always' => 'always prop',
+          'flat' => 'flat param',
+          'lazy' => 'lazy param',
+          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested' => {
+            'first' => 'first nested param',
+            'second' => 'second nested param',
+            'evaluated' => {
+              'first' => 'first evaluated nested param',
+              'second' => 'second evaluated nested param',
+            },
+            'deeply_nested' => {
+              'first' => 'first deeply nested param',
+              'second' => false,
+              'what_about_nil' => nil,
+              'what_about_empty_hash' => {},
+              'deeply_nested_always' => 'deeply nested always prop',
+              'deeply_nested_lazy' => 'deeply nested lazy prop',
+            },
+          },
+        )
+      end
+    end
   end
 
   context 'partial except rendering' do
