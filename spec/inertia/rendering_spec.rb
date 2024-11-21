@@ -138,6 +138,59 @@ RSpec.describe 'rendering inertia views', type: :request do
         )
       end
     end
+
+    context 'with both partial and except dot notation' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Component' => 'TestComponent',
+          'X-Inertia-Partial-Data' => 'lazy,nested.deeply_nested',
+          'X-Inertia-Partial-Except' => 'nested.deeply_nested.first',
+        }
+      end
+
+      before { get deeply_nested_props_path, headers: headers }
+
+      it 'renders the partial data and excludes the excepted data' do
+        expect(response.parsed_body['props']).to eq(
+          'always' => 'always prop',
+          'lazy' => 'lazy param',
+          'nested' => {
+            'deeply_nested' => {
+              'second' => false,
+              'what_about_nil' => nil,
+              'what_about_empty_hash' => {},
+              'deeply_nested_always' => 'deeply nested always prop',
+              'deeply_nested_lazy' => 'deeply nested lazy prop',
+            },
+          },
+        )
+      end
+    end
+
+    context 'with nonsensical partial data that includes and excludes the same prop and tries to exclude an always prop' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Component' => 'TestComponent',
+          'X-Inertia-Partial-Data' => 'lazy',
+          'X-Inertia-Partial-Except' => 'lazy,always',
+        }
+      end
+
+      before { get deeply_nested_props_path, headers: headers }
+
+      it 'excludes everything but Always props' do
+        expect(response.parsed_body['props']).to eq(
+          'always' => 'always prop',
+          'nested' => {
+            'deeply_nested' => {
+              'deeply_nested_always' => 'deeply nested always prop',
+            },
+          },
+        )
+      end
+    end
   end
 
   context 'partial except rendering' do
