@@ -4,8 +4,8 @@
 # https://github.com/rails/rails/blob/5-0-stable/actionpack/lib/action_dispatch/middleware/debug_exceptions.rb
 #
 
-ActionDispatch::DebugExceptions.class_eval do
-  prepend(InertiaDebugExceptions = Module.new do
+module InertiaRails
+  module InertiaDebugExceptions
     def render_for_default_application(request, wrapper)
       template = create_template(request, wrapper)
       file = "rescues/#{wrapper.rescue_template}"
@@ -19,5 +19,9 @@ ActionDispatch::DebugExceptions.class_eval do
       end
       render(wrapper.status_code, body, format)
     end
-  end)
+  end
+end
+
+if defined?(ActionDispatch::DebugExceptions)
+  ActionDispatch::DebugExceptions.prepend InertiaRails::InertiaDebugExceptions
 end
