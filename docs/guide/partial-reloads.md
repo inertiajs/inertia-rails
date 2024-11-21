@@ -46,6 +46,8 @@ router.visit(url, {
 
 ## Except certain props
 
+In addition to the only visit option you can also use the except option to specify which data the server should exclude. This option should also be an array of keys which correspond to the keys of the props.
+
 :::tabs key:frameworks
 == Vue
 
@@ -79,7 +81,53 @@ router.visit(url, {
 
 :::
 
-In addition to the only visit option you can also use the except option to specify which data the server should exclude. This option should also be an array of keys which correspond to the keys of the props.
+## Dot notation
+
+Both the `only` and `except` visit options support dot notation to specify nested data, and they can be used together. In the following example, only `settings.theme` will be rendered, but without its `colors` property.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.visit(url, {
+  only: ['settings.theme'],
+  except: ['setting.theme.colors'],
+})
+```
+
+== React
+
+```jsx
+import { router } from '@inertiajs/react'
+
+router.visit(url, {
+  only: ['settings.theme'],
+  except: ['setting.theme.colors'],
+})
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.visit(url, {
+  only: ['settings.theme'],
+  except: ['setting.theme.colors'],
+})
+```
+
+Please remember that, by design, partial reloading filters props _before_ they are evaluated, so it can only target explicitly defined prop keys. Let's say you have this prop:
+
+`users: -> { User.all }`
+
+Requesting `only: ['users.name']` will exclude the entire `users` prop, since `users.name` is not available before evaluating the prop.
+
+Requesting `except: ['users.name']` will not exclude anything.
+
+:::
 
 ## Router shorthand
 
