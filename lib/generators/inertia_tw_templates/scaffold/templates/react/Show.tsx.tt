@@ -1,4 +1,3 @@
-import { MouseEvent } from 'react'
 import { Link, Head } from '@inertiajs/react'
 import { <%= inertia_model_type %> } from './types'
 import <%= inertia_component_name %> from './<%= inertia_component_name %>'

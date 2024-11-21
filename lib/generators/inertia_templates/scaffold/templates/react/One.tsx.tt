@@ -23,7 +23,7 @@ export default function <%= inertia_component_name %>({ <%= singular_table_name 
         </div>
       ))}
 <% else -%>
-        {<%= singular_table_name %>.<%= attribute.column_name %>.toString()}
+        {<%= singular_table_name %>.<%= attribute.column_name %>?.toString()}
       </p>
 <% end -%>
 <% end -%>

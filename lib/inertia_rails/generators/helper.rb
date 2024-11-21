@@ -15,6 +15,7 @@ module InertiaRails
             'vue'
           else
             Thor::Shell::Basic.new.say_error 'Could not determine the Inertia.js framework you are using.'
+            exit 1
           end
         end
 
@@ -81,6 +82,14 @@ module InertiaRails
 
       def js_resources_path
         route_url
+      end
+
+      def inertia_js_version
+        @inertia_js_version ||= Gem::Version.new(
+          JSON.parse(`npm ls @inertiajs/core --json`).then do |json|
+            json['dependencies'].values.first['version']
+          end
+        )
       end
 
       def ts_type(attribute)

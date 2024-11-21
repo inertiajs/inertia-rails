@@ -30,7 +30,7 @@ vue:
     - "vue"
     - "@vitejs/plugin-vue"
   packages_ts:
-    - "typescript"
+    - "typescript@~5.6.2"
     - "vue-tsc"
   vite_plugin_import: "import vue from '@vitejs/plugin-vue'"
   vite_plugin_call: "vue()"

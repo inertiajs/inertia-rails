@@ -26,13 +26,17 @@ OptionParser.new do |opts|
   opts.on('--[no-]tailwind', 'Enable/disable Tailwind') do |t|
     options[:tailwind] = t
   end
+
+  opts.on('--inertia-version VERSION', 'Specify Inertia version') do |v|
+    options[:inertia_version] = v
+  end
 end.parse!
 
 # Build generator args string
 generator_args = "--framework=#{options[:framework]}"
 generator_args += ' --typescript' if options[:typescript]
-generator_args += ' --install-vite'
-generator_args += ' --install-tailwind' if options[:tailwind]
+generator_args += ' --tailwind' if options[:tailwind]
+generator_args += " --inertia-version=#{options[:inertia_version]}" if options[:inertia_version]
 
 # Setup paths relative to project root
 project_root = File.expand_path('..', __dir__)
@@ -57,25 +61,28 @@ system("rails new #{app_dir} -J")
 # Install and configure with caching
 Dir.chdir(app_dir) do
   # Configure bundler to use cache in project root
-  system("bundle config set --local path '#{gem_cache}'")
+  system("bundle config set --local path '#{gem_cache}'", exception: true)
 
   # Configure npm to use cache in project root
-  system("npm config set cache '#{npm_cache}'")
+  system("npm config set cache '#{npm_cache}'", exception: true)
 
   # Install dependencies
-  system('bundle add inertia_rails --path ../../')
-  system('bundle add bcrypt')
-  system('bin/rails active_storage:install')
+  system('bundle add inertia_rails --path ../../', exception: true)
+  system('bundle add bcrypt', exception: true)
+  system('bin/rails active_storage:install', exception: true)
 
   # Run install generator with configured options
-  system("bin/rails g inertia:install --no-interactive --force #{generator_args}")
+  system("bin/rails g inertia:install --no-interactive --force --vite #{generator_args} --verbose", exception: true)
 
   # Generate a scaffold
-  system('bin/rails g inertia:scaffold user name email admin:boolean password:digest avatar:attachment')
-  system('bin/rails g inertia:scaffold post content:text published_at:date gallery:attachments')
-  system('bin/rails db:migrate')
+  system('bin/rails g inertia:scaffold user name email admin:boolean password:digest avatar:attachment', exception: true)
+  system('bin/rails g inertia:scaffold post content:text published_at:date gallery:attachments', exception: true)
+  system('bin/rails db:migrate', exception: true)
 
   # Run tests
-  system('bin/rails test')
-  system('bin/rails test:system')
+  system('bin/rails test', exception: true)
+  system('bin/rails test:system', exception: true)
+
+  # Lint code
+  system('npm run check', exception: true) if options[:typescript]
 end

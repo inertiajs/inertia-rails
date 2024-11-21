@@ -18,14 +18,23 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        framework: [react, vue, svelte4, svelte]
+        framework: [react, vue, svelte, svelte4]
         typescript: [true, false]
         tailwind: [true, false]
         ruby: ['3.3']
         node: ['22']
+        inertia_version: ['1.2.0', 'next', 'beta']
+        exclude:
+          # 1.2.0 does not support typescript
+          - typescript: true
+            inertia_version: '1.2.0'
+          # 1.2.0 doesn't support Svelte 5
+          - framework: svelte
+            inertia_version: '1.2.0'
 
-    name: ${{ matrix.framework }} (TS:${{ matrix.typescript }}, TW:${{ matrix.tailwind }})
+    name: ${{ matrix.framework }} (TS:${{ matrix.typescript }}, TW:${{ matrix.tailwind }}, Inertia:${{ matrix.inertia_version }})
 
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +57,7 @@ jobs:
             tmp/bundle_cache
             tmp/npm_cache
             ~/.npm
-          key: ${{ runner.os }}-deps-${{ matrix.framework }}-${{ hashFiles('**/Gemfile.lock') }}-${{ github.sha }}
+          key: ${{ runner.os }}-deps-${{ matrix.framework }}-${{ matrix.inertia_version }}-${{ hashFiles('**/Gemfile.lock') }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-deps-${{ matrix.framework }}-
             ${{ runner.os }}-deps-
@@ -60,13 +69,13 @@ jobs:
         run: |
           ts_flag=${{ matrix.typescript && '--typescript' || '--no-typescript' }}
           tw_flag=${{ matrix.tailwind && '--tailwind' || '--no-tailwind' }}
-          bin/generate_scaffold_example --framework=${{ matrix.framework }} $ts_flag $tw_flag
+          bin/generate_scaffold_example --framework=${{ matrix.framework }} --inertia-version=${{ matrix.inertia_version }} $ts_flag $tw_flag
 
       - name: Upload test artifacts
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: test-output-${{ matrix.framework }}-ts${{ matrix.typescript }}-tw${{ matrix.tailwind }}
+          name: test-output-${{ matrix.framework }}-ts${{ matrix.typescript }}-tw${{ matrix.tailwind }}-v${{ matrix.inertia_version }}
           path: |
             tmp/scaffold_example/log
             tmp/scaffold_example/tmp/screenshots

@@ -34,10 +34,10 @@ module Inertia
       class_option :interactive, type: :boolean, default: true,
                                  desc: 'Whether to prompt for optional installations'
 
-      class_option :install_tailwind, type: :boolean, default: false,
-                                      desc: 'Whether to install Tailwind CSS'
-      class_option :install_vite, type: :boolean, default: false,
-                                  desc: 'Whether to install Vite Ruby'
+      class_option :tailwind, type: :boolean, default: false,
+                              desc: 'Whether to install Tailwind CSS'
+      class_option :vite, type: :boolean, default: false,
+                          desc: 'Whether to install Vite Ruby'
       class_option :example_page, type: :boolean, default: true,
                                   desc: 'Whether to add an example Inertia page'
 
@@ -127,6 +127,11 @@ module Inertia
         end
 
         add_dependencies(*FRAMEWORKS[framework]['packages_ts'])
+
+        say 'Copying adding scripts to package.json'
+        run 'npm pkg set scripts.check="svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"' if svelte?
+        run 'npm pkg set scripts.check="vue-tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"' if framework == 'vue'
+        run 'npm pkg set scripts.check="tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"' if framework == 'react'
       end
 
       def install_example_page
@@ -236,13 +241,13 @@ module Inertia
       def install_vite?
         return @install_vite if defined?(@install_vite)
 
-        @install_vite = options[:install_vite] || yes?('Would you like to install Vite Ruby? (y/n)', :green)
+        @install_vite = options[:vite] || yes?('Would you like to install Vite Ruby? (y/n)', :green)
       end
 
       def install_tailwind?
         return @install_tailwind if defined?(@install_tailwind)
 
-        @install_tailwind = options[:install_tailwind] || yes?('Would you like to install Tailwind CSS? (y/n)', :green)
+        @install_tailwind = options[:tailwind] || yes?('Would you like to install Tailwind CSS? (y/n)', :green)
       end
 
       def typescript?

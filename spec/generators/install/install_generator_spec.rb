@@ -44,8 +44,8 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
       expect { generator }.to raise_error(SystemExit)
     end
 
-    context 'with --install-vite' do
-      let(:args) { super() + %w[--install-vite] }
+    context 'with --vite' do
+      let(:args) { super() + %w[--vite] }
 
       it 'installs Vite' do
         expect { generator }.not_to raise_error
@@ -62,8 +62,8 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
     end
   end
 
-  context 'with --install-tailwind' do
-    let(:args) { super() + %w[--install-tailwind] }
+  context 'with --tailwind' do
+    let(:args) { super() + %w[--tailwind] }
 
     before { prepare_application }
 
