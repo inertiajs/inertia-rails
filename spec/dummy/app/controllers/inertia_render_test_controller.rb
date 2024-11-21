@@ -40,6 +40,7 @@ class InertiaRenderTestController < ApplicationController
           first: 'first deeply nested param',
           second: false,
           what_about_nil: nil,
+          what_about_empty_hash: {},
           deeply_nested_always: InertiaRails.always { 'deeply nested always prop' },
           deeply_nested_lazy: InertiaRails.lazy { 'deeply nested lazy prop' }
         }

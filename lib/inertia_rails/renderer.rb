@@ -105,7 +105,7 @@ module InertiaRails
       props.reduce({}) do |transformed_props, (key, prop)|
         current_path = parent_path + [key]
 
-        if prop.is_a?(Hash)
+        if prop.is_a?(Hash) && prop.any?
           nested = deep_transform_props(prop, current_path, &block)
           transformed_props.merge!(key => nested) unless nested.empty?
         else

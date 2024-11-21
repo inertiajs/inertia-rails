@@ -116,7 +116,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       let(:headers) do
         {
           'X-Inertia' => true,
-          'X-Inertia-Partial-Data' => 'nested.first,nested.deeply_nested.second,nested.deeply_nested.what_about_nil',
+          'X-Inertia-Partial-Data' => 'nested.first,nested.deeply_nested.second,nested.deeply_nested.what_about_nil,nested.deeply_nested.what_about_empty_hash',
           'X-Inertia-Partial-Component' => 'TestComponent',
         }
       end
@@ -131,6 +131,7 @@ RSpec.describe 'rendering inertia views', type: :request do
             'deeply_nested' => {
               'second' => false,
               'what_about_nil' => nil,
+              'what_about_empty_hash' => {},
               'deeply_nested_always' => 'deeply nested always prop',
             },
           },
