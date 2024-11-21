@@ -101,9 +101,9 @@ module InertiaRails
       }
     end
 
-    def deep_transform_props(props, parent_path = '', &block)
+    def deep_transform_props(props, parent_path = [], &block)
       props.reduce({}) do |transformed_props, (key, prop)|
-        current_path = [parent_path, key].reject(&:empty?).join('.')
+        current_path = parent_path + [key]
 
         if prop.is_a?(Hash)
           nested = deep_transform_props(prop, current_path, &block)
@@ -118,11 +118,11 @@ module InertiaRails
     end
 
     def partial_keys
-      (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
+      (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact
     end
 
     def partial_except_keys
-      (@request.headers['X-Inertia-Partial-Except'] || '').split(',').filter_map(&:to_sym)
+      (@request.headers['X-Inertia-Partial-Except'] || '').split(',').compact
     end
 
     def rendering_partial_component?
@@ -150,19 +150,18 @@ module InertiaRails
       true
     end
 
-    def path_prefixes(path)
-      parts = path.split('.')
+    def path_prefixes(parts)
       (0...parts.length).map do |i|
         parts[0..i].join('.')
       end
     end
 
     def excluded_by_only_partial_keys?(path_with_prefixes)
-      partial_keys.present? && (path_with_prefixes & partial_keys.map(&:to_s)).empty?
+      partial_keys.present? && (path_with_prefixes & partial_keys).empty?
     end
 
     def excluded_by_except_partial_keys?(path_with_prefixes)
-      partial_except_keys.present? && (path_with_prefixes & partial_except_keys.map(&:to_s)).any?
+      partial_except_keys.present? && (path_with_prefixes & partial_except_keys).any?
     end
   end
 end
