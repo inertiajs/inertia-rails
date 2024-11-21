@@ -119,6 +119,8 @@ router.visit(url, {
 })
 ```
 
+:::
+
 Please remember that, by design, partial reloading filters props _before_ they are evaluated, so it can only target explicitly defined prop keys. Let's say you have this prop:
 
 `users: -> { User.all }`
@@ -126,8 +128,6 @@ Please remember that, by design, partial reloading filters props _before_ they a
 Requesting `only: ['users.name']` will exclude the entire `users` prop, since `users.name` is not available before evaluating the prop.
 
 Requesting `except: ['users.name']` will not exclude anything.
-
-:::
 
 ## Router shorthand
 
