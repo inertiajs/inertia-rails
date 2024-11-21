@@ -6,6 +6,9 @@ require_relative "inertia_rails"
 
 module InertiaRails
   class Renderer
+    KEEP_PROP = :keep
+    DONT_KEEP_PROP = :dont_keep
+
     attr_reader(
       :component,
       :configuration,
@@ -77,7 +80,7 @@ module InertiaRails
       _props = merge_props(shared_data, props)
 
       deep_transform_props _props do |prop, path|
-        next [:dont_keep] unless keep_prop?(prop, path)
+        next [DONT_KEEP_PROP] unless keep_prop?(prop, path)
 
         transformed_prop = case prop
         when BaseProp
@@ -88,7 +91,7 @@ module InertiaRails
           prop
         end
 
-        [:keep, transformed_prop]
+        [KEEP_PROP, transformed_prop]
       end
     end
 
@@ -110,7 +113,7 @@ module InertiaRails
           transformed_props.merge!(key => nested) unless nested.empty?
         else
           action, transformed_prop = block.call(prop, current_path)
-          transformed_props.merge!(key => transformed_prop) if action == :keep
+          transformed_props.merge!(key => transformed_prop) if action == KEEP_PROP
         end
 
         transformed_props
