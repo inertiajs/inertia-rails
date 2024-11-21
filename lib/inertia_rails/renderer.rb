@@ -6,6 +6,9 @@ require_relative "inertia_rails"
 
 module InertiaRails
   class Renderer
+    KEEP_PROP = :keep
+    DONT_KEEP_PROP = :dont_keep
+
     attr_reader(
       :component,
       :configuration,
@@ -74,18 +77,12 @@ module InertiaRails
     end
 
     def computed_props
-      _props = merge_props(shared_data, props).select do |key, prop|
-        if rendering_partial_component?
-          partial_keys.none? || key.in?(partial_keys) || prop.is_a?(AlwaysProp)
-        else
-          !prop.is_a?(LazyProp)
-        end
-      end
+      _props = merge_props(shared_data, props)
 
-      drop_partial_except_keys(_props) if rendering_partial_component?
+      deep_transform_props _props do |prop, path|
+        next [DONT_KEEP_PROP] unless keep_prop?(prop, path)
 
-      deep_transform_values _props do |prop|
-        case prop
+        transformed_prop = case prop
         when BaseProp
           prop.call(controller)
         when Proc
@@ -93,6 +90,8 @@ module InertiaRails
         else
           prop
         end
+
+        [KEEP_PROP, transformed_prop]
       end
     end
 
@@ -105,28 +104,28 @@ module InertiaRails
       }
     end
 
-    def deep_transform_values(hash, &block)
-      return block.call(hash) unless hash.is_a? Hash
+    def deep_transform_props(props, parent_path = [], &block)
+      props.reduce({}) do |transformed_props, (key, prop)|
+        current_path = parent_path + [key]
 
-      hash.transform_values {|value| deep_transform_values(value, &block)}
-    end
+        if prop.is_a?(Hash) && prop.any?
+          nested = deep_transform_props(prop, current_path, &block)
+          transformed_props.merge!(key => nested) unless nested.empty?
+        else
+          action, transformed_prop = block.call(prop, current_path)
+          transformed_props.merge!(key => transformed_prop) if action == KEEP_PROP
+        end
 
-    def drop_partial_except_keys(hash)
-      partial_except_keys.each do |key|
-        parts = key.to_s.split('.').map(&:to_sym)
-        *initial_keys, last_key = parts
-        current = initial_keys.any? ? hash.dig(*initial_keys) : hash
-
-        current.delete(last_key) if current.is_a?(Hash) && !current[last_key].is_a?(AlwaysProp)
+        transformed_props
       end
     end
 
     def partial_keys
-      (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact.map(&:to_sym)
+      (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact
     end
 
     def partial_except_keys
-      (@request.headers['X-Inertia-Partial-Except'] || '').split(',').filter_map(&:to_sym)
+      (@request.headers['X-Inertia-Partial-Except'] || '').split(',').compact
     end
 
     def rendering_partial_component?
@@ -137,6 +136,35 @@ module InertiaRails
       return component unless component.is_a? TrueClass
 
       configuration.component_path_resolver(path: controller.controller_path, action: controller.action_name)
+    end
+
+    def keep_prop?(prop, path)
+      return true if prop.is_a?(AlwaysProp)
+
+      if rendering_partial_component?
+        path_with_prefixes = path_prefixes(path)
+        return false if excluded_by_only_partial_keys?(path_with_prefixes)
+        return false if excluded_by_except_partial_keys?(path_with_prefixes)
+      end
+
+      # Precedence: Evaluate LazyProp only after partial keys have been checked
+      return false if prop.is_a?(LazyProp) && !rendering_partial_component?
+
+      true
+    end
+
+    def path_prefixes(parts)
+      (0...parts.length).map do |i|
+        parts[0..i].join('.')
+      end
+    end
+
+    def excluded_by_only_partial_keys?(path_with_prefixes)
+      partial_keys.present? && (path_with_prefixes & partial_keys).empty?
+    end
+
+    def excluded_by_except_partial_keys?(path_with_prefixes)
+      partial_except_keys.present? && (path_with_prefixes & partial_except_keys).any?
     end
   end
 end

@@ -111,6 +111,146 @@ RSpec.describe 'rendering inertia views', type: :request do
         is_expected.to include('Brandon')
       end
     end
+
+    context 'with dot notation' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'nested.first,nested.deeply_nested.second,nested.deeply_nested.what_about_nil,nested.deeply_nested.what_about_empty_hash',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      before { get deeply_nested_props_path, headers: headers }
+
+      it 'only renders the dot notated props' do
+        expect(response.parsed_body['props']).to eq(
+          'always' => 'always prop',
+          'nested' => {
+            'first' => 'first nested param',
+            'deeply_nested' => {
+              'second' => false,
+              'what_about_nil' => nil,
+              'what_about_empty_hash' => {},
+              'deeply_nested_always' => 'deeply nested always prop',
+            },
+          },
+        )
+      end
+    end
+
+    context 'with both partial and except dot notation' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Component' => 'TestComponent',
+          'X-Inertia-Partial-Data' => 'lazy,nested.deeply_nested',
+          'X-Inertia-Partial-Except' => 'nested.deeply_nested.first',
+        }
+      end
+
+      before { get deeply_nested_props_path, headers: headers }
+
+      it 'renders the partial data and excludes the excepted data' do
+        expect(response.parsed_body['props']).to eq(
+          'always' => 'always prop',
+          'lazy' => 'lazy param',
+          'nested' => {
+            'deeply_nested' => {
+              'second' => false,
+              'what_about_nil' => nil,
+              'what_about_empty_hash' => {},
+              'deeply_nested_always' => 'deeply nested always prop',
+              'deeply_nested_lazy' => 'deeply nested lazy prop',
+            },
+          },
+        )
+      end
+    end
+
+    context 'with nonsensical partial data that includes and excludes the same prop and tries to exclude an always prop' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Component' => 'TestComponent',
+          'X-Inertia-Partial-Data' => 'lazy',
+          'X-Inertia-Partial-Except' => 'lazy,always',
+        }
+      end
+
+      before { get deeply_nested_props_path, headers: headers }
+
+      it 'excludes everything but Always props' do
+        expect(response.parsed_body['props']).to eq(
+          'always' => 'always prop',
+          'nested' => {
+            'deeply_nested' => {
+              'deeply_nested_always' => 'deeply nested always prop',
+            },
+          },
+        )
+      end
+    end
+
+    context 'with only props that target transformed data' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Component' => 'TestComponent',
+          'X-Inertia-Partial-Data' => 'nested.evaluated.first',
+        }
+      end
+
+      before { get deeply_nested_props_path, headers: headers }
+
+      it 'filters out the entire evaluated prop' do
+        expect(response.parsed_body['props']).to eq(
+          'always' => 'always prop',
+          'nested' => {
+            'deeply_nested' => {
+              'deeply_nested_always' => 'deeply nested always prop',
+            },
+          },
+        )
+      end
+    end
+
+    context 'with except props that target transformed data' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Component' => 'TestComponent',
+          'X-Inertia-Partial-Except' => 'nested.evaluated.first',
+        }
+      end
+
+      before { get deeply_nested_props_path, headers: headers }
+
+      it 'renders the entire evaluated prop' do
+        expect(response.parsed_body['props']).to eq(
+          'always' => 'always prop',
+          'flat' => 'flat param',
+          'lazy' => 'lazy param',
+          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested' => {
+            'first' => 'first nested param',
+            'second' => 'second nested param',
+            'evaluated' => {
+              'first' => 'first evaluated nested param',
+              'second' => 'second evaluated nested param',
+            },
+            'deeply_nested' => {
+              'first' => 'first deeply nested param',
+              'second' => false,
+              'what_about_nil' => nil,
+              'what_about_empty_hash' => {},
+              'deeply_nested_always' => 'deeply nested always prop',
+              'deeply_nested_lazy' => 'deeply nested lazy prop',
+            },
+          },
+        )
+      end
+    end
   end
 
   context 'partial except rendering' do

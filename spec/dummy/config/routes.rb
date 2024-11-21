@@ -33,6 +33,7 @@ Rails.application.routes.draw do
   get 'always_props' => 'inertia_render_test#always_props'
   get 'except_props' => 'inertia_render_test#except_props'
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
+  get 'deeply_nested_props' => 'inertia_render_test#deeply_nested_props'
 
   get 'instance_props_test' => 'inertia_rails_mimic#instance_props_test'
   get 'default_render_test' => 'inertia_rails_mimic#default_render_test'
