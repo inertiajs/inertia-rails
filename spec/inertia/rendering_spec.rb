@@ -393,6 +393,31 @@ RSpec.describe 'rendering inertia views', type: :request do
       end
     end
   end
+
+  context 'when there are unoptimized props' do
+    let(:headers) {{
+      'X-Inertia' => true,
+      'X-Inertia-Partial-Data' => 'nested.first',
+      'X-Inertia-Partial-Component' => 'TestComponent',
+    }}
+
+    it 'logs a warning' do
+      expect(Rails.logger).to receive(:warn).with(/flat, nested\.second/)
+      get except_props_path, headers: headers
+    end
+    #flat: 'flat param',
+    #lazy: InertiaRails.lazy('lazy param'),
+    #nested_lazy: InertiaRails.lazy do
+      #{
+        #first: 'first nested lazy param',
+      #}
+    #end,
+    #nested: {
+      #first: 'first nested param',
+      #second: 'second nested param'
+    #},
+    #always: InertiaRails.always { 'always prop' }
+  end
 end
 
 def inertia_div(page)

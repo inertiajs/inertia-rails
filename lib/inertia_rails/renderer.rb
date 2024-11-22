@@ -29,6 +29,8 @@ module InertiaRails
     def render
       set_vary_header
 
+      validate_partial_reload_optimization if rendering_partial_component?
+
       return render_inertia_response if @request.headers['X-Inertia']
       return render_ssr if configuration.ssr_enabled rescue nil
 
@@ -78,9 +80,9 @@ module InertiaRails
     # is cast to json, we should treat string/symbol keys as identical.
     def merged_props
       @merged_props ||= if @deep_merge
-        shared_data.deep_symbolize_keys.deep_merge!(props.deep_symbolize_keys)
+        shared_data.deep_symbolize_keys.deep_merge!(@props.deep_symbolize_keys)
       else
-        shared_data.symbolize_keys.merge(props.symbolize_keys)
+        shared_data.symbolize_keys.merge(@props.symbolize_keys)
       end
     end
 
@@ -145,12 +147,24 @@ module InertiaRails
       partial_except_keys.present? && (path_with_prefixes & partial_except_keys).any?
     end
 
+    def validate_partial_reload_optimization
+      if prop_transformer.unoptimized_prop_paths.any?
+        message =
+          "InertiaRails: The \"#{prop_transformer.unoptimized_prop_paths.join(', ')}\" " \
+          "prop(s) were excluded in a partial reload but still evaluated because they are defined as values. " \
+          "Consider wrapping them in something callable like a lambda."
+
+        controller.logger.warn(message)
+      end
+    end
+
     class PropTransformer
-      attr_reader :props
+      attr_reader :props, :unoptimized_prop_paths
 
       def initialize(initial_props, controller)
         @initial_props = initial_props
         @controller = controller
+        @unoptimized_prop_paths = []
       end
 
       def select_transformed(&block)
@@ -167,6 +181,8 @@ module InertiaRails
             transformed_props.merge!(key => nested) unless nested.empty?
           elsif block.call(prop, current_path)
             transformed_props.merge!(key => transform_prop(prop))
+          elsif !prop.respond_to?(:call)
+            @unoptimized_prop_paths << current_path.join(".")
           end
 
           transformed_props
