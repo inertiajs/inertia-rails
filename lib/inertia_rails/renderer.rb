@@ -30,21 +30,28 @@ module InertiaRails
     end
 
     def render
+      set_vary_header
+
+      return render_inertia_response if @request.headers['X-Inertia']
+      return render_ssr if configuration.ssr_enabled rescue nil
+
+      render_full_page
+    end
+
+    private
+
+    def set_vary_header
       if @response.headers["Vary"].blank?
         @response.headers["Vary"] = 'X-Inertia'
       else
         @response.headers["Vary"] = "#{@response.headers["Vary"]}, X-Inertia"
       end
-      if @request.headers['X-Inertia']
-        @response.set_header('X-Inertia', 'true')
-        @render_method.call json: page, status: @response.status, content_type: Mime[:json]
-      else
-        return render_ssr if configuration.ssr_enabled rescue nil
-        @render_method.call template: 'inertia', layout: layout, locals: view_data.merge(page: page)
-      end
     end
 
-    private
+    def render_inertia_response
+      @response.set_header('X-Inertia', 'true')
+      @render_method.call json: page, status: @response.status, content_type: Mime[:json]
+    end
 
     def render_ssr
       uri = URI("#{configuration.ssr_url}/render")
@@ -52,6 +59,10 @@ module InertiaRails
 
       controller.instance_variable_set("@_inertia_ssr_head", res['head'].join.html_safe)
       @render_method.call html: res['body'].html_safe, layout: layout, locals: view_data.merge(page: page)
+    end
+
+    def render_full_page
+      @render_method.call template: 'inertia', layout: layout, locals: view_data.merge(page: page)
     end
 
     def layout
