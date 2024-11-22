@@ -87,8 +87,8 @@ module InertiaRails
     end
 
     def prop_transformer
-      @prop_transformer ||= PropTransformer.new(merged_props, controller)
-        .select_transformed { |prop, path| keep_prop?(prop, path) }
+      @prop_transformer ||= PropTransformer.new(controller)
+        .select_transformed(merged_props){ |prop, path| keep_prop?(prop, path) }
     end
 
     def page
@@ -161,16 +161,20 @@ module InertiaRails
     class PropTransformer
       attr_reader :props, :unoptimized_prop_paths
 
-      def initialize(initial_props, controller)
-        @initial_props = initial_props
+      def initialize(controller)
         @controller = controller
         @unoptimized_prop_paths = []
+        @props = {}
       end
 
-      def select_transformed(&block)
-        @props = deep_transform_and_select(@initial_props, &block)
+      def select_transformed(initial_props, &block)
+        @unoptimized_prop_paths = []
+        @props = deep_transform_and_select(initial_props, &block)
+
         self
       end
+
+      private
 
       def deep_transform_and_select(original_props, parent_path = [], &block)
         original_props.reduce({}) do |transformed_props, (key, prop)|
