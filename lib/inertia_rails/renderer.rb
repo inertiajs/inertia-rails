@@ -6,9 +6,6 @@ require_relative "inertia_rails"
 
 module InertiaRails
   class Renderer
-    KEEP_PROP = :keep
-    DONT_KEEP_PROP = :dont_keep
-
     attr_reader(
       :component,
       :configuration,
@@ -79,56 +76,26 @@ module InertiaRails
     #
     # Functionally, this permits using either string or symbol keys in the controller. Since the results
     # is cast to json, we should treat string/symbol keys as identical.
-    def merge_props(shared_data, props)
-      if @deep_merge
+    def merged_props
+      @merged_props ||= if @deep_merge
         shared_data.deep_symbolize_keys.deep_merge!(props.deep_symbolize_keys)
       else
         shared_data.symbolize_keys.merge(props.symbolize_keys)
       end
     end
 
-    def computed_props
-      _props = merge_props(shared_data, props)
-
-      deep_transform_props _props do |prop, path|
-        next [DONT_KEEP_PROP] unless keep_prop?(prop, path)
-
-        transformed_prop = case prop
-        when BaseProp
-          prop.call(controller)
-        when Proc
-          controller.instance_exec(&prop)
-        else
-          prop
-        end
-
-        [KEEP_PROP, transformed_prop]
-      end
+    def prop_transformer
+      @prop_transformer ||= PropTransformer.new(merged_props, controller)
+        .select_transformed { |prop, path| keep_prop?(prop, path) }
     end
 
     def page
       {
         component: component,
-        props: computed_props,
+        props: prop_transformer.props,
         url: @request.original_fullpath,
         version: configuration.version,
       }
-    end
-
-    def deep_transform_props(props, parent_path = [], &block)
-      props.reduce({}) do |transformed_props, (key, prop)|
-        current_path = parent_path + [key]
-
-        if prop.is_a?(Hash) && prop.any?
-          nested = deep_transform_props(prop, current_path, &block)
-          transformed_props.merge!(key => nested) unless nested.empty?
-        else
-          action, transformed_prop = block.call(prop, current_path)
-          transformed_props.merge!(key => transformed_prop) if action == KEEP_PROP
-        end
-
-        transformed_props
-      end
     end
 
     def partial_keys
@@ -176,6 +143,46 @@ module InertiaRails
 
     def excluded_by_except_partial_keys?(path_with_prefixes)
       partial_except_keys.present? && (path_with_prefixes & partial_except_keys).any?
+    end
+
+    class PropTransformer
+      attr_reader :props
+
+      def initialize(initial_props, controller)
+        @initial_props = initial_props
+        @controller = controller
+      end
+
+      def select_transformed(&block)
+        @props = deep_transform_and_select(@initial_props, &block)
+        self
+      end
+
+      def deep_transform_and_select(original_props, parent_path = [], &block)
+        original_props.reduce({}) do |transformed_props, (key, prop)|
+          current_path = parent_path + [key]
+
+          if prop.is_a?(Hash) && prop.any?
+            nested = deep_transform_and_select(prop, current_path, &block)
+            transformed_props.merge!(key => nested) unless nested.empty?
+          elsif block.call(prop, current_path)
+            transformed_props.merge!(key => transform_prop(prop))
+          end
+
+          transformed_props
+        end
+      end
+
+      def transform_prop(prop)
+        case prop
+        when BaseProp
+          prop.call(@controller)
+        when Proc
+          @controller.instance_exec(&prop)
+        else
+          prop
+        end
+      end
     end
   end
 end
