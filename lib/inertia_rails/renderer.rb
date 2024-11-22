@@ -186,7 +186,7 @@ module InertiaRails
           elsif block.call(prop, current_path)
             transformed_props.merge!(key => transform_prop(prop))
           elsif !prop.respond_to?(:call)
-            @unoptimized_prop_paths << current_path.join(".")
+            track_unoptimized_prop(current_path)
           end
 
           transformed_props
@@ -202,6 +202,10 @@ module InertiaRails
         else
           prop
         end
+      end
+
+      def track_unoptimized_prop(path)
+        @unoptimized_prop_paths << path.join(".")
       end
     end
   end
