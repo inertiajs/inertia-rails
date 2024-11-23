@@ -36,9 +36,6 @@ This command will:
 > [!NOTE]
 > To use TypeScript with Svelte, you need to install `@inertiajs/svelte` version `1.3.0-beta.2` or higher. You can use the `--inertia-version` option to specify the version.
 
-> [!NOTE]
-> The built-in generator doesn't include [Rails scaffold generators](/guide/responses#rails-generators) for TypeScript yet.
-
 Example output:
 
 ```bash
