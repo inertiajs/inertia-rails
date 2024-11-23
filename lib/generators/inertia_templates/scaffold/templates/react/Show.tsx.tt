@@ -1,6 +1,6 @@
-import { Link, Head } from '@inertiajs/react'
-import { <%= inertia_model_type %> } from './types'
+import { Head, Link } from '@inertiajs/react'
 import <%= inertia_component_name %> from './<%= inertia_component_name %>'
+import { <%= inertia_model_type %> } from './types'
 
 interface ShowProps {
   <%= singular_table_name %>: <%= inertia_model_type %>

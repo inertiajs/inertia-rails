@@ -49,13 +49,14 @@ npm_cache = File.join(working_dir, 'npm_cache')
   FileUtils.mkdir_p(dir) unless File.directory?(dir)
 end
 
-# Clean working directory
-FileUtils.rm_r(working_dir) if File.directory?(working_dir)
-FileUtils.mkdir_p(working_dir)
+app_name = "scaffold_example_#{options[:framework]}"
+app_dir = File.join(working_dir, app_name)
+
+# Clean app directory
+FileUtils.rm_r(app_dir) if File.directory?(app_dir)
+FileUtils.mkdir_p(app_dir)
 
 # Generate a new Rails app
-app_name = 'scaffold_example'
-app_dir = File.join(working_dir, app_name)
 system("rails new #{app_dir} -J")
 
 # Install and configure with caching

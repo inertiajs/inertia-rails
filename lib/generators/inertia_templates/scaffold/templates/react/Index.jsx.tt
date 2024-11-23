@@ -1,4 +1,4 @@
-import { Link, Head } from '@inertiajs/react'
+import { Head, Link } from '@inertiajs/react'
 import <%= inertia_component_name %> from './<%= inertia_component_name %>'
 
 export default function Index({ <%= plural_table_name %>, flash }) {

@@ -13,7 +13,9 @@ createInertiaApp({
   // progress: false,
 
   resolve: (name) => {
-    const pages = import.meta.glob<ResolvedComponent>('../pages/**/*.svelte', { eager: true })
+    const pages = import.meta.glob<ResolvedComponent>('../pages/**/*.svelte', {
+      eager: true,
+    })
     const page = pages[`../pages/${name}.svelte`]
     if (!page) {
       console.error(`Missing Inertia page component: '${name}.svelte'`)
@@ -30,13 +32,13 @@ createInertiaApp({
 
   setup({ el, App, props }) {
     if (el) {
-      <%= "// @ts-expect-error 1.3.0 beta contains types mismatch\n" if inertia_resolved_version == Gem::Version.new('1.3.0-beta.2') -%>
+<%= "      // @ts-expect-error 1.3.0 beta contains types mismatch\n" if inertia_resolved_version == Gem::Version.new('1.3.0-beta.2') -%>
       mount(App, { target: el, props })
     } else {
       console.error(
         'Missing root element.\n\n' +
-        'If you see this error, it probably means you load Inertia.js on non-Inertia pages.\n' +
-        'Consider moving <%%= vite_typescript_tag "inertia" %> to the Inertia-specific layout instead.'
+          'If you see this error, it probably means you load Inertia.js on non-Inertia pages.\n' +
+          'Consider moving <%%= vite_typescript_tag "inertia" %> to the Inertia-specific layout instead.',
       )
     }
   },

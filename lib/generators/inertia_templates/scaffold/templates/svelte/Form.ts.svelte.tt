@@ -21,7 +21,7 @@
 
   const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault()
-    onSubmit({form: $form })
+    onSubmit({ form: $form })
   }
 </script>
 

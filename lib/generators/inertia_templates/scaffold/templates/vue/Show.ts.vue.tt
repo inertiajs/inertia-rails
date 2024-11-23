@@ -24,9 +24,9 @@
 </template>
 
 <script setup lang="ts">
-import { Link, Head } from '@inertiajs/vue3'
-import { <%= inertia_model_type %> } from './types'
+import { Head, Link } from '@inertiajs/vue3'
 import <%= inertia_component_name %> from './<%= inertia_component_name %>.vue'
+import { <%= inertia_model_type %> } from './types'
 
 const { <%= singular_table_name %>, flash } = defineProps<{
   <%= singular_table_name %>: <%= inertia_model_type %>

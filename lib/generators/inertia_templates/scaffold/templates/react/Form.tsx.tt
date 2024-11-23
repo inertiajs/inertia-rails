@@ -1,6 +1,6 @@
-import { FormEvent } from 'react'
 import { useForm <%= ', InertiaFormProps ' if inertia_js_version.release == Gem::Version.new('1.3.0') %>} from '@inertiajs/react'
-import { <%= inertia_model_type %>, <%= inertia_model_form_type %> } from './types'
+import { FormEvent } from 'react'
+import { <%= inertia_model_form_type %>, <%= inertia_model_type %> } from './types'
 <% if inertia_js_version.release != Gem::Version.new('1.3.0') %>
 // Temporary fix for InertiaFormProps not being exported from @inertiajs/react
 type InertiaFormProps<TForm extends Record<string, any>> = ReturnType<typeof useForm<TForm>>

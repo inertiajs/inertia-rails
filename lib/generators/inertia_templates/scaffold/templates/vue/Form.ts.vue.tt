@@ -67,8 +67,8 @@
 </template>
 
 <script setup lang="ts">
-import { useForm, InertiaForm } from '@inertiajs/vue3'
-import { <%= inertia_model_type %>, <%= inertia_model_form_type %> } from './types'
+import { InertiaForm, useForm } from '@inertiajs/vue3'
+import { <%= inertia_model_form_type %>, <%= inertia_model_type %> } from './types'
 
 const { <%= singular_table_name %>, submitText } = defineProps<{
   <%= singular_table_name %>: <%= inertia_model_type %>
@@ -82,13 +82,13 @@ const emit = defineEmits<{
 const form = useForm<<%= inertia_model_form_type %>>({
 <% attributes.reject { |a| a.attachment? || a.attachments? }.each do |attribute| -%>
 <% if attribute.password_digest? -%>
-   password: '',
-   password_confirmation: '',
+  password: '',
+  password_confirmation: '',
 <% else -%>
-   <%= attribute.column_name %>: <%= singular_table_name %>.<%= attribute.column_name %>,
+  <%= attribute.column_name %>: <%= singular_table_name %>.<%= attribute.column_name %>,
 <% end -%>
 <% end -%>
- })
+})
 </script>
 
 <style scoped>

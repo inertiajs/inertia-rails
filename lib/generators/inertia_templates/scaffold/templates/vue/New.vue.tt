@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import { Link, Head } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import Form from './Form.vue'
 
 const { <%= singular_table_name %> } = defineProps(['<%= singular_table_name %>'])
