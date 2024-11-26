@@ -21,6 +21,14 @@ end
 
 module InertiaRails
   class Error < StandardError; end
+  class UnoptimizedPartialReload < StandardError
+    attr_reader :paths
+
+    def initialize(paths)
+      @paths = paths
+      super("The #{paths.join(', ')} prop(s) were excluded in a partial reload but still evaluated because they are defined as values.")
+    end
+  end
 
   def self.deprecator # :nodoc:
     @deprecator ||= ActiveSupport::Deprecation.new

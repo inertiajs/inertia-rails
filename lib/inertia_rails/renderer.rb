@@ -149,12 +149,17 @@ module InertiaRails
 
     def validate_partial_reload_optimization
       if prop_transformer.unoptimized_prop_paths.any?
-        ActiveSupport::Notifications.instrument(
-          'inertia_rails.unoptimized_partial_render',
-          paths: prop_transformer.unoptimized_prop_paths,
-          controller: controller,
-          action: controller.action_name,
-        )
+        case configuration.action_on_unoptimized_partial_reload
+        when :log
+          ActiveSupport::Notifications.instrument(
+            'inertia_rails.unoptimized_partial_render',
+            paths: prop_transformer.unoptimized_prop_paths,
+            controller: controller,
+            action: controller.action_name,
+          )
+        when :raise
+          raise InertiaRails::UnoptimizedPartialReload.new(prop_transformer.unoptimized_prop_paths)
+        end
       end
     end
 
