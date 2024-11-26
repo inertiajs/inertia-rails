@@ -402,7 +402,7 @@ RSpec.describe 'rendering inertia views', type: :request do
     }}
 
     it 'logs a warning' do
-      expect(Rails.logger).to receive(:warn).with(/flat, nested\.second/)
+      expect(Rails.logger).to receive(:debug).with(/flat, nested\.second/)
       get except_props_path, headers: headers
     end
     #flat: 'flat param',

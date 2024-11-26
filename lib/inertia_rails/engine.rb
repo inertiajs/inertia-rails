@@ -12,5 +12,20 @@ module InertiaRails
         include ::InertiaRails::Controller
       end
     end
+
+    initializer "inertia_rails.subscribe_to_notifications" do
+      if Rails.env.development? || Rails.env.test?
+        ActiveSupport::Notifications.subscribe('inertia_rails.unoptimized_partial_render') do |*args|
+          event = ActiveSupport::Notifications::Event.new(*args)
+
+          message =
+            "InertiaRails: The \"#{event.payload[:paths].join(', ')}\" " \
+          "prop(s) were excluded in a partial reload but still evaluated because they are defined as values. " \
+          "Consider wrapping them in something callable like a lambda."
+
+          Rails.logger.debug(message)
+        end
+      end
+    end
   end
 end

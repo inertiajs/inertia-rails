@@ -149,12 +149,12 @@ module InertiaRails
 
     def validate_partial_reload_optimization
       if prop_transformer.unoptimized_prop_paths.any?
-        message =
-          "InertiaRails: The \"#{prop_transformer.unoptimized_prop_paths.join(', ')}\" " \
-          "prop(s) were excluded in a partial reload but still evaluated because they are defined as values. " \
-          "Consider wrapping them in something callable like a lambda."
-
-        controller.logger.warn(message)
+        ActiveSupport::Notifications.instrument(
+          'inertia_rails.unoptimized_partial_render',
+          paths: prop_transformer.unoptimized_prop_paths,
+          controller: controller,
+          action: controller.action_name,
+        )
       end
     end
 
