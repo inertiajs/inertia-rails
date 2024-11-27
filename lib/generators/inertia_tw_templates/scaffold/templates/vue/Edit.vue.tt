@@ -1,0 +1,44 @@
+<template>
+  <Head title="Editing <%= human_name.downcase %>" />
+
+  <div className="mx-auto md:w-2/3 w-full px-8 pt-8">
+    <h1 class="font-bold text-4xl">Editing <%= human_name.downcase %></h1>
+
+    <Form
+      :<%= singular_table_name %>="<%= singular_table_name %>"
+      submitText="Update <%= human_name %>"
+      @onSubmit="handleSubmit"
+    />
+
+    <Link
+      :href="`<%= js_resource_path %>`"
+      class="mt-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium"
+    >
+      Show this <%= human_name.downcase %>
+    </Link>
+    <Link
+      href="<%= js_resources_path %>"
+      class="ml-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium"
+    >
+      Back to <%= human_name.pluralize.downcase %>
+    </Link>
+  </div>
+</template>
+
+<script setup>
+import { Head, Link } from '@inertiajs/vue3'
+import Form from './Form.vue'
+
+const { <%= singular_table_name %> } = defineProps(['<%= singular_table_name %>'])
+
+const handleSubmit = (form) => {
+  form.transform((data) => ({ <%= singular_table_name %>: data }))
+<% if attributes.any?(&:attachments?) -%>
+  form.post(`<%= js_resource_path %>`, {
+    headers: { 'X-HTTP-METHOD-OVERRIDE': 'put' },
+  })
+<% else -%>
+  form.patch(`<%= js_resource_path %>`)
+<% end -%>
+}
+</script>

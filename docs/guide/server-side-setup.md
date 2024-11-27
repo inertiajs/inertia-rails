@@ -15,12 +15,11 @@ bundle add inertia_rails
 
 ## Rails generator
 
-If you plan to use Vite as your frontend build tool, you can use the `inertia_rails-contrib` gem to install and set up Inertia in a Rails application. It automatically detects if the [Vite Rails](https://vite-ruby.netlify.app/guide/rails.html) gem is installed and will attempt to install it if not present.
+If you plan to use Vite as your frontend build tool, you can use the built-in generator to install and set up Inertia in a Rails application. It automatically detects if the [Vite Rails](https://vite-ruby.netlify.app/guide/rails.html) gem is installed and will attempt to install it if not present.
 
 To install and setup Inertia in a Rails application, execute the following command in the terminal:
 
 ```bash
-bundle add inertia_rails-contrib
 bin/rails generate inertia:install
 ```
 
@@ -36,9 +35,6 @@ This command will:
 
 > [!NOTE]
 > To use TypeScript with Svelte, you need to install `@inertiajs/svelte` version `1.3.0-beta.2` or higher. You can use the `--inertia-version` option to specify the version.
-
-> [!NOTE]
-> The `inertia_rails-contrib` gem doesn't include [Rails scaffold generators](/guide/responses#rails-generators) for TypeScript yet.
 
 Example output:
 
@@ -123,7 +119,7 @@ First, setup the root template that will be loaded on the first page visit. This
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csp_meta_tag %>
 
-    <%= inertia_headers %>
+    <%= inertia_ssr_head %>
 
     <%# If you want to use React add `vite_react_refresh_tag` %>
     <%= vite_client_tag %>
@@ -145,7 +141,7 @@ First, setup the root template that will be loaded on the first page visit. This
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csp_meta_tag %>
 
-    <%= inertia_headers %>
+    <%= inertia_ssr_head %>
 
     <%= stylesheet_pack_tag 'application' %>
     <%= javascript_pack_tag 'application', defer: true %>
@@ -158,7 +154,7 @@ First, setup the root template that will be loaded on the first page visit. This
 
 :::
 
-This template should include your assets, as well as the `yield` method to render the Inertia page. The `inertia_headers` method is used to include the Inertia headers in the response, it's required when [SSR](/guide/server-side-rendering.md) is enabled.
+This template should include your assets, as well as the `yield` method to render the Inertia page. The `inertia_ssr_head` method is used to include the Inertia headers in the response, it's required when [SSR](/guide/server-side-rendering.md) is enabled.
 
 Inertia's adapter will use standard Rails layout inheritance, with `view/layouts/application.html.erb` as a default layout. If you would like to use a different default layout, you can change it using the `InertiaRails.configure`.
 

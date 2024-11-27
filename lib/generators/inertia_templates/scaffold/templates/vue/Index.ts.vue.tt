@@ -1,0 +1,35 @@
+<template>
+  <Head title="<%= human_name.pluralize %>" />
+
+  <p v-if="flash.notice" class="notice">{{ flash.notice }}</p>
+
+  <h1><%= human_name.pluralize %></h1>
+
+  <div>
+    <div v-for="<%= singular_table_name %> in <%= plural_table_name %>" :key="<%= singular_table_name %>.id">
+      <<%= inertia_component_name %> :<%= singular_table_name %>="<%= singular_table_name %>" />
+      <p>
+        <Link :href="`<%= js_resource_path %>`">Show this <%= human_name.downcase %></Link>
+      </p>
+    </div>
+  </div>
+
+  <Link href="<%= js_new_resource_path %>">New <%= human_name.downcase %></Link>
+</template>
+
+<script setup lang="ts">
+import { Head, Link } from '@inertiajs/vue3'
+import <%= inertia_component_name %> from './<%= inertia_component_name %>.vue'
+import { <%= inertia_model_type %> } from './types'
+
+const { <%= plural_table_name %>, flash } = defineProps<{
+  <%= plural_table_name %>: <%= inertia_model_type %>[]
+  flash: { notice?: string }
+}>()
+</script>
+
+<style scoped>
+.notice {
+  color: green;
+}
+</style>

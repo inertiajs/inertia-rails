@@ -1,0 +1,26 @@
+export default function <%= inertia_component_name %>({ <%= singular_table_name %> }) {
+  return (
+    <div>
+<% attributes.reject(&:password_digest?).each do |attribute| -%>
+      <p>
+        <strong><%= attribute.human_name %>:</strong>
+<% if attribute.attachment? -%>
+        {<%= singular_table_name %>.<%= attribute.column_name %> && (
+          <a href={<%= singular_table_name %>.<%= attribute.column_name %>.url}>{<%= singular_table_name %>.<%= attribute.column_name %>.filename}</a>
+        )}
+      </p>
+<% elsif attribute.attachments? -%>
+      </p>
+      {<%= singular_table_name %>.<%= attribute.column_name %>.map((file, i) => (
+        <div key={i}>
+          <a href={file.url}>{file.filename}</a>
+        </div>
+      ))}
+<% else -%>
+        {<%= singular_table_name %>.<%= attribute.column_name %>?.toString()}
+      </p>
+<% end -%>
+<% end -%>
+    </div>
+  )
+}

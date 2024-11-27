@@ -1,0 +1,42 @@
+import { Head, Link } from '@inertiajs/react'
+import Form from './Form'
+
+export default function Edit({ <%= singular_table_name %> }) {
+  return (
+    <>
+      <Head title="Editing <%= human_name.downcase %>" />
+
+      <div className="mx-auto md:w-2/3 w-full px-8 pt-8">
+        <h1 className="font-bold text-4xl">Editing <%= human_name.downcase %></h1>
+
+        <Form
+          <%= singular_table_name %>={<%= singular_table_name %>}
+          onSubmit={(form) => {
+            form.transform((data) => ({ <%= singular_table_name %>: data }))
+<% if attributes.any?(&:attachments?) -%>
+            form.post(`<%= js_resource_path %>`, {
+              headers: { 'X-HTTP-METHOD-OVERRIDE': 'put' },
+            })
+<% else -%>
+            form.patch(`<%= js_resource_path %>`)
+<% end -%>
+          }}
+          submitText="Update <%= human_name %>"
+        />
+
+        <Link
+          href={`<%= js_resource_path %>`}
+          className="ml-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium"
+        >
+          Show this <%= human_name.downcase %>
+        </Link>
+        <Link
+          href="<%= js_resources_path %>"
+          className="ml-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium"
+        >
+          Back to <%= human_name.pluralize.downcase %>
+        </Link>
+      </div>
+    </>
+  )
+}

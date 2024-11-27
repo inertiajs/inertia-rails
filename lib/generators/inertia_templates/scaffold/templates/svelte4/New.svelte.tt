@@ -1,0 +1,30 @@
+<script>
+  import { Link } from '@inertiajs/svelte'
+  import Form from './Form.svelte'
+
+  export let <%= singular_table_name %>
+
+  const handleSubmit = (e) => {
+    const { form } = e.detail
+    form.transform((data) => ({ <%= singular_table_name %>: data }))
+    form.post('<%= js_resources_path %>')
+  }
+</script>
+
+<svelte:head>
+  <title>New <%= human_name.downcase %></title>
+</svelte:head>
+
+<h1>New <%= human_name.downcase %></h1>
+
+<Form
+  {<%= singular_table_name %>}
+  submitText="Create <%= human_name %>"
+  on:submit={handleSubmit}
+/>
+
+<br />
+
+<div>
+  <Link href="<%= js_resources_path %>">Back to <%= human_name.pluralize.downcase %></Link>
+</div>

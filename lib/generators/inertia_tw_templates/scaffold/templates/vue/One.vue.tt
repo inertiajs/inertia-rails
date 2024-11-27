@@ -1,0 +1,26 @@
+<template>
+  <div>
+<% attributes.reject(&:password_digest?).each do |attribute| -%>
+    <p class="my-5">
+      <strong class="block font-medium mb-1"><%= attribute.human_name %>:</strong>
+<% if attribute.attachment? -%>
+      <a v-if="<%= singular_table_name %>.<%= attribute.column_name %>" :href="<%= singular_table_name %>.<%= attribute.column_name %>.url">
+        {{ <%= singular_table_name %>.<%= attribute.column_name %>.filename }}
+      </a>
+    </p>
+<% elsif attribute.attachments? -%>
+    </p>
+    <div v-for="file in <%= singular_table_name %>.<%= attribute.column_name %>">
+      <a :href="file.url">{{ file.filename }}</a>
+    </div>
+<% else -%>
+      {{ <%= singular_table_name %>.<%= attribute.column_name %> }}
+    </p>
+<% end -%>
+<% end -%>
+  </div>
+</template>
+
+<script setup>
+const { <%= singular_table_name %> } = defineProps(['<%= singular_table_name %>'])
+</script>

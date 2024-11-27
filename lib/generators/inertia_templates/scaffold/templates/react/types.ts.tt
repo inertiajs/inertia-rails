@@ -1,0 +1,19 @@
+export interface <%= inertia_model_type %> {
+  id: number
+<% attributes.reject(&:password_digest?).each do |attribute| -%>
+  <%= attribute.column_name %>: <%= ts_type(attribute) %>
+<% end -%>
+}
+
+export type <%= inertia_model_form_type %> = Omit<<%= inertia_model_type %>, <%= omit_input_attributes.map { |a| "'#{a}'" }.join(' | ') %>><% if custom_form_attributes.any? -%> & {
+<% custom_form_attributes.map do |attribute| -%>
+<% if attribute.password_digest? -%>
+  password: string
+  password_confirmation: string
+<% elsif attribute.attachment? -%>
+  <%= attribute.column_name %>?: File
+<% elsif attribute.attachments? -%>
+  <%= attribute.column_name %>?: File[]
+<% end -%>
+<% end -%>
+}<% end %>

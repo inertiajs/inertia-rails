@@ -63,7 +63,7 @@ module InertiaRails
     end
 
     def component_path_resolver(path:, action:)
-      @options[:component_path_resolver].call(path:, action:)
+      @options[:component_path_resolver].call(path: path, action: action)
     end
 
     OPTION_NAMES.each do |option|

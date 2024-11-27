@@ -1,0 +1,111 @@
+import { useForm } from '@inertiajs/react'
+
+export default function Form({ <%= singular_table_name %>, onSubmit, submitText }) {
+  const form = useForm({
+<% attributes.each do |attribute| -%>
+<% if attribute.password_digest? -%>
+    password: '',
+    password_confirmation: '',
+<% else -%>
+    <%= attribute.column_name %>: <%= singular_table_name %>.<%= attribute.column_name %> || <%= default_value(attribute) %>,
+<% end -%>
+<% end -%>
+  })
+  const { data, setData, errors, processing } = form
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    onSubmit(form)
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+<% attributes.each do |attribute| -%>
+<% if attribute.password_digest? -%>
+      <div>
+        <label style={{ display: 'block' }} htmlFor="password">
+          Password
+        </label>
+        <input
+          type="password"
+          name="password"
+          id="password"
+          onChange={(e) => setData('password', e.target.value)}
+        />
+        {errors.password && (
+          <div style={{ color: 'red' }}>{errors.password.join(', ')}</div>
+        )}
+      </div>
+
+      <div>
+        <label style={{ display: 'block' }} htmlFor="password_confirmation">
+          Password confirmation
+        </label>
+        <input
+          type="password"
+          name="password_confirmation"
+          id="password_confirmation"
+          onChange={(e) => setData('password_confirmation', e.target.value)}
+        />
+        {errors.password_confirmation && (
+          <div style={{ color: 'red' }}>{errors.password_confirmation.join(', ')}</div>
+        )}
+      </div>
+<% else -%>
+      <div>
+        <label style={{ display: 'block' }} htmlFor="<%= attribute.singular_name %>">
+          <%= attribute.human_name %>
+        </label>
+<% if input_type(attribute) == "text_area" -%>
+        <textarea
+          name="<%= attribute.singular_name %>"
+          id="<%= attribute.singular_name %>"
+          value={data.<%= attribute.column_name %>}
+          onChange={(e) => setData('<%= attribute.column_name %>', e.target.value)}
+        />
+<% elsif attribute.attachment? -%>
+        <input
+          type="file"
+          name="<%= attribute.singular_name %>"
+          id="<%= attribute.singular_name %>"
+          onChange={(e) => setData('<%= attribute.column_name %>', e.target.files[0])}
+        />
+<% elsif attribute.attachments? -%>
+        <input
+          type="file"
+          multiple
+          name="<%= attribute.singular_name %>[]"
+          id="<%= attribute.singular_name %>"
+          onChange={(e) => setData('<%= attribute.column_name %>', Array.from(e.target.files))}
+        />
+<% elsif input_type(attribute) == "checkbox" -%>
+        <input
+          type="<%= input_type(attribute) %>"
+          name="<%= attribute.singular_name %>"
+          id="<%= attribute.singular_name %>"
+          checked={data.<%= attribute.column_name %>}
+          onChange={(e) => setData('<%= attribute.column_name %>', e.target.checked)}
+        />
+<% else -%>
+        <input
+          type="<%= input_type(attribute) %>"
+          name="<%= attribute.singular_name %>"
+          id="<%= attribute.singular_name %>"
+          value={data.<%= attribute.column_name %>}
+          onChange={(e) => setData('<%= attribute.column_name %>', e.target.value)}
+        />
+<% end -%>
+        {errors.<%= attribute.column_name %> && (
+          <div style={{ color: 'red' }}>{errors.<%= attribute.column_name %>.join(', ')}</div>
+        )}
+      </div>
+<% end -%>
+<% end -%>
+      <div>
+        <button type="submit" disabled={processing}>
+          {submitText}
+        </button>
+      </div>
+    </form>
+  )
+}

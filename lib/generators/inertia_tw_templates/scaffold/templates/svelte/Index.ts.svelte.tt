@@ -1,0 +1,46 @@
+<script lang="ts">
+  import { Link } from '@inertiajs/svelte'
+  import <%= inertia_component_name %> from './<%= inertia_component_name %>.svelte'
+  import type { <%= inertia_model_type %> } from './types'
+
+  let { <%= plural_table_name %>, flash } = $props<{
+    <%= plural_table_name %>: <%= inertia_model_type %>[]
+    flash: { notice?: string }
+  }>()
+</script>
+
+<svelte:head>
+  <title><%= human_name.pluralize %></title>
+</svelte:head>
+
+<div class="mx-auto md:w-2/3 w-full px-8 pt-8">
+  {#if flash.notice}
+    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-lg inline-block">
+      {flash.notice}
+    </p>
+  {/if}
+
+  <div class="flex justify-between items-center">
+    <h1 class="font-bold text-4xl"><%= human_name.pluralize %></h1>
+    <Link
+      href="<%= js_new_resource_path %>"
+      class="rounded-lg py-3 px-5 bg-blue-600 text-white block font-medium"
+    >
+      New <%= human_name.downcase %>
+    </Link>
+  </div>
+
+  <div class="min-w-full">
+    {#each <%= plural_table_name %> as <%= singular_table_name %> (<%= singular_table_name %>.id)}
+      <<%= inertia_component_name %> {<%= singular_table_name %>} />
+      <p>
+        <Link
+          href={`<%= js_resource_path %>`}
+          class="ml-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium"
+        >
+          Show this <%= human_name.downcase %>
+        </Link>
+      </p>
+    {/each}
+  </div>
+</div>

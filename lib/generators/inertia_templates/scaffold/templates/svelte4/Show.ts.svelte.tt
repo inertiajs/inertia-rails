@@ -1,0 +1,40 @@
+<script lang="ts">
+  import { inertia, Link } from '@inertiajs/svelte'
+  import <%= inertia_component_name %> from './<%= inertia_component_name %>.svelte'
+  import type { <%= inertia_model_type %> } from './types'
+
+  export let <%= singular_table_name %>: <%= inertia_model_type %>
+  export let flash: { notice?: string }
+</script>
+
+<svelte:head>
+  <title><%= human_name %> #{<%= singular_table_name %>.id}</title>
+</svelte:head>
+
+{#if flash.notice}
+  <p class="notice">{flash.notice}</p>
+{/if}
+
+<h1><%= human_name %> #{<%= singular_table_name %>.id}</h1>
+
+<<%= inertia_component_name %> {<%= singular_table_name %>} />
+
+<div>
+  <Link href={`<%= js_edit_resource_path %>`}>Edit this <%= human_name.downcase %></Link> |
+  <Link href="<%= js_resources_path %>">Back to <%= human_name.pluralize.downcase %></Link>
+
+  <br />
+
+  <button
+    use:inertia={{ href: `<%= js_resource_path %>`, method: 'delete' }}
+    type="button"
+  >
+    Destroy this <%= human_name.downcase %>
+  </button>
+</div>
+
+<style>
+  .notice {
+    color: green;
+  }
+</style>

@@ -1,0 +1,46 @@
+<script lang="ts">
+  import { Link, type InertiaForm } from '@inertiajs/svelte'
+  import type { <%= inertia_model_type %>, <%= inertia_model_form_type %> } from './types'
+  import Form from './Form.svelte'
+
+  export let <%= singular_table_name %>: <%= inertia_model_type %>
+
+  const handleSubmit = (e: CustomEvent<{ form: InertiaForm<<%= inertia_model_form_type %>> }>) => {
+    const { form } = e.detail
+    form.transform((data) => ({ <%= singular_table_name %>: data }))
+<% if attributes.any?(&:attachments?) -%>
+    form.post(`<%= js_resource_path %>`, {
+      headers: { 'X-HTTP-METHOD-OVERRIDE': 'put' },
+    })
+<% else -%>
+    form.patch(`<%= js_resource_path %>`)
+<% end -%>
+  }
+</script>
+
+<svelte:head>
+  <title>Editing <%= human_name.downcase %></title>
+</svelte:head>
+
+<div class="mx-auto md:w-2/3 w-full px-8 pt-8">
+  <h1 class="font-bold text-4xl">Editing <%= human_name.downcase %></h1>
+
+  <Form
+    {<%= singular_table_name %>}
+    submitText="Update <%= human_name %>"
+    on:submit={handleSubmit}
+  />
+
+  <Link
+    href={`<%= js_resource_path %>`}
+    class="mt-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium"
+  >
+    Show this <%= human_name.downcase %>
+  </Link>
+  <Link
+    href="<%= js_resources_path %>"
+    class="ml-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium"
+  >
+    Back to <%= human_name.pluralize.downcase %>
+  </Link>
+</div>

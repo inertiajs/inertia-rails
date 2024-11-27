@@ -1,0 +1,30 @@
+<script lang="ts">
+  import { Link, type InertiaFormProps } from '@inertiajs/svelte'
+  import type { <%= inertia_model_type %>, <%= inertia_model_form_type %> } from './types'
+  import Form from './Form.svelte'
+
+  let { <%= singular_table_name %> } = $props<{ <%= singular_table_name %>: <%= inertia_model_type %> }>()
+
+  const handleSubmit = ({ form }: { form: InertiaFormProps<<%= inertia_model_form_type %>> }) => {
+    form.transform((data) => ({ <%= singular_table_name %>: data }))
+    form.post('<%= js_resources_path %>')
+  }
+</script>
+
+<svelte:head>
+  <title>New <%= human_name.downcase %></title>
+</svelte:head>
+
+<h1>New <%= human_name.downcase %></h1>
+
+<Form
+  {<%= singular_table_name %>}
+  submitText="Create <%= human_name %>"
+  onSubmit={handleSubmit}
+/>
+
+<br />
+
+<div>
+  <Link href="<%= js_resources_path %>">Back to <%= human_name.pluralize.downcase %></Link>
+</div>

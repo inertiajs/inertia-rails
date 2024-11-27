@@ -1,0 +1,89 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'fileutils'
+require 'optparse'
+
+# Parse command line options
+options = {
+  framework: 'react',
+  typescript: true,
+  tailwind: true,
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$PROGRAM_NAME} [options]"
+
+  opts.on('--framework FRAMEWORK', %w[react vue svelte svelte4],
+          'Choose framework (react/vue/svelte4/svelte)') do |f|
+    options[:framework] = f
+  end
+
+  opts.on('--[no-]typescript', 'Enable/disable TypeScript') do |t|
+    options[:typescript] = t
+  end
+
+  opts.on('--[no-]tailwind', 'Enable/disable Tailwind') do |t|
+    options[:tailwind] = t
+  end
+
+  opts.on('--inertia-version VERSION', 'Specify Inertia version') do |v|
+    options[:inertia_version] = v
+  end
+end.parse!
+
+# Build generator args string
+generator_args = "--framework=#{options[:framework]}"
+generator_args += ' --typescript' if options[:typescript]
+generator_args += ' --tailwind' if options[:tailwind]
+generator_args += " --inertia-version=#{options[:inertia_version]}" if options[:inertia_version]
+
+# Setup paths relative to project root
+project_root = File.expand_path('..', __dir__)
+working_dir = File.join(project_root, 'tmp')
+gem_cache = File.join(working_dir, 'bundle_cache')
+npm_cache = File.join(working_dir, 'npm_cache')
+
+# Create cache directories if they don't exist
+[gem_cache, npm_cache, working_dir].each do |dir|
+  FileUtils.mkdir_p(dir) unless File.directory?(dir)
+end
+
+app_name = "scaffold_example_#{options[:framework]}"
+app_dir = File.join(working_dir, app_name)
+
+# Clean app directory
+FileUtils.rm_r(app_dir) if File.directory?(app_dir)
+FileUtils.mkdir_p(app_dir)
+
+# Generate a new Rails app
+system("rails new #{app_dir} -J")
+
+# Install and configure with caching
+Dir.chdir(app_dir) do
+  # Configure bundler to use cache in project root
+  system("bundle config set --local path '#{gem_cache}'", exception: true)
+
+  # Configure npm to use cache in project root
+  system("npm config set cache '#{npm_cache}'", exception: true)
+
+  # Install dependencies
+  system('bundle add inertia_rails --path ../../', exception: true)
+  system('bundle add bcrypt', exception: true)
+  system('bin/rails active_storage:install', exception: true)
+
+  # Run install generator with configured options
+  system("bin/rails g inertia:install --no-interactive --force --vite #{generator_args} --verbose", exception: true)
+
+  # Generate a scaffold
+  system('bin/rails g inertia:scaffold user name email admin:boolean password:digest avatar:attachment', exception: true)
+  system('bin/rails g inertia:scaffold post content:text published_at:date gallery:attachments', exception: true)
+  system('bin/rails db:migrate', exception: true)
+
+  # Run tests
+  system('bin/rails test', exception: true)
+  system('bin/rails test:system', exception: true)
+
+  # Lint code
+  system('npm run check', exception: true) if options[:typescript]
+end

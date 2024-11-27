@@ -1,0 +1,127 @@
+<template>
+  <form @submit.prevent="emit('onSubmit', form)" class="contents">
+<% attributes.each do |attribute| -%>
+<% if attribute.password_digest? -%>
+    <div class="my-5">
+      <label for="password">Password</label>
+      <input
+        type="password"
+        name="password"
+        id="password"
+        v-model="form.password"
+        class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
+      />
+      <div
+        v-if="form.errors.password"
+        class="text-red-500 px-3 py-2 font-medium"
+      >
+        {{ form.errors.password.join(', ') }}
+      </div>
+    </div>
+
+    <div class="my-5">
+      <label for="password_confirmation">Password confirmation</label>
+      <input
+        type="password"
+        name="password_confirmation"
+        id="password_confirmation"
+        v-model="form.password_confirmation"
+        class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
+      />
+      <div
+        v-if="form.errors.password_confirmation"
+        class="text-red-500 px-3 py-2 font-medium"
+      >
+        {{ form.errors.password_confirmation.join(', ') }}
+      </div>
+    </div>
+<% else -%>
+    <div class="my-5">
+      <label for="<%= attribute.singular_name %>"><%= attribute.human_name %></label>
+<% if input_type(attribute) == "text_area" -%>
+      <textarea
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+        v-model="form.<%= attribute.column_name %>"
+        rows="4"
+        class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
+      />
+<% elsif attribute.attachment? -%>
+      <input
+        type="file"
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+        @input="form.<%= attribute.column_name %> = $event.target.files[0]"
+        class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
+      />
+<% elsif attribute.attachments? -%>
+      <input
+        type="file"
+        multiple
+        name="<%= attribute.singular_name %>[]"
+        id="<%= attribute.singular_name %>"
+        @input="form.<%= attribute.column_name %> = Array.from($event.target.files)"
+        class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
+      />
+<% elsif input_type(attribute) == "checkbox" -%>
+      <input
+        type="<%= input_type(attribute) %>"
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+        v-model="form.<%= attribute.column_name %>"
+        class="block mt-2 h-5 w-5"
+      />
+<% else -%>
+      <input
+        type="<%= input_type(attribute) %>"
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+        v-model="form.<%= attribute.column_name %>"
+        class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
+      />
+<% end -%>
+      <div v-if="form.errors.<%= attribute.column_name %>" :class="$style.error">
+        {{ form.errors.<%= attribute.column_name %>.join(', ') }}
+      </div>
+    </div>
+<% end -%>
+
+<% end -%>
+    <div class="inline">
+      <button
+        type="submit"
+        :disabled="form.processing"
+        class="rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer"
+      >
+        {{ submitText }}
+      </button>
+    </div>
+  </form>
+</template>
+
+<script setup>
+import { useForm } from '@inertiajs/vue3'
+
+const { <%= singular_table_name %>, submitText } = defineProps(['<%= singular_table_name %>', 'submitText'])
+const emit = defineEmits(['onSubmit'])
+
+const form = useForm({
+<% attributes.each do |attribute| -%>
+<% if attribute.password_digest? -%>
+  password: '',
+  password_confirmation: '',
+<% else -%>
+  <%= attribute.column_name %>: <%= singular_table_name %>.<%= attribute.column_name %> || <%= default_value(attribute) %>,
+<% end -%>
+<% end -%>
+})
+</script>
+
+<style module>
+.label {
+  display: block;
+}
+.error {
+  color: red;
+}
+</style>

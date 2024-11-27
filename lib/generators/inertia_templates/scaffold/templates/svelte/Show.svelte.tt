@@ -1,0 +1,35 @@
+<script>
+  import { Link } from '@inertiajs/svelte'
+  import <%= inertia_component_name %> from './<%= inertia_component_name %>.svelte'
+
+  let { <%= singular_table_name %>, flash } = $props()
+</script>
+
+<svelte:head>
+  <title><%= human_name %> #{<%= singular_table_name %>.id}</title>
+</svelte:head>
+
+{#if flash.notice}
+  <p class="notice">{flash.notice}</p>
+{/if}
+
+<h1><%= human_name %> #{<%= singular_table_name %>.id}</h1>
+
+<<%= inertia_component_name %> {<%= singular_table_name %>} />
+
+<div>
+  <Link href={`<%= js_edit_resource_path %>`}>Edit this <%= human_name.downcase %></Link> |
+  <Link href="<%= js_resources_path %>">Back to <%= human_name.pluralize.downcase %></Link>
+
+  <br />
+
+  <Link href={`<%= js_resource_path %>`} method="delete">
+    Destroy this <%= human_name.downcase %>
+  </Link>
+</div>
+
+<style>
+  .notice {
+    color: green;
+  }
+</style>

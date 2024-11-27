@@ -1,0 +1,37 @@
+<template>
+  <Head :title="`<%= human_name %> #${<%= singular_table_name %>.id}`" />
+
+  <p v-if="flash.notice" class="notice">{{ flash.notice }}</p>
+
+  <h1><%= human_name %> #{{ <%= singular_table_name %>.id }}</h1>
+
+  <<%= inertia_component_name %> :<%= singular_table_name %>="<%= singular_table_name %>" />
+
+  <div>
+    <Link :href="`<%= js_edit_resource_path %>`">Edit this <%= human_name.downcase %></Link> |
+    <Link href="<%= js_resources_path %>">Back to <%= human_name.pluralize.downcase %></Link>
+
+    <br />
+
+    <Link
+      :href="`<%= js_resource_path %>`"
+      as="button"
+      method="delete"
+    >
+      Destroy this <%= human_name.downcase %>
+    </Link>
+  </div>
+</template>
+
+<script setup>
+import { Head, Link } from '@inertiajs/vue3'
+import <%= inertia_component_name %> from './<%= inertia_component_name %>.vue'
+
+const { <%= singular_table_name %>, flash } = defineProps(['<%= singular_table_name %>', 'flash'])
+</script>
+
+<style scoped>
+.notice {
+  color: green;
+}
+</style>

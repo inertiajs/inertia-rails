@@ -125,7 +125,7 @@ You can then access this variable like a regular local variable.
 
 ## Rails generators
 
-Gem `inertia_rails-contrib` provides a number of generators to help you get started with Inertia in your Rails application. You can generate controllers or use scaffolds to create a new resource with Inertia responses.
+Inertia Rails provides a number of generators to help you get started with Inertia in your Rails application. You can generate controllers or use scaffolds to create a new resource with Inertia responses.
 
 ### Scaffold generator
 
@@ -168,7 +168,7 @@ $ bin/rails generate inertia:scaffold Post title:string body:text
 
 #### Tailwind CSS integration
 
-Gem `inertia_rails-contrib` tries to detect the presence of Tailwind CSS in the application and generate the templates accordingly. If you want to specify templates type, use the `--inertia-templates` option:
+Inertia Rails tries to detect the presence of Tailwind CSS in the application and generate the templates accordingly. If you want to specify templates type, use the `--inertia-templates` option:
 
 - `inertia_templates` - default
 - `inertia_tw_templates` - Tailwind CSS
@@ -213,10 +213,10 @@ export default function <%= @action.camelize %>() {
 
 You can find the default templates in the gem's source code:
 
-- [Default controller generator templates](https://github.com/skryukov/inertia_rails-contrib/tree/main/lib/generators/inertia_templates/controller/templates)
-- [Default scaffold generator templates](https://github.com/skryukov/inertia_rails-contrib/tree/main/lib/generators/inertia_templates/scaffold/templates)
-- [Tailwind controller generator templates](https://github.com/skryukov/inertia_rails-contrib/tree/main/lib/generators/inertia_tw_templates/controller/templates)
-- [Tailwind scaffold generator templates](https://github.com/skryukov/inertia_rails-contrib/tree/main/lib/generators/inertia_tw_templates/scaffold/templates)
+- [Default controller generator templates](https://github.com/inertiajs/inertia-rails/tree/master/lib/generators/inertia_templates/controller/templates)
+- [Default scaffold generator templates](https://github.com/inertiajs/inertia-rails/tree/master/lib/generators/inertia_templates/scaffold/templates)
+- [Tailwind controller generator templates](https://github.com/inertiajs/inertia-rails/tree/master/lib/generators/inertia_tw_templates/controller/templates)
+- [Tailwind scaffold generator templates](https://github.com/inertiajs/inertia-rails/tree/master/lib/generators/inertia_tw_templates/scaffold/templates)
 
 > [!TIP]
 > You can also replace the whole generator with your own implementation. See the [Rails documentation](https://guides.rubyonrails.org/generators.html#overriding-rails-generators) for more information.
