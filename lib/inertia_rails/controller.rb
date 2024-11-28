@@ -157,7 +157,14 @@ module InertiaRails
 
     def capture_inertia_errors(options)
       if (inertia_errors = options.dig(:inertia, :errors))
-        session[:inertia_errors] = inertia_errors.to_hash
+        if inertia_errors.respond_to?(:to_hash)
+          session[:inertia_errors] = inertia_errors.to_hash
+        else
+          InertiaRails.deprecator.warn(
+            "Object passed to `inertia: { errors: ... }` must respond to `to_hash`. Pass a hash-like object instead."
+          )
+          session[:inertia_errors] = inertia_errors
+        end
       end
     end
   end

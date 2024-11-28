@@ -47,6 +47,10 @@ class InertiaTestController < ApplicationController
     redirect_to empty_test_path, inertia: { errors: { uh: 'oh' } }
   end
 
+  def redirect_with_non_hash_inertia_errors
+    redirect_to empty_test_path, inertia: { errors: 'uh oh' }
+  end
+
   def redirect_with_inertia_error_object
     redirect_to empty_test_path, inertia: { errors: MyError.new }
   end
