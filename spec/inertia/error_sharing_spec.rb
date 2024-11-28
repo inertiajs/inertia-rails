@@ -17,6 +17,18 @@ RSpec.describe 'errors shared automatically', type: :request do
       expect(session[:inertia_errors]).not_to be
     end
 
+    it 'accepts a non-hash error object' do
+      expect { post redirect_with_non_hash_inertia_errors_path, headers: headers }
+        .to output(/Object passed to `inertia: { errors: ... }` must respond to `to_hash`/).to_stderr
+      expect(response.headers['Location']).to eq(empty_test_url)
+      expect(session[:inertia_errors]).to eq('uh oh')
+
+      # Follow the redirect
+      get response.headers['Location'], headers: headers
+      expect(response.body).to include({ errors: 'uh oh' }.to_json)
+      expect(session[:inertia_errors]).not_to be
+    end
+
     it 'keeps errors around when the post has a stale version' do
       post redirect_with_inertia_errors_path, headers: headers
       expect(response.headers['Location']).to eq(empty_test_url)

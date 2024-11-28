@@ -45,6 +45,9 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
+      - name: Run generator tests
+        run: bundle exec rspec --tag type:generator
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
