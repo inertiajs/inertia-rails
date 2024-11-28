@@ -47,8 +47,6 @@ jobs:
 
       - name: Run generator tests
         run: bundle exec rspec --tag type:generator
-        env:
-          RAILS_VERSION: ${{ matrix.rails }}
 
       - name: Set up Node
         uses: actions/setup-node@v4

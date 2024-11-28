@@ -5,7 +5,7 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in inertia_rails.gemspec
 gemspec
 
-version = ENV['RAILS_VERSION'] || '7.2'
+version = ENV['RAILS_VERSION'] || '8.0'
 gem 'rails', "~> #{version}.0"
 
 gem 'bundler', '~> 2.0'
