@@ -22,8 +22,8 @@ guarantees that the Node.js runtime is available for both the **_build_** stage 
 # check=error=true
 
 # This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
-# docker build -t bn_quanlynhatro .
-# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name bn_quanlynhatro bn_quanlynhatro
+# docker build -t fresh_rails .
+# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name fresh_rails fresh_rails
 
 # For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
 
@@ -57,19 +57,12 @@ ENV RAILS_ENV="production" \
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
-# Install packages needed to build gems and node modules
+# Install packages needed to build gems and node modules  // [!code ++]
+# Install packages needed to build gems  // [!code --]
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libpq-dev node-gyp pkg-config python-is-python3 && \
+    apt-get install --no-install-recommends -y build-essential git libpq-dev node-gyp pkg-config python-is-python3 && \ // [!code ++]
+    apt-get install --no-install-recommends -y build-essential git pkg-config && \ // [!code --]
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
-
-# Install JavaScript dependencies // [!code --]
-ARG NODE_VERSION=22.11.0 // [!code --]
-ARG YARN_VERSION=1.22.22 // [!code --]
-ENV PATH=/usr/local/node/bin:$PATH // [!code --]
-RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \ // [!code --]
-    /tmp/node-build-master/bin/node-build "${NODE_VERSION}" /usr/local/node && \ // [!code --]
-    npm install -g yarn@$YARN_VERSION && \ // [!code --]
-    rm -rf /tmp/node-build-master // [!code --]
 
 # Install application gems
 COPY .ruby-version Gemfile Gemfile.lock ./
@@ -77,9 +70,9 @@ RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
 
-# Install node modules
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+# Install node modules // [!code ++]
+COPY package.json yarn.lock ./ // [!code ++]
+RUN yarn install --frozen-lockfile // [!code ++]
 
 # Copy application code
 COPY . .
@@ -90,7 +83,7 @@ RUN bundle exec bootsnap precompile app/ lib/
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
-RUN rm -rf node_modules
+RUN rm -rf node_modules // [!code ++]
 
 
 # Final stage for app image
