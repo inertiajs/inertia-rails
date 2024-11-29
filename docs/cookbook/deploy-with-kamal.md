@@ -216,7 +216,7 @@ SSR URL using Vite Ruby's protocol, host, and port settings:
 ```ruby
 InertiaRails.configure do |config|
   config.ssr_enabled = ViteRuby.config.ssr_build_enabled
-  config.ssr_url = "#{ViteRuby.config.protocol}://#{ViteRuby.config.host}:13714" // [!code ++]
+  config.ssr_url = "#{ViteRuby.config.protocol}://#{ViteRuby.config.host}:13714"
   config.version = ViteRuby.digest
 end
 ```
