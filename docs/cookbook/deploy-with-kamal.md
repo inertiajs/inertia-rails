@@ -204,6 +204,24 @@ export default defineConfig({
 })
 ```
 
+## Configure SSR URL in the Inertia's Rails adapter
+
+To enable Server-Side Rendering (SSR) in your Inertia Rails application, you need to specify
+the correct SSR server URL in the adapter. By default, the adapter points to `http://localhost:13714`,
+but this must align with the **_VITE_RUBY_HOST_** value defined in your `deploy.yml` when we deploy it to production.
+
+Update the configuration in `config/initializers/inertia_rails.rb` to dynamically construct the
+SSR URL using Vite Ruby's protocol, host, and port settings:
+
+```ruby
+InertiaRails.configure do |config|
+  config.ssr_enabled = ViteRuby.config.ssr_build_enabled
+  config.ssr_url = "#{ViteRuby.config.protocol}://#{ViteRuby.config.host}:13714" // [!code ++]
+  config.version = ViteRuby.digest
+end
+```
+
+
 ## Deploy and enjoy 🎉
 
 Once everything is set up, you can deploy your application by running:
