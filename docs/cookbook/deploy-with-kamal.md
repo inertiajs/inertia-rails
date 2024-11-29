@@ -36,7 +36,7 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips sqlite3 && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install JavaScript dependencies // [!code ++]
@@ -157,7 +157,7 @@ env:
 
     # Match this to any external database server to configure Active Record correctly
     # Use inertia_rails_svelte5_ssr-db for a db accessory server on same machine via local kamal docker network.
-    DB_HOST: 192.168.0.2
+    # DB_HOST: 192.168.0.2
 
     # Log everything from Rails
     # RAILS_LOG_LEVEL: debug
