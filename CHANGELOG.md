@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.5.0] - 2024-11-29
+
+* Add Algolia search for docs (#151, @skryukov)
+* Add support for Always props (#152, @skryukov)
+* Add support for :except in partial reloads (#152, @skryukov)
+* CI fixes (#156, @bknoles)
+* Support dot notation for :only partial reloads (#163, @bknoles)
+* Avoid some monkey patching (#164, @adrianpacala)
+* Upstream generators from inertia_rails-contrib (#158, @skryukov)
+* Raise a deprecation warning instead of an exception if you pass a non-hashable to inertia errors (#168, @skryukov)
+
 ## [3.4.0] - 2024-11-02
 
 * Inertia Rails documentation (@skryukov)
