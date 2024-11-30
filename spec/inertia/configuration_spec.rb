@@ -153,11 +153,60 @@ RSpec.describe 'Inertia configuration', type: :request do
       end
     end
   end
+
+  describe '.action_on_unoptimized_partial_reload' do
+    let(:headers) {{
+      'X-Inertia' => true,
+      'X-Inertia-Partial-Data' => 'nested.first',
+      'X-Inertia-Partial-Component' => 'TestComponent',
+    }}
+
+    context 'default case' do
+      let(:headers) {{
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'nested.first',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      }}
+
+      it 'logs a warning' do
+        expect(Rails.logger).to receive(:debug).with(/flat, nested\.second/)
+        get except_props_path, headers: headers
+      end
+    end
+
+    context 'when set to :raise' do
+      before do
+        InertiaRails.configure {|c| c.action_on_unoptimized_partial_reload = :raise}
+      end
+
+      let(:headers) {{
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'nested.first',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      }}
+
+      it 'raises an exception' do
+        expect { get except_props_path, headers: headers }.to raise_error(InertiaRails::UnoptimizedPartialReload).with_message(/flat, nested\.second/)
+      end
+    end
+
+    context 'with an unknown value' do
+      before do
+        InertiaRails.configure {|c| c.action_on_unoptimized_partial_reload = :unknown}
+      end
+
+      it 'does nothing' do
+        expect(Rails.logger).not_to receive(:debug)
+        get except_props_path, headers: headers
+      end
+    end
+  end
 end
 
 def reset_config!
   InertiaRails.configure do |config|
     config.version = nil
     config.layout = 'application'
+    config.action_on_unoptimized_partial_reload = :log
   end
 end

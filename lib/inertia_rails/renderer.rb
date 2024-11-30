@@ -6,9 +6,6 @@ require_relative "inertia_rails"
 
 module InertiaRails
   class Renderer
-    KEEP_PROP = :keep
-    DONT_KEEP_PROP = :dont_keep
-
     attr_reader(
       :component,
       :configuration,
@@ -30,21 +27,30 @@ module InertiaRails
     end
 
     def render
+      set_vary_header
+
+      validate_partial_reload_optimization if rendering_partial_component?
+
+      return render_inertia_response if @request.headers['X-Inertia']
+      return render_ssr if configuration.ssr_enabled rescue nil
+
+      render_full_page
+    end
+
+    private
+
+    def set_vary_header
       if @response.headers["Vary"].blank?
         @response.headers["Vary"] = 'X-Inertia'
       else
         @response.headers["Vary"] = "#{@response.headers["Vary"]}, X-Inertia"
       end
-      if @request.headers['X-Inertia']
-        @response.set_header('X-Inertia', 'true')
-        @render_method.call json: page, status: @response.status, content_type: Mime[:json]
-      else
-        return render_ssr if configuration.ssr_enabled rescue nil
-        @render_method.call template: 'inertia', layout: layout, locals: view_data.merge(page: page)
-      end
     end
 
-    private
+    def render_inertia_response
+      @response.set_header('X-Inertia', 'true')
+      @render_method.call json: page, status: @response.status, content_type: Mime[:json]
+    end
 
     def render_ssr
       uri = URI("#{configuration.ssr_url}/render")
@@ -52,6 +58,10 @@ module InertiaRails
 
       controller.instance_variable_set("@_inertia_ssr_head", res['head'].join.html_safe)
       @render_method.call html: res['body'].html_safe, layout: layout, locals: view_data.merge(page: page)
+    end
+
+    def render_full_page
+      @render_method.call template: 'inertia', layout: layout, locals: view_data.merge(page: page)
     end
 
     def layout
@@ -68,56 +78,26 @@ module InertiaRails
     #
     # Functionally, this permits using either string or symbol keys in the controller. Since the results
     # is cast to json, we should treat string/symbol keys as identical.
-    def merge_props(shared_data, props)
-      if @deep_merge
-        shared_data.deep_symbolize_keys.deep_merge!(props.deep_symbolize_keys)
+    def merged_props
+      @merged_props ||= if @deep_merge
+        shared_data.deep_symbolize_keys.deep_merge!(@props.deep_symbolize_keys)
       else
-        shared_data.symbolize_keys.merge(props.symbolize_keys)
+        shared_data.symbolize_keys.merge(@props.symbolize_keys)
       end
     end
 
-    def computed_props
-      _props = merge_props(shared_data, props)
-
-      deep_transform_props _props do |prop, path|
-        next [DONT_KEEP_PROP] unless keep_prop?(prop, path)
-
-        transformed_prop = case prop
-        when BaseProp
-          prop.call(controller)
-        when Proc
-          controller.instance_exec(&prop)
-        else
-          prop
-        end
-
-        [KEEP_PROP, transformed_prop]
-      end
+    def prop_transformer
+      @prop_transformer ||= PropTransformer.new(controller)
+        .select_transformed(merged_props){ |prop, path| keep_prop?(prop, path) }
     end
 
     def page
       {
         component: component,
-        props: computed_props,
+        props: prop_transformer.props,
         url: @request.original_fullpath,
         version: configuration.version,
       }
-    end
-
-    def deep_transform_props(props, parent_path = [], &block)
-      props.reduce({}) do |transformed_props, (key, prop)|
-        current_path = parent_path + [key]
-
-        if prop.is_a?(Hash) && prop.any?
-          nested = deep_transform_props(prop, current_path, &block)
-          transformed_props.merge!(key => nested) unless nested.empty?
-        else
-          action, transformed_prop = block.call(prop, current_path)
-          transformed_props.merge!(key => transformed_prop) if action == KEEP_PROP
-        end
-
-        transformed_props
-      end
     end
 
     def partial_keys
@@ -165,6 +145,73 @@ module InertiaRails
 
     def excluded_by_except_partial_keys?(path_with_prefixes)
       partial_except_keys.present? && (path_with_prefixes & partial_except_keys).any?
+    end
+
+    def validate_partial_reload_optimization
+      if prop_transformer.unoptimized_prop_paths.any?
+        case configuration.action_on_unoptimized_partial_reload
+        when :log
+          ActiveSupport::Notifications.instrument(
+            'inertia_rails.unoptimized_partial_render',
+            paths: prop_transformer.unoptimized_prop_paths,
+            controller: controller,
+            action: controller.action_name,
+          )
+        when :raise
+          raise InertiaRails::UnoptimizedPartialReload.new(prop_transformer.unoptimized_prop_paths)
+        end
+      end
+    end
+
+    class PropTransformer
+      attr_reader :props, :unoptimized_prop_paths
+
+      def initialize(controller)
+        @controller = controller
+        @unoptimized_prop_paths = []
+        @props = {}
+      end
+
+      def select_transformed(initial_props, &block)
+        @unoptimized_prop_paths = []
+        @props = deep_transform_and_select(initial_props, &block)
+
+        self
+      end
+
+      private
+
+      def deep_transform_and_select(original_props, parent_path = [], &block)
+        original_props.reduce({}) do |transformed_props, (key, prop)|
+          current_path = parent_path + [key]
+
+          if prop.is_a?(Hash) && prop.any?
+            nested = deep_transform_and_select(prop, current_path, &block)
+            transformed_props.merge!(key => nested) unless nested.empty?
+          elsif block.call(prop, current_path)
+            transformed_props.merge!(key => transform_prop(prop))
+          elsif !prop.respond_to?(:call)
+            track_unoptimized_prop(current_path)
+          end
+
+          transformed_props
+        end
+      end
+
+      def transform_prop(prop)
+        case prop
+        when BaseProp
+          prop.call(@controller)
+        when Proc
+          @controller.instance_exec(&prop)
+        else
+          prop
+        end
+      end
+
+      def track_unoptimized_prop(path)
+        @unoptimized_prop_paths << path.join(".")
+      end
     end
   end
 end
