@@ -207,19 +207,10 @@ export default defineConfig({
 ## Configure SSR URL in the Inertia's Rails adapter
 
 To enable Server-Side Rendering (SSR) in your Inertia Rails application, you need to specify
-the correct SSR server URL in the adapter. By default, the adapter points to `http://localhost:13714`,
-but this must align with the **_VITE_RUBY_HOST_** value defined in your `deploy.yml` when we deploy it to production.
+the correct SSR server URL in the adapter. It can be set via the `INERTIA_SSR_URL` ENV variable.
 
-Update the configuration in `config/initializers/inertia_rails.rb` to dynamically construct the
-SSR URL using Vite Ruby's protocol, host, and port settings:
-
-```ruby
-InertiaRails.configure do |config|
-  config.ssr_enabled = ViteRuby.config.ssr_build_enabled
-  config.ssr_url = "#{ViteRuby.config.protocol}://#{ViteRuby.config.host}:13714" # [!code ++]
-  config.version = ViteRuby.digest
-end
-```
+Given we are using kamal 2, I would suggest to leverage [kamal secret](https://kamal-deploy.org/docs/commands/secrets/)
+configuration at `.kamal/secrets`
 
 
 ## Deploy and enjoy 🎉
