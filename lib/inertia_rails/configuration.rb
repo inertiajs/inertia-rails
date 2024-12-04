@@ -18,7 +18,7 @@ module InertiaRails
 
       # SSR options.
       ssr_enabled: false,
-      ssr_url: 'http://localhost:13714',
+      ssr_url: ENV.fetch('INERTIA_SSR_URL', 'http://localhost:13714'),
 
       # Used to detect version drift between server and client.
       version: nil,
