@@ -209,9 +209,6 @@ export default defineConfig({
 To enable Server-Side Rendering (SSR) in your Inertia Rails application, you need to specify
 the correct SSR server URL in the adapter. It can be set via the `INERTIA_SSR_URL` ENV variable.
 
-Given we are using kamal 2, I would suggest to leverage [kamal secret](https://kamal-deploy.org/docs/commands/secrets/)
-configuration at `.kamal/secrets`
-
 
 ## Deploy and enjoy 🎉
 
