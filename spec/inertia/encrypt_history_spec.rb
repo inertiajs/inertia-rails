@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 RSpec.describe 'Inertia encrypt history', type: :request do
-  let(:headers) { {'X-Inertia' => true} }
+  let(:headers) { { 'X-Inertia' => true } }
 
   context 'with default config' do
     it 'returns encryptHistory false' do
@@ -20,7 +22,6 @@ RSpec.describe 'Inertia encrypt history', type: :request do
   end
 
   context 'with override config' do
-
     it 'returns encryptHistory false' do
       get encrypt_history_override_config_path, headers: headers
 

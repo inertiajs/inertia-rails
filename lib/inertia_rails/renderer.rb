@@ -144,9 +144,7 @@ module InertiaRails
 
     def merge_props_keys
       @props.each_with_object([]) do |(key, prop), result|
-        if prop.try(:merge?) && reset_keys.exclude?(key)
-          result << key
-        end
+        result << key if prop.try(:merge?) && reset_keys.exclude?(key)
       end
     end
 

@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 class InertiaEncryptHistoryController < ApplicationController
   inertia_config(
-    encrypt_history: -> { action_name != "default_config" }
+    encrypt_history: -> { action_name != 'default_config' }
   )
 
   def default_config
@@ -20,6 +22,6 @@ class InertiaEncryptHistoryController < ApplicationController
   end
 
   def clear_history_after_redirect
-    redirect_to :empty_test, inertia: {clear_history: true}
+    redirect_to :empty_test, inertia: { clear_history: true }
   end
 end

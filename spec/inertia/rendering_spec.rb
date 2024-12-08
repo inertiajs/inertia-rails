@@ -450,7 +450,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         'X-Inertia' => true,
         'X-Inertia-Partial-Data' => 'deferred_merge',
         'X-Inertia-Partial-Component' => 'TestComponent',
-        'X-Inertia-Reset' => 'deferred_merge'
+        'X-Inertia-Reset' => 'deferred_merge',
       }}
 
       it 'returns listed and merge props' do

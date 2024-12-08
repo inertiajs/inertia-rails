@@ -7,8 +7,8 @@ RSpec.describe InertiaRails::LazyProp do
     end
   end
 
-  it "is deprecated" do
-    expect(deprecator).to receive(:warn).with("`lazy` is deprecated and will be removed in InertiaRails 4.0, use `optional` instead.")
+  it 'is deprecated' do
+    expect(deprecator).to receive(:warn).with('`lazy` is deprecated and will be removed in InertiaRails 4.0, use `optional` instead.')
 
     described_class.new('value')
   end
