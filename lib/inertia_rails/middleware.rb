@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module InertiaRails
   class Middleware
     def initialize(app)
@@ -20,7 +22,10 @@ module InertiaRails
         request = ActionDispatch::Request.new(@env)
 
         # Inertia errors are added to the session via redirect_to
-        request.session.delete(:inertia_errors) unless keep_inertia_errors?(status)
+        unless keep_inertia_session_options?(status)
+          request.session.delete(:inertia_errors)
+          request.session.delete(:inertia_clear_history)
+        end
 
         status = 303 if inertia_non_post_redirect?(status)
 
@@ -29,7 +34,7 @@ module InertiaRails
 
       private
 
-      def keep_inertia_errors?(status)
+      def keep_inertia_session_options?(status)
         redirect_status?(status) || stale_inertia_request?
       end
 

@@ -257,7 +257,7 @@ RSpec.describe 'rendering inertia views', type: :request do
     let(:headers) do
       {
         'X-Inertia' => true,
-        'X-Inertia-Partial-Data' => 'nested,nested_lazy',
+        'X-Inertia-Partial-Data' => 'nested,nested_optional',
         'X-Inertia-Partial-Except' => 'nested',
         'X-Inertia-Partial-Component' => 'TestComponent',
       }
@@ -268,7 +268,7 @@ RSpec.describe 'rendering inertia views', type: :request do
     it 'returns listed props without excepted' do
       expect(response.parsed_body['props']).to eq(
         'always' => 'always prop',
-        'nested_lazy' => { 'first' => 'first nested lazy param' },
+        'nested_optional' => { 'first' => 'first nested optional param' },
       )
     end
 
@@ -282,9 +282,9 @@ RSpec.describe 'rendering inertia views', type: :request do
       it 'returns all regular and partial props except excepted' do
         expect(response.parsed_body['props']).to eq(
           'flat' => 'flat param',
-          'lazy' => 'lazy param',
+          'optional' => 'optional param',
           'always' => 'always prop',
-          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested_optional' => { 'first' => 'first nested optional param' },
         )
       end
     end
@@ -292,7 +292,7 @@ RSpec.describe 'rendering inertia views', type: :request do
     context 'when except always prop' do
       let(:headers) {{
         'X-Inertia' => true,
-        'X-Inertia-Partial-Data' => 'nested_lazy',
+        'X-Inertia-Partial-Data' => 'nested_optional',
         'X-Inertia-Partial-Except' => 'always_prop',
         'X-Inertia-Partial-Component' => 'TestComponent',
       }}
@@ -300,7 +300,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       it 'returns always prop anyway' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
-          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested_optional' => { 'first' => 'first nested optional param' },
         )
       end
     end
@@ -309,7 +309,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       let(:headers) do
         {
           'X-Inertia' => true,
-          'X-Inertia-Partial-Data' => 'nested_lazy',
+          'X-Inertia-Partial-Data' => 'nested_optional',
           'X-Inertia-Partial-Except' => 'unknown',
           'X-Inertia-Partial-Component' => 'TestComponent',
         }
@@ -318,7 +318,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       it 'returns props' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
-          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested_optional' => { 'first' => 'first nested optional param' },
         )
       end
     end
@@ -327,8 +327,8 @@ RSpec.describe 'rendering inertia views', type: :request do
       let(:headers) do
         {
           'X-Inertia' => true,
-          'X-Inertia-Partial-Data' => 'nested,nested_lazy',
-          'X-Inertia-Partial-Except' => 'nested.first,nested_lazy.first',
+          'X-Inertia-Partial-Data' => 'nested,nested_optional',
+          'X-Inertia-Partial-Except' => 'nested.first,nested_optional.first',
           'X-Inertia-Partial-Component' => 'TestComponent',
         }
       end
@@ -337,7 +337,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
           'nested' => { 'second' => 'second nested param' },
-          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested_optional' => { 'first' => 'first nested optional param' },
         )
       end
     end
@@ -372,24 +372,131 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'optional prop rendering' do
+    context 'on first load' do
+      let(:page) {
+        InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { regular: 1}).send(:page)
+      }
+      before { get optional_props_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a partial reload' do
+      let(:page) {
+        InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { regular: 1, optional: 1}).send(:page)
+      }
+      let(:headers) {{
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'optional',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      }}
+
+      before { get optional_props_path, headers: headers }
+
+      it { is_expected.to eq page.to_json }
+    end
+  end
+
   context 'always prop rendering' do
     let(:headers) { { 'X-Inertia' => true } }
 
     before { get always_props_path, headers: headers }
 
-    it "returns non-optional props on first load" do
-      expect(response.parsed_body["props"]).to eq({"always" => 'always prop', "regular" => 'regular prop' })
+    it 'returns non-optional props on first load' do
+      expect(response.parsed_body['props']).to eq({'always' => 'always prop', 'regular' => 'regular prop' })
     end
 
     context 'with a partial reload' do
       let(:headers) {{
         'X-Inertia' => true,
-        'X-Inertia-Partial-Data' => 'lazy',
+        'X-Inertia-Partial-Data' => 'optional',
         'X-Inertia-Partial-Component' => 'TestComponent',
       }}
 
-      it "returns listed and always props" do
-        expect(response.parsed_body["props"]).to eq({"always" => 'always prop', "lazy" => 'lazy prop' })
+      it 'returns listed and always props' do
+        expect(response.parsed_body['props']).to eq({'always' => 'always prop', 'optional' => 'optional prop' })
+      end
+    end
+  end
+
+  context 'merged prop rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    before { get merge_props_path, headers: headers }
+
+    it 'returns non-optional props and meta on first load' do
+      expect(response.parsed_body['props']).to eq('merge' => 'merge prop', 'regular' => 'regular prop')
+      expect(response.parsed_body['mergeProps']).to match_array(%w[merge deferred_merge])
+      expect(response.parsed_body['deferredProps']).to eq('default' => %w[deferred_merge deferred])
+    end
+
+    context 'with a partial reload' do
+      let(:headers) {{
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'deferred_merge',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      }}
+
+      it 'returns listed and merge props' do
+        expect(response.parsed_body['props']).to eq({'deferred_merge' => 'deferred and merge prop'})
+        expect(response.parsed_body['mergeProps']).to match_array(%w[merge deferred_merge])
+        expect(response.parsed_body['deferredProps']).to be_nil
+      end
+    end
+
+    context 'with a reset header' do
+      let(:headers) {{
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'deferred_merge',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Reset' => 'deferred_merge',
+      }}
+
+      it 'returns listed and merge props' do
+        expect(response.parsed_body['props']).to eq({'deferred_merge' => 'deferred and merge prop'})
+        expect(response.parsed_body['mergeProps']).to match_array(%w[merge])
+        expect(response.parsed_body['deferredProps']).to be_nil
+      end
+    end
+  end
+
+  context 'deferred prop rendering' do
+    context 'on first load' do
+      let(:headers) { { 'X-Inertia' => true } }
+
+      before { get deferred_props_path, headers: headers }
+
+      it 'does not include defer props inside props in first load' do
+        expect(response.parsed_body['props']).to eq({ 'name' => 'Brian' })
+      end
+
+      it 'returns deferredProps' do
+        expect(response.parsed_body['deferredProps']).to eq(
+          'default' => ['level', 'grit'],
+          'other' => ['sport']
+        )
+      end
+    end
+
+    context 'with a partial reload' do
+      let(:page) {
+        InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { sport: 'basketball', level: 'worse than he believes', grit: 'intense' }).send(:page)
+      }
+      let(:headers) { {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'level,grit', # Simulate default group
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      } }
+
+      before { get deferred_props_path, headers: headers }
+
+      it { is_expected.to eq page.to_json }
+      it { is_expected.to include('intense') }
+      it { is_expected.to include('worse') }
+      it { is_expected.not_to include('basketball') }
+      it 'does not deferredProps key in json' do
+        expect(response.parsed_body['deferredProps']).to eq(nil)
       end
     end
   end

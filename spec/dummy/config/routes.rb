@@ -31,8 +31,11 @@ Rails.application.routes.draw do
   get 'error_500' => 'inertia_test#error_500'
   get 'content_type_test' => 'inertia_test#content_type_test'
   get 'lazy_props' => 'inertia_render_test#lazy_props'
+  get 'optional_props' => 'inertia_render_test#optional_props'
   get 'always_props' => 'inertia_render_test#always_props'
   get 'except_props' => 'inertia_render_test#except_props'
+  get 'merge_props' => 'inertia_render_test#merge_props'
+  get 'deferred_props' => 'inertia_render_test#deferred_props'
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
   get 'deeply_nested_props' => 'inertia_render_test#deeply_nested_props'
 
@@ -60,4 +63,10 @@ Rails.application.routes.draw do
   get 'conditional_share_show' => 'inertia_conditional_sharing#show'
   get 'conditional_share_edit' => 'inertia_conditional_sharing#edit'
   get 'conditional_share_show_with_a_problem' => 'inertia_conditional_sharing#show_with_a_problem'
+
+  get 'encrypt_history_default_config' => 'inertia_encrypt_history#default_config'
+  get 'encrypt_history_encrypt_history' => 'inertia_encrypt_history#encrypt_history'
+  get 'encrypt_history_override_config' => 'inertia_encrypt_history#override_config'
+  get 'encrypt_history_clear_history' => 'inertia_encrypt_history#clear_history'
+  post 'encrypt_history_clear_history_after_redirect' => 'inertia_encrypt_history#clear_history_after_redirect'
 end
