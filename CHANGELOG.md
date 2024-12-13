@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.6.0] - 2024-12-13
+
+Support for the v2.0 Inertia.js release! It's a minor bump because there are no breaking changes!
+
+Kudos to @skryukov and @PedroAugustoRamalhoDuarte for driving the features in this release!
+
+* InertiaRails.defer for deferred props
+* History encryption
+* InertiaRails.merge for merge props
+* InertiaRails.optional props (replaces lazy props in v2.0, InertiaRails.lazy now has a deprecation warning)
+
 ## [3.5.0] - 2024-11-29
 
 * Add Algolia search for docs (#151, @skryukov)
