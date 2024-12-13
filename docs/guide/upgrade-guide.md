@@ -1,9 +1,5 @@
 # Upgrade guide for v2.0
 
-> [!NOTE]
-> Inertia.js v2.0 is still in beta and these docs are a work-in-progress. Please report bugs on
-> https://github.com/inertiajs/inertia and https://github.com/inertiajs/inertia-rails
-
 ## What's new
 
 Inertia.js v2.0 is a huge step forward for Inertia! The core library has been completely rewritten to architecturally support asynchronous requests, enabling a whole set of new features, including:
@@ -24,27 +20,27 @@ To upgrade to the Inertia.js v2.0 beta, first use npm to install the client-side
 == Vue
 
 ```vue
-npm install @inertiajs/vue3@next
+npm install @inertiajs/vue3@^2.0
 ```
 
 == React
 
 ```jsx
-npm install @inertiajs/react@next
+npm install @inertiajs/react@^2.0
 ```
 
 == Svelte 4|Svelte 5
 
 ```svelte
-npm install @inertiajs/svelte@next
+npm install @inertiajs/svelte@^2.0
 ```
 
 :::
 
-Next, upgrade the `inertia-rails` gem to use the `v2` dev branch:
+Next, use at least the 3.6 version of `inertia-rails`.
 
 ```ruby
-gem 'inertia_rails', github: 'inertiajs/inertia-rails', branch: 'v2'
+gem 'inertia_rails', '~> 3.6'
 ```
 
 ## Breaking changes
