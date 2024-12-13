@@ -179,7 +179,7 @@ module InertiaRails
         return false if excluded_by_except_partial_keys?(path_with_prefixes)
       end
 
-      # Precedence: Evaluate LazyProp only after partial keys have been checked
+      # Precedence: Evaluate IgnoreOnFirstLoadProp only after partial keys have been checked
       return false if prop.is_a?(IgnoreOnFirstLoadProp) && !rendering_partial_component?
 
       true
