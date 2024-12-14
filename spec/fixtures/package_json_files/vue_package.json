@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@inertiajs/vue3": "1.0.0"
+  }
+}
