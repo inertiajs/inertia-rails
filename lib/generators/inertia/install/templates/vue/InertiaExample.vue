@@ -5,7 +5,7 @@
     <h1 class="h1">Hello {{ name }}!</h1>
 
     <div>
-      <a href="https://inertia-rails.netlify.app" target="_blank">
+      <a href="https://inertia-rails.dev" target="_blank">
         <img class="logo" :src="inertiaSvg" alt="Inertia logo" />
       </a>
       <a href="https://vite-ruby.netlify.app" target="_blank">
