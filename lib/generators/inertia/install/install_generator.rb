@@ -78,8 +78,7 @@ module Inertia
         template 'initializer.rb', file_path('config/initializers/inertia_rails.rb')
 
         say 'Installing Inertia npm packages'
-        add_dependencies(*FRAMEWORKS[framework]['packages'])
-        add_dependencies(inertia_package)
+        add_dependencies(inertia_package, *FRAMEWORKS[framework]['packages'])
 
         unless File.read(vite_config_path).include?(FRAMEWORKS[framework]['vite_plugin_import'])
           say "Adding Vite plugin for #{framework}"
