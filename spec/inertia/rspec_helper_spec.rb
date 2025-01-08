@@ -38,15 +38,15 @@ RSpec.describe InertiaRails::RSpec, type: :request do
       before { get props_path, headers: {'X-Inertia': true} }
 
       it 'has props' do
-        expect_inertia.to have_exact_props({name: 'Brandon', sport: 'hockey'})
+        expect_inertia.to have_exact_props({"name" => 'Brandon', "sport" => 'hockey'})
       end
 
       it 'includes props' do
-        expect_inertia.to include_props({sport: 'hockey'})
+        expect_inertia.to include_props({"sport" => 'hockey'})
       end
 
       it 'can retrieve props' do
-        expect(inertia.props[:name]).to eq 'Brandon'
+        expect(inertia.props["name"]).to eq 'Brandon'
       end
     end
 
@@ -139,7 +139,7 @@ RSpec.describe InertiaRails::RSpec, type: :request do
         expect_inertia.to have_exact_props({
           someProperty: {
             property_a: "some value",
-            'property_b' => "this value",
+            property_b: "this value",
           },
           property_c: "some other value"
         })
