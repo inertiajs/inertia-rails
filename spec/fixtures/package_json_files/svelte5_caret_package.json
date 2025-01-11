@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@inertiajs/svelte": "1.0.0",
+    "svelte": "^5.0.0"
+  }
+}
