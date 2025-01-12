@@ -32,8 +32,9 @@ module InertiaRails
         else
           # Sequential Inertia request
           @view_data = {}
-          @props = params[:json][:props]
-          @component = params[:json][:component]
+          json = JSON.parse(params[:json])
+          @props = json["props"]
+          @component = json["component"]
         end
       end
     end
@@ -81,8 +82,7 @@ end
 
 RSpec::Matchers.define :have_exact_props do |expected_props|
   match do |inertia|
-  # Computed props have symbolized keys. 
-    expect(inertia.props).to eq expected_props.deep_symbolize_keys
+    expect(inertia.props).to eq expected_props
   end
 
   failure_message do |inertia|
@@ -92,8 +92,7 @@ end
 
 RSpec::Matchers.define :include_props do |expected_props|
   match do |inertia|
-  # Computed props have symbolized keys. 
-    expect(inertia.props).to include expected_props.deep_symbolize_keys
+    expect(inertia.props).to include expected_props
   end
 
   failure_message do |inertia|
