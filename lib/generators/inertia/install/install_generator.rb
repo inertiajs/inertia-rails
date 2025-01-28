@@ -153,7 +153,7 @@ module Inertia
         say 'Installing Tailwind CSS'
         add_dependencies(%w[tailwindcss @tailwindcss/vite @tailwindcss/forms @tailwindcss/typography])
         prepend_file vite_config_path, "import tailwindcss from '@tailwindcss/vite'\n"
-        insert_into_file vite_config_path, "\n    tailwindcss(),\n", after: 'plugins: ['
+        insert_into_file vite_config_path, "\n    tailwindcss(),", after: 'plugins: ['
         copy_file 'tailwind/application.css', js_file_path('entrypoints/application.css')
 
         if application_layout.exist?
