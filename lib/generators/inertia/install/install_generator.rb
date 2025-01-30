@@ -265,7 +265,7 @@ module Inertia
 
       def inertia_resolved_version
         @inertia_resolved_version ||= Gem::Version.new(
-          `npm show @inertiajs/core@#{options[:inertia_version]} version`.strip
+          `npm show @inertiajs/core@#{options[:inertia_version]} version --json | tail -n2 | head -n1 | tr -d '", '`.strip
         )
       end
 
