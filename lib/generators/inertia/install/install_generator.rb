@@ -151,11 +151,9 @@ module Inertia
 
       def install_tailwind
         say 'Installing Tailwind CSS'
-        add_dependencies(%w[tailwindcss postcss autoprefixer @tailwindcss/forms @tailwindcss/typography
-                            @tailwindcss/container-queries])
-
-        template 'tailwind/tailwind.config.js', file_path('tailwind.config.js')
-        copy_file 'tailwind/postcss.config.js', file_path('postcss.config.js')
+        add_dependencies(%w[tailwindcss @tailwindcss/vite @tailwindcss/forms @tailwindcss/typography])
+        prepend_file vite_config_path, "import tailwindcss from '@tailwindcss/vite'\n"
+        insert_into_file vite_config_path, "\n    tailwindcss(),", after: 'plugins: ['
         copy_file 'tailwind/application.css', js_file_path('entrypoints/application.css')
 
         if application_layout.exist?
@@ -265,7 +263,7 @@ module Inertia
 
       def inertia_resolved_version
         @inertia_resolved_version ||= Gem::Version.new(
-          `npm show @inertiajs/core@#{options[:inertia_version]} version`.strip
+          `npm show @inertiajs/core@#{options[:inertia_version]} version --json | tail -n2 | head -n1 | tr -d '", '`.strip
         )
       end
 

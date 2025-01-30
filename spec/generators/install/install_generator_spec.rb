@@ -55,8 +55,6 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
           directory('app/frontend') do
             no_file('entrypoints/application.css')
           end
-          no_file('postcss.config.js')
-          no_file('tailwind.config.js')
         end)
       end
     end
@@ -67,7 +65,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
 
     before { prepare_application }
 
-    it 'installs Tailwind' do
+    it 'installs Tailwind with vite plugin' do
       expect { generator }.not_to raise_error
       expect_tailwind_config
     end
@@ -134,10 +132,17 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
   def expect_tailwind_config
     expect(destination_root).to(have_structure do
       directory('app/frontend') do
-        file('entrypoints/application.css')
+        file('entrypoints/application.css') do
+          contains('@import "tailwindcss";')
+        end
       end
-      file('postcss.config.js')
-      file('tailwind.config.js')
+      file('package.json') do
+        contains('"tailwindcss":')
+        contains('"@tailwindcss/vite":')
+      end
+      file('vite.config.ts') do
+        contains('tailwindcss(),')
+      end
     end)
   end
 
