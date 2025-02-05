@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.6.1] - 2025-02-04
+
+* Install generator tweaks @skryukov
+* Performance improvement for oj serialization users @alexspeller
+* Doc updates @youyoumu
+* Doc updates @pedroaugustoramalhoduarte
+* Tailwind v4 support in install generators @arandilopez
+* Various CI fixes @bknoles / @skryukov
+
 ## [3.6.0] - 2024-12-13
 
 Support for the v2.0 Inertia.js release! It's a minor bump because there are no breaking changes!
