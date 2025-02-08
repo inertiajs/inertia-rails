@@ -4,24 +4,59 @@ Sometimes you need to access specific pieces of data on numerous pages within yo
 
 ## Sharing data
 
-Inertia's Rails adapter comes with the `shared_data` controller method. This method allows you to define shared data that will be automatically merged with the page props provided in your controller.
+The `inertia_share` method allows you to define data that will be available to all controller actions, automatically merging with page-specific props.
+
+### Basic Usage
 
 ```ruby
 class EventsController < ApplicationController
-  # share synchronously
-  inertia_share app_name: env['app.name']
+  # Static sharing: Data is evaluated immediately
+  inertia_share app_name: Rails.configuration.app_name
 
-  # share lazily, evaluated at render time
+  # Dynamic sharing: Data is evaluated at render time
   inertia_share do
-    if logged_in?
-      {
-        user: logged_in_user,
-      }
-    end
+    {
+      user: current_user,
+      notifications: current_user&.unread_notifications_count
+    } if user_signed_in?
   end
 
-  # share lazily alternate syntax
-  inertia_share user_count: lambda { User.count }
+  # Alternative syntax for single dynamic values
+  inertia_share total_users: -> { User.count }
+end
+```
+
+### Conditional Sharing
+
+You can control when data is shared using Rails-style controller filters. The `inertia_share` method supports these filter options:
+
+- `only`: Share data for specific actions
+- `except`: Share data for all actions except specified ones
+- `if`: Share data when condition is true
+- `unless`: Share data when condition is false
+
+```ruby
+class EventsController < ApplicationController
+  # Share user data only when authenticated
+  inertia_share if: :user_signed_in? do
+    {
+      user: {
+        name: current_user.name,
+        email: current_user.email,
+        role: current_user.role
+      }
+    }
+  end
+
+  # Share data only for specific actions
+  inertia_share only: [:index, :show] do
+    {
+      meta: {
+        last_updated: Time.current,
+        version: "1.0"
+      }
+    }
+  end
 end
 ```
 
