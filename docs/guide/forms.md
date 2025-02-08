@@ -261,7 +261,7 @@ return (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte 4
 
 ```svelte
 <script>
