@@ -85,6 +85,15 @@ end
 
 With this configuration, the `app/frontend/pages/events/index.(jsx|vue|svelte)` page component is rendered automatically, passing the `@events` instance variable as the `events` prop.
 
+If the default component path doesn't match your convention, you can define a custom resolution method via the `component_path_resolver` config value. The value should be callable and will receive the path and action parameters, returning a string component path.
+
+````ruby
+inertia_config(
+  component_path_resolver: ->(path:, action:) do
+    "Storefront/#{path.camelize}/#{action.camelize}"
+  end
+)
+
 ## Root template data
 
 There are situations where you may want to access your prop data in your ERB template. For example, you may want to add a meta description tag, Twitter card meta tags, or Facebook Open Graph meta tags. You can access this data via the `page` method.
@@ -97,7 +106,7 @@ There are situations where you may want to access your prop data in your ERB tem
 <% end %>
 
 <div id="app" data-page="<%= page.to_json %>"></div>
-```
+````
 
 Sometimes you may even want to provide data to the root template that will not be sent to your JavaScript page / component. This can be accomplished by passing the `view_data` option.
 

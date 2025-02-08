@@ -58,6 +58,7 @@ Axios automatically checks for the existence of an `XSRF-TOKEN` cookie. If it's 
 The easiest way to implement this is using server-side middleware. Simply include the `XSRF-TOKEN` cookie on each response, and then verify the token using the `X-XSRF-TOKEN` header sent in the requests from axios. (That's basically what `inertia_rails` does).
 
 > [!NOTE]
+>
 > `X-XSRF-TOKEN` header only works for [Inertia requests](/guide/the-protocol#inertia-responses). If you want to send a normal request you can use `X-CSRF-TOKEN` instead.
 
 ## Handling mismatches

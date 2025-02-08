@@ -1,3 +1,9 @@
+---
+next:
+  text: 'Demo Application'
+  link: '/guide/demo-application'
+---
+
 # Introduction
 
 Welcome to the documentation for [inertia_rails](https://github.com/inertiajs/inertia-rails) adapter for [Ruby on Rails](https://rubyonrails.org/) and [Inertia.js](https://inertiajs.com/).

@@ -261,7 +261,7 @@ return (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte 4
 
 ```svelte
 <script>
@@ -565,7 +565,7 @@ $form.clearErrors('field', 'anotherfield')
 
 :::
 
-If you're using a client-side input validation libraries or do client-side validation manually, you can set your own errors on the form using the `setErrors()` method.
+If you're using a client-side input validation libraries or do client-side validation manually, you can set your own errors on the form using the `setError()` method.
 
 :::tabs key:frameworks
 == Vue

@@ -131,6 +131,7 @@ export default defineConfig({
           items: [
             { text: 'Asset versioning', link: '/guide/asset-versioning' },
             { text: 'Code splitting', link: '/guide/code-splitting' },
+            { text: 'Configuration', link: '/guide/configuration' },
             { text: 'Error handling', link: '/guide/error-handling' },
             { text: 'Events', link: '/guide/events' },
             { text: 'Progress indicators', link: '/guide/progress-indicators' },
