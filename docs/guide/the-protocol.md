@@ -33,7 +33,7 @@ Content-Type: text/html; charset=utf-8
 ```
 
 > [!NOTE]
-> While the initial response is HTML, Inertia does not server-side render the JavaScript page components by default (see [Server-side Rendering](http://localhost:5173/guide/server-side-rendering)).
+> While the initial response is HTML, Inertia does not server-side render the JavaScript page components by default (see [Server-side Rendering](/guide/server-side-rendering)).
 
 ## Inertia responses
 
