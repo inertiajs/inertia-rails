@@ -44,6 +44,7 @@ module InertiaRails
         @render_method.call json: page.to_json, status: @response.status, content_type: Mime[:json]
       else
         return render_ssr if configuration.ssr_enabled rescue nil
+        return nil unless @request.format.html?
         @render_method.call template: 'inertia', layout: layout, locals: view_data.merge(page: page)
       end
     end
