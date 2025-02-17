@@ -58,6 +58,42 @@ RSpec.describe 'rendering inertia views', type: :request do
 
       it { is_expected.to include inertia_div(page) }
     end
+
+    context 'via a namespaced inertia route' do
+      before { get namespaced_inertia_route_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'via a scoped inertia route' do
+      before { get scoped_inertia_route_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a default component' do
+      let(:page) { InertiaRails::Renderer.new('inertia_route_with_default_component', controller, request, response, '').send(:page) }
+
+      before { get inertia_route_with_default_component_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a default component namespaced' do
+      let(:page) { InertiaRails::Renderer.new('namespaced/inertia_route_with_default_component', controller, request, response, '').send(:page) }
+
+      before { get namespaced_inertia_route_with_default_component_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a default component namespaced & scoped' do
+      let(:page) { InertiaRails::Renderer.new('namespaced/inertia_route_with_default_component', controller, request, response, '').send(:page) }
+
+      before { get namespaced_scoped_inertia_route_with_default_component_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
   end
 
   context 'subsequent requests' do
