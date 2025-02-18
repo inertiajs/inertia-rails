@@ -16,21 +16,59 @@ RSpec.describe 'Inertia configuration', type: :request do
         expect(merged_config.ssr_enabled).to eq false
       }.not_to raise_error
     end
+
+    context 'with environment variables' do
+      it 'always prioritizes initialized variables' do
+        with_env(
+          'INERTIA_SSR_ENABLED' => 'true',
+          'INERTIA_SSR_URL' => 'http://env-ssr-url:1234',
+          'INERTIA_DEEP_MERGE_SHARED_DATA' => 'true'
+        ) do
+          config = InertiaRails::Configuration.default
+
+          config.ssr_enabled = false
+
+          expect(config.ssr_enabled).to eq false
+          expect(config.ssr_url).to eq 'http://env-ssr-url:1234'
+          expect(config.deep_merge_shared_data).to eq true
+        end
+      end
+
+      it 'respects environment variables when merging defaults' do
+        with_env(
+          'INERTIA_SSR_ENABLED' => 'true'
+        ) do
+          config = InertiaRails::Configuration.default
+          config.deep_merge_shared_data = true
+
+          controller_config = InertiaRails::Configuration.new(ssr_url: 'http://ssr-url:1234')
+          controller_config.with_defaults(config)
+
+          expect(controller_config.ssr_enabled).to eq true
+          expect(controller_config.ssr_url).to eq 'http://ssr-url:1234'
+          expect(controller_config.deep_merge_shared_data).to eq true
+        end
+      end
+    end
   end
 
   describe 'inertia_config' do
-    it 'overrides the global values' do
-      get configuration_path
+    it 'overrides the global values and ENV' do
+      with_env(
+        'INERTIA_SSR_URL' => 'http://env-ssr-url:1234'
+      ) do
+        get configuration_path
 
-      expect(response.parsed_body.symbolize_keys).to include(
-        deep_merge_shared_data: true,
-        default_render: false,
-        layout: "test",
-        ssr_enabled: true,
-        ssr_url: "http://localhost:7777",
-        version: "2.0",
-        encrypt_history: false,
-      )
+        expect(response.parsed_body.symbolize_keys).to include(
+          deep_merge_shared_data: true,
+          default_render: false,
+          layout: 'test',
+          ssr_enabled: true,
+          ssr_url: 'http://localhost:7777',
+          version: '2.0',
+          encrypt_history: false
+        )
+      end
     end
   end
 

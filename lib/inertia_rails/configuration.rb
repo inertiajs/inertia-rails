@@ -29,6 +29,23 @@ module InertiaRails
 
     OPTION_NAMES = DEFAULTS.keys.freeze
 
+    class << self
+      def default
+        new(**DEFAULTS, **env_options)
+      end
+
+      private
+
+      def env_options
+        DEFAULTS.keys.each_with_object({}) do |key, hash|
+          value = ENV.fetch("INERTIA_#{key.to_s.upcase}", nil)
+          next if value.nil?
+
+          hash[key] = %w[true false].include?(value) ? value == 'true' : value
+        end
+      end
+    end
+
     protected attr_reader :controller
     protected attr_reader :options
 
@@ -71,18 +88,14 @@ module InertiaRails
 
     OPTION_NAMES.each do |option|
       define_method(option) {
-        evaluate_option @options[option]
+        evaluate_option options[option]
       } unless method_defined?(option)
       define_method("#{option}=") { |value|
         @options[option] = value
       }
     end
 
-    def self.default
-      new(**DEFAULTS)
-    end
-
-  private
+    private
 
     def evaluate_option(value)
       return value unless value.respond_to?(:call)
