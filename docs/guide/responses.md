@@ -93,6 +93,7 @@ inertia_config(
     "Storefront/#{path.camelize}/#{action.camelize}"
   end
 )
+````
 
 ## Root template data
 
@@ -106,7 +107,7 @@ There are situations where you may want to access your prop data in your ERB tem
 <% end %>
 
 <div id="app" data-page="<%= page.to_json %>"></div>
-````
+```
 
 Sometimes you may even want to provide data to the root template that will not be sent to your JavaScript page / component. This can be accomplished by passing the `view_data` option.
 
