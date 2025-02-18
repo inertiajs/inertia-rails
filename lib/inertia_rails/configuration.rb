@@ -29,20 +29,21 @@ module InertiaRails
 
     OPTION_NAMES = DEFAULTS.keys.freeze
 
-    protected attr_reader :controller
-    protected attr_reader :options
+    def self.default
+      new(**DEFAULTS).with_env_options
+    end
 
     def initialize(controller: nil, **attrs)
       @controller = controller
       @options = attrs.extract!(*OPTION_NAMES)
 
-      unless attrs.empty?
-        raise ArgumentError, "Unknown options for #{self.class}: #{attrs.keys}"
-      end
+      return if attrs.empty?
+
+      raise ArgumentError, "Unknown options for #{self.class}: #{attrs.keys}"
     end
 
     def bind_controller(controller)
-      Configuration.new(**@options, controller: controller)
+      Configuration.new(**options, controller: controller)
     end
 
     def freeze
@@ -56,7 +57,7 @@ module InertiaRails
     end
 
     def merge(config)
-      Configuration.new(**@options.merge(config.options))
+      Configuration.new(**@options, **config.options)
     end
 
     # Internal: Finalizes the configuration for a specific controller.
@@ -70,24 +71,44 @@ module InertiaRails
     end
 
     OPTION_NAMES.each do |option|
-      define_method(option) {
-        evaluate_option @options[option]
-      } unless method_defined?(option)
-      define_method("#{option}=") { |value|
+      unless method_defined?(option)
+        define_method(option) do
+          evaluate_option options[option]
+        end
+      end
+      define_method("#{option}=") do |value|
         @options[option] = value
-      }
+      end
     end
 
-    def self.default
-      new(**DEFAULTS)
+    protected attr_reader :controller
+
+    def options
+      @with_env_options ? @options.merge(env_options) : @options
+    end
+    protected :options
+
+    def with_env_options
+      @with_env_options = true
+      self
     end
 
-  private
+    private
 
     def evaluate_option(value)
       return value unless value.respond_to?(:call)
       return value.call unless controller
+
       controller.instance_exec(&value)
+    end
+
+    def env_options
+      @env_options ||= DEFAULTS.keys.each_with_object({}) do |key, hash|
+        value = ENV.fetch("INERTIA_#{key.to_s.upcase}", nil)
+        next if value.nil?
+
+        hash[key] = %w[true false].include?(value) ? value == 'true' : value
+      end
     end
   end
 end
