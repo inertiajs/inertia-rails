@@ -43,6 +43,7 @@ module InertiaRails
         @response.set_header('X-Inertia', 'true')
         @render_method.call json: page.to_json, status: @response.status, content_type: Mime[:json]
       else
+        return nil unless @request.format.html?
         return render_ssr if configuration.ssr_enabled rescue nil
         @render_method.call template: 'inertia', layout: layout, locals: view_data.merge(page: page)
       end
