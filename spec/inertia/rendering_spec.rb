@@ -59,8 +59,8 @@ RSpec.describe 'rendering inertia views', type: :request do
       it { is_expected.to include inertia_div(page) }
     end
 
-    context 'via a namespaced inertia route' do
-      before { get namespaced_inertia_route_path }
+    context 'via a resource inertia route' do
+      before { get inertia_route_item_path(id: 1) }
 
       it { is_expected.to include inertia_div(page) }
     end
@@ -79,18 +79,34 @@ RSpec.describe 'rendering inertia views', type: :request do
       it { is_expected.to include inertia_div(page) }
     end
 
-    context 'with a default component namespaced' do
-      let(:page) { InertiaRails::Renderer.new('namespaced/inertia_route_with_default_component', controller, request, response, '').send(:page) }
+    context 'with a default component resource' do
+      let(:page) { InertiaRails::Renderer.new('items/inertia_route_with_default_component', controller, request, response, '').send(:page) }
 
-      before { get namespaced_inertia_route_with_default_component_path }
+      before { get item_inertia_route_with_default_component_path(item_id: 1) }
 
       it { is_expected.to include inertia_div(page) }
     end
 
-    context 'with a default component namespaced & scoped' do
-      let(:page) { InertiaRails::Renderer.new('namespaced/inertia_route_with_default_component', controller, request, response, '').send(:page) }
+    context 'with a default component resource on member' do
+      let(:page) { InertiaRails::Renderer.new('items/inertia_route_with_default_component_on_member', controller, request, response, '').send(:page) }
 
-      before { get namespaced_scoped_inertia_route_with_default_component_path }
+      before { get inertia_route_with_default_component_on_member_item_path(id: 1) }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a default component resource on collection' do
+      let(:page) { InertiaRails::Renderer.new('items/inertia_route_with_default_component_on_collection', controller, request, response, '').send(:page) }
+
+      before { get inertia_route_with_default_component_on_collection_items_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a default component resource & scoped' do
+      let(:page) { InertiaRails::Renderer.new('items/inertia_route_with_default_component', controller, request, response, '').send(:page) }
+
+      before { get scoped_item_inertia_route_with_default_component_path(item_id: 1) }
 
       it { is_expected.to include inertia_div(page) }
     end

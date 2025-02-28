@@ -52,9 +52,11 @@ Rails.application.routes.draw do
   scope :scoped, as: "scoped" do
     inertia 'inertia_route' => 'TestComponent'
   end
-  namespace :namespaced do
-    inertia inertia_route: 'TestComponent'
+  resources :items do
+    inertia inertia_route: 'TestComponent', on: :member
     inertia :inertia_route_with_default_component
+    inertia :inertia_route_with_default_component_on_member, on: :member
+    inertia :inertia_route_with_default_component_on_collection, on: :collection
     scope :scoped, as: "scoped" do
       inertia :inertia_route_with_default_component
     end
