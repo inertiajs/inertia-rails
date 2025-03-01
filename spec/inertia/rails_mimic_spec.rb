@@ -24,6 +24,13 @@ RSpec.describe 'rendering when mimicking rails behavior', type: :request, inerti
 
       expect_inertia.to render_component('inertia_rails_mimic/default_component_test')
     end
+
+    it 'has the correct derived component with props' do
+      get default_component_with_params_test_path
+
+      expect_inertia.to render_component('inertia_rails_mimic/default_component_with_params_test')
+        .and have_exact_props({my: 'props'})
+    end
   end
 
   context 'no render is done at all and default_render is enabled' do
