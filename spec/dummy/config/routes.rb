@@ -46,7 +46,21 @@ Rails.application.routes.draw do
   get 'provided_props_test' => 'inertia_rails_mimic#provided_props_test'
 
   post 'redirect_to_share_test' => 'inertia_test#redirect_to_share_test'
+
   inertia 'inertia_route' => 'TestComponent'
+  inertia :inertia_route_with_default_component
+  scope :scoped, as: "scoped" do
+    inertia 'inertia_route' => 'TestComponent'
+  end
+  resources :items do
+    inertia inertia_route: 'TestComponent', on: :member
+    inertia :inertia_route_with_default_component
+    inertia :inertia_route_with_default_component_on_member, on: :member
+    inertia :inertia_route_with_default_component_on_collection, on: :collection
+    scope :scoped, as: "scoped" do
+      inertia :inertia_route_with_default_component
+    end
+  end
 
   get 'merge_shared' => 'inertia_merge_shared#merge_shared'
   get 'deep_merge_shared' => 'inertia_merge_shared#deep_merge_shared'
