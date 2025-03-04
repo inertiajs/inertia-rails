@@ -24,6 +24,19 @@ RSpec.describe 'rendering when mimicking rails behavior', type: :request, inerti
 
       expect_inertia.to render_component('inertia_rails_mimic/default_component_test')
     end
+
+    it 'has the correct derived component with props' do
+      get default_component_with_props_test_path
+
+      expect_inertia.to render_component('inertia_rails_mimic/default_component_with_props_test')
+        .and have_exact_props({my: 'props'})
+    end
+
+    it 'raises an error when props as properties are provided' do
+      expect {
+        get default_component_with_duplicated_props_test_path
+      }.to raise_error(ArgumentError, 'Parameter `props` is not allowed when passing a Hash as the first argument')
+    end
   end
 
   context 'no render is done at all and default_render is enabled' do

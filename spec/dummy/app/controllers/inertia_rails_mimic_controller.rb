@@ -26,4 +26,13 @@ class InertiaRailsMimicController < ApplicationController
   def default_component_test
     render inertia: true
   end
+
+  def default_component_with_props_test
+    render inertia: { my: 'props' }
+  end
+
+  def default_component_with_duplicated_props_test
+    # should raise an error
+    render inertia: { my: 'props' }, props: { another: 'prop' }
+  end
 end

@@ -43,6 +43,8 @@ Rails.application.routes.draw do
   get 'default_render_test' => 'inertia_rails_mimic#default_render_test'
   get 'transformed_default_render_test' => 'transformed_inertia_rails_mimic#render_test'
   get 'default_component_test' => 'inertia_rails_mimic#default_component_test'
+  get 'default_component_with_props_test' => 'inertia_rails_mimic#default_component_with_props_test'
+  get 'default_component_with_duplicated_props_test' => 'inertia_rails_mimic#default_component_with_duplicated_props_test'
   get 'provided_props_test' => 'inertia_rails_mimic#provided_props_test'
 
   post 'redirect_to_share_test' => 'inertia_test#redirect_to_share_test'
