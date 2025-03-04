@@ -29,6 +29,23 @@ module InertiaRails
 
     OPTION_NAMES = DEFAULTS.keys.freeze
 
+    class << self
+      def default
+        new(**DEFAULTS, **env_options)
+      end
+
+      private
+
+      def env_options
+        DEFAULTS.keys.each_with_object({}) do |key, hash|
+          value = ENV.fetch("INERTIA_#{key.to_s.upcase}", nil)
+          next if value.nil?
+
+          hash[key] = %w[true false].include?(value) ? value == 'true' : value
+        end
+      end
+    end
+
     protected attr_reader :controller
     protected attr_reader :options
 
@@ -36,9 +53,9 @@ module InertiaRails
       @controller = controller
       @options = attrs.extract!(*OPTION_NAMES)
 
-      unless attrs.empty?
-        raise ArgumentError, "Unknown options for #{self.class}: #{attrs.keys}"
-      end
+      return if attrs.empty?
+
+      raise ArgumentError, "Unknown options for #{self.class}: #{attrs.keys}"
     end
 
     def bind_controller(controller)
@@ -56,7 +73,7 @@ module InertiaRails
     end
 
     def merge(config)
-      Configuration.new(**@options.merge(config.options))
+      Configuration.new(**@options, **config.options)
     end
 
     # Internal: Finalizes the configuration for a specific controller.
@@ -70,23 +87,22 @@ module InertiaRails
     end
 
     OPTION_NAMES.each do |option|
-      define_method(option) {
-        evaluate_option @options[option]
-      } unless method_defined?(option)
-      define_method("#{option}=") { |value|
+      unless method_defined?(option)
+        define_method(option) do
+          evaluate_option options[option]
+        end
+      end
+      define_method("#{option}=") do |value|
         @options[option] = value
-      }
+      end
     end
 
-    def self.default
-      new(**DEFAULTS)
-    end
-
-  private
+    private
 
     def evaluate_option(value)
       return value unless value.respond_to?(:call)
       return value.call unless controller
+
       controller.instance_exec(&value)
     end
   end

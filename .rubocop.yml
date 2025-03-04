@@ -4,6 +4,12 @@ AllCops:
   TargetRubyVersion: 3.0
   NewCops: enable
   SuggestExtensions: false
+  Exclude:
+    - 'node_modules/**/*'
+    - 'tmp/**/*'
+    - 'vendor/**/*'
+    - '.git/**/*'
+    - 'docs/**/*'
 
 Metrics:
   Enabled: false
