@@ -3,23 +3,22 @@ module InertiaRails
     def inertia(*args, **options)
       path = args.any? ? args.first : options
       route, component = extract_route_and_component(path)
-      @scope = @scope.new(module: nil)
-      get(route, to: 'inertia_rails/static#static', defaults: { component: component }, **options)
-    ensure
-      @scope = @scope.parent
+      scope module: nil do
+        get(route, to: 'inertia_rails/static#static', defaults: { component: component }, **options)
+      end
     end
 
     private
 
-    def extract_route_and_component(args)
-      if args.is_a?(Hash)
-        args.first
+    def extract_route_and_component(path)
+      if path.is_a?(Hash)
+        path.first
       elsif resource_scope?
-        [args, InertiaRails.configuration.component_path_resolver(path: [@scope[:module], @scope[:controller]].compact.join('/'), action: args)]
+        [path, InertiaRails.configuration.component_path_resolver(path: [@scope[:module], @scope[:controller]].compact.join('/'), action: path)]
       elsif @scope[:module].blank?
-        [args, args]
+        [path, path]
       else
-        [args, InertiaRails.configuration.component_path_resolver(path: @scope[:module], action: args)]
+        [path, InertiaRails.configuration.component_path_resolver(path: @scope[:module], action: path)]
       end
     end
   end
