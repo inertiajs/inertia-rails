@@ -20,13 +20,15 @@ module InertiaRails
     )
 
     def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil, encrypt_history: nil, clear_history: nil)
+      raise ArgumentError, 'Parameter `props` is not allowed when passing a Hash as the first argument' if component.is_a?(Hash) && !props.nil?
+
       @controller = controller
       @configuration = controller.__send__(:inertia_configuration)
       @component = resolve_component(component)
       @request = request
       @response = response
       @render_method = render_method
-      @props = props || controller.__send__(:inertia_view_assigns)
+      @props = props || (component.is_a?(Hash) ? component : controller.__send__(:inertia_view_assigns))
       @view_data = view_data || {}
       @deep_merge = !deep_merge.nil? ? deep_merge : configuration.deep_merge_shared_data
       @encrypt_history = !encrypt_history.nil? ? encrypt_history : configuration.encrypt_history
@@ -165,9 +167,11 @@ module InertiaRails
     end
 
     def resolve_component(component)
-      return component unless component.is_a? TrueClass
-
-      configuration.component_path_resolver(path: controller.controller_path, action: controller.action_name)
+      if component == true || component.is_a?(Hash)
+        configuration.component_path_resolver(path: controller.controller_path, action: controller.action_name)
+      else
+        component
+      end
     end
 
     def keep_prop?(prop, path)

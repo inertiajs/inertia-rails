@@ -7,11 +7,6 @@ require 'patches/request'
 require 'patches/mapper'
 
 ActionController::Renderers.add :inertia do |component, options|
-  if component.is_a?(Hash) && options[:props].nil?
-    options[:props] = component
-    component = true
-  end
-
   InertiaRails::Renderer.new(
     component,
     self,
