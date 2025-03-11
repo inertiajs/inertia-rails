@@ -19,31 +19,41 @@ module InertiaRails
       :clear_history
     )
 
-    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil, deep_merge: nil, encrypt_history: nil, clear_history: nil)
+    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil,
+                   deep_merge: nil, encrypt_history: nil, clear_history: nil)
+      if component.is_a?(Hash) && !props.nil?
+        raise ArgumentError,
+              'Parameter `props` is not allowed when passing a Hash as the first argument'
+      end
+
       @controller = controller
       @configuration = controller.__send__(:inertia_configuration)
       @component = resolve_component(component)
       @request = request
       @response = response
       @render_method = render_method
-      @props = props || controller.__send__(:inertia_view_assigns)
+      @props = props || (component.is_a?(Hash) ? component : controller.__send__(:inertia_view_assigns))
       @view_data = view_data || {}
-      @deep_merge = !deep_merge.nil? ? deep_merge : configuration.deep_merge_shared_data
-      @encrypt_history = !encrypt_history.nil? ? encrypt_history : configuration.encrypt_history
+      @deep_merge = deep_merge.nil? ? configuration.deep_merge_shared_data : deep_merge
+      @encrypt_history = encrypt_history.nil? ? configuration.encrypt_history : encrypt_history
       @clear_history = clear_history || controller.session[:inertia_clear_history] || false
     end
 
     def render
-      if @response.headers["Vary"].blank?
-        @response.headers["Vary"] = 'X-Inertia'
-      else
-        @response.headers["Vary"] = "#{@response.headers["Vary"]}, X-Inertia"
-      end
+      @response.headers['Vary'] = if @response.headers['Vary'].blank?
+                                    'X-Inertia'
+                                  else
+                                    "#{@response.headers['Vary']}, X-Inertia"
+                                  end
       if @request.headers['X-Inertia']
         @response.set_header('X-Inertia', 'true')
         @render_method.call json: page.to_json, status: @response.status, content_type: Mime[:json]
       else
-        return render_ssr if configuration.ssr_enabled rescue nil
+        begin
+          return render_ssr if configuration.ssr_enabled
+        rescue StandardError
+          nil
+        end
         @render_method.call template: 'inertia', layout: layout, locals: view_data.merge(page: page)
       end
     end
@@ -54,7 +64,7 @@ module InertiaRails
       uri = URI("#{configuration.ssr_url}/render")
       res = JSON.parse(Net::HTTP.post(uri, page.to_json, 'Content-Type' => 'application/json').body)
 
-      controller.instance_variable_set("@_inertia_ssr_head", res['head'].join.html_safe)
+      controller.instance_variable_set('@_inertia_ssr_head', res['head'].join.html_safe)
       @render_method.call html: res['body'].html_safe, layout: layout, locals: view_data.merge(page: page)
     end
 
@@ -81,19 +91,19 @@ module InertiaRails
     end
 
     def computed_props
-      _props = merge_props(shared_data, props)
+      merged_props = merge_props(shared_data, props)
 
-      deep_transform_props _props do |prop, path|
+      deep_transform_props merged_props do |prop, path|
         next [DONT_KEEP_PROP] unless keep_prop?(prop, path)
 
         transformed_prop = case prop
-        when BaseProp
-          prop.call(controller)
-        when Proc
-          controller.instance_exec(&prop)
-        else
-          prop
-        end
+                           when BaseProp
+                             prop.call(controller)
+                           when Proc
+                             controller.instance_exec(&prop)
+                           else
+                             prop
+                           end
 
         [KEEP_PROP, transformed_prop]
       end
@@ -119,7 +129,7 @@ module InertiaRails
     end
 
     def deep_transform_props(props, parent_path = [], &block)
-      props.reduce({}) do |transformed_props, (key, prop)|
+      props.each_with_object({}) do |(key, prop), transformed_props|
         current_path = parent_path + [key]
 
         if prop.is_a?(Hash) && prop.any?
@@ -129,8 +139,6 @@ module InertiaRails
           action, transformed_prop = block.call(prop, current_path)
           transformed_props.merge!(key => transformed_prop) if action == KEEP_PROP
         end
-
-        transformed_props
       end
     end
 
@@ -165,9 +173,11 @@ module InertiaRails
     end
 
     def resolve_component(component)
-      return component unless component.is_a? TrueClass
-
-      configuration.component_path_resolver(path: controller.controller_path, action: controller.action_name)
+      if component == true || component.is_a?(Hash)
+        configuration.component_path_resolver(path: controller.controller_path, action: controller.action_name)
+      else
+        component
+      end
     end
 
     def keep_prop?(prop, path)
