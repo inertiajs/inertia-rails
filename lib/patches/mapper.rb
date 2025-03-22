@@ -3,9 +3,7 @@ module InertiaRails
     def inertia(*args, **options)
       path = args.any? ? args.first : options
       route, component = extract_route_and_component(path)
-      scope module: nil do
-        get(route, to: 'inertia_rails/static#static', defaults: { component: component }, **options)
-      end
+      get(route, to: StaticController.action(:static), defaults: { component: component }, **options)
     end
 
     private
