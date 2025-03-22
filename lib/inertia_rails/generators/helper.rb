@@ -4,7 +4,9 @@ module InertiaRails
   module Generators
     module Helper
       class << self
-        def guess_the_default_framework(package_json_path = Rails.root.join('package.json'))
+        DEFAULT_PACKAGE_PATH = Rails.root.join('package.json')
+
+        def guess_the_default_framework(package_json_path = DEFAULT_PACKAGE_PATH)
           package_json = JSON.parse(package_json_path.read)
           dependencies = package_json['dependencies'] || {}
 
@@ -25,8 +27,8 @@ module InertiaRails
           Rails.root.join('tsconfig.json').exist?
         end
 
-        def guess_inertia_template
-          if Rails.root.join('tailwind.config.js').exist? || Rails.root.join('tailwind.config.ts').exist?
+        def guess_inertia_template(package_json_path = DEFAULT_PACKAGE_PATH)
+          if package_json_path.read.include?('"tailwindcss"')
             'inertia_tw_templates'
           else
             'inertia_templates'

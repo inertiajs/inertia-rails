@@ -34,4 +34,19 @@ RSpec.describe InertiaRails::Generators::Helper, type: :helper do
       end
     end
   end
+
+  describe '#guess_inertia_template' do
+    let(:package_json_path) { Pathname.new(File.expand_path("spec/fixtures/package_json_files/#{fixture_file_name}", Dir.pwd)) }
+
+    shared_examples 'template detection' do |file_name, expected_template|
+      let(:fixture_file_name) { file_name }
+
+      it "returns #{expected_template.inspect} when inspect \"#{file_name}\"" do
+        expect(described_class.guess_inertia_template(package_json_path)).to eq(expected_template)
+      end
+    end
+
+    it_behaves_like 'template detection', 'tailwind_package.json', 'inertia_tw_templates'
+    it_behaves_like 'template detection', 'empty_package.json', 'inertia_templates'
+  end
 end
