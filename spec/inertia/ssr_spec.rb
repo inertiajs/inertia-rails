@@ -3,13 +3,7 @@ require 'ostruct'
 
 RSpec.describe 'inertia ssr', type: :request do
   context 'ssr is enabled' do
-    before do
-      InertiaRails.configure do |config|
-        config.ssr_enabled = true
-        config.ssr_url = 'ssr-url'
-        config.version = '1.0'
-      end
-    end
+    with_inertia_config ssr_enabled: true, ssr_url: 'ssr-url', version: '1.0'
 
     context 'with a successful ssr response' do
       before do

@@ -70,12 +70,8 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
     end
 
     context 'with deep merge configured as the default' do
-      before {
-        InertiaRails.configure { |config| config.deep_merge_shared_data = true }
-      }
-      after {
-        InertiaRails.configure { |config| config.deep_merge_shared_data = false }
-      }
+      with_inertia_config deep_merge_shared_data: true
+
       describe 'deep merging by default' do
         let(:props) { { nested: { goals: 100, assists: 200 } } }
         before { get merge_shared_path, headers: {'X-Inertia' => true} }
