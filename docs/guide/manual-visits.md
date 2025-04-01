@@ -400,6 +400,104 @@ router.get('/users', { search: 'John' }, { replace: true })
 > [!NOTE]
 > Visits made to the same URL automatically set `replace` to `true`.
 
+# Client side visits
+
+You can use the `router.push` and `router.replace` method to make client-side visits. This method is useful when you want to update the browser's history without making a server request.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.push({
+  url: '/users',
+  component: 'Users',
+  props: { search: 'John' },
+  clearHistory: false,
+  encryptHistory: false,
+  preserveScroll: false,
+  preserveState: false,
+})
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+
+router.push({
+  url: '/users',
+  component: 'Users',
+  props: { search: 'John' },
+  clearHistory: false,
+  encryptHistory: false,
+  preserveScroll: false,
+  preserveState: false,
+})
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.push({
+  url: '/users',
+  component: 'Users',
+  props: { search: 'John' },
+  clearHistory: false,
+  encryptHistory: false,
+  preserveScroll: false,
+  preserveState: false,
+})
+```
+
+:::
+
+All the parameters are optional. By default, all passed parameters will be merged with the current page. This means you are responsible for overriding the current page's URL, component, and props.
+
+If you need access to the current page's props you can pass a function to the props option. This function will receive the current page's props as an argument and should return the new props.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.push({ url: '/users', component: 'Users' })
+router.replace({
+  props: (currentProps) => ({ ...currentProps, search: 'John' }),
+})
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+
+router.push({ url: '/users', component: 'Users' })
+router.replace({
+  props: (currentProps) => ({ ...currentProps, search: 'John' }),
+})
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.push({ url: '/users', component: 'Users' })
+router.replace({
+  props: (currentProps) => ({ ...currentProps, search: 'John' }),
+})
+```
+
+:::
+
+> [!NOTE]
+> Make sure that any route you push on the client side is also defined on the server side. If the user refreshes the page, the server will need to know how to render the page.
+
 ## State preservation
 
 By default, page visits to the same page create a fresh page component instance. This causes any local state, such as form inputs, scroll positions, and focus states to be lost.
