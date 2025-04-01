@@ -1,5 +1,4 @@
-require 'net/http'
-require 'ostruct'
+# frozen_string_literal: true
 
 RSpec.describe 'inertia ssr', type: :request do
   context 'ssr is enabled' do
@@ -8,24 +7,24 @@ RSpec.describe 'inertia ssr', type: :request do
     context 'with a successful ssr response' do
       before do
         allow(Net::HTTP).to receive(:post)
-        .with(
-          URI('ssr-url/render'),
-          {
-            component: 'TestComponent',
-            props: {name: 'Brandon', sport: 'hockey'},
-            url: props_path,
-            version: '1.0',
-            encryptHistory: false,
-            clearHistory: false,
-          }.to_json,
-          'Content-Type' => 'application/json'
-        )
-        .and_return(OpenStruct.new(
-          body: {
-            body: '<div>Test works</div>',
-            head: ['<title>Title works</title>'],
-          }.to_json
-        ))
+          .with(
+            URI('ssr-url/render'),
+            {
+              component: 'TestComponent',
+              props: { name: 'Brandon', sport: 'hockey' },
+              url: props_path,
+              version: '1.0',
+              encryptHistory: false,
+              clearHistory: false,
+            }.to_json,
+            'Content-Type' => 'application/json'
+          )
+          .and_return(double(
+                        body: {
+                          body: '<div>Test works</div>',
+                          head: ['<title>Title works</title>'],
+                        }.to_json
+                      ))
       end
 
       it 'returns the result of the ssr call' do
@@ -37,7 +36,7 @@ RSpec.describe 'inertia ssr', type: :request do
       end
 
       it 'allows inertia to take over when inertia headers are passed' do
-        get props_path, headers: {'X-Inertia' => true, 'X-Inertia-Version' => '1.0'}
+        get props_path, headers: { 'X-Inertia' => true, 'X-Inertia-Version' => '1.0' }
 
         expect(response.headers['Vary']).to eq 'X-Inertia'
         expect(response.headers['Content-Type']).to eq 'application/json; charset=utf-8'
@@ -47,19 +46,19 @@ RSpec.describe 'inertia ssr', type: :request do
     context 'the ssr server fails for some reason' do
       before do
         allow(Net::HTTP).to receive(:post)
-        .with(
-          URI('ssr-url/render'),
-          {
-            component: 'TestComponent',
-            props: {name: 'Brandon', sport: 'hockey'},
-            url: props_path,
-            version: '1.0',
-            encryptHistory: false,
-            clearHistory: false,
-          }.to_json,
-          'Content-Type' => 'application/json'
-        )
-        .and_raise('uh oh')
+          .with(
+            URI('ssr-url/render'),
+            {
+              component: 'TestComponent',
+              props: { name: 'Brandon', sport: 'hockey' },
+              url: props_path,
+              version: '1.0',
+              encryptHistory: false,
+              clearHistory: false,
+            }.to_json,
+            'Content-Type' => 'application/json'
+          )
+          .and_raise('uh oh')
       end
 
       it 'renders inertia without ssr as a fallback' do
