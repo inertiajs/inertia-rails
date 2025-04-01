@@ -47,7 +47,7 @@ module InertiaRails
       end
 
       def non_get_redirectable_method?
-        ['PUT', 'PATCH', 'DELETE'].include? request_method
+        %w[PUT PATCH DELETE].include? request_method
       end
 
       def inertia_non_post_redirect?(status)
@@ -63,7 +63,7 @@ module InertiaRails
       end
 
       def controller
-        @env["action_controller.instance"]
+        @env['action_controller.instance']
       end
 
       def request_method
@@ -83,7 +83,7 @@ module InertiaRails
       end
 
       def server_version
-        controller&.send(:inertia_configuration)&.version
+        (controller&.send(:inertia_configuration) || InertiaRails.configuration).version
       end
 
       def coerce_version(version)
@@ -92,7 +92,7 @@ module InertiaRails
 
       def force_refresh(request)
         request.flash.keep
-        Rack::Response.new('', 409, {'X-Inertia-Location' => request.original_url}).finish
+        Rack::Response.new('', 409, { 'X-Inertia-Location' => request.original_url }).finish
       end
 
       def copy_xsrf_to_csrf!
