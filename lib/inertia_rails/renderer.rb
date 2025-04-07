@@ -37,6 +37,7 @@ module InertiaRails
       @deep_merge = deep_merge.nil? ? configuration.deep_merge_shared_data : deep_merge
       @encrypt_history = encrypt_history.nil? ? configuration.encrypt_history : encrypt_history
       @clear_history = clear_history || controller.session[:inertia_clear_history] || false
+      @controller.instance_variable_set('@_inertia_rendering', true)
     end
 
     def render
