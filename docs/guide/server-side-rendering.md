@@ -127,6 +127,81 @@ createServer((page) =>
 
 When creating this file, be sure to add anything that's missing from your regular initialization file that makes sense to run in SSR mode, such as plugins or custom mixins.
 
+## Clustering
+
+> Requires `@inertiajs/core` v2.0.7 or higher.
+
+By default, the SSR server will run on a single thread. Clustering starts multiple Node servers on the same port, requests are then handled by each thread in a round-robin way.
+
+You can enable clustering by passing a second argument to `createServer`:
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { createInertiaApp } from '@inertiajs/vue3'
+import createServer from '@inertiajs/vue3/server'
+import { renderToString } from '@vue/server-renderer'
+import { createSSRApp, h } from 'vue'
+
+createServer(
+  (page) =>
+    createInertiaApp({
+      // ...
+    }),
+  { cluster: true },
+)
+```
+
+== React
+
+```js
+import { createInertiaApp } from '@inertiajs/react'
+import createServer from '@inertiajs/react/server'
+import ReactDOMServer from 'react-dom/server'
+
+createServer(
+  (page) =>
+    createInertiaApp({
+      // ...
+    }),
+  { cluster: true },
+)
+```
+
+== Svelte 4
+
+```js
+import { createInertiaApp } from '@inertiajs/svelte'
+import createServer from '@inertiajs/svelte/server'
+
+createServer(
+  (page) =>
+    createInertiaApp({
+      // ...
+    }),
+  { cluster: true },
+)
+```
+
+== Svelte 5
+
+```js
+import { createInertiaApp } from '@inertiajs/svelte'
+import createServer from '@inertiajs/svelte/server'
+import { render } from 'svelte/server'
+
+createServer(
+  (page) =>
+    createInertiaApp({
+      // ...
+    }),
+  { cluster: true },
+)
+```
+
+:::
+
 ## Setup Vite Ruby
 
 Next, we need to update our Vite configuration to build our new `ssr.js` file. We can do this by adding a `ssrBuildEnabled` property to Ruby Vite plugin configuration in the `config/vite.json` file.
