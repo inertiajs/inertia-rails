@@ -11,4 +11,8 @@ module InertiaRails::Helper
     )
     inertia_ssr_head
   end
+
+  def inertia_rendering?
+    controller.instance_variable_get("@_inertia_rendering")
+  end
 end
