@@ -6,9 +6,6 @@ require_relative 'inertia_rails'
 
 module InertiaRails
   class Renderer
-    KEEP_PROP = :keep
-    DONT_KEEP_PROP = :dont_keep
-
     attr_reader(
       :component,
       :configuration,
@@ -82,31 +79,17 @@ module InertiaRails
     #
     # Functionally, this permits using either string or symbol keys in the controller. Since the results
     # is cast to json, we should treat string/symbol keys as identical.
-    def merge_props(shared_data, props)
+    def merge_props(shared_props, props)
       if @deep_merge
-        shared_data.deep_symbolize_keys.deep_merge!(props.deep_symbolize_keys)
+        shared_props.deep_symbolize_keys.deep_merge!(props.deep_symbolize_keys)
       else
-        shared_data.symbolize_keys.merge(props.symbolize_keys)
+        shared_props.symbolize_keys.merge(props.symbolize_keys)
       end
     end
 
     def computed_props
       merged_props = merge_props(shared_data, props)
-
-      deep_transform_props merged_props do |prop, path|
-        next [DONT_KEEP_PROP] unless keep_prop?(prop, path)
-
-        transformed_prop = case prop
-                           when BaseProp
-                             prop.call(controller)
-                           when Proc
-                             controller.instance_exec(&prop)
-                           else
-                             prop
-                           end
-
-        [KEEP_PROP, transformed_prop]
-      end
+      deep_transform_props(merged_props)
     end
 
     def page
@@ -128,16 +111,23 @@ module InertiaRails
       default_page
     end
 
-    def deep_transform_props(props, parent_path = [], &block)
+    def deep_transform_props(props, parent_path = [])
       props.each_with_object({}) do |(key, prop), transformed_props|
         current_path = parent_path + [key]
 
         if prop.is_a?(Hash) && prop.any?
-          nested = deep_transform_props(prop, current_path, &block)
-          transformed_props.merge!(key => nested) unless nested.empty?
-        else
-          action, transformed_prop = block.call(prop, current_path)
-          transformed_props.merge!(key => transformed_prop) if action == KEEP_PROP
+          nested = deep_transform_props(prop, current_path)
+          transformed_props[key] = nested unless nested.empty?
+        elsif keep_prop?(prop, current_path)
+          transformed_props[key] =
+            case prop
+            when BaseProp
+              prop.call(controller)
+            when Proc
+              controller.instance_exec(&prop)
+            else
+              prop
+            end
         end
       end
     end
