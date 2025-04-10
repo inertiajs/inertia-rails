@@ -105,8 +105,10 @@ class InertiaRenderTestController < ApplicationController
   def merge_props
     render inertia: 'TestComponent', props: {
       merge: InertiaRails.merge { 'merge prop' },
+      deep_merge: InertiaRails.deep_merge { {deep: 'merge prop'} },
       regular: 'regular prop',
       deferred_merge: InertiaRails.defer(merge: true) { 'deferred and merge prop' },
+      deferred_deep_merge: InertiaRails.defer(deep_merge: true) { {deep: 'deferred and merge prop'} },
       deferred: InertiaRails.defer { 'deferred' },
     }
   end

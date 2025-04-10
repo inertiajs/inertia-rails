@@ -513,23 +513,25 @@ RSpec.describe 'rendering inertia views', type: :request do
     before { get merge_props_path, headers: headers }
 
     it 'returns non-optional props and meta on first load' do
-      expect(response.parsed_body['props']).to eq('merge' => 'merge prop', 'regular' => 'regular prop')
+      expect(response.parsed_body['props']).to eq('merge' => 'merge prop', 'deep_merge' => { 'deep' => 'merge prop' }, 'regular' => 'regular prop')
       expect(response.parsed_body['mergeProps']).to match_array(%w[merge deferred_merge])
-      expect(response.parsed_body['deferredProps']).to eq('default' => %w[deferred_merge deferred])
+      expect(response.parsed_body['deepMergeProps']).to match_array(%w[deep_merge deferred_deep_merge])
+      expect(response.parsed_body['deferredProps']).to eq('default' => %w[deferred_merge deferred_deep_merge deferred])
     end
 
     context 'with a partial reload' do
       let(:headers) do
         {
           'X-Inertia' => true,
-          'X-Inertia-Partial-Data' => 'deferred_merge',
+          'X-Inertia-Partial-Data' => 'deferred_merge,deferred_deep_merge',
           'X-Inertia-Partial-Component' => 'TestComponent',
         }
       end
 
       it 'returns listed and merge props' do
-        expect(response.parsed_body['props']).to eq({ 'deferred_merge' => 'deferred and merge prop' })
+        expect(response.parsed_body['props']).to eq({ 'deferred_merge' => 'deferred and merge prop', 'deferred_deep_merge' => { 'deep' => 'deferred and merge prop' } })
         expect(response.parsed_body['mergeProps']).to match_array(%w[merge deferred_merge])
+        expect(response.parsed_body['deepMergeProps']).to match_array(%w[deep_merge deferred_deep_merge])
         expect(response.parsed_body['deferredProps']).to be_nil
       end
     end
@@ -538,14 +540,14 @@ RSpec.describe 'rendering inertia views', type: :request do
       let(:headers) do
         {
           'X-Inertia' => true,
-          'X-Inertia-Partial-Data' => 'deferred_merge',
+          'X-Inertia-Partial-Data' => 'deferred_merge,deferred_deep_merge',
           'X-Inertia-Partial-Component' => 'TestComponent',
-          'X-Inertia-Reset' => 'deferred_merge',
+          'X-Inertia-Reset' => 'deferred_merge,deferred_deep_merge',
         }
       end
 
       it 'returns listed and merge props' do
-        expect(response.parsed_body['props']).to eq({ 'deferred_merge' => 'deferred and merge prop' })
+        expect(response.parsed_body['props']).to eq({ 'deferred_merge' => 'deferred and merge prop', 'deferred_deep_merge' => { 'deep' => 'deferred and merge prop' } })
         expect(response.parsed_body['mergeProps']).to match_array(%w[merge])
         expect(response.parsed_body['deferredProps']).to be_nil
       end

@@ -35,8 +35,12 @@ module InertiaRails
       MergeProp.new(&block)
     end
 
-    def defer(group: nil, merge: nil, &block)
-      DeferProp.new(group: group, merge: merge, &block)
+    def deep_merge(&block)
+      MergeProp.new(deep_merge: true, &block)
+    end
+
+    def defer(group: nil, merge: nil, deep_merge: nil, &block)
+      DeferProp.new(group: group, merge: merge, deep_merge: deep_merge, &block)
     end
   end
 end
