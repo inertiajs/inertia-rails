@@ -42,6 +42,7 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide' },
       { text: 'Cookbook', link: '/cookbook/integrating-shadcn-ui' },
+      { text: 'Awesome', link: '/awesome' },
       {
         text: 'Links',
         items: [
