@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'inertia_rails/base_prop'
 require 'inertia_rails/ignore_on_first_load_prop'
 require 'inertia_rails/always_prop'

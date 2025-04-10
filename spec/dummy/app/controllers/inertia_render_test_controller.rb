@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 class InertiaRenderTestController < ApplicationController
-  
   def props
     render inertia: 'TestComponent', props: {
       name: 'Brandon',
-      sport: -> { 'hockey' }
+      sport: -> { 'hockey' },
     }
   end
 
@@ -18,9 +19,9 @@ class InertiaRenderTestController < ApplicationController
       end,
       nested: {
         first: 'first nested param',
-        second: 'second nested param'
+        second: 'second nested param',
       },
-      always: InertiaRails.always { 'always prop' }
+      always: InertiaRails.always { 'always prop' },
     }
   end
 
@@ -36,10 +37,10 @@ class InertiaRenderTestController < ApplicationController
       nested: {
         first: 'first nested param',
         second: 'second nested param',
-        evaluated: -> do
+        evaluated: lambda do
           {
             first: 'first evaluated nested param',
-            second: 'second evaluated nested param'
+            second: 'second evaluated nested param',
           }
         end,
         deeply_nested: {
@@ -48,10 +49,10 @@ class InertiaRenderTestController < ApplicationController
           what_about_nil: nil,
           what_about_empty_hash: {},
           deeply_nested_always: InertiaRails.always { 'deeply nested always prop' },
-          deeply_nested_lazy: InertiaRails.lazy { 'deeply nested lazy prop' }
-        }
+          deeply_nested_lazy: InertiaRails.lazy { 'deeply nested lazy prop' },
+        },
       },
-      always: InertiaRails.always { 'always prop' }
+      always: InertiaRails.always { 'always prop' },
     }
   end
 
@@ -79,7 +80,7 @@ class InertiaRenderTestController < ApplicationController
       level: InertiaRails.lazy do
         'worse than he believes'
       end,
-      grit: InertiaRails.lazy(->{ 'intense' })
+      grit: InertiaRails.lazy(-> { 'intense' }),
     }
   end
 
@@ -98,17 +99,17 @@ class InertiaRenderTestController < ApplicationController
       optional: InertiaRails.optional do
         'optional prop'
       end,
-      another_optional: InertiaRails.optional { 'another optional prop' }
+      another_optional: InertiaRails.optional { 'another optional prop' },
     }
   end
 
   def merge_props
     render inertia: 'TestComponent', props: {
       merge: InertiaRails.merge { 'merge prop' },
-      deep_merge: InertiaRails.deep_merge { {deep: 'merge prop'} },
+      deep_merge: InertiaRails.deep_merge { { deep: 'merge prop' } },
       regular: 'regular prop',
       deferred_merge: InertiaRails.defer(merge: true) { 'deferred and merge prop' },
-      deferred_deep_merge: InertiaRails.defer(deep_merge: true) { {deep: 'deferred and merge prop'} },
+      deferred_deep_merge: InertiaRails.defer(deep_merge: true) { { deep: 'deferred and merge prop' } },
       deferred: InertiaRails.defer { 'deferred' },
     }
   end
@@ -120,7 +121,7 @@ class InertiaRenderTestController < ApplicationController
       level: InertiaRails.defer do
         'worse than he believes'
       end,
-      grit: InertiaRails.defer { 'intense' }
+      grit: InertiaRails.defer { 'intense' },
     }
   end
 end
