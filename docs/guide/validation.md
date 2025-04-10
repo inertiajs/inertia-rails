@@ -107,17 +107,17 @@ export default function Edit() {
 
   return (
     <form onSubmit={handleSubmit}>
-      <label for="first_name">First name:</label>
+      <label htmlFor="first_name">First name:</label>
       <input
         id="first_name"
         value={values.first_name}
         onChange={handleChange}
       />
       {errors.first_name && <div>{errors.first_name}</div>}
-      <label for="last_name">Last name:</label>
+      <label htmlFor="last_name">Last name:</label>
       <input id="last_name" value={values.last_name} onChange={handleChange} />
       {errors.last_name && <div>{errors.last_name}</div>}
-      <label for="email">Email:</label>
+      <label htmlFor="email">Email:</label>
       <input id="email" value={values.email} onChange={handleChange} />
       {errors.email && <div>{errors.email}</div>}
       <button type="submit">Submit</button>

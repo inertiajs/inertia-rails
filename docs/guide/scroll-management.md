@@ -149,7 +149,7 @@ If your app doesn't use document body scrolling, but instead has scrollable elem
 In these situations, you must tell Inertia which scrollable elements to manage by adding the `scroll-region` attribute to the element.
 
 ```html
-<div class="overflow-y-auto" scroll-region>
+<div class="overflow-y-auto" scroll-region="">
   <!-- Your page content -->
 </div>
 ```

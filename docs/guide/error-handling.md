@@ -23,12 +23,12 @@ class ApplicationController < ActionController::Base
 
     status = ActionDispatch::ExceptionWrapper.new(nil, exception).status_code
 
-    render inertia: 'Error', props: { status: }, status:
+    render inertia: 'ErrorPage', props: { status: }, status:
   end
 end
 ```
 
-You may have noticed we're returning an `Error` page component in the example above. You'll need to actually create this component, which will serve as the generic error page for your application. Here's an example error component you can use as a starting point.
+You may have noticed we're returning an `ErrorPage` page component in the example above. You'll need to actually create this component, which will serve as the generic error page for your application. Here's an example error component you can use as a starting point.
 
 :::tabs key:frameworks
 == Vue
