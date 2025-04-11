@@ -154,6 +154,15 @@ export default defineConfig({
                 { text: 'shadcn/ui', link: '/cookbook/integrating-shadcn-ui' },
               ],
             },
+            {
+              text: 'Troubleshooting',
+              items: [
+                {
+                  text: 'Rails validation error types',
+                  link: '/cookbook/handling-validation-error-types',
+                },
+              ],
+            },
           ],
         },
       ],
