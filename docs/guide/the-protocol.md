@@ -26,7 +26,7 @@ Content-Type: text/html; charset=utf-8
 </head>
 <body>
 
-<div id="app" data-page='{"component":"Event","props":{"event":{"id":80,"title":"Birthday party","start_date":"2019-06-02","description":"Come out and celebrate Jonathan&apos;s 36th birthday party!"}},"url":"/events/80","version":"c32b8e4965f418ad16eaebba1d4e960f"}'></div>
+<div id="app" data-page='{"component":"Event","props":{"errors":{},"event":{"id":80,"title":"Birthday party","start_date":"2019-06-02","description":"Come out and celebrate Jonathan&apos;s 36th birthday party!"}},"url":"/events/80","version":"c32b8e4965f418ad16eaebba1d4e960f"}'></div>
 
 </body>
 </html>
@@ -58,6 +58,7 @@ X-Inertia: true
 {
   "component": "Event",
   "props": {
+    "errors": {},
     "event": {
       "id": 80,
       "title": "Birthday party",
@@ -77,7 +78,7 @@ X-Inertia: true
 Inertia shares data between the server and client via a page object. This object includes the necessary information required to render the page component, update the browser's history state, and track the site's asset version. The page object includes the following four properties:
 
 1. `component`: The name of the JavaScript page component.
-2. `props`: The page props (data).
+2. `props`: The page props. Contains all of the page data along with an `errors` object (defaults to `{}` if there are no errors).
 3. `url`: The page URL.
 4. `version`: The current asset version.
 5. `encryptHistory`: Whether or not to encrypt the current page's history state.
@@ -116,11 +117,13 @@ X-Inertia-Location: http://example.com/events/80
 
 When making Inertia requests, the partial reload option allows you to request a subset of the props (data) from the server on subsequent visits to the same page component. This can be a helpful performance optimization if it's acceptable that some page data becomes stale.
 
-When a partial reload request is made, Inertia includes two additional headers with the request: `X-Inertia-Partial-Data` and `X-Inertia-Partial-Component`.
+When a partial reload request is made, Inertia includes the `X-Inertia-Partial-Component` header and may include `X-Inertia-Partial-Data` and/or `X-Inertia-Partial-Except` headers with the request.
 
 The `X-Inertia-Partial-Data` header is a comma separated list of the desired props (data) keys that should be returned.
 
-The `X-Inertia-Partial-Component` header includes the name of the component that is being partially reloaded. This is necessary, since partial reloads only work for requests made to the same page component. If the final destination is different for some reason (eg. the user was logged out and is now on the login page), then no partial reloading will occur.
+The `X-Inertia-Partial-Except` header is a comma separated list of the props (data) keys that should not be returned. When only the `X-Inertia-Partial-Except` header is included, all props (data) except those listed will be sent. If both `X-Inertia-Partial-Data` and `X-Inertia-Partial-Except` headers are included, the `X-Inertia-Partial-Except` header will take precedence.
+
+The `X-Inertia-Partial-Component` header includes the name of the component that is being partially reloaded. This is necessary, since partial reloads only work for requests made to the same page component. If the final destination is different for some reason (e.g. the user was logged out and is now on the login page), then no partial reloading will occur.
 
 ```http
 REQUEST
@@ -141,7 +144,8 @@ Content-Type: application/json
   "props": {
     "auth": {...},       // NOT included
     "categories": [...], // NOT included
-    "events": [...]      // included
+    "events": [...],     // included
+    "errors": {}         // always included
   },
   "url": "/events/80",
   "version": "c32b8e4965f418ad16eaebba1d4e960f"
