@@ -16,6 +16,7 @@ react:
     "tsconfig.app.json": "tsconfig.app.json"
     "tsconfig.node.json": "tsconfig.node.json"
     "vite-env.d.ts": "%{js_destination_path}/vite-env.d.ts"
+    "inertia-rails.d.ts": "%{js_destination_path}/types/inertia-rails.d.ts"
   copy_files_js:
     "InertiaExample.jsx": "%{js_destination_path}/pages/InertiaExample.jsx"
   copy_files:
@@ -44,6 +45,7 @@ vue:
     "tsconfig.app.json": "tsconfig.app.json"
     "tsconfig.node.json": "tsconfig.node.json"
     "vite-env.d.ts": "%{js_destination_path}/vite-env.d.ts"
+    "inertia-rails.d.ts": "%{js_destination_path}/types/inertia-rails.d.ts"
   copy_files_js:
     "InertiaExample.vue": "%{js_destination_path}/pages/InertiaExample.vue"
 
@@ -64,6 +66,7 @@ svelte4:
     "tsconfig.json": "tsconfig.json"
     "tsconfig.node.json": "tsconfig.node.json"
     "vite-env.d.ts": "%{js_destination_path}/vite-env.d.ts"
+    "inertia-rails.d.ts": "%{js_destination_path}/types/inertia-rails.d.ts"
   copy_files_js:
     "InertiaExample.svelte": "%{js_destination_path}/pages/InertiaExample.svelte"
   copy_files:
@@ -89,6 +92,7 @@ svelte:
     "tsconfig.json": "tsconfig.json"
     "tsconfig.node.json": "tsconfig.node.json"
     "vite-env.d.ts": "%{js_destination_path}/vite-env.d.ts"
+    "inertia-rails.d.ts": "%{js_destination_path}/types/inertia-rails.d.ts"
   copy_files_js:
     "InertiaExample.svelte": "%{js_destination_path}/pages/InertiaExample.svelte"
   copy_files:
