@@ -83,7 +83,10 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
 
     context 'with a default component' do
-      let(:page) { InertiaRails::Renderer.new('inertia_route_with_default_component', controller, request, response, '').send(:page) }
+      let(:page) do
+        InertiaRails::Renderer.new('inertia_route_with_default_component', controller, request, response,
+                                   '').send(:page)
+      end
 
       before { get inertia_route_with_default_component_path }
 
@@ -91,7 +94,10 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
 
     context 'with a default component resource' do
-      let(:page) { InertiaRails::Renderer.new('items/inertia_route_with_default_component', controller, request, response, '').send(:page) }
+      let(:page) do
+        InertiaRails::Renderer.new('items/inertia_route_with_default_component', controller, request, response,
+                                   '').send(:page)
+      end
 
       before { get item_inertia_route_with_default_component_path(item_id: 1) }
 
@@ -99,7 +105,11 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
 
     context 'with a default component resource on member' do
-      let(:page) { InertiaRails::Renderer.new('items/inertia_route_with_default_component_on_member', controller, request, response, '').send(:page) }
+      let(:page) do
+        InertiaRails::Renderer.new(
+          'items/inertia_route_with_default_component_on_member', controller, request, response, ''
+        ).send(:page)
+      end
 
       before { get inertia_route_with_default_component_on_member_item_path(id: 1) }
 
@@ -107,7 +117,11 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
 
     context 'with a default component resource on collection' do
-      let(:page) { InertiaRails::Renderer.new('items/inertia_route_with_default_component_on_collection', controller, request, response, '').send(:page) }
+      let(:page) do
+        InertiaRails::Renderer.new(
+          'items/inertia_route_with_default_component_on_collection', controller, request, response, ''
+        ).send(:page)
+      end
 
       before { get inertia_route_with_default_component_on_collection_items_path }
 
@@ -115,7 +129,10 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
 
     context 'with a default component resource & scoped' do
-      let(:page) { InertiaRails::Renderer.new('items/inertia_route_with_default_component', controller, request, response, '').send(:page) }
+      let(:page) do
+        InertiaRails::Renderer.new('items/inertia_route_with_default_component', controller, request, response,
+                                   '').send(:page)
+      end
 
       before { get scoped_item_inertia_route_with_default_component_path(item_id: 1) }
 
@@ -513,23 +530,29 @@ RSpec.describe 'rendering inertia views', type: :request do
     before { get merge_props_path, headers: headers }
 
     it 'returns non-optional props and meta on first load' do
-      expect(response.parsed_body['props']).to eq('merge' => 'merge prop', 'regular' => 'regular prop')
+      expect(response.parsed_body['props']).to eq('merge' => 'merge prop', 'deep_merge' => { 'deep' => 'merge prop' },
+                                                  'regular' => 'regular prop')
       expect(response.parsed_body['mergeProps']).to match_array(%w[merge deferred_merge])
-      expect(response.parsed_body['deferredProps']).to eq('default' => %w[deferred_merge deferred])
+      expect(response.parsed_body['deepMergeProps']).to match_array(%w[deep_merge deferred_deep_merge])
+      expect(response.parsed_body['deferredProps']).to eq('default' => %w[deferred_merge deferred_deep_merge deferred])
     end
 
     context 'with a partial reload' do
       let(:headers) do
         {
           'X-Inertia' => true,
-          'X-Inertia-Partial-Data' => 'deferred_merge',
+          'X-Inertia-Partial-Data' => 'deferred_merge,deferred_deep_merge',
           'X-Inertia-Partial-Component' => 'TestComponent',
         }
       end
 
       it 'returns listed and merge props' do
-        expect(response.parsed_body['props']).to eq({ 'deferred_merge' => 'deferred and merge prop' })
+        expect(response.parsed_body['props']).to eq(
+          'deferred_merge' => 'deferred and merge prop',
+          'deferred_deep_merge' => { 'deep' => 'deferred and merge prop' }
+        )
         expect(response.parsed_body['mergeProps']).to match_array(%w[merge deferred_merge])
+        expect(response.parsed_body['deepMergeProps']).to match_array(%w[deep_merge deferred_deep_merge])
         expect(response.parsed_body['deferredProps']).to be_nil
       end
     end
@@ -538,14 +561,17 @@ RSpec.describe 'rendering inertia views', type: :request do
       let(:headers) do
         {
           'X-Inertia' => true,
-          'X-Inertia-Partial-Data' => 'deferred_merge',
+          'X-Inertia-Partial-Data' => 'deferred_merge,deferred_deep_merge',
           'X-Inertia-Partial-Component' => 'TestComponent',
-          'X-Inertia-Reset' => 'deferred_merge',
+          'X-Inertia-Reset' => 'deferred_merge,deferred_deep_merge',
         }
       end
 
       it 'returns listed and merge props' do
-        expect(response.parsed_body['props']).to eq({ 'deferred_merge' => 'deferred and merge prop' })
+        expect(response.parsed_body['props']).to eq(
+          'deferred_merge' => 'deferred and merge prop',
+          'deferred_deep_merge' => { 'deep' => 'deferred and merge prop' }
+        )
         expect(response.parsed_body['mergeProps']).to match_array(%w[merge])
         expect(response.parsed_body['deferredProps']).to be_nil
       end

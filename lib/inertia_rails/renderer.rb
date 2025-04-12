@@ -106,8 +106,14 @@ module InertiaRails
       deferred_props = deferred_props_keys
       default_page[:deferredProps] = deferred_props if deferred_props.present?
 
-      merge_props = merge_props_keys
+      all_merge_props = merge_props_keys
+
+      deep_merge_props, merge_props = all_merge_props.partition do |key|
+        @props[key].deep_merge?
+      end
+
       default_page[:mergeProps] = merge_props if merge_props.present?
+      default_page[:deepMergeProps] = deep_merge_props if deep_merge_props.present?
 
       default_page
     end
