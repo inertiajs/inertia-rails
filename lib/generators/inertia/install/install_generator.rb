@@ -125,6 +125,13 @@ module Inertia
           return
         end
 
+        if File.exist?(application_js_path) && application_layout.read.include?("<%= vite_javascript_tag 'application' %>")
+          say 'Renaming application.js to application.ts'
+          FileUtils.mv(application_js_path, application_ts_path)
+          say 'Updating Vite tag on application layout to use TypeScript'
+          gsub_file application_layout.to_s, /<%= vite_javascript_tag 'application' %>/, "<%= vite_typescript_tag 'application' %>"
+        end
+
         add_dependencies(*FRAMEWORKS[framework]['packages_ts'])
 
         say 'Copying adding scripts to package.json'
@@ -251,6 +258,14 @@ module Inertia
         return @typescript if defined?(@typescript)
 
         @typescript = options[:typescript] || yes?('Would you like to use TypeScript? (y/n)', :green)
+      end
+
+      def application_js_path
+        js_file_path('entrypoints/application.js')
+      end
+
+      def application_ts_path
+        js_file_path('entrypoints/application.ts')
       end
 
       def inertia_entrypoint
