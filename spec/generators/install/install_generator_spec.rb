@@ -253,6 +253,9 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
         file('app/frontend/vite-env.d.ts') do
           contains('/// <reference types="vite/client" />')
         end
+        directory('app/frontend/types') do
+          file('inertia-rails.d.ts')
+        end
         file('tsconfig.node.json') do
           contains('"include": ["vite.config.ts"]')
         end
