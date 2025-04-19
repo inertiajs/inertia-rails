@@ -32,6 +32,40 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
       let(:ext) { 'ts' }
 
       include_context 'assert framework structure'
+      include_context 'assert application.js entrypoint renaming'
+    end
+  end
+
+  shared_context 'assert application.js entrypoint renaming' do
+    context 'when application.js exists' do
+      before do
+        FileUtils.mkdir_p(File.join(destination_root, 'app/frontend/entrypoints'))
+        File.write(File.join(destination_root, 'app/frontend/entrypoints/application.js'), '// Application JS')
+      end
+
+      it 'renames application.js to application.ts when TypeScript is enabled' do
+        expect { generator }.not_to raise_error
+
+        if ext == 'ts'
+          expect(File.exist?(File.join(destination_root, 'app/frontend/entrypoints/application.ts'))).to be true
+          expect(File.exist?(File.join(destination_root, 'app/frontend/entrypoints/application.js'))).to be false
+        else
+          expect(File.exist?(File.join(destination_root, 'app/frontend/entrypoints/application.js'))).to be true
+          expect(File.exist?(File.join(destination_root, 'app/frontend/entrypoints/application.ts'))).to be false
+        end
+      end
+    end
+
+    context 'when application.js does not exist' do
+      before do
+        FileUtils.rm_f(File.join(destination_root, 'app/frontend/entrypoints/application.js'))
+      end
+
+      it 'does not attempt to rename when TypeScript is enabled' do
+        expect { generator }.not_to raise_error
+
+        expect(File.exist?(File.join(destination_root, 'app/frontend/entrypoints/application.ts'))).to be false
+      end
     end
   end
 
@@ -81,6 +115,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
       let(:ext) { 'ts' }
 
       include_context 'assert framework structure'
+      include_context 'assert application.js entrypoint renaming'
 
       context 'with old Inertia version' do
         let(:inertia_version) { '1.2.0' }
@@ -101,6 +136,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
       let(:ext) { 'ts' }
 
       include_context 'assert framework structure'
+      include_context 'assert application.js entrypoint renaming'
 
       context 'with old Inertia version' do
         let(:inertia_version) { '1.2.0' }
@@ -192,7 +228,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
     end)
   end
 
-  def expect_inertia_prepared_for(framework, ext: 'js')
+  def expect_inertia_prepared_for(framework, ext: 'js', application_js_exists: false)
     expect(destination_root).to(have_structure do
       case framework
       when :react
@@ -230,10 +266,15 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
         end
       end
       file('app/views/layouts/application.html.erb') do
-        if ext == 'ts'
+        if ext == 'ts' && application_js_exists
           contains('<%= vite_typescript_tag "inertia" %>')
+          contains("<%= vite_typescript_tag 'application' %>")
+        elsif ext == 'ts' && !application_js_exists
+          contains('<%= vite_typescript_tag "inertia" %>')
+          contains("<%= vite_javascript_tag 'application' %>")
         else
           contains('<%= vite_javascript_tag "inertia" %>')
+          contains("<%= vite_javascript_tag 'application' %>")
         end
         if framework == :react
           contains('<%= vite_react_refresh_tag %>')
