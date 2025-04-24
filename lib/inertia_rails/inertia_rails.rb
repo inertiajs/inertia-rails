@@ -8,6 +8,7 @@ require 'inertia_rails/optional_prop'
 require 'inertia_rails/defer_prop'
 require 'inertia_rails/merge_prop'
 require 'inertia_rails/configuration'
+require 'inertia_rails/meta_tag'
 
 module InertiaRails
   class << self
