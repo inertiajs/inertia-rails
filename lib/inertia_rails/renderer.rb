@@ -17,7 +17,7 @@ module InertiaRails
     )
 
     def initialize(component, controller, request, response, render_method, props: nil, view_data: nil,
-                   deep_merge: nil, encrypt_history: nil, clear_history: nil)
+                   deep_merge: nil, encrypt_history: nil, clear_history: nil, meta: nil)
       if component.is_a?(Hash) && !props.nil?
         raise ArgumentError,
               'Parameter `props` is not allowed when passing a Hash as the first argument'
@@ -35,6 +35,7 @@ module InertiaRails
       @encrypt_history = encrypt_history.nil? ? configuration.encrypt_history : encrypt_history
       @clear_history = clear_history || controller.session[:inertia_clear_history] || false
       @controller.instance_variable_set('@_inertia_rendering', true)
+      @meta = meta || []
     end
 
     def render
@@ -101,6 +102,7 @@ module InertiaRails
         version: configuration.version,
         encryptHistory: encrypt_history,
         clearHistory: clear_history,
+        meta: computed_meta_data
       }
 
       deferred_props = deferred_props_keys
@@ -214,6 +216,12 @@ module InertiaRails
 
     def excluded_by_except_partial_keys?(path_with_prefixes)
       partial_except_keys.present? && (path_with_prefixes & partial_except_keys).any?
+    end
+
+    def computed_meta_data
+      @meta.map do |meta_tag_data|
+        InertiaRails::MetaTag.new(**meta_tag_data)
+      end
     end
   end
 end
