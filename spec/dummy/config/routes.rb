@@ -90,4 +90,9 @@ Rails.application.routes.draw do
   post 'encrypt_history_clear_history_after_redirect' => 'inertia_encrypt_history#clear_history_after_redirect'
 
   get 'basic_meta' => 'inertia_meta#basic'
+
+  get 'shared_meta' => 'inertia_shared_meta#show'
+  get 'shared_metas' => 'inertia_shared_meta#index'
+  get 'edit_shared_meta' => 'inertia_shared_meta#edit'
+  get 'shared_meta_with_a_problem' => 'inertia_shared_meta#show_with_a_problem'
 end
