@@ -20,13 +20,26 @@ module InertiaRails
         return push_to_inertia_share(**(hash || props), &block) if options.empty?
 
         push_to_inertia_share do
-          next unless options[:if].all? { |filter| instance_exec(&filter) } if options[:if]
-          next unless options[:unless].none? { |filter| instance_exec(&filter)  } if options[:unless]
+          next if filtered?(options)
 
           next hash unless block
 
           res = instance_exec(&block)
           hash ? hash.merge(res) : res
+        end
+      end
+
+      def inertia_meta(plain_meta = [], **args, &block)
+        options = extract_inertia_share_options(args)
+        return push_to_inertia_meta(plain_meta, &block) if options.empty?
+
+        push_to_inertia_meta do
+          next if filtered?(options)
+
+          next plain_meta unless block
+
+          res = instance_exec(&block)
+          [plain_meta, res].flatten
         end
       end
 
@@ -66,12 +79,29 @@ module InertiaRails
         end
       end
 
+      def _inertia_meta
+        @_inertia_meta ||= begin
+          meta = superclass.try(:_inertia_meta)
+          if @inertia_meta && meta.present?
+            meta + @inertia_meta.freeze
+          else
+            @inertia_meta || meta || []
+          end.freeze
+        end
+      end
+
       private
 
       def push_to_inertia_share(**attrs, &block)
         @inertia_share ||= []
         @inertia_share << attrs.freeze unless attrs.empty?
         @inertia_share << block if block
+      end
+
+      def push_to_inertia_meta(plain_meta = [], &block)
+        @inertia_meta ||= []
+        @inertia_meta.push(*plain_meta)
+        @inertia_meta << block if block
       end
 
       def extract_inertia_share_options(props)
@@ -150,6 +180,16 @@ module InertiaRails
       }.reduce(initial_data, &:merge)
     end
 
+    def inertia_shared_meta
+      self.class._inertia_meta.flat_map do |meta|
+        if meta.respond_to?(:call)
+          instance_exec(&meta)
+        else
+          meta
+        end
+      end
+    end
+
     def inertia_location(url)
       headers['X-Inertia-Location'] = url
       head :conflict
@@ -171,6 +211,11 @@ module InertiaRails
       end
 
       session[:inertia_clear_history] = inertia[:clear_history] if inertia[:clear_history]
+    end
+
+    def filtered?(options)
+      (options[:if] || []).any? { |filter| !instance_exec(&filter) } ||
+        (options[:unless] || []).any? { |filter| instance_exec(&filter) }
     end
   end
 end
