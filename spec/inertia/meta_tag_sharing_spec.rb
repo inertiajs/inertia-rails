@@ -12,25 +12,25 @@ RSpec.describe 'Inertia meta tag sharing', type: :request do
       {
         'tagName' => 'title',
         'content' => 'The Inertia Title',
-        'head-key' => '1',
+        'headKey' => '1',
       },
       {
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'non-conditional plain data',
-        'head-key' => '2',
+        'headKey' => '2',
       },
       {
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'non-conditional callable data',
-        'head-key' => '3',
+        'headKey' => '3',
       },
       {
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'second non-conditional callable data',
-        'head-key' => '4',
+        'headKey' => '4',
       }
     ]
   }
@@ -41,7 +41,7 @@ RSpec.describe 'Inertia meta tag sharing', type: :request do
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'index renderer',
-        'head-key' => 'index',
+        'headKey' => 'index',
       }
     ]
   }
@@ -52,61 +52,61 @@ RSpec.describe 'Inertia meta tag sharing', type: :request do
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'conditional plain data, only edit',
-        'head-key' => '5',
+        'headKey' => '5',
       },
       {
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'conditional plain data, if edit, with multiple conditions',
-        'head-key' => '6',
+        'headKey' => '6',
       },
       {
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'conditional plain data, unless not_edit with a method reference',
-        'head-key' => '7',
+        'headKey' => '7',
       },
       {
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'conditional plain data, with only edit and an if option',
-        'head-key' => '8',
+        'headKey' => '8',
       },
       {
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'conditional plain data, except index and show, with an if option',
-        'head-key' => '9',
+        'headKey' => '9',
       },
       {
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'conditional callable data, only edit',
-        'head-key' => '10',
+        'headKey' => '10',
       },
       {
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'conditional callable data, except show and index',
-        'head-key' => '11',
+        'headKey' => '11',
       },
       {
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'conditional callable data, if is_edit?',
-        'head-key' => '12',
+        'headKey' => '12',
       },
       {
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'conditional callable data, unless !is_edit?',
-        'head-key' => '13',
+        'headKey' => '13',
       },
       {
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'instance_exec lets you conditionally add data as well',
-        'head-key' => '14',
+        'headKey' => '14',
       }
     ]
   }
