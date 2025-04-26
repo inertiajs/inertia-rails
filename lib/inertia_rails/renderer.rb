@@ -53,6 +53,7 @@ module InertiaRails
         rescue StandardError
           nil
         end
+        controller.instance_variable_set('@_inertia_page', page)
         @render_method.call template: 'inertia', layout: layout, locals: view_data.merge(page: page)
       end
     end
