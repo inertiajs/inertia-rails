@@ -6,7 +6,7 @@ RSpec.describe InertiaRails::MetaTag do
     it 'returns the meta tag as JSON' do
       expected_json = {
         tagName: :meta,
-        'head-key' => dummy_head_key,
+        'headKey' => dummy_head_key,
         name: 'description',
         content: 'Inertia rules'
       }.to_json
@@ -19,7 +19,7 @@ RSpec.describe InertiaRails::MetaTag do
 
       expected_json = {
         tagName: :meta,
-        'head-key' => dummy_head_key,
+        'headKey' => dummy_head_key,
         'http-equiv' => 'content-security-policy',
         content: "default-src 'self'"
       }.to_json
@@ -32,7 +32,7 @@ RSpec.describe InertiaRails::MetaTag do
 
       expected_json = {
         tagName: :script,
-        'head-key' => dummy_head_key,
+        'headKey' => dummy_head_key,
         type: 'application/ld+json',
         content: { '@context': 'https://schema.org' }
       }.to_json
@@ -45,7 +45,7 @@ RSpec.describe InertiaRails::MetaTag do
 
       expected_json = {
         tagName: :script,
-        'head-key' => dummy_head_key,
+        'headKey' => dummy_head_key,
         content: '<script>alert("XSS")</script>'
       }.to_json
 
@@ -54,29 +54,29 @@ RSpec.describe InertiaRails::MetaTag do
   end
 
   describe "generated head keys" do
-    it "generates a head-key of the format {tag name}-{hexdigest of tag content}" do
+    it "generates a headKey of the format {tag name}-{hexdigest of tag content}" do
       meta_tag = described_class.new(name: 'description', content: 'Inertia rules')
       expected_head_key = "meta-#{Digest::MD5.hexdigest('content=Inertia rules&name=description')[0, 8]}"
 
-      expect(meta_tag.as_json[:'head-key']).to eq(expected_head_key)
+      expect(meta_tag.as_json[:'headKey']).to eq(expected_head_key)
     end
 
-    it "generates the same head-key regardless of hash data order" do
+    it "generates the same headKey regardless of hash data order" do
       first_tags = described_class.new(name: 'description', content: 'Inertia rules').as_json
-      first_head_key = first_tags[:'head-key']
+      first_head_key = first_tags[:'headKey']
 
       second_tags = described_class.new(content: 'Inertia rules', name: 'description').as_json
-      second_head_key = second_tags[:'head-key']
+      second_head_key = second_tags[:'headKey']
 
       expect(first_head_key).to eq(second_head_key)
     end
 
-    it "generates a different head-key for different content" do
+    it "generates a different headKey for different content" do
       first_tags = described_class.new(name: 'description', content: 'Inertia rules').as_json
-      first_head_key = first_tags[:'head-key']
+      first_head_key = first_tags[:'headKey']
 
       second_tags = described_class.new(name: 'description', content: 'Inertia rocks').as_json
-      second_head_key = second_tags[:'head-key']
+      second_head_key = second_tags[:'headKey']
 
       expect(first_head_key).not_to eq(second_head_key)
     end
@@ -85,7 +85,7 @@ RSpec.describe InertiaRails::MetaTag do
       custom_head_key = "blah"
       meta_tag = described_class.new(head_key: custom_head_key, name: 'description', content: 'Inertia rules')
 
-      expect(meta_tag.as_json[:'head-key']).to eq(custom_head_key)
+      expect(meta_tag.as_json[:'headKey']).to eq(custom_head_key)
     end
   end
 
