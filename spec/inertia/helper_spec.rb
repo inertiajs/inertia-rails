@@ -22,12 +22,10 @@ RSpec.describe InertiaRails::Helper, type: :helper do
   describe "#inertia_meta_tags" do
     context 'basic rendering' do
       before do
-        allow(helper).to receive(:local_assigns).and_return({
-          page: {
-            meta: [
-              InertiaRails::MetaTag.new(name: 'description', content: 'Inertia rules', head_key: "my_key")
-            ]
-          }
+        helper.instance_variable_set(:@_inertia_page, {
+          meta: [
+            InertiaRails::MetaTag.new(name: 'description', content: 'Inertia rules', head_key: "my_key")
+          ]
         })
       end
 
@@ -38,14 +36,12 @@ RSpec.describe InertiaRails::Helper, type: :helper do
 
     context "with multiple meta tags" do
       before do
-        allow(helper).to receive(:local_assigns).and_return({
-          page: {
-            meta: [
-              InertiaRails::MetaTag.new(tag_name: 'title', content: 'Inertia Page Title', head_key: "meta-12345678"),
-              InertiaRails::MetaTag.new(name: 'description', content: 'Inertia rules', head_key: "meta-23456789"),
-              InertiaRails::MetaTag.new(tag_name: 'script', type: "application/ld+json", content: { '@context': 'https://schema.org' }, head_key: "meta-34567890"),
-            ]
-          }
+        helper.instance_variable_set(:@_inertia_page, {
+          meta: [
+            InertiaRails::MetaTag.new(tag_name: 'title', content: 'Inertia Page Title', head_key: "meta-12345678"),
+            InertiaRails::MetaTag.new(name: 'description', content: 'Inertia rules', head_key: "meta-23456789"),
+            InertiaRails::MetaTag.new(tag_name: 'script', type: "application/ld+json", content: { '@context': 'https://schema.org' }, head_key: "meta-34567890"),
+          ]
         })
       end
 

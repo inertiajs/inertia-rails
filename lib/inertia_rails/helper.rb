@@ -17,7 +17,7 @@ module InertiaRails::Helper
   end
 
   def inertia_meta_tags
-    meta_tag_data = local_assigns.fetch(:page, {}).fetch(:meta, [])
+    meta_tag_data = (@_inertia_page || {}).fetch(:meta, [])
 
     meta_tags = meta_tag_data.map do |inertia_meta_tag|
       inertia_meta_tag.to_tag(tag)
