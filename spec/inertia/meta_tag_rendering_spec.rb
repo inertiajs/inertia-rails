@@ -16,18 +16,18 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
         'tagName' => 'meta',
         'name' => 'description',
         'content' => 'Inertia rules',
-        'head-key' => 'first_head_key',
+        'headKey' => 'first_head_key',
       },
       {
         'tagName' => 'title',
         'content' => 'The Inertia title',
-        'head-key' => 'second_head_key',
+        'headKey' => 'second_head_key',
       },
       {
         'tagName' => 'meta',
         'http-equiv' => 'content-security-policy',
         'content' => "default-src 'self';",
-        'head-key' => 'third_head_key',
+        'headKey' => 'third_head_key',
       }
     ])
   end

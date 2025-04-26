@@ -18,7 +18,7 @@ module InertiaRails
     def as_json(**options)
       {
         :tagName => @tag_name,
-        :"head-key" => @head_key,
+        :headKey => @head_key,
         **@tag_data
       }
     end
