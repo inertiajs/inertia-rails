@@ -6,7 +6,7 @@ RSpec.describe InertiaRails::MetaTag do
     it 'returns the meta tag as JSON' do
       expected_json = {
         tagName: :meta,
-        'headKey' => dummy_head_key,
+        headKey: dummy_head_key,
         name: 'description',
         content: 'Inertia rules'
       }.to_json
@@ -14,13 +14,13 @@ RSpec.describe InertiaRails::MetaTag do
       expect(meta_tag.to_json).to eq(expected_json)
     end
 
-    it 'transforms snake_case keys to kebab-case' do
+    it 'transforms snake_case keys to camelCase' do
       meta_tag = described_class.new(head_key: dummy_head_key, http_equiv: 'content-security-policy', content: "default-src 'self'")
 
       expected_json = {
         tagName: :meta,
-        'headKey' => dummy_head_key,
-        'http-equiv' => 'content-security-policy',
+        headKey: dummy_head_key,
+        httpEquiv: 'content-security-policy',
         content: "default-src 'self'"
       }.to_json
 
@@ -32,7 +32,7 @@ RSpec.describe InertiaRails::MetaTag do
 
       expected_json = {
         tagName: :script,
-        'headKey' => dummy_head_key,
+        headKey: dummy_head_key,
         type: 'application/ld+json',
         content: { '@context': 'https://schema.org' }
       }.to_json
@@ -45,7 +45,7 @@ RSpec.describe InertiaRails::MetaTag do
 
       expected_json = {
         tagName: :script,
-        'headKey' => dummy_head_key,
+        headKey: dummy_head_key,
         content: '<script>alert("XSS")</script>'
       }.to_json
 
