@@ -9,9 +9,8 @@ module InertiaRails
       @tag_name = tag_name.to_s.downcase.to_sym
       @head_key = head_key || generate_head_key(tag_name, tag_data)
       @raw = raw
-      @tag_data = tag_data.each_with_object({}) do |(key, value), result|
-        transformed_key = key.to_s.tr('_', '-').to_sym
-        result[transformed_key] = value
+      @tag_data = tag_data.transform_keys do |key|
+        key.to_s.camelize(:lower).to_sym
       end
     end
 

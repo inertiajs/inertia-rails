@@ -25,7 +25,7 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
       },
       {
         'tagName' => 'meta',
-        'http-equiv' => 'content-security-policy',
+        'httpEquiv' => 'content-security-policy',
         'content' => "default-src 'self';",
         'headKey' => 'third_head_key',
       }
