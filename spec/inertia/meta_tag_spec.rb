@@ -28,25 +28,25 @@ RSpec.describe InertiaRails::MetaTag do
     end
 
     it 'handles JSON LD content' do
-      meta_tag = described_class.new(tag_name: 'script', head_key: dummy_head_key, type: 'application/ld+json', content: { '@context': 'https://schema.org' })
+      meta_tag = described_class.new(tag_name: 'script', head_key: dummy_head_key, type: 'application/ld+json', inner_content: { '@context': 'https://schema.org' })
 
       expected_json = {
         tagName: :script,
         headKey: dummy_head_key,
         type: 'application/ld+json',
-        content: { '@context': 'https://schema.org' }
+        innerContent: { '@context': 'https://schema.org' }
       }.to_json
 
       expect(meta_tag.to_json).to eq(expected_json)
     end
 
     it 'does not escape script tag content because Inertia.js adapters use innerHtml under the hood and browsers do not execute scripts added this way' do
-      meta_tag = described_class.new(tag_name: 'script', head_key: dummy_head_key, content: '<script>alert("XSS")</script>')
+      meta_tag = described_class.new(tag_name: 'script', head_key: dummy_head_key, inner_content: '<script>alert("XSS")</script>')
 
       expected_json = {
         tagName: :script,
         headKey: dummy_head_key,
-        content: '<script>alert("XSS")</script>'
+        innerContent: '<script>alert("XSS")</script>'
       }.to_json
 
       expect(meta_tag.to_json).to eq(expected_json)
@@ -99,7 +99,7 @@ RSpec.describe InertiaRails::MetaTag do
     end
 
     it "renders kebab case" do
-      meta_tag = described_class.new(tag_name: :meta, head_key: dummy_head_key, 'http-equiv' => 'X-UA-Compatible', content: 'IE=edge')
+      meta_tag = described_class.new(tag_name: :meta, head_key: dummy_head_key, http_equiv: 'X-UA-Compatible', content: 'IE=edge')
 
       tag = meta_tag.to_tag(tag_helper)
 
@@ -108,7 +108,7 @@ RSpec.describe InertiaRails::MetaTag do
 
     describe "script tag rendering" do
       it "renders JSON LD content correctly" do
-        meta_tag = described_class.new(tag_name: :script, head_key: dummy_head_key, type: 'application/ld+json', content: { '@context': 'https://schema.org' })
+        meta_tag = described_class.new(tag_name: :script, head_key: dummy_head_key, type: 'application/ld+json', inner_content: { '@context': 'https://schema.org' })
 
         tag = meta_tag.to_tag(tag_helper)
 
@@ -125,7 +125,7 @@ RSpec.describe InertiaRails::MetaTag do
 
       context "when the tag is marked as raw" do
         it "does not escape script tag content" do
-          meta_tag = described_class.new(tag_name: :script, head_key: dummy_head_key, content: '<script>alert("XSS")</script>', raw: true)
+          meta_tag = described_class.new(tag_name: :script, head_key: dummy_head_key, inner_content: '<script>alert("XSS")</script>', raw: true)
 
           tag = meta_tag.to_tag(tag_helper)
 
