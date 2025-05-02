@@ -9,34 +9,31 @@ module InertiaRails
       @tag_name = tag_name.to_s.downcase.to_sym
       @head_key = head_key || generate_head_key(tag_name, tag_data)
       @raw = raw
-      @tag_data = tag_data.transform_keys do |key|
-        key.to_s.camelize(:lower).to_sym
-      end
+      @tag_data = tag_data
     end
 
     def as_json(**options)
       {
         :tagName => @tag_name,
         :headKey => @head_key,
-        **@tag_data
+        **@tag_data.transform_keys { |k| k.to_s.camelize(:lower).to_sym }
       }
     end
 
     def to_tag(tag_helper)
-      data = @tag_data.deep_dup.merge({
-        inertia: @head_key
-      })
+      data = @tag_data.deep_dup
+        .merge({ inertia: @head_key })
 
       inner_content = case @tag_name
                       when *UNARY_TAGS
                         nil
                       when :script
-                        handle_script_content(data.delete(:content))
+                        handle_script_content(data.delete(:inner_content))
                       else
-                        data.delete(:content)
+                        data.delete(:inner_content)
                       end
 
-      tag_helper.public_send(@tag_name, *[inner_content].compact, **data)
+      tag_helper.public_send(@tag_name, *[inner_content].compact, **data.transform_keys { |k| k.to_s.tr('_','-').to_sym })
     end
 
     private

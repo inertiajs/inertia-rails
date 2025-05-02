@@ -11,7 +11,7 @@ RSpec.describe 'Inertia meta tag sharing', type: :request do
     [
       {
         'tagName' => 'title',
-        'content' => 'The Inertia Title',
+        'innerContent' => 'The Inertia Title',
         'headKey' => '1',
       },
       {
