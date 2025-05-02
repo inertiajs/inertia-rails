@@ -20,7 +20,7 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
       },
       {
         'tagName' => 'title',
-        'content' => 'The Inertia title',
+        'innerContent' => 'The Inertia title',
         'headKey' => 'second_head_key',
       },
       {

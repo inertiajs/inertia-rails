@@ -3,7 +3,7 @@ class InertiaSharedMetaController < ApplicationController
 
   # Plain data
   inertia_meta [
-    { tag_name: 'title', content: 'The Inertia Title', head_key: '1' },
+    { tag_name: 'title', inner_content: 'The Inertia Title', head_key: '1' },
     { name: 'description', content: 'non-conditional plain data', head_key: '2' },
   ]
 
