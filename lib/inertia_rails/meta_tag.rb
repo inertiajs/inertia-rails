@@ -1,5 +1,7 @@
 module InertiaRails
   class MetaTag
+    attr_reader :tag_name
+
     # Copied from Inertia.js
     UNARY_TAGS = %i[
       area base br col embed hr img input keygen link meta param source track wbr
