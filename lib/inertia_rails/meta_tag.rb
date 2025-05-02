@@ -5,11 +5,12 @@ module InertiaRails
       area base br col embed hr img input keygen link meta param source track wbr
     ].freeze
 
-    def initialize(tag_name: :meta, head_key: nil, raw: false, **tag_data)
-      @tag_name = tag_name.to_s.downcase.to_sym
-      @head_key = head_key || generate_head_key(tag_name, tag_data)
+    def initialize(tag_name: nil, head_key: nil, raw: false, **tag_data)
+      @is_shortened_title_tag = shortened_title_tag?(tag_name, tag_data)
+      @tag_name = determine_tag_name(tag_name)
+      @head_key = head_key || generate_head_key(@tag_name, tag_data)
       @raw = raw
-      @tag_data = tag_data
+      @tag_data = build_tag_data(tag_data)
     end
 
     def as_json(**options)
@@ -51,6 +52,21 @@ module InertiaRails
       else
         ERB::Util.json_escape(content.to_json).html_safe
       end
+    end
+
+    def shortened_title_tag?(tag_name, tag_data)
+      tag_name.nil? && tag_data.keys == [:title]
+    end
+
+    def determine_tag_name(tag_name)
+      return :title if @is_shortened_title_tag
+      return :meta if tag_name.nil?
+      tag_name.downcase.to_sym
+    end
+
+    def build_tag_data(tag_data)
+      return { inner_content: tag_data[:title] } if @is_shortened_title_tag
+      tag_data
     end
   end
 end

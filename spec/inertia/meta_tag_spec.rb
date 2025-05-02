@@ -1,6 +1,7 @@
 RSpec.describe InertiaRails::MetaTag do
   let(:meta_tag) { described_class.new(head_key: dummy_head_key, name: 'description', content: 'Inertia rules') }
   let(:dummy_head_key) { 'meta-12345678' }
+  let(:tag_helper) { ActionController::Base.helpers.tag }
 
   describe '#to_json' do
     it 'returns the meta tag as JSON' do
@@ -90,8 +91,6 @@ RSpec.describe InertiaRails::MetaTag do
   end
 
   describe "#to_tag" do
-    let(:tag_helper) { ActionController::Base.helpers.tag }
-
     it "returns a string meta tag" do
       tag = meta_tag.to_tag(tag_helper)
       expect(tag).to be_a(String)
@@ -143,6 +142,32 @@ RSpec.describe InertiaRails::MetaTag do
             expect(tag).to include("<#{tag_name} content=\"Inertia rules\" inertia=\"meta-12345678\">")
           end
         end
+      end
+    end
+  end
+
+  describe "title tag rendering" do
+    it "renders a title tag if only a title key is provided" do
+      meta_tag = described_class.new(tag_name: :title, head_key: dummy_head_key, inner_content: 'Inertia Page Title')
+
+      tag = meta_tag.to_tag(ActionController::Base.helpers.tag)
+
+      expect(tag).to eq('<title inertia="meta-12345678">Inertia Page Title</title>')
+    end
+
+    context "when only a title key is provided" do
+      let (:title_tag) { described_class.new(title: "Inertia Is Great", head_key: dummy_head_key) }
+
+      it "renders JSON correctly" do
+        expect(title_tag.to_json).to eq({
+          tagName: :title,
+          headKey: dummy_head_key,
+          innerContent: 'Inertia Is Great'
+        }.to_json)
+      end
+
+      it "renders a title tag" do
+        expect(title_tag.to_tag(tag_helper)).to eq('<title inertia="meta-12345678">Inertia Is Great</title>')
       end
     end
   end
