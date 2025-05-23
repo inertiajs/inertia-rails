@@ -3,7 +3,7 @@
 Once you have your [server-side framework configured](/guide/server-side-setup.md), you then need to setup your client-side framework. Inertia currently provides support for React, Vue, and Svelte.
 
 > [!NOTE]
-> See [Rails generator](/guide/server-side-setup#rails-generator) for a quick way to setup Inertia in your Rails application.
+> You can skip this step if you have already executed the [Rails generator](/guide/server-side-setup#rails-generator).
 
 ## Install dependencies
 
