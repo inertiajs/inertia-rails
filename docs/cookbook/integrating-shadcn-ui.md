@@ -14,7 +14,9 @@ If you're starting fresh, create a new Rails application with Inertia (or skip t
 rails new -JA shadcn-inertia-rails
 cd shadcn-inertia-rails
 
-rails generate inertia:install `--framework=react --typescript --vite --tailwind --no-interactive`
+bundle add inertia_rails
+
+rails generate inertia:install --framework=react --typescript --vite --tailwind --no-interactive
 Installing Inertia's Rails adapter
 ...
 ```
@@ -24,6 +26,8 @@ Installing Inertia's Rails adapter
 ```bash
 rails new -JA shadcn-inertia-rails
 cd shadcn-inertia-rails
+
+bundle add inertia_rails
 
 rails generate inertia:install --framework=react --vite --tailwind --no-interactive
 Installing Inertia's Rails adapter
