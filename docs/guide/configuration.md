@@ -81,6 +81,14 @@ component and props.
 This allows Inertia to detect if the app running in the client is oudated,
 forcing a full page visit instead of an XHR visit on the next request.
 
-See [assets versioning](https://inertiajs.com/asset-versioning).
+See [assets versioning](/guide/asset-versioning).
 
 **Default**: `nil`
+
+### `parent_controller`
+
+Specifies the base controller class for the internal `StaticController` used to render [Shorthand routes](/guide/routing#shorthand-routes).
+
+By default, InertiaRails creates a `StaticController` that inherits from `ApplicationController`. You can use this option to specify a different base controller (for example, to include custom authentication, layout, or before actions).
+
+**Default**: `'::ApplicationController'`

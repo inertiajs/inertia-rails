@@ -25,6 +25,9 @@ module InertiaRails
 
       # Used to detect version drift between server and client.
       version: nil,
+
+      # Allows configuring the base controller for StaticController
+      parent_controller: '::ApplicationController',
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze
