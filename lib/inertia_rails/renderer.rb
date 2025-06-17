@@ -106,14 +106,17 @@ module InertiaRails
       deferred_props = deferred_props_keys
       default_page[:deferredProps] = deferred_props if deferred_props.present?
 
-      all_merge_props = merge_props_keys
-
-      deep_merge_props, merge_props = all_merge_props.partition do |key|
-        @props[key].deep_merge?
+      deep_merge_props, merge_props = all_merge_props.partition do |_key, prop|
+        prop.deep_merge?
       end
 
-      default_page[:mergeProps] = merge_props if merge_props.present?
-      default_page[:deepMergeProps] = deep_merge_props if deep_merge_props.present?
+      match_props_on = all_merge_props.filter_map do |key, prop|
+        prop.match_on.map { |ms| "#{key}.#{ms}" } if prop.match_on.present?
+      end.flatten
+
+      default_page[:mergeProps] = merge_props.map(&:first) if merge_props.present?
+      default_page[:deepMergeProps] = deep_merge_props.map(&:first) if deep_merge_props.present?
+      default_page[:matchPropsOn] = match_props_on if match_props_on.present?
 
       default_page
     end
@@ -147,9 +150,16 @@ module InertiaRails
       end
     end
 
-    def merge_props_keys
-      @props.each_with_object([]) do |(key, prop), result|
-        result << key if prop.try(:merge?) && reset_keys.exclude?(key)
+    def all_merge_props
+      @all_merge_props ||= @props.select do |key, prop|
+        next unless prop.try(:merge?)
+        next if reset_keys.include?(key)
+        next if rendering_partial_component? && (
+          (partial_keys.present? && partial_keys.exclude?(key.name)) ||
+            (partial_except_keys.present? && partial_except_keys.include?(key.name))
+        )
+
+        true
       end
     end
 
@@ -180,7 +190,7 @@ module InertiaRails
     def keep_prop?(prop, path)
       return true if prop.is_a?(AlwaysProp)
 
-      if rendering_partial_component?
+      if rendering_partial_component? && (partial_keys.present? || partial_except_keys.present?)
         path_with_prefixes = path_prefixes(path)
         return false if excluded_by_only_partial_keys?(path_with_prefixes)
         return false if excluded_by_except_partial_keys?(path_with_prefixes)
