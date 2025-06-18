@@ -152,6 +152,7 @@ export default defineConfig({
               text: 'Integrations',
               items: [
                 { text: 'shadcn/ui', link: '/cookbook/integrating-shadcn-ui' },
+                { text: 'Inertia Modal', link: '/cookbook/inertia-modal' },
               ],
             },
             {
