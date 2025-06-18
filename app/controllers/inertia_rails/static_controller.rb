@@ -1,5 +1,5 @@
 module InertiaRails
-  class StaticController < ::ApplicationController
+  class StaticController < InertiaRails.configuration.parent_controller.constantize
     def static
       render inertia: params[:component]
     end
