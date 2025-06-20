@@ -4,11 +4,36 @@ By default, Inertia overwrites props with the same name when reloading a page. H
 
 ## Server side
 
-> `deep_merge` requires `@inertiajs/core` v2.0.8 or higher, and `inertia_rails` v3.8.0 or higher.
+### Using `merge`
 
-To specify that a prop should be merged, use the `merge` or `deep_merge` method on the prop's value.
+@available_since rails=3.8.0 core=2.0.8
 
-Use `merge` for merging simple arrays, and `deep_merge` for handling nested objects that include arrays or complex structures, such as pagination objects.
+To specify that a prop should be merged, use the `merge` method on the prop's value. This is ideal for merging simple arrays.
+
+On the client side, Inertia detects that this prop should be merged. If the prop returns an array, it will append the response to the current prop value. If it's an object, it will merge the response with the current prop value.
+
+```ruby
+class UsersController < ApplicationController
+  include Pagy::Backend
+
+  def index
+    _pagy, records = pagy(User.all)
+
+    render inertia: {
+      # simple array:
+      users: InertiaRails.merge { records.as_json(...) },
+      # with match_on parameter for smart merging:
+      products: InertiaRails.merge(match_on: 'id') { Product.all.as_json(...) },
+    }
+  end
+end
+```
+
+### Using `deep_merge`
+
+@available_since rails=3.8.0 core=2.0.8
+
+For handling nested objects that include arrays or complex structures, such as pagination objects, use the `deep_merge` method.
 
 ```ruby
 class UsersController < ApplicationController
@@ -18,8 +43,6 @@ class UsersController < ApplicationController
     pagy, records = pagy(User.all)
 
     render inertia: {
-      # simple array:
-      users: InertiaRails.merge { records.as_json(...) },
       # pagination object:
       data: InertiaRails.deep_merge {
         {
@@ -27,8 +50,6 @@ class UsersController < ApplicationController
           pagy: pagy_metadata(pagy)
         }
       },
-      # with match_on parameter for smart merging:
-      products: InertiaRails.merge(match_on: 'id') { Product.all.as_json(...) },
       # nested objects with match_on:
       categories: InertiaRails.deep_merge(match_on: %w[items.id tags.id]) {
         {
@@ -41,9 +62,11 @@ class UsersController < ApplicationController
 end
 ```
 
-On the client side, Inertia detects that this prop should be merged. If the prop returns an array, it will append the response to the current prop value. If it's an object, it will merge the response with the current prop value. If you have opted to `deepMerge`, Inertia ensures a deep merge of the entire structure.
+If you have opted to use `deep_merge`, Inertia ensures a deep merge of the entire structure, including nested objects and arrays.
 
 ### Smart merging with `match_on`
+
+@available_since rails=master core=2.0.13
 
 By default, arrays are simply appended during merging. If you need to update specific items in an array or replace them based on a unique identifier, you can use the `match_on` parameter.
 

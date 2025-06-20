@@ -3,6 +3,7 @@ import type { Theme } from 'vitepress'
 import { enhanceAppWithTabs } from 'vitepress-plugin-tabs/client'
 import DefaultTheme from 'vitepress/theme'
 import { h } from 'vue'
+import { AvailableSince } from './components'
 import { setupFrameworksTabs } from './frameworksTabs'
 import './style.css'
 
@@ -15,6 +16,7 @@ export default {
   },
   enhanceApp({ app, router, siteData }) {
     enhanceAppWithTabs(app)
+    app.component('AvailableSince', AvailableSince)
   },
   setup() {
     setupFrameworksTabs()

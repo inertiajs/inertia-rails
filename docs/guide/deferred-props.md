@@ -1,5 +1,7 @@
 # Deferred props
 
+@available_since rails=3.6.0 core=2.0.0
+
 Inertia's deferred props feature allows you to defer the loading of certain page data until after the initial page render. This can be useful for improving the perceived performance of your app by allowing the initial page render to happen as quickly as possible.
 
 ## Server side

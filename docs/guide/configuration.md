@@ -40,10 +40,13 @@ Use `component_path_resolver` to customize component path resolution when [`defa
 
 ### `deep_merge_shared_data`
 
+@available_since rails=3.8.0 
+
 When enabled, props will be deep merged with shared data, combining hashes
 with the same keys instead of replacing them.
 
 **Default**: `false`
+
 
 ### `default_render`
 
@@ -53,6 +56,8 @@ Overrides Rails default rendering behavior to render using Inertia by default.
 
 ### `encrypt_history`
 
+@available_since rails=3.7.0 core=2.0.0
+
 When enabled, you instruct Inertia to encrypt your app's history, it uses
 the browser's built-in [`crypto` api](https://developer.mozilla.org/en-US/docs/Web/API/Crypto)
 to encrypt the current page's data before pushing it to the history state.
@@ -61,11 +66,13 @@ to encrypt the current page's data before pushing it to the history state.
 
 ### `ssr_enabled` _(experimental)_
 
+@available_since rails=3.6.0 core=2.0.0
+
 Whether to use a JavaScript server to pre-render your JavaScript pages,
 allowing your visitors to receive fully rendered HTML when they first visit
 your application.
 
-Requires a JS server to be available at `ssr_url`. [_Example_](https://github.com/ElMassimo/inertia-rails-ssr-template)
+Requires a JavaScript server to be available at `ssr_url`. [_Example_](https://github.com/ElMassimo/inertia-rails-ssr-template)
 
 **Default**: `false`
 
