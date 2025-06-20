@@ -1,6 +1,7 @@
 require_relative "inertia_rails"
 require_relative "helper"
 require_relative "action_filter"
+require_relative "meta_tag_builder"
 
 module InertiaRails
   module Controller
@@ -26,20 +27,6 @@ module InertiaRails
 
           res = instance_exec(&block)
           hash ? hash.merge(res) : res
-        end
-      end
-
-      def inertia_meta(plain_meta = [], **args, &block)
-        options = extract_inertia_share_options(args)
-        return push_to_inertia_meta(plain_meta, &block) if options.empty?
-
-        push_to_inertia_meta do
-          next if filter_shared_data?(options)
-
-          next plain_meta unless block
-
-          res = instance_exec(&block)
-          [plain_meta, res].flatten
         end
       end
 
@@ -79,29 +66,12 @@ module InertiaRails
         end
       end
 
-      def _inertia_meta
-        @_inertia_meta ||= begin
-          meta = superclass.try(:_inertia_meta)
-          if @inertia_meta && meta.present?
-            meta + @inertia_meta.freeze
-          else
-            @inertia_meta || meta || []
-          end.freeze
-        end
-      end
-
       private
 
       def push_to_inertia_share(**attrs, &block)
         @inertia_share ||= []
         @inertia_share << attrs.freeze unless attrs.empty?
         @inertia_share << block if block
-      end
-
-      def push_to_inertia_meta(plain_meta = [], &block)
-        @inertia_meta ||= []
-        @inertia_meta.push(*plain_meta)
-        @inertia_meta << block if block
       end
 
       def extract_inertia_share_options(props)
@@ -157,6 +127,10 @@ module InertiaRails
       super
     end
 
+    def inertia_meta
+      @inertia_meta ||= InertiaRails::MetaTagBuilder.new(self)
+    end
+
     private
 
     def inertia_view_assigns
@@ -178,16 +152,6 @@ module InertiaRails
           shared_data
         end
       }.reduce(initial_data, &:merge)
-    end
-
-    def inertia_shared_meta
-      self.class._inertia_meta.flat_map do |meta|
-        if meta.respond_to?(:call)
-          instance_exec(&meta)
-        else
-          meta
-        end
-      end
     end
 
     def inertia_location(url)
