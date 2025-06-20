@@ -105,7 +105,7 @@ function extractDocs() {
 }
 
 // Generate cross-reference index based on content analysis
-function generateCrossReferenceIndex(allContent) {
+function generateCrossReferenceIndex() {
   const sections = []
   const keywords = new Map()
 
