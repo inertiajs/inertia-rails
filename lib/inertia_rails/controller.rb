@@ -21,7 +21,8 @@ module InertiaRails
         return push_to_inertia_share(**(hash || props), &block) if options.empty?
 
         push_to_inertia_share do
-          next if filter_shared_data?(options)
+          next unless options[:if].all? { |filter| instance_exec(&filter) } if options[:if]
+          next unless options[:unless].none? { |filter| instance_exec(&filter)  } if options[:unless]
 
           next hash unless block
 
@@ -175,11 +176,6 @@ module InertiaRails
       end
 
       session[:inertia_clear_history] = inertia[:clear_history] if inertia[:clear_history]
-    end
-
-    def filter_shared_data?(options)
-      (options[:if] || []).any? { |filter| !instance_exec(&filter) } ||
-        (options[:unless] || []).any? { |filter| instance_exec(&filter) }
     end
   end
 end
