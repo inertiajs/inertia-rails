@@ -16,7 +16,6 @@ RSpec.describe 'inertia ssr', type: :request do
               version: '1.0',
               encryptHistory: false,
               clearHistory: false,
-              meta: []
             }.to_json,
             'Content-Type' => 'application/json'
           )
@@ -56,7 +55,6 @@ RSpec.describe 'inertia ssr', type: :request do
               version: '1.0',
               encryptHistory: false,
               clearHistory: false,
-              meta: []
             }.to_json,
             'Content-Type' => 'application/json'
           )
@@ -67,7 +65,7 @@ RSpec.describe 'inertia ssr', type: :request do
         get props_path
 
         # rubocop:disable Layout/LineLength
-        expect(response.body).to include '<div id="app" data-page="{&quot;component&quot;:&quot;TestComponent&quot;,&quot;props&quot;:{&quot;name&quot;:&quot;Brandon&quot;,&quot;sport&quot;:&quot;hockey&quot;},&quot;url&quot;:&quot;/props&quot;,&quot;version&quot;:&quot;1.0&quot;,&quot;encryptHistory&quot;:false,&quot;clearHistory&quot;:false,&quot;meta&quot;:[]}"></div>'
+        expect(response.body).to include '<div id="app" data-page="{&quot;component&quot;:&quot;TestComponent&quot;,&quot;props&quot;:{&quot;name&quot;:&quot;Brandon&quot;,&quot;sport&quot;:&quot;hockey&quot;},&quot;url&quot;:&quot;/props&quot;,&quot;version&quot;:&quot;1.0&quot;,&quot;encryptHistory&quot;:false,&quot;clearHistory&quot;:false}"></div>'
         # rubocop:enable Layout/LineLength
       end
     end

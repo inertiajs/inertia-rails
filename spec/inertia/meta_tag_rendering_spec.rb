@@ -11,7 +11,7 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
   it 'returns meta tag data' do
     get basic_meta_path, headers: headers
 
-    expect(response.parsed_body['meta']).to eq([
+    expect(response.parsed_body['props']['_inertia_meta']).to eq([
       {
         'tagName' => 'meta',
         'name' => 'description',
@@ -36,7 +36,7 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
     it 'only renders the last title tag' do
       get multiple_title_tags_meta_path, headers: headers
 
-      expect(response.parsed_body['meta']).to eq([
+      expect(response.parsed_body['props']['_inertia_meta']).to eq([
         {
           'tagName' => 'title',
           'innerContent' => 'The second Inertia title',
@@ -50,7 +50,7 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
     it 'returns the meta tag set from the before filter' do
       get from_before_filter_meta_path, headers: headers
 
-      expect(response.parsed_body['meta']).to eq([
+      expect(response.parsed_body['props']['_inertia_meta']).to eq([
         {
           'tagName' => 'meta',
           'name' => 'description',
@@ -65,7 +65,7 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
     it 'returns the last meta tag with the same head key' do
       get with_duplicate_head_keys_meta_path, headers: headers
 
-      expect(response.parsed_body['meta']).to eq([
+      expect(response.parsed_body['props']['_inertia_meta']).to eq([
         {
           'tagName' => 'meta',
           'name' => 'description',
@@ -80,7 +80,7 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
     it 'overrides the meta tag set from the module' do
       get override_tags_from_module_meta_path, headers: headers
 
-      expect(response.parsed_body['meta']).to eq([
+      expect(response.parsed_body['props']['_inertia_meta']).to eq([
         {
           'tagName' => 'meta',
           'name' => 'meta_tag_from_concern',

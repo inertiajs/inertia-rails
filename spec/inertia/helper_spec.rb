@@ -23,9 +23,11 @@ RSpec.describe InertiaRails::Helper, type: :helper do
     context 'basic rendering' do
       before do
         helper.instance_variable_set(:@_inertia_page, {
-          meta: [
-            InertiaRails::MetaTag.new(name: 'description', content: 'Inertia rules', head_key: "my_key")
-          ]
+          props: {
+            _inertia_meta: [
+              InertiaRails::MetaTag.new(name: 'description', content: 'Inertia rules', head_key: "my_key")
+            ]
+          }
         })
       end
 
@@ -37,11 +39,13 @@ RSpec.describe InertiaRails::Helper, type: :helper do
     context "with multiple meta tags" do
       before do
         helper.instance_variable_set(:@_inertia_page, {
-          meta: [
-            InertiaRails::MetaTag.new(tag_name: 'title', inner_content: 'Inertia Page Title', head_key: "meta-12345678"),
-            InertiaRails::MetaTag.new(name: 'description', content: 'Inertia rules', head_key: "meta-23456789"),
-            InertiaRails::MetaTag.new(tag_name: 'script', type: "application/ld+json", inner_content: { '@context': 'https://schema.org' }, head_key: "meta-34567890"),
-          ]
+          props: {
+            _inertia_meta: [
+              InertiaRails::MetaTag.new(tag_name: 'title', inner_content: 'Inertia Page Title', head_key: "meta-12345678"),
+              InertiaRails::MetaTag.new(name: 'description', content: 'Inertia rules', head_key: "meta-23456789"),
+              InertiaRails::MetaTag.new(tag_name: 'script', type: "application/ld+json", inner_content: { '@context': 'https://schema.org' }, head_key: "meta-34567890"),
+            ]
+          }
         })
       end
 
