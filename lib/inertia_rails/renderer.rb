@@ -35,7 +35,7 @@ module InertiaRails
       @encrypt_history = encrypt_history.nil? ? configuration.encrypt_history : encrypt_history
       @clear_history = clear_history || controller.session[:inertia_clear_history] || false
       @controller.instance_variable_set('@_inertia_rendering', true)
-      @meta = meta || []
+      @meta = meta
     end
 
     def render
@@ -92,7 +92,9 @@ module InertiaRails
 
     def computed_props
       merged_props = merge_props(shared_data, props)
-      deep_transform_props(merged_props)
+      deep_transform_props(merged_props).merge({
+        _inertia_meta: computed_meta_data,
+      }.compact_blank)
     end
 
     def page
@@ -103,7 +105,6 @@ module InertiaRails
         version: configuration.version,
         encryptHistory: encrypt_history,
         clearHistory: clear_history,
-        meta: computed_meta_data
       }
 
       deferred_props = deferred_props_keys
@@ -210,7 +211,7 @@ module InertiaRails
     end
 
     def computed_meta_data
-      controller.inertia_meta.add(@meta)
+      controller.inertia_meta.add(@meta) if @meta
 
       controller.inertia_meta.meta_tags
     end
