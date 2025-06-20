@@ -77,10 +77,6 @@ module InertiaRails
       controller.__send__(:inertia_shared_data)
     end
 
-    def shared_meta
-      controller.__send__(:inertia_shared_meta)
-    end
-
     # Cast props to symbol keyed hash before merging so that we have a consistent data structure and
     # avoid duplicate keys after merging.
     #
@@ -224,18 +220,9 @@ module InertiaRails
     end
 
     def computed_meta_data
-      tags = [*shared_meta, *@meta].map do |meta_tag_data|
-        InertiaRails::MetaTag.new(**meta_tag_data)
-      end
-      last_title = tags.rindex { |tag| tag.tag_name == :title }
+      controller.inertia_meta.add(@meta)
 
-      return tags unless last_title
-
-      # Only keep the last title tag
-      tags.reject.with_index do |tag, idx|
-        next false if tag.tag_name != :title
-        idx != last_title
-      end
+      controller.inertia_meta.meta_tags
     end
   end
 end

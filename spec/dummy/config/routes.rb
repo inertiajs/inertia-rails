@@ -91,9 +91,7 @@ Rails.application.routes.draw do
 
   get 'basic_meta' => 'inertia_meta#basic'
   get 'multiple_title_tags_meta' => 'inertia_meta#multiple_title_tags'
-
-  get 'shared_meta' => 'inertia_shared_meta#show'
-  get 'shared_metas' => 'inertia_shared_meta#index'
-  get 'edit_shared_meta' => 'inertia_shared_meta#edit'
-  get 'shared_meta_with_a_problem' => 'inertia_shared_meta#show_with_a_problem'
+  get 'from_before_filter_meta' => 'inertia_meta#from_before_filter'
+  get 'with_duplicate_head_keys_meta' => 'inertia_meta#with_duplicate_head_keys'
+  get 'override_tags_from_module_meta' => 'inertia_meta#override_tags_from_module'
 end
