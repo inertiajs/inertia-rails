@@ -1,7 +1,5 @@
 module InertiaRails
   class MetaTag
-    attr_reader :tag_name
-
     # Copied from Inertia.js
     UNARY_TAGS = %i[
       area base br col embed hr img input keygen link meta param source track wbr
@@ -39,6 +37,12 @@ module InertiaRails
       tag_helper.public_send(@tag_name, *[inner_content].compact, **data.transform_keys { |k| k.to_s.tr('_','-').to_sym })
     end
 
+    def [](key)
+      return @tag_name if key == :tag_name
+      return @head_key if key == :head_key
+      @tag_data[key.to_sym]
+    end
+
     private
 
     def generate_head_key(tag_name, tag_data)
@@ -68,7 +72,7 @@ module InertiaRails
 
     def build_tag_data(tag_data)
       return { inner_content: tag_data[:title] } if @is_shortened_title_tag
-      tag_data
+      tag_data.deep_symbolize_keys
     end
   end
 end
