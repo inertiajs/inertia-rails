@@ -33,16 +33,16 @@ module InertiaRails
       AlwaysProp.new(&block)
     end
 
-    def merge(&block)
-      MergeProp.new(&block)
+    def merge(match_on: nil, &block)
+      MergeProp.new(match_on: match_on, &block)
     end
 
-    def deep_merge(&block)
-      MergeProp.new(deep_merge: true, &block)
+    def deep_merge(match_on: nil, &block)
+      MergeProp.new(deep_merge: true, match_on: match_on, &block)
     end
 
-    def defer(group: nil, merge: nil, deep_merge: nil, &block)
-      DeferProp.new(group: group, merge: merge, deep_merge: deep_merge, &block)
+    def defer(group: nil, merge: nil, deep_merge: nil, match_on: nil, &block)
+      DeferProp.new(group: group, merge: merge, deep_merge: deep_merge, match_on: match_on, &block)
     end
   end
 end

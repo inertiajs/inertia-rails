@@ -530,30 +530,37 @@ RSpec.describe 'rendering inertia views', type: :request do
     before { get merge_props_path, headers: headers }
 
     it 'returns non-optional props and meta on first load' do
-      expect(response.parsed_body['props']).to eq('merge' => 'merge prop', 'deep_merge' => { 'deep' => 'merge prop' },
-                                                  'regular' => 'regular prop')
-      expect(response.parsed_body['mergeProps']).to match_array(%w[merge deferred_merge])
-      expect(response.parsed_body['deepMergeProps']).to match_array(%w[deep_merge deferred_deep_merge])
-      expect(response.parsed_body['deferredProps']).to eq('default' => %w[deferred_merge deferred_deep_merge deferred])
+      expect(response.parsed_body['props']).to eq(
+        'merge' => 'merge prop', 'match_on' => [{ 'id' => 1 }],
+        'deep_merge' => { 'deep' => 'merge prop' }, 'deep_match_on' => { 'deep' => [{ 'id' => 1 }] },
+        'regular' => 'regular prop'
+      )
+      expect(response.parsed_body['mergeProps']).to match_array(%w[merge match_on deferred_merge deferred_match_on])
+      expect(response.parsed_body['deepMergeProps']).to match_array(%w[deep_merge deep_match_on deferred_deep_merge deferred_deep_match_on])
+      expect(response.parsed_body['deferredProps']).to eq('default' => %w[deferred_merge deferred_match_on deferred_deep_merge deferred_deep_match_on deferred])
+      expect(response.parsed_body['matchPropsOn']).to match_array(%w[deep_match_on.deep.id deferred_deep_match_on.deep.id deferred_match_on.id match_on.id])
     end
 
     context 'with a partial reload' do
       let(:headers) do
         {
           'X-Inertia' => true,
-          'X-Inertia-Partial-Data' => 'deferred_merge,deferred_deep_merge',
+          'X-Inertia-Partial-Data' => 'deferred_merge,deferred_deep_merge,deferred_deep_match_on,deferred_match_on',
           'X-Inertia-Partial-Component' => 'TestComponent',
         }
       end
 
-      it 'returns listed and merge props' do
+      it 'returns listed merge props' do
         expect(response.parsed_body['props']).to eq(
           'deferred_merge' => 'deferred and merge prop',
-          'deferred_deep_merge' => { 'deep' => 'deferred and merge prop' }
+          'deferred_deep_merge' => { 'deep' => 'deferred and merge prop' },
+          'deferred_deep_match_on' => { 'deep' => [{ 'id' => 1 }] },
+          'deferred_match_on' => [{ 'id' => 1 }]
         )
-        expect(response.parsed_body['mergeProps']).to match_array(%w[merge deferred_merge])
-        expect(response.parsed_body['deepMergeProps']).to match_array(%w[deep_merge deferred_deep_merge])
+        expect(response.parsed_body['mergeProps']).to match_array(%w[deferred_merge deferred_match_on])
+        expect(response.parsed_body['deepMergeProps']).to match_array(%w[deferred_deep_merge deferred_deep_match_on])
         expect(response.parsed_body['deferredProps']).to be_nil
+        expect(response.parsed_body['matchPropsOn']).to match_array(%w[deferred_deep_match_on.deep.id deferred_match_on.id])
       end
     end
 
@@ -567,13 +574,36 @@ RSpec.describe 'rendering inertia views', type: :request do
         }
       end
 
-      it 'returns listed and merge props' do
+      it 'returns listed props' do
         expect(response.parsed_body['props']).to eq(
           'deferred_merge' => 'deferred and merge prop',
           'deferred_deep_merge' => { 'deep' => 'deferred and merge prop' }
         )
-        expect(response.parsed_body['mergeProps']).to match_array(%w[merge])
+        expect(response.parsed_body['mergeProps']).to be_nil
         expect(response.parsed_body['deferredProps']).to be_nil
+        expect(response.parsed_body['matchPropsOn']).to be_nil
+      end
+    end
+
+    context 'with an except header' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'deferred_merge,deferred_deep_merge,deep_match_on',
+          'X-Inertia-Partial-Except' => 'deferred_merge',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      it 'returns only the excepted props' do
+        expect(response.parsed_body['props']).to eq(
+          'deferred_deep_merge' => { 'deep' => 'deferred and merge prop' },
+          'deep_match_on' => { 'deep' => [{ 'id' => 1 }] }
+        )
+        expect(response.parsed_body['mergeProps']).to be_nil
+        expect(response.parsed_body['deepMergeProps']).to match_array(%w[deferred_deep_merge deep_match_on])
+        expect(response.parsed_body['deferredProps']).to be_nil
+        expect(response.parsed_body['matchPropsOn']).to match_array(%w[deep_match_on.deep.id])
       end
     end
   end
