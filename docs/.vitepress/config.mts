@@ -21,7 +21,9 @@ export default defineConfig({
         buildStart() {
           // Regenerate LLM docs before build
           console.log('Regenerating LLM documentation...')
-          execSync('node scripts/extract-docs.js', { cwd: path.join(__dirname, '..') })
+          execSync('node scripts/extract-docs.js', {
+            cwd: path.join(__dirname, '..'),
+          })
           console.log('LLM documentation updated!')
         },
       },
