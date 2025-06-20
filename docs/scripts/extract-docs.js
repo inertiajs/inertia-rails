@@ -321,13 +321,13 @@ function generateAPIReference() {
         Object.entries(methodGroups).forEach(([methodName, methodExamples]) => {
           apiRef += `### ${methodName}\n\n`
           apiRef += `Used in: ${methodExamples.map((e) => e.source).join(', ')}\n\n`
-          apiRef += `\`\`\`ruby\n${methodExamples[0].code}\n\`\`\`\n\n`
+          apiRef += `\`\`\`${methodExamples[0].language || ''}\n${methodExamples[0].code}\n\`\`\`\n\n`
         })
       } else {
         // For other categories, just list examples
         examples.forEach((example, index) => {
           apiRef += `### Example ${index + 1} (from ${example.source})\n\n`
-          apiRef += `\`\`\`ruby\n${example.code}\n\`\`\`\n\n`
+          apiRef += `\`\`\`${example.language || ''}\n${example.code}\n\`\`\`\n\n`
         })
       }
     }
