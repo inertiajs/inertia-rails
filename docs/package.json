@@ -7,6 +7,7 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
+    "gray-matter": "^4.0.3",
     "markdown-it-container": "^4.0.0",
     "prettier": "^3.3.3",
     "prettier-plugin-organize-imports": "^4.1.0",

@@ -8,6 +8,7 @@
 /tmp/
 /.cache/
 /Gemfile.lock
+.DS_Store
 
 /spec/dummy/db/*.sqlite3
 /spec/dummy/db/*.sqlite3-journal
