@@ -48,5 +48,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: llm-docs
-          path: docs/llm-docs.txt
+          path: public/llms-full.txt
           retention-days: 90
