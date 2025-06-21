@@ -84,6 +84,7 @@ export default defineConfig({
           },
         ],
       },
+      { text: 'LLMs', link: '/llms-full.txt' },
     ],
 
     logo: '/logo.svg',
