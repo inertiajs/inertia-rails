@@ -11,7 +11,7 @@ module InertiaRails
                                         default: Helper.guess_the_default_framework
 
       class_option :typescript, type: :boolean, desc: 'Whether to use TypeScript',
-                                default: Helper.guess_typescript
+                                default: Helper.uses_typescript?
 
       argument :actions, type: :array, default: [], banner: 'action action'
 
