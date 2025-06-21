@@ -139,7 +139,7 @@ Inertia Rails provides a number of generators to help you get started with Inert
 
 ### Scaffold generator
 
-To create a resource with Inertia responses, execute the following command in the terminal:
+Use the `inertia:scaffold` generator to create a resource with Inertia responses. Execute the following command in the terminal:
 
 ```bash
 bin/rails generate inertia:scaffold ModelName field1:type field2:type
@@ -185,7 +185,7 @@ Inertia Rails tries to detect the presence of Tailwind CSS in the application an
 
 ### Controller generator
 
-To create a controller with an Inertia response, execute the following command in the terminal:
+Use the `inertia:controller` generator to create a controller with an Inertia response. Execute the following command in the terminal:
 
 ```bash
 bin/rails generate inertia:controller ControllerName action1 action2
@@ -211,7 +211,7 @@ $ bin/rails generate inertia:controller pages welcome next_steps
 
 ### Customizing the generator templates
 
-Rails generators allow templates customization. For example, to customize the controller generator view template, create a file `lib/templates/inertia_templates/controller/react/view.jsx.tt`:
+Rails generators allow templates customization. You can create custom template files in your application to override the default templates used by the generators. For example, to customize the controller generator view template for React, create a file at the path `lib/templates/inertia_templates/controller/react/view.jsx.tt`:
 
 ```jsx
 export default function <%= @action.camelize %>() {

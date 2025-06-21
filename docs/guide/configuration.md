@@ -4,7 +4,7 @@ Inertia Rails can be configured globally or in a specific controller (and subcla
 
 ## Global Configuration
 
-If using global configuration, we recommend you place the code inside an initializer:
+Use the `InertiaRails.configure` method to set global configuration options. If using global configuration, we recommend you place the code inside an initializer:
 
 ```ruby
 # config/initializers/inertia.rb
@@ -19,7 +19,7 @@ The default configuration can be found [here](https://github.com/inertiajs/inert
 
 ## Local Configuration
 
-Use `inertia_config` in your controllers to override global settings:
+The `inertia_config` method allows you to override global settings in specific controllers. Use this method in your controllers to customize configuration for specific parts of your application:
 
 ```ruby
 class EventsController < ApplicationController
