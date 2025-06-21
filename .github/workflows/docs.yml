@@ -39,3 +39,14 @@ jobs:
       - name: Check formatting
         working-directory: ./docs
         run: npm run format:check
+
+      - name: Generate LLM-friendly documentation
+        working-directory: ./docs
+        run: node scripts/extract-docs.js
+
+      - name: Upload LLM docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: llm-docs
+          path: public/llms-full.txt
+          retention-days: 90

@@ -1,5 +1,11 @@
+import { execSync } from 'child_process'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitepress'
 import { tabsMarkdownPlugin } from './vitepress-plugin-tabs/tabsMarkdownPlugin'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 const title = 'Inertia Rails'
 const description = 'Documentation for Inertia.js Rails adapter'
@@ -12,6 +18,22 @@ export default defineConfig({
   description,
 
   cleanUrls: true,
+
+  vite: {
+    plugins: [
+      {
+        name: 'generate-llm-docs',
+        buildStart() {
+          // Regenerate LLM docs before build
+          console.log('Regenerating LLM documentation...')
+          execSync('node scripts/extract-docs.js', {
+            cwd: join(__dirname, '..'),
+          })
+          console.log('LLM documentation updated!')
+        },
+      },
+    ],
+  },
 
   markdown: {
     config(md) {
