@@ -35,6 +35,8 @@ end
 
 ### Assertions
 
+Inertia Rails provides several RSpec matchers for testing Inertia responses. You can use methods like `expect_inertia`, `render_component`, `have_exact_props`, `include_props`, `have_exact_view_data`, and `include_view_data` to test your Inertia responses.
+
 ```ruby
 # spec/requests/events_spec.rb
 RSpec.describe '/events', inertia: true do

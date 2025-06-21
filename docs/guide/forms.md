@@ -186,7 +186,7 @@ For a full discussion on handling and displaying [validation](/guide/validation.
 
 ## Form helper
 
-Since working with forms is so common, Inertia includes a form helper designed to help reduce the amount of boilerplate code needed for handling typical form submissions.
+Since working with forms is so common, Inertia includes a form helper designed to help reduce the amount of boilerplate code needed for handling typical form submissions. The `useForm` method provides a convenient way to manage form state, validation, and submission.
 
 :::tabs key:frameworks
 == Vue

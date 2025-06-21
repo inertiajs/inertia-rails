@@ -4,7 +4,7 @@ One common challenge when building single-page apps is refreshing site assets wh
 
 ## Configuration
 
-To enable automatic asset refreshing, you need to tell Inertia the current version of your assets. This can be any arbitrary string (letters, numbers, or a file hash), as long as it changes when your assets have been updated.
+To enable automatic asset refreshing, you need to tell Inertia the current version of your assets using the `InertiaRails.configure` method and setting the `config.version` property. This can be any arbitrary string (letters, numbers, or a file hash), as long as it changes when your assets have been updated.
 
 ```ruby
 InertiaRails.configure do |config|

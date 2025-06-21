@@ -23,6 +23,28 @@ Within Rails applications, the `Event/Show` page would typically correspond to t
 > [!WARNING]
 > To ensure that pages load quickly, only return the minimum data required for the page. Also, be aware that **all data returned from the controllers will be visible client-side**, so be sure to omit sensitive information.
 
+### Automatically determine component name
+
+You can pass props without specifying a component name:
+
+```ruby
+class UsersController < ApplicationController
+  def show
+    render inertia: { user: @user } # Will render '../users/show.jsx|vue|svelte'
+  end
+end
+```
+
+If the default component path doesn't match your convention, you can define a custom resolution method via the `component_path_resolver` config value. The value should be callable and will receive the path and action parameters, returning a string component path.
+
+```ruby
+inertia_config(
+  component_path_resolver: ->(path:, action:) do
+    "Storefront/#{path.camelize}/#{action.camelize}"
+  end
+)
+```
+
 ### Using instance variables as props
 
 Inertia enables the automatic passing of instance variables as props. This can be achieved by invoking the `use_inertia_instance_props` function in a controller or in a base controller from which other controllers inherit.
@@ -46,54 +68,6 @@ This action automatically passes the `@events` instance variable as the `events`
 
 > [!NOTE]
 > Instance props are only included if they are defined **after** the `use_inertia_instance_props` call, hence the order of `before_action` callbacks is crucial.
-
-### Automatically determine component name
-
-Rails conventions can be used to automatically render the correct page component by invoking `render inertia: true`:
-
-```ruby
-class EventsController < ApplicationController
-  use_inertia_instance_props
-
-  def index
-    @events = Event.all
-
-    render inertia: true
-  end
-end
-```
-
-This renders the `app/frontend/pages/events/index.(jsx|vue|svelte)` page component and passes the `@events` instance variable as the `events` prop.
-
-Setting the `default_render` configuration value to `true` establishes this as the default behavior:
-
-```ruby
-InertiaRails.configure do |config|
-  config.default_render = true
-end
-```
-
-```ruby
-class EventsController < ApplicationController
-  use_inertia_instance_props
-
-  def index
-    @events = Event.all
-  end
-end
-```
-
-With this configuration, the `app/frontend/pages/events/index.(jsx|vue|svelte)` page component is rendered automatically, passing the `@events` instance variable as the `events` prop.
-
-If the default component path doesn't match your convention, you can define a custom resolution method via the `component_path_resolver` config value. The value should be callable and will receive the path and action parameters, returning a string component path.
-
-```ruby
-inertia_config(
-  component_path_resolver: ->(path:, action:) do
-    "Storefront/#{path.camelize}/#{action.camelize}"
-  end
-)
-```
 
 ## Root template data
 
@@ -139,7 +113,7 @@ Inertia Rails provides a number of generators to help you get started with Inert
 
 ### Scaffold generator
 
-To create a resource with Inertia responses, execute the following command in the terminal:
+Use the `inertia:scaffold` generator to create a resource with Inertia responses. Execute the following command in the terminal:
 
 ```bash
 bin/rails generate inertia:scaffold ModelName field1:type field2:type
@@ -185,7 +159,7 @@ Inertia Rails tries to detect the presence of Tailwind CSS in the application an
 
 ### Controller generator
 
-To create a controller with an Inertia response, execute the following command in the terminal:
+Use the `inertia:controller` generator to create a controller with an Inertia response. Execute the following command in the terminal:
 
 ```bash
 bin/rails generate inertia:controller ControllerName action1 action2
@@ -211,7 +185,7 @@ $ bin/rails generate inertia:controller pages welcome next_steps
 
 ### Customizing the generator templates
 
-Rails generators allow templates customization. For example, to customize the controller generator view template, create a file `lib/templates/inertia_templates/controller/react/view.jsx.tt`:
+Rails generators allow templates customization. You can create custom template files in your application to override the default templates used by the generators. For example, to customize the controller generator view template for React, create a file at the path `lib/templates/inertia_templates/controller/react/view.jsx.tt`:
 
 ```jsx
 export default function <%= @action.camelize %>() {
@@ -236,3 +210,37 @@ You can find the default templates in the gem's source code:
 To enable client-side history navigation, all Inertia server responses are stored in the browser's history state. However, keep in mind that some browsers impose a size limit on how much data can be saved within the history state.
 
 For example, [Firefox](https://developer.mozilla.org/en-US/docs/Web/API/History/pushState) has a size limit of 16 MiB and throws a `NS_ERROR_ILLEGAL_VALUE` error if you exceed this limit. Typically, this is much more data than you'll ever practically need when building applications.
+
+## Detecting Inertia Requests
+
+Controllers can determine if a request was made via Inertia:
+
+```ruby
+def some_action
+  if request.inertia?
+  # This is an Inertia request
+  end
+
+  if request.inertia_partial?
+  # This is a partial Inertia request
+  end
+end
+```
+
+## Inertia responses and `respond_to`
+
+Inertia responses always operate as a `:html` response type. This means that you can use the `respond_to` method to handle JSON requests differently, while still returning Inertia responses:
+
+```ruby
+def some_action
+  respond_to do |format|
+    format.html do
+      render inertia: 'Some/Component', props: { data: 'value' }
+    end
+
+    format.json do
+      render json: { message: 'This is a JSON response' }
+    end
+  end
+end
+```

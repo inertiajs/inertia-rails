@@ -26,6 +26,23 @@ class EventsController < ApplicationController
 end
 ```
 
+### Inheritance and Shared Data
+
+Shared data defined in parent controllers is automatically inherited by child controllers. Child controllers can also override or add to the shared data:
+
+```ruby
+# Parent controller
+  class ApplicationController < ActionController::Base
+  inertia_share app_name: 'My App', version: '1.0'
+end
+
+# Child controller
+class UsersController < ApplicationController
+  # Inherits app_name and version, adds/overrides auth
+  inertia_share auth: -> { { user: current_user } }
+end
+```
+
 ### Conditional Sharing
 
 You can control when data is shared using Rails-style controller filters. The `inertia_share` method supports these filter options:
