@@ -72,6 +72,13 @@ class InertiaMetaController < ApplicationController
     ]
   end
 
+  def allowed_duplicates
+    render inertia: 'TestComponent', meta: [
+      { property: 'article:author', content: 'Cassian Andor', allow_duplicates: true },
+      { property: 'article:author', content: 'Tony Gilroy', allow_duplicates: true},
+    ]
+  end
+
   protected
 
   def set_description_meta_tag

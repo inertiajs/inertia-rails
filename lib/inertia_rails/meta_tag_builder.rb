@@ -50,6 +50,8 @@ module InertiaRails
     end
 
     def duplicate?(existing_tag, new_tag)
+      return false if existing_tag.allow_duplicates
+
       UNIQUE_VALUE_KEYS.each do |key|
         next false unless existing_tag[key] && new_tag[key]
 
