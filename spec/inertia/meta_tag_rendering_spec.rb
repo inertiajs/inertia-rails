@@ -68,7 +68,7 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
       expect(response.parsed_body['props']['_inertia_meta']).to eq([
         {
           'tagName' => 'meta',
-          'name' => 'description',
+          'name' => 'description2', # Contrived mismatch between meta tag names to ensure head_key deduplication works
           'content' => 'This is another description',
           'headKey' => 'duplicate_key'
         }
@@ -88,6 +88,46 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
           'headKey' => 'meta_tag_from_concern'
         }
       ])
+    end
+  end
+
+  describe "automatic deduplication without head_keys" do
+    context "default behavior" do
+      it "dedups on :name, :property, :http_equiv, :charset, and :itemprop keys" do
+        get auto_dedup_meta_path, headers: headers
+
+        # Don't care what the auto generated head keys are, just check the content
+        meta_without_head_keys = response.parsed_body['props']['_inertia_meta'].map do |tag|
+          tag.reject { |properties| properties['headKey'] }
+        end
+
+        expect(meta_without_head_keys).to match_array([
+          {
+            'tagName' => 'meta',
+            'name' => 'description',
+            'content' => 'Overridden description',
+          },
+          {
+            'tagName' => 'meta',
+            'property' => 'og:description',
+            'content' => 'Overridden Open Graph description',
+          },
+          {
+            'tagName' => 'meta',
+            'httpEquiv' => 'content-security-policy',
+            'content' => "Overridden CSP",
+          },
+          {
+            'tagName' => 'meta',
+            'itemprop' => 'name',
+            'content' => 'Overridden itemprop name',
+          },
+          {
+            'tagName' => 'meta',
+            'charset' => 'Overridden charset',
+          }
+        ])
+      end
     end
   end
 end
