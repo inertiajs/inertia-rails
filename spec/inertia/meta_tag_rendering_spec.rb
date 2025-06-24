@@ -92,42 +92,59 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
   end
 
   describe "automatic deduplication without head_keys" do
-    context "default behavior" do
-      it "dedups on :name, :property, :http_equiv, :charset, and :itemprop keys" do
-        get auto_dedup_meta_path, headers: headers
-
-        # Don't care what the auto generated head keys are, just check the content
-        meta_without_head_keys = response.parsed_body['props']['_inertia_meta'].map do |tag|
-          tag.reject { |properties| properties['headKey'] }
-        end
-
-        expect(meta_without_head_keys).to match_array([
-          {
-            'tagName' => 'meta',
-            'name' => 'description',
-            'content' => 'Overridden description',
-          },
-          {
-            'tagName' => 'meta',
-            'property' => 'og:description',
-            'content' => 'Overridden Open Graph description',
-          },
-          {
-            'tagName' => 'meta',
-            'httpEquiv' => 'content-security-policy',
-            'content' => "Overridden CSP",
-          },
-          {
-            'tagName' => 'meta',
-            'itemprop' => 'name',
-            'content' => 'Overridden itemprop name',
-          },
-          {
-            'tagName' => 'meta',
-            'charset' => 'Overridden charset',
-          }
-        ])
+    # Don't care what the auto generated head keys are, just check the content
+    let(:meta_without_head_keys) do
+      response.parsed_body['props']['_inertia_meta'].map do |tag|
+        tag.reject { |properties| properties['headKey'] }
       end
+    end
+
+    it "dedups on :name, :property, :http_equiv, :charset, and :itemprop keys" do
+      get auto_dedup_meta_path, headers: headers
+
+      expect(meta_without_head_keys).to match_array([
+        {
+          'tagName' => 'meta',
+          'name' => 'description',
+          'content' => 'Overridden description',
+        },
+        {
+          'tagName' => 'meta',
+          'property' => 'og:description',
+          'content' => 'Overridden Open Graph description',
+        },
+        {
+          'tagName' => 'meta',
+          'httpEquiv' => 'content-security-policy',
+          'content' => "Overridden CSP",
+        },
+        {
+          'tagName' => 'meta',
+          'itemprop' => 'name',
+          'content' => 'Overridden itemprop name',
+        },
+        {
+          'tagName' => 'meta',
+          'charset' => 'Overridden charset',
+        }
+      ])
+    end
+
+    it "allows duplicates for specified meta tags" do
+      get allowed_duplicates_meta_path, headers: headers
+
+      expect(meta_without_head_keys).to match_array([
+        {
+          'tagName' => 'meta',
+          'property' => 'article:author',
+          'content' => 'Cassian Andor',
+        },
+        {
+          'tagName' => 'meta',
+          'property' => 'article:author',
+          'content' => 'Tony Gilroy',
+        }
+      ])
     end
   end
 end

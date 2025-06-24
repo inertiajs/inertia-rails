@@ -1,15 +1,18 @@
 module InertiaRails
   class MetaTag
+    attr_reader :allow_duplicates
+
     # Copied from Inertia.js
     UNARY_TAGS = %i[
       area base br col embed hr img input keygen link meta param source track wbr
     ].freeze
 
-    def initialize(tag_name: nil, head_key: nil, raw: false, **tag_data)
+    def initialize(tag_name: nil, head_key: nil, raw: false, allow_duplicates: false, **tag_data)
       @is_shortened_title_tag = shortened_title_tag?(tag_name, tag_data)
       @tag_name = determine_tag_name(tag_name)
       @head_key = head_key || generate_head_key(@tag_name, tag_data)
       @raw = raw
+      @allow_duplicates = allow_duplicates
       @tag_data = build_tag_data(tag_data)
     end
 
