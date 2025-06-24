@@ -94,4 +94,5 @@ Rails.application.routes.draw do
   get 'from_before_filter_meta' => 'inertia_meta#from_before_filter'
   get 'with_duplicate_head_keys_meta' => 'inertia_meta#with_duplicate_head_keys'
   get 'override_tags_from_module_meta' => 'inertia_meta#override_tags_from_module'
+  get 'auto_dedup_meta' => 'inertia_meta#auto_dedup'
 end

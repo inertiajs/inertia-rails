@@ -2,6 +2,7 @@ class InertiaMetaController < ApplicationController
   include MetaTaggable
 
   before_action :set_description_meta_tag, only: :from_before_filter
+  before_action :set_deduplicatable_tags, only: :auto_dedup
 
   def basic
     render inertia: 'TestComponent', meta: [
@@ -25,7 +26,7 @@ class InertiaMetaController < ApplicationController
   def with_duplicate_head_keys
     render inertia: 'TestComponent', meta: [
       { name: 'description', content: 'This is a description', head_key: 'duplicate_key' },
-      { name: 'description', content: 'This is another description', head_key: 'duplicate_key' },
+      { name: 'description2', content: 'This is another description', head_key: 'duplicate_key' },
     ]
   end
 
@@ -45,6 +46,32 @@ class InertiaMetaController < ApplicationController
     render inertia: 'TestComponent'
   end
 
+  def auto_dedup
+    inertia_meta.add([
+      {
+        'name' => 'description',
+        'content' => 'Overridden description',
+      },
+      {
+        'property' => 'og:description',
+        'content' => 'Overridden Open Graph description',
+      },
+      {
+        'http_equiv' => 'content-security-policy',
+        'content' => "Overridden CSP",
+      },
+      {
+        'charset' => 'Overridden charset',
+      },
+      {
+        'itemprop' => 'name',
+        'content' => 'Overridden itemprop name',
+      }
+    ])
+    render inertia: 'TestComponent', meta: [
+    ]
+  end
+
   protected
 
   def set_description_meta_tag
@@ -53,5 +80,29 @@ class InertiaMetaController < ApplicationController
       content: 'This is a description set from a before filter',
       head_key: 'before_filter_tag'
     })
+  end
+
+  def set_deduplicatable_tags
+    inertia_meta.add([
+      {
+        'name' => 'description',
+        'content' => 'Default description',
+      },
+      {
+        'property' => 'og:description',
+        'content' => 'Default Open Graph description',
+      },
+      {
+        'http_equiv' => 'content-security-policy',
+        'content' => "Default CSP",
+      },
+      {
+        'charset' => 'Default charset',
+      },
+      {
+        'itemprop' => 'name',
+        'content' => 'Default itemprop name',
+      }
+    ])
   end
 end

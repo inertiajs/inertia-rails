@@ -2,6 +2,9 @@ module InertiaRails
   class MetaTagBuilder
     attr_reader :meta_tags
 
+    UNIQUE_VALUE_KEYS = %i[head_key name property http_equiv itemprop]
+    UNIQUE_PRESENCE_KEYS = %i[charset]
+
     def initialize(controller)
       @controller = controller
       @meta_tags = []
@@ -47,8 +50,21 @@ module InertiaRails
     end
 
     def duplicate?(existing_tag, new_tag)
-      existing_tag[:head_key] == new_tag[:head_key] ||
-        new_tag[:tag_name] == :title && existing_tag[:tag_name] == :title
+      UNIQUE_VALUE_KEYS.each do |key|
+        next false unless existing_tag[key] && new_tag[key]
+
+        return true if existing_tag[key] == new_tag[key]
+      end
+
+      UNIQUE_PRESENCE_KEYS.each do |key|
+        return true if existing_tag[key] && new_tag[key]
+      end
+
+      duplicates_title?(existing_tag, new_tag)
+    end
+
+    def duplicates_title?(existing_tag, new_tag)
+      new_tag[:tag_name] == :title && existing_tag[:tag_name] == :title
     end
   end
 end
