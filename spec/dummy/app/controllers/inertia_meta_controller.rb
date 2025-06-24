@@ -47,7 +47,7 @@ class InertiaMetaController < ApplicationController
   end
 
   def auto_dedup
-    inertia_meta.add([
+    render inertia: 'TestComponent', meta: [
       {
         'name' => 'description',
         'content' => 'Overridden description',
@@ -67,8 +67,6 @@ class InertiaMetaController < ApplicationController
         'itemprop' => 'name',
         'content' => 'Overridden itemprop name',
       }
-    ])
-    render inertia: 'TestComponent', meta: [
     ]
   end
 
