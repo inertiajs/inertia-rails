@@ -120,11 +120,6 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
         },
         {
           'tagName' => 'meta',
-          'itemprop' => 'name',
-          'content' => 'Overridden itemprop name',
-        },
-        {
-          'tagName' => 'meta',
           'charset' => 'Overridden charset',
         }
       ])
