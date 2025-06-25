@@ -63,10 +63,6 @@ class InertiaMetaController < ApplicationController
       {
         'charset' => 'Overridden charset',
       },
-      {
-        'itemprop' => 'name',
-        'content' => 'Overridden itemprop name',
-      }
     ]
   end
 
@@ -104,10 +100,6 @@ class InertiaMetaController < ApplicationController
       {
         'charset' => 'Default charset',
       },
-      {
-        'itemprop' => 'name',
-        'content' => 'Default itemprop name',
-      }
     ])
   end
 end

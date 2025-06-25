@@ -56,27 +56,27 @@ RSpec.describe InertiaRails::MetaTag do
 
   describe "generated head keys" do
     it "generates a headKey of the format {tag name}-{hexdigest of tag content}" do
-      meta_tag = described_class.new(name: 'description', content: 'Inertia rules')
-      expected_head_key = "meta-#{Digest::MD5.hexdigest('content=Inertia rules&name=description')[0, 8]}"
+      meta_tag = described_class.new(some_name: 'description', content: 'Inertia rules')
+      expected_head_key = "meta-#{Digest::MD5.hexdigest('content=Inertia rules&some_name=description')[0, 8]}"
 
       expect(meta_tag.as_json[:'headKey']).to eq(expected_head_key)
     end
 
     it "generates the same headKey regardless of hash data order" do
-      first_tags = described_class.new(name: 'description', content: 'Inertia rules').as_json
+      first_tags = described_class.new(some_name: 'description', content: 'Inertia rules').as_json
       first_head_key = first_tags[:'headKey']
 
-      second_tags = described_class.new(content: 'Inertia rules', name: 'description').as_json
+      second_tags = described_class.new(content: 'Inertia rules', some_name: 'description').as_json
       second_head_key = second_tags[:'headKey']
 
       expect(first_head_key).to eq(second_head_key)
     end
 
     it "generates a different headKey for different content" do
-      first_tags = described_class.new(name: 'description', content: 'Inertia rules').as_json
+      first_tags = described_class.new(some_name: 'thing', content: 'Inertia rules').as_json
       first_head_key = first_tags[:'headKey']
 
-      second_tags = described_class.new(name: 'description', content: 'Inertia rocks').as_json
+      second_tags = described_class.new(some_name: 'thing', content: 'Inertia rocks').as_json
       second_head_key = second_tags[:'headKey']
 
       expect(first_head_key).not_to eq(second_head_key)
@@ -87,6 +87,32 @@ RSpec.describe InertiaRails::MetaTag do
       meta_tag = described_class.new(head_key: custom_head_key, name: 'description', content: 'Inertia rules')
 
       expect(meta_tag.as_json[:'headKey']).to eq(custom_head_key)
+    end
+
+    it "generates a head key by the name attribute if no head_key is provided" do
+      meta_tag = described_class.new(name: 'description', content: 'Inertia rules')
+
+      expect(meta_tag.as_json[:'headKey']).to eq("meta-name-description")
+    end
+
+    it "generates a head key by the http_equiv attribute if no head_key is provided" do
+      meta_tag = described_class.new(http_equiv: 'content-security-policy', content: "default-src 'self'")
+
+      expect(meta_tag.as_json[:'headKey']).to eq("meta-http_equiv-content-security-policy")
+    end
+
+    it "generates a head key by the property attribute if no head_key is provided" do
+      meta_tag = described_class.new(property: 'og:title', content: 'Inertia Rocks')
+
+      expect(meta_tag.as_json[:'headKey']).to eq("meta-property-og-title")
+    end
+
+    context "with allow_duplicates set to true" do
+      it "generates a head key with a unique suffix" do
+        meta_tag = described_class.new(name: 'description', content: 'Inertia rules', allow_duplicates: true)
+
+        expect(meta_tag.as_json[:'headKey']).to eq("meta-name-description-#{Digest::MD5.hexdigest('content=Inertia rules&name=description')[0, 8]}")
+      end
     end
   end
 
