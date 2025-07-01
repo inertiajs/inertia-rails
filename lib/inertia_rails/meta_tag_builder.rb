@@ -34,6 +34,11 @@ module InertiaRails
       self
     end
 
+    def clear
+      @meta_tags.clear
+      self
+    end
+
     private
 
     def add_new_tag(new_tag_data)

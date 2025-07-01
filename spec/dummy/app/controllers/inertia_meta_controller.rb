@@ -1,7 +1,7 @@
 class InertiaMetaController < ApplicationController
   include MetaTaggable
 
-  before_action :set_description_meta_tag, only: :from_before_filter
+  before_action :set_description_meta_tag, only: [:from_before_filter, :cleared_meta]
   before_action :set_deduplicatable_tags, only: :auto_dedup
 
   def basic
@@ -71,6 +71,11 @@ class InertiaMetaController < ApplicationController
       { property: 'article:author', content: 'Cassian Andor', allow_duplicates: true },
       { property: 'article:author', content: 'Tony Gilroy', allow_duplicates: true},
     ]
+  end
+
+  def cleared_meta
+    inertia_meta.clear
+    render inertia: 'TestComponent'
   end
 
   protected
