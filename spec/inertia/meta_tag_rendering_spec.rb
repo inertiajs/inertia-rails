@@ -142,4 +142,9 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
       ])
     end
   end
+
+  it "can clear meta tags" do
+    get cleared_meta_path, headers: headers
+    expect(response.parsed_body['props']['_inertia_meta']).not_to be
+  end
 end
