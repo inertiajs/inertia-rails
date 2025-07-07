@@ -166,6 +166,15 @@ export default defineConfig({
               ],
             },
             {
+              text: 'Inertia-Rails-Only Features',
+              items: [
+                {
+                  text: 'Server Managed Meta Tags',
+                  link: '/cookbook/server-managed-meta-tags',
+                }
+              ]
+            },
+            {
               text: 'Troubleshooting',
               items: [
                 {
