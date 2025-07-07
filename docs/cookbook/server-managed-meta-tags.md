@@ -23,7 +23,7 @@ Simply add the `inertia_meta_tags` helper to your layout. This will render the m
 ```
 
 > [!NOTE]
-> If you have a `<title>` tag in your Rails layout, make sure it has the `inertia` attribute on it so Inertia knows it should deduplicate it. The Inertia Rails generator does this for you automatically.
+> If you have a `<title>` tag in your Rails layout, make sure it has the `inertia` attribute on it so Inertia knows it should deduplicate it. The Inertia Rails install generator does this for you automatically.
 
 ### Client Side
 
