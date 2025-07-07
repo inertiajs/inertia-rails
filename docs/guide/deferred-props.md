@@ -39,6 +39,10 @@ end
 
 In the example above, the `teams`, `projects`, and `tasks` props will be fetched in one request, while the `permissions` prop will be fetched in a separate request in parallel. Group names are arbitrary strings and can be anything you choose.
 
+### Combining with mergeable props
+
+Deferred props can be combined with mergeable props. You can learn more about this feature in the [Merging props](/guide/merging-props) section.
+
 ## Client side
 
 On the client side, Inertia provides the `Deferred` component to help you manage deferred props. This component will automatically wait for the specified deferred props to be available before rendering its children.
