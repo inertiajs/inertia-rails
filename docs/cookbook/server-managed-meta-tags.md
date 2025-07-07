@@ -21,9 +21,9 @@ Simply add the `inertia_meta_tags` helper to your layout. This will render the m
   </head>
 </html>
 ```
+
 > [!NOTE]
 > If you have a `<title>` tag in your Rails layout, make sure it has the `inertia` attribute on it so Inertia knows it should deduplicate it. The Inertia Rails generator does this for you automatically.
-
 
 ### Client Side
 
@@ -35,65 +35,70 @@ Copy the following code into your application. It should be rendered **once** in
 
 ```vue
 <script>
-import { Head } from '@inertiajs/vue3';
-import { usePage } from '@inertiajs/vue3';
-import { h } from 'vue';
+import { Head } from '@inertiajs/vue3'
+import { usePage } from '@inertiajs/vue3'
+import { h } from 'vue'
 
 export default {
   name: 'MetaTags',
   setup() {
-    const page = usePage();
+    const page = usePage()
 
     return () => {
-      const metaTags = page.props._inertia_meta || [];
+      const metaTags = page.props._inertia_meta || []
 
-      return h(Head, {},
+      return h(
+        Head,
+        {},
         metaTags.map((meta) => {
-          const { tagName, innerContent, headKey, httpEquiv, ...attrs } = meta;
+          const { tagName, innerContent, headKey, httpEquiv, ...attrs } = meta
 
           const attributes = {
             key: headKey,
             'head-key': headKey,
-            ...attrs
-          };
+            ...attrs,
+          }
 
           if (httpEquiv) {
-            attributes['http-equiv'] = httpEquiv;
+            attributes['http-equiv'] = httpEquiv
           }
 
-          let content = null;
+          let content = null
           if (innerContent != null) {
-            content = typeof innerContent === 'string'
-              ? innerContent
-              : JSON.stringify(innerContent);
+            content =
+              typeof innerContent === 'string'
+                ? innerContent
+                : JSON.stringify(innerContent)
           }
 
-          return h(tagName, attributes, content);
-        })
-      );
-    };
-  }
-};
+          return h(tagName, attributes, content)
+        }),
+      )
+    }
+  },
+}
 </script>
 ```
 
 == React
 
 ```jsx
-import React from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import React from 'react'
+import { Head, usePage } from '@inertiajs/react'
 
 const MetaTags = () => {
-  const { _inertia_meta: meta } = usePage().props;
+  const { _inertia_meta: meta } = usePage().props
   return (
     <Head>
       {meta.map((meta) => {
-        const { tagName, innerContent, headKey, httpEquiv, ...attrs } = meta;
+        const { tagName, innerContent, headKey, httpEquiv, ...attrs } = meta
 
-        let stringifiedInnerContent;
+        let stringifiedInnerContent
         if (innerContent != null) {
           stringifiedInnerContent =
-            typeof innerContent === 'string' ? innerContent : JSON.stringify(innerContent);
+            typeof innerContent === 'string'
+              ? innerContent
+              : JSON.stringify(innerContent)
         }
 
         return React.createElement(tagName, {
@@ -104,13 +109,13 @@ const MetaTags = () => {
           ...(stringifiedInnerContent
             ? { dangerouslySetInnerHTML: { __html: stringifiedInnerContent } }
             : {}),
-        });
+        })
       })}
     </Head>
-  );
-};
+  )
+}
 
-export default MetaTags;
+export default MetaTags
 ```
 
 == Svelte 4|Svelte 5
@@ -118,67 +123,51 @@ export default MetaTags;
 ```svelte
 <!-- MetaTags.svelte -->
 <script>
-  import { onMount } from 'svelte';
-  import { page } from '@inertiajs/svelte';
+  import { onMount } from 'svelte'
+  import { page } from '@inertiajs/svelte'
 
-  $: metaTags = ($page.props._inertia_meta ?? []).map(({
-    tagName,
-    headKey,
-    innerContent,
-    httpEquiv,
-    ...attrs
-  }) => ({
-    tagName,
-    headKey,
-    innerContent,
-    attrs: httpEquiv ? { ...attrs, 'http-equiv': httpEquiv } : attrs
-  }));
+  $: metaTags = ($page.props._inertia_meta ?? []).map(
+    ({ tagName, headKey, innerContent, httpEquiv, ...attrs }) => ({
+      tagName,
+      headKey,
+      innerContent,
+      attrs: httpEquiv ? { ...attrs, 'http-equiv': httpEquiv } : attrs,
+    }),
+  )
 
   // Svelte throws warnings if we render void elements like meta with content
-  $: voidTags = metaTags.filter(tag => tag.innerContent == null);
-  $: contentTags = metaTags.filter(tag => tag.innerContent != null);
+  $: voidTags = metaTags.filter((tag) => tag.innerContent == null)
+  $: contentTags = metaTags.filter((tag) => tag.innerContent != null)
 
-  let ready = false;
+  let ready = false
 
   onMount(() => {
     // Clean up server-rendered tags
-    document.head
-      .querySelectorAll('[inertia]')
-      .forEach(el => el.remove());
+    document.head.querySelectorAll('[inertia]').forEach((el) => el.remove())
 
-    ready = true;
-  });
+    ready = true
+  })
 </script>
 
 <svelte:head>
   {#if ready}
     <!-- Void elements (no content) -->
     {#each voidTags as tag (tag.headKey)}
-      <svelte:element
-        this={tag.tagName}
-        inertia={tag.headKey}
-        {...tag.attrs}
-      />
+      <svelte:element this={tag.tagName} inertia={tag.headKey} {...tag.attrs} />
     {/each}
 
     <!-- Elements with content -->
     {#each contentTags as tag (tag.headKey)}
-      <svelte:element
-        this={tag.tagName}
-        inertia={tag.headKey}
-        {...tag.attrs}
-      >
-        {@html
-          typeof tag.innerContent === 'string'
-            ? tag.innerContent
-            : JSON.stringify(tag.innerContent)
-        }
+      <svelte:element this={tag.tagName} inertia={tag.headKey} {...tag.attrs}>
+        {@html typeof tag.innerContent === 'string'
+          ? tag.innerContent
+          : JSON.stringify(tag.innerContent)}
       </svelte:element>
     {/each}
   {/if}
 </svelte:head>
-
 ```
+
 :::
 
 ## Rendering Meta Tags
@@ -206,6 +195,7 @@ Tags are defined as plain hashes and conform to the following structure:
   content: "A description of the page"
 }
 ```
+
 The `<title>` tag has shortcut syntax:
 
 ```ruby
@@ -289,10 +279,10 @@ inertia_meta.clear
 
 ### Automatic Head Keys
 
-Inertia Rails relies on the  `head-key` attribute and the `<Head />` components that the Inertia.js core uses to [manage meta tags](/guide/title-and-meta) and deduplicate them. Inertia.js core expects us to manage `head-key` attributes and deduplication manually, but Inertia Rails will generate them automatically for you.
+Inertia Rails relies on the `head-key` attribute and the `<Head />` components that the Inertia.js core uses to [manage meta tags](/guide/title-and-meta) and deduplicate them. Inertia.js core expects us to manage `head-key` attributes and deduplication manually, but Inertia Rails will generate them automatically for you.
 
-* `<meta>` tags will use the `name`,`property`, or `http_equiv` attributes to generate a head key. This enables automatic deduplication of common meta tags like `description`, `og:title`, and `twitter:card`.
-* All other tags will deterministically generate a `head-key` based on the tag's attributes.
+- `<meta>` tags will use the `name`,`property`, or `http_equiv` attributes to generate a head key. This enables automatic deduplication of common meta tags like `description`, `og:title`, and `twitter:card`.
+- All other tags will deterministically generate a `head-key` based on the tag's attributes.
 
 #### Allowing Duplicates
 
@@ -343,9 +333,8 @@ inertia_meta.remove('my_custom_head_key')
 
 There are multiple ways to manage meta tags in Inertia Rails:
 
-* Adding tags to a Rails layout such as `application.html.erb`.
-* Using the `<Head />` component from Inertia.js (or the Svelte head element) in the frontend.
-* Using the server driven meta tags feature described here.
+- Adding tags to a Rails layout such as `application.html.erb`.
+- Using the `<Head />` component from Inertia.js (or the Svelte head element) in the frontend.
+- Using the server driven meta tags feature described here.
 
 Nothing prevents you from using these together, but for organizational purposes, we recommended using only one of the last two techniques.
-
