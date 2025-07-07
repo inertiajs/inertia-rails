@@ -4,7 +4,7 @@
 
 Inertia's Rails adapter automatically includes the proper CSRF token when making requests via Inertia or Axios. Therefore, **no additional configuration is required**.
 
-However, if you need to handle CSRF protection manually, one approach is to include the CSRF token as a prop on every response. You can then use the token when making Inertia requests.
+However, if you need to handle CSRF protection manually, one approach is to include the CSRF token as a prop on every response. You can then use the token when making Inertia requests with the `router.post` method.
 
 :::tabs key:frameworks
 == Vue
@@ -67,7 +67,7 @@ When a CSRF token mismatch occurs, Rails raises the `ActionController::InvalidAu
 
 Obviously, this isn't a great user experience. A better way to handle these errors is to return a redirect back to the previous page, along with a flash message that the page expired. This will result in a valid Inertia response with the flash message available as a prop which you can then display to the user. Of course, you'll need to share your [flash messages](/guide/shared-data.md#flash-messages) with Inertia for this to work.
 
-You may modify your application's exception handler to automatically redirect the user back to the page they were previously on while flashing a message to the session. To accomplish this, you may use the `rescue_from` method in your `ApplicationController`.
+You may modify your application's exception handler to automatically redirect the user back to the page they were previously on while flashing a message to the session. To accomplish this, you may use the `rescue_from` method in your `ApplicationController` to handle the `ActionController::InvalidAuthenticityToken` exception.
 
 ```ruby
 class ApplicationController < ActionController::Base

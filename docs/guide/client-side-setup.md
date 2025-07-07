@@ -32,7 +32,7 @@ npm install @inertiajs/svelte svelte
 
 ## Initialize the Inertia app
 
-Next, update your main JavaScript file to boot your Inertia app. To accomplish this, we'll initialize the client-side framework with the base Inertia component.
+Next, update your main JavaScript file to boot your Inertia app. To accomplish this, we'll use the `createInertiaApp` function to initialize the client-side framework with the base Inertia component.
 
 :::tabs key:frameworks
 == Vue

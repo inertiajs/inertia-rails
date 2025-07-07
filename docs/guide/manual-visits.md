@@ -270,15 +270,14 @@ router.post('/users', {
 == Svelte 4|Svelte 5
 
 ```js
-
-```
-
 import { router } from '@inertiajs/svelte'
 
 router.post('/users', {
-name: 'John Doe',
-email: 'john.doe@example.com',
+  name: 'John Doe',
+  email: 'john.doe@example.com',
 })
+```
+
 :::
 
 ## Custom headers
