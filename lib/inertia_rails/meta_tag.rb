@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module InertiaRails
   class MetaTag
     # Copied from Inertia.js
@@ -14,17 +16,17 @@ module InertiaRails
       @head_key = head_key || generate_head_key
     end
 
-    def as_json(**options)
+    def as_json(**_options)
       {
-        :tagName => @tag_name,
-        :headKey => @head_key,
-        **@tag_data.transform_keys { |k| k.to_s.camelize(:lower).to_sym }
+        tagName: @tag_name,
+        headKey: @head_key,
+        **@tag_data.transform_keys { |k| k.to_s.camelize(:lower).to_sym },
       }
     end
 
     def to_tag(tag_helper)
       data = @tag_data.deep_dup
-        .merge({ inertia: @head_key })
+                      .merge({ inertia: @head_key })
 
       inner_content = case @tag_name
                       when *UNARY_TAGS
@@ -35,12 +37,13 @@ module InertiaRails
                         data.delete(:inner_content)
                       end
 
-      tag_helper.public_send(@tag_name, *[inner_content].compact, **data.transform_keys { |k| k.to_s.tr('_','-').to_sym })
+      tag_helper.public_send(@tag_name, *[inner_content].compact, **data.transform_keys { |k| k.to_s.tr('_', '-').to_sym })
     end
 
     def [](key)
       return @tag_name if key == :tag_name
       return @head_key if key == :head_key
+
       @tag_data[key.to_sym]
     end
 
@@ -66,32 +69,34 @@ module InertiaRails
     def determine_tag_name(tag_name)
       return :title if @is_shortened_title_tag
       return :meta if tag_name.nil?
+
       tag_name.downcase.to_sym
     end
 
     def build_tag_data(tag_data)
       return { inner_content: tag_data[:title] } if @is_shortened_title_tag
+
       tag_data.deep_symbolize_keys
     end
 
     def tag_digest
-      signature = @tag_data.sort.map { |k, v| "#{k}=#{v}" }.join("&")
+      signature = @tag_data.sort.map { |k, v| "#{k}=#{v}" }.join('&')
       Digest::MD5.hexdigest(signature)[0, 8]
     end
 
     def generate_meta_head_key
       return unless @tag_name == :meta
-      return "meta-charset" if @tag_data.key?(:charset)
+      return 'meta-charset' if @tag_data.key?(:charset)
 
-      [:name, :property, :http_equiv].each do |key|
+      %i[name property http_equiv].each do |key|
         next unless @tag_data.key?(key)
 
         return [
-          "meta",
+          'meta',
           key,
           @tag_data[key].parameterize,
           @allow_duplicates ? tag_digest : nil
-        ].compact.join("-")
+        ].compact.join('-')
       end
 
       nil

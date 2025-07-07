@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class InertiaMetaController < ApplicationController
   include MetaTaggable
 
@@ -8,7 +10,7 @@ class InertiaMetaController < ApplicationController
     render inertia: 'TestComponent', meta: [
       { name: 'description', content: 'Inertia rules', head_key: 'first_head_key' },
       { tag_name: 'title', inner_content: 'The Inertia title', head_key: 'second_head_key' },
-      { http_equiv: 'content-security-policy', content: "default-src 'self';", head_key: 'third_head_key'},
+      { http_equiv: 'content-security-policy', content: "default-src 'self';", head_key: 'third_head_key' }
     ]
   end
 
@@ -26,7 +28,7 @@ class InertiaMetaController < ApplicationController
   def with_duplicate_head_keys
     render inertia: 'TestComponent', meta: [
       { name: 'description', content: 'This is a description', head_key: 'duplicate_key' },
-      { name: 'description2', content: 'This is another description', head_key: 'duplicate_key' },
+      { name: 'description2', content: 'This is another description', head_key: 'duplicate_key' }
     ]
   end
 
@@ -58,18 +60,18 @@ class InertiaMetaController < ApplicationController
       },
       {
         'http_equiv' => 'content-security-policy',
-        'content' => "Overridden CSP",
+        'content' => 'Overridden CSP',
       },
       {
         'charset' => 'Overridden charset',
-      },
+      }
     ]
   end
 
   def allowed_duplicates
     render inertia: 'TestComponent', meta: [
       { property: 'article:author', content: 'Cassian Andor', allow_duplicates: true },
-      { property: 'article:author', content: 'Tony Gilroy', allow_duplicates: true},
+      { property: 'article:author', content: 'Tony Gilroy', allow_duplicates: true }
     ]
   end
 
@@ -84,27 +86,27 @@ class InertiaMetaController < ApplicationController
     inertia_meta.add({
       name: 'description',
       content: 'This is a description set from a before filter',
-      head_key: 'before_filter_tag'
+      head_key: 'before_filter_tag',
     })
   end
 
   def set_deduplicatable_tags
     inertia_meta.add([
-      {
-        'name' => 'description',
-        'content' => 'Default description',
-      },
-      {
-        'property' => 'og:description',
-        'content' => 'Default Open Graph description',
-      },
-      {
-        'http_equiv' => 'content-security-policy',
-        'content' => "Default CSP",
-      },
-      {
-        'charset' => 'Default charset',
-      },
-    ])
+                       {
+                         'name' => 'description',
+                         'content' => 'Default description',
+                       },
+                       {
+                         'property' => 'og:description',
+                         'content' => 'Default Open Graph description',
+                       },
+                       {
+                         'http_equiv' => 'content-security-policy',
+                         'content' => 'Default CSP',
+                       },
+                       {
+                         'charset' => 'Default charset',
+                       }
+                     ])
   end
 end
