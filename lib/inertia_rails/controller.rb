@@ -41,6 +41,9 @@ module InertiaRails
       end
 
       def use_inertia_instance_props
+        InertiaRails.deprecator.warn(
+          "`use_inertia_instance_props` is deprecated and will be removed in a future version."
+        )
         before_action do
           @_inertia_instance_props = true
           @_inertia_skip_props = view_assigns.keys + ['_inertia_skip_props']

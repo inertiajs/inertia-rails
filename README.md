@@ -41,54 +41,6 @@ def index
 end
 ```
 
-#### Rails Component and Instance Props 
-
-Starting in version 3.0, Inertia Rails allows you to provide your component name and props via common rails conventions. 
-
-```ruby
-class EventsController < ApplicationController
-  use_inertia_instance_props
-
-  def index
-    @events = Event.all
-  end
-
-end
-```
-
-is the same as 
-
-
-```ruby
-class EventsController < ApplicationController
-  def index
-    render inertia: 'events/index', props: {
-      events: Event.all
-    }
-  end
-end
-```
-
-#### Instance Props and Default Render Notes 
-
-In order to use instance props, you must call `use_inertia_instance_props` on the controller (or a base controller it inherits from). If any props are provided manually, instance props
-are automatically disabled for that response. Instance props are only included if they are defined after the before filter is set from `use_inertia_instance_props`.
-
-Automatic component name is also opt in, you must set the [`default_render`](#default_render) config value to `true`. Otherwise, you can simply `render inertia: true` for the same behavior explicitly.
-
-If the default component path doesn't match your convention, you can define a method to resolve it however you like via the `component_path_resolver` config value. The value of this should be callable and will receive the path and action and should return a string component path.
-
-```ruby
-inertia_config(
-  component_path_resolver: ->(path:, action:) do
-    "Storefront/#{path.camelize}/#{action.camelize}"
-  end
-)
-
-```
-
-
-
 ### Layout 
 
 Inertia layouts use the rails layout convention and can be set or changed in the same way.
@@ -108,7 +60,7 @@ If you have data that you want to be provided as a prop to every component (a co
 class EventsController < ApplicationController
   # share synchronously
   inertia_share app_name: env['app.name']
-  
+
   # share lazily, evaluated at render time
   inertia_share do
     if logged_in?
@@ -117,10 +69,10 @@ class EventsController < ApplicationController
       }
     end
   end
-  
+
   # share lazily alternate syntax
   inertia_share user_count: lambda { User.count }
-  
+
 end
 ```
 
@@ -316,27 +268,27 @@ end
 ```ruby
 RSpec.describe EventController, type: :request do
   describe '#index', inertia: true do
-    
+
     # check the component
     expect_inertia.to render_component 'Event/Index'
-    
+
     # access the component name
     expect(inertia.component).to eq 'TestComponent'
-    
+
     # props (including shared props)
     expect_inertia.to have_exact_props({name: 'Brandon', sport: 'hockey'})
     expect_inertia.to include_props({sport: 'hockey'})
-    
+
     # access props
     expect(inertia.props[:name]).to eq 'Brandon'
-    
+
     # view data
     expect_inertia.to have_exact_view_data({name: 'Brian', sport: 'basketball'})
     expect_inertia.to include_view_data({sport: 'basketball'})
-    
+
     # access view data 
     expect(inertia.view_data[:name]).to eq 'Brian'
-    
+
   end
 end
 

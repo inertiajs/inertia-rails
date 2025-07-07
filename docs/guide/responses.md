@@ -49,6 +49,9 @@ inertia_config(
 
 Inertia enables the automatic passing of instance variables as props. This can be achieved by invoking the `use_inertia_instance_props` function in a controller or in a base controller from which other controllers inherit.
 
+> [!WARNING]
+> The `use_inertia_instance_props` method is deprecated and will be removed in a future version.
+
 ```ruby
 class EventsController < ApplicationController
   use_inertia_instance_props
