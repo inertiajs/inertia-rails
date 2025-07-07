@@ -16,7 +16,7 @@ module InertiaRails
       @head_key = head_key || generate_head_key
     end
 
-    def as_json(**_options)
+    def as_json(_options = {})
       {
         tagName: @tag_name,
         headKey: @head_key,
