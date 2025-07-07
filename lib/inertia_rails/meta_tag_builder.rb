@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module InertiaRails
   class MetaTagBuilder
     attr_reader :meta_tags
@@ -13,15 +15,15 @@ module InertiaRails
       elsif meta_tag.is_a?(Hash)
         add_new_tag(meta_tag)
       else
-        raise ArgumentError, "Meta tag must be a Hash or Array of Hashes"
+        raise ArgumentError, 'Meta tag must be a Hash or Array of Hashes'
       end
 
       self
     end
 
     def remove(head_key = nil, &block)
-      raise ArgumentError, "Cannot provide both head_key and a block" if head_key && block_given?
-      raise ArgumentError, "Must provide either head_key or a block" if head_key.nil? && !block_given?
+      raise ArgumentError, 'Cannot provide both head_key and a block' if head_key && block_given?
+      raise ArgumentError, 'Must provide either head_key or a block' if head_key.nil? && !block_given?
 
       @meta_tags.reject! do |tag|
         if block_given?
@@ -53,7 +55,7 @@ module InertiaRails
 
     def duplicate?(existing_tag, new_tag)
       existing_tag[:head_key] == new_tag[:head_key] ||
-        new_tag[:tag_name] == :title && existing_tag[:tag_name] == :title
+        (new_tag[:tag_name] == :title && existing_tag[:tag_name] == :title)
     end
   end
 end
