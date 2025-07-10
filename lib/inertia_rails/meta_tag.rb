@@ -7,11 +7,13 @@ module InertiaRails
       area base br col embed hr img input keygen link meta param source track wbr
     ].freeze
 
-    def initialize(tag_name: nil, head_key: nil, raw: false, allow_duplicates: false, **tag_data)
+    LD_JSON_TYPE = 'application/ld+json'
+    DEFAULT_SCRIPT_TYPE = 'text/plain'
+
+    def initialize(tag_name: nil, head_key: nil, allow_duplicates: false, **tag_data)
       @is_shortened_title_tag = shortened_title_tag?(tag_name, tag_data)
       @tag_name = determine_tag_name(tag_name)
       @allow_duplicates = allow_duplicates
-      @raw = raw
       @tag_data = build_tag_data(tag_data)
       @head_key = head_key || generate_head_key
     end
@@ -20,19 +22,21 @@ module InertiaRails
       {
         tagName: @tag_name,
         headKey: @head_key,
-        **@tag_data.transform_keys { |k| k.to_s.camelize(:lower).to_sym },
-      }
+        type: tag_type,
+        **@tag_data.except(:type).transform_keys { |k| k.to_s.camelize(:lower).to_sym },
+      }.compact_blank
     end
 
     def to_tag(tag_helper)
       data = @tag_data.deep_dup
                       .merge({ inertia: @head_key })
+                      .merge({ type: tag_type })
 
       inner_content = case @tag_name
                       when *UNARY_TAGS
                         nil
                       when :script
-                        handle_script_content(data.delete(:inner_content))
+                        tag_script_inner_content(data.delete(:inner_content))
                       else
                         data.delete(:inner_content)
                       end
@@ -53,13 +57,19 @@ module InertiaRails
       generate_meta_head_key || "#{@tag_name}-#{tag_digest}"
     end
 
-    def handle_script_content(content)
+    def tag_script_inner_content(content)
       case content
-      when String
-        @raw ? content.html_safe : ERB::Util.html_escape(content)
-      else
+      when Hash, Array
         ERB::Util.json_escape(content.to_json).html_safe
+      else
+        content
       end
+    end
+
+    def tag_type
+      return @tag_data[:type] unless @tag_name == :script
+
+      @tag_data[:type] == LD_JSON_TYPE ? LD_JSON_TYPE : DEFAULT_SCRIPT_TYPE
     end
 
     def shortened_title_tag?(tag_name, tag_data)
