@@ -47,9 +47,7 @@ export default {
     return () => {
       const metaTags = page.props._inertia_meta || []
 
-      return h(
-        Head,
-        {},
+      return h(Head, {}, () =>
         metaTags.map((meta) => {
           const { tagName, innerContent, headKey, httpEquiv, ...attrs } = meta
 
