@@ -43,12 +43,13 @@ RSpec.describe InertiaRails::MetaTag do
       expect(meta_tag.to_json).to eq(expected_json)
     end
 
-    it 'does not escape script tag content because Inertia.js adapters use innerHtml under the hood and browsers do not execute scripts added this way' do
-      meta_tag = described_class.new(tag_name: 'script', head_key: dummy_head_key, inner_content: '<script>alert("XSS")</script>')
+    it 'marks executable script tags with text/plain' do
+      meta_tag = described_class.new(tag_name: 'script', head_key: dummy_head_key, inner_content: '<script>alert("XSS")</script>', type: 'application/javascript')
 
       expected_json = {
         tagName: :script,
         headKey: dummy_head_key,
+        type: 'text/plain',
         innerContent: '<script>alert("XSS")</script>',
       }.to_json
 
@@ -142,35 +143,33 @@ RSpec.describe InertiaRails::MetaTag do
         expect(tag).to eq('<script type="application/ld+json" inertia="meta-12345678">{"@context":"https://schema.org"}</script>')
       end
 
-      it 'escapes content by default' do
-        meta_tag = described_class.new(tag_name: :meta, head_key: dummy_head_key, name: 'description', content: '<script>alert("XSS")</script>')
+      it 'adds text/plain and escapes all other script tags' do
+        meta_tag = described_class.new(tag_name: :script, head_key: dummy_head_key, type: 'application/javascript', inner_content: 'alert("XSS")')
 
         tag = meta_tag.to_tag(tag_helper)
 
-        expect(tag).to eq('<meta name="description" content="&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;" inertia="meta-12345678">')
+        expect(tag).to eq('<script type="text/plain" inertia="meta-12345678">alert(&quot;XSS&quot;)</script>')
       end
+    end
 
-      context 'when the tag is marked as raw' do
-        it 'does not escape script tag content' do
-          meta_tag = described_class.new(tag_name: :script, head_key: dummy_head_key, inner_content: '<script>alert("XSS")</script>', raw: true)
+    describe 'rendering unary tags' do
+      described_class::UNARY_TAGS.each do |tag_name|
+        it "renders a content attribute for a #{tag_name} tag" do
+          meta_tag = described_class.new(tag_name: tag_name, head_key: dummy_head_key, content: 'Inertia rules')
 
           tag = meta_tag.to_tag(tag_helper)
 
-          expect(tag).to eq('<script inertia="meta-12345678"><script>alert("XSS")</script></script>')
+          expect(tag).to include("<#{tag_name} content=\"Inertia rules\" inertia=\"meta-12345678\">")
         end
       end
+    end
 
-      describe 'rendering unary tags' do
-        described_class::UNARY_TAGS.each do |tag_name|
-          it "renders a content attribute for a #{tag_name} tag" do
-            meta_tag = described_class.new(tag_name: tag_name, head_key: dummy_head_key, content: 'Inertia rules')
+    it 'escapes inner content for non-script tags' do
+      meta_tag = described_class.new(tag_name: :div, head_key: dummy_head_key, inner_content: '<script>alert("XSS")</script>')
 
-            tag = meta_tag.to_tag(tag_helper)
+      tag = meta_tag.to_tag(tag_helper)
 
-            expect(tag).to include("<#{tag_name} content=\"Inertia rules\" inertia=\"meta-12345678\">")
-          end
-        end
-      end
+      expect(tag).to eq('<div inertia="meta-12345678">&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;</div>')
     end
   end
 
