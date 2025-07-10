@@ -270,6 +270,28 @@ end
 inertia_meta.clear
 ```
 
+#### JSON-LD and Script Tags
+
+Inertia Rails supports defining `<script>` tags with `type="application/ld+json"` for structured data. All other script tags will be marked as `type="text/plain"` to prevent them from executing on the client side. Executable scripts should be added either in the Rails layout or using standard techniques in your frontend framework.
+
+```ruby
+inertia_meta.add({
+  tag_name: "script",
+  type: "application/ld+json",
+  inner_content: {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: "My Event",
+    startDate: "2023-10-01T10:00:00Z",
+    location: {
+      "@type": "Place",
+      name: "Event Venue",
+      address: "123 Main St, City, Country"
+    }
+  }
+})
+```
+
 ## Deduplication
 
 > [!NOTE]
