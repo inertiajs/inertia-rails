@@ -17,7 +17,7 @@ module InertiaRails
     )
 
     def initialize(component, controller, request, response, render_method, props: nil, view_data: nil,
-                   deep_merge: nil, encrypt_history: nil, clear_history: nil)
+                   deep_merge: nil, encrypt_history: nil, clear_history: nil, meta: nil)
       if component.is_a?(Hash) && !props.nil?
         raise ArgumentError,
               'Parameter `props` is not allowed when passing a Hash as the first argument'
@@ -35,6 +35,7 @@ module InertiaRails
       @encrypt_history = encrypt_history.nil? ? configuration.encrypt_history : encrypt_history
       @clear_history = clear_history || controller.session[:inertia_clear_history] || false
       @controller.instance_variable_set('@_inertia_rendering', true)
+      @meta = meta
     end
 
     def render
@@ -52,6 +53,7 @@ module InertiaRails
         rescue StandardError
           nil
         end
+        controller.instance_variable_set('@_inertia_page', page)
         @render_method.call template: 'inertia', layout: layout, locals: view_data.merge(page: page)
       end
     end
@@ -90,7 +92,9 @@ module InertiaRails
 
     def computed_props
       merged_props = merge_props(shared_data, props)
-      deep_transform_props(merged_props)
+      deep_transform_props(merged_props).merge({
+        _inertia_meta: computed_meta_data,
+      }.compact_blank)
     end
 
     def page
@@ -204,6 +208,12 @@ module InertiaRails
 
     def excluded_by_except_partial_keys?(path_with_prefixes)
       partial_except_keys.present? && (path_with_prefixes & partial_except_keys).any?
+    end
+
+    def computed_meta_data
+      controller.inertia_meta.add(@meta) if @meta
+
+      controller.inertia_meta.meta_tags
     end
   end
 end

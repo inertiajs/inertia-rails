@@ -23,7 +23,7 @@ module InertiaRails
           end
         end
 
-        def guess_typescript
+        def guess_typescript?
           Rails.root.join('tsconfig.json').exist?
         end
 
