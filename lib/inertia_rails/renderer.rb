@@ -34,7 +34,7 @@ module InertiaRails
       @encrypt_history = options.fetch(:encrypt_history, configuration.encrypt_history)
       @clear_history = options.fetch(:clear_history, controller.session[:inertia_clear_history] || false)
       @controller.instance_variable_set('@_inertia_rendering', true)
-      @meta = options[:meta]
+      controller.inertia_meta.add(options[:meta]) if options[:meta]
     end
 
     def render
@@ -91,9 +91,9 @@ module InertiaRails
 
     def computed_props
       merged_props = merge_props(shared_data, props)
-      deep_transform_props(merged_props).merge({
-        _inertia_meta: computed_meta_data,
-      }.compact_blank)
+      deep_transform_props(merged_props).tap do |transformed_props|
+        transformed_props[:_inertia_meta] = meta_tags if meta_tags.present?
+      end
     end
 
     def page
@@ -219,9 +219,7 @@ module InertiaRails
       partial_except_keys.present? && (path_with_prefixes & partial_except_keys).any?
     end
 
-    def computed_meta_data
-      controller.inertia_meta.add(@meta) if @meta
-
+    def meta_tags
       controller.inertia_meta.meta_tags
     end
   end

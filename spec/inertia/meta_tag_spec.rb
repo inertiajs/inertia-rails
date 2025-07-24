@@ -179,22 +179,22 @@ RSpec.describe InertiaRails::MetaTag do
 
       tag = meta_tag.to_tag(ActionController::Base.helpers.tag)
 
-      expect(tag).to eq('<title inertia="meta-12345678">Inertia Page Title</title>')
+      expect(tag).to eq('<title inertia="title">Inertia Page Title</title>')
     end
 
     context 'when only a title key is provided' do
-      let(:title_tag) { described_class.new(title: 'Inertia Is Great', head_key: dummy_head_key) }
+      let(:title_tag) { described_class.new(title: 'Inertia Is Great', head_key: 'title') }
 
       it 'renders JSON correctly' do
         expect(title_tag.to_json).to eq({
           tagName: :title,
-          headKey: dummy_head_key,
+          headKey: 'title',
           innerContent: 'Inertia Is Great',
         }.to_json)
       end
 
       it 'renders a title tag' do
-        expect(title_tag.to_tag(tag_helper)).to eq('<title inertia="meta-12345678">Inertia Is Great</title>')
+        expect(title_tag.to_tag(tag_helper)).to eq('<title inertia="title">Inertia Is Great</title>')
       end
     end
   end
