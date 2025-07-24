@@ -28,9 +28,7 @@ module InertiaRails
     end
 
     def to_tag(tag_helper)
-      data = @tag_data.deep_dup
-                      .merge({ inertia: @head_key })
-                      .merge({ type: tag_type })
+      data = @tag_data.merge({ inertia: @head_key, type: tag_type })
 
       inner_content = case @tag_name
                       when *UNARY_TAGS
