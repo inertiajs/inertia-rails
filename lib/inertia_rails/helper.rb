@@ -16,8 +16,12 @@ module InertiaRails::Helper
     controller.instance_variable_get("@_inertia_rendering")
   end
 
+  def inertia_page
+    controller.instance_variable_get("@_inertia_page")
+  end
+
   def inertia_meta_tags
-    meta_tag_data = (@_inertia_page || {}).dig(:props, :_inertia_meta) || []
+    meta_tag_data = (inertia_page || {}).dig(:props, :_inertia_meta) || []
 
     meta_tags = meta_tag_data.map do |inertia_meta_tag|
       inertia_meta_tag.to_tag(tag)

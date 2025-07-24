@@ -2,11 +2,13 @@
 
 module InertiaRails
   class MetaTagBuilder
-    attr_reader :meta_tags
-
     def initialize(controller)
       @controller = controller
-      @meta_tags = []
+      @meta_tags = {}
+    end
+
+    def meta_tags
+      @meta_tags.values
     end
 
     def add(meta_tag)
@@ -25,12 +27,10 @@ module InertiaRails
       raise ArgumentError, 'Cannot provide both head_key and a block' if head_key && block_given?
       raise ArgumentError, 'Must provide either head_key or a block' if head_key.nil? && !block_given?
 
-      @meta_tags.reject! do |tag|
-        if block_given?
-          block.call(tag)
-        else
-          tag[:head_key] == head_key
-        end
+      if head_key
+        @meta_tags.delete(head_key)
+      else
+        @meta_tags.reject! { |_, tag| block.call(tag) }
       end
 
       self
@@ -38,6 +38,7 @@ module InertiaRails
 
     def clear
       @meta_tags.clear
+
       self
     end
 
@@ -45,17 +46,7 @@ module InertiaRails
 
     def add_new_tag(new_tag_data)
       new_tag = InertiaRails::MetaTag.new(**new_tag_data)
-
-      @meta_tags.reject! do |existing_tag|
-        duplicate?(existing_tag, new_tag)
-      end
-
-      @meta_tags << new_tag
-    end
-
-    def duplicate?(existing_tag, new_tag)
-      existing_tag[:head_key] == new_tag[:head_key] ||
-        (new_tag[:tag_name] == :title && existing_tag[:tag_name] == :title)
+      @meta_tags[new_tag[:head_key]] = new_tag
     end
   end
 end

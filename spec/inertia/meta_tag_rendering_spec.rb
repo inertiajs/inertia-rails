@@ -11,38 +11,42 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
   it 'returns meta tag data' do
     get basic_meta_path, headers: headers
 
-    expect(response.parsed_body['props']['_inertia_meta']).to eq([
-                                                                   {
-                                                                     'tagName' => 'meta',
-                                                                     'name' => 'description',
-                                                                     'content' => 'Inertia rules',
-                                                                     'headKey' => 'first_head_key',
-                                                                   },
-                                                                   {
-                                                                     'tagName' => 'title',
-                                                                     'innerContent' => 'The Inertia title',
-                                                                     'headKey' => 'second_head_key',
-                                                                   },
-                                                                   {
-                                                                     'tagName' => 'meta',
-                                                                     'httpEquiv' => 'content-security-policy',
-                                                                     'content' => "default-src 'self';",
-                                                                     'headKey' => 'third_head_key',
-                                                                   }
-                                                                 ])
+    expect(response.parsed_body['props']['_inertia_meta']).to match_array(
+      [
+        {
+          'tagName' => 'meta',
+          'name' => 'description',
+          'content' => 'Inertia rules',
+          'headKey' => 'first_head_key',
+        },
+        {
+          'tagName' => 'title',
+          'innerContent' => 'The Inertia title',
+          'headKey' => 'title',
+        },
+        {
+          'tagName' => 'meta',
+          'httpEquiv' => 'content-security-policy',
+          'content' => "default-src 'self';",
+          'headKey' => 'third_head_key',
+        }
+      ]
+    )
   end
 
   context 'with multiple title tags' do
     it 'only renders the last title tag' do
       get multiple_title_tags_meta_path, headers: headers
 
-      expect(response.parsed_body['props']['_inertia_meta']).to eq([
-                                                                     {
-                                                                       'tagName' => 'title',
-                                                                       'innerContent' => 'The second Inertia title',
-                                                                       'headKey' => 'second_head_key',
-                                                                     }
-                                                                   ])
+      expect(response.parsed_body['props']['_inertia_meta']).to eq(
+        [
+          {
+            'tagName' => 'title',
+            'innerContent' => 'The second Inertia title',
+            'headKey' => 'title',
+          }
+        ]
+      )
     end
   end
 
@@ -50,14 +54,16 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
     it 'returns the meta tag set from the before filter' do
       get from_before_filter_meta_path, headers: headers
 
-      expect(response.parsed_body['props']['_inertia_meta']).to eq([
-                                                                     {
-                                                                       'tagName' => 'meta',
-                                                                       'name' => 'description',
-                                                                       'content' => 'This is a description set from a before filter',
-                                                                       'headKey' => 'before_filter_tag',
-                                                                     }
-                                                                   ])
+      expect(response.parsed_body['props']['_inertia_meta']).to eq(
+        [
+          {
+            'tagName' => 'meta',
+            'name' => 'description',
+            'content' => 'This is a description set from a before filter',
+            'headKey' => 'before_filter_tag',
+          }
+        ]
+      )
     end
   end
 
@@ -65,14 +71,16 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
     it 'returns the last meta tag with the same head key' do
       get with_duplicate_head_keys_meta_path, headers: headers
 
-      expect(response.parsed_body['props']['_inertia_meta']).to eq([
-                                                                     {
-                                                                       'tagName' => 'meta',
-                                                                       'name' => 'description2', # Contrived mismatch between meta tag names to ensure head_key deduplication works
-                                                                       'content' => 'This is another description',
-                                                                       'headKey' => 'duplicate_key',
-                                                                     }
-                                                                   ])
+      expect(response.parsed_body['props']['_inertia_meta']).to eq(
+        [
+          {
+            'tagName' => 'meta',
+            'name' => 'description2', # Contrived mismatch between meta tag names to ensure head_key deduplication works
+            'content' => 'This is another description',
+            'headKey' => 'duplicate_key',
+          }
+        ]
+      )
     end
   end
 

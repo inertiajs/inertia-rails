@@ -2,58 +2,65 @@
 
 module InertiaRails
   class MetaTag
-    # Copied from Inertia.js
+    # See https://github.com/rails/rails/blob/v8.0.0/actionview/lib/action_view/helpers/tag_helper.rb#L84-L97
     UNARY_TAGS = %i[
-      area base br col embed hr img input keygen link meta param source track wbr
+      area base br col embed hr img input keygen link meta source track wbr
     ].freeze
 
     LD_JSON_TYPE = 'application/ld+json'
     DEFAULT_SCRIPT_TYPE = 'text/plain'
 
-    def initialize(tag_name: nil, head_key: nil, allow_duplicates: false, **tag_data)
-      @is_shortened_title_tag = shortened_title_tag?(tag_name, tag_data)
-      @tag_name = determine_tag_name(tag_name)
+    def initialize(tag_name: nil, head_key: nil, allow_duplicates: false, type: nil, **tag_data)
+      if shortened_title_tag?(tag_name, tag_data)
+        @tag_name = :title
+        @tag_data = { inner_content: tag_data[:title] }
+      else
+        @tag_name = tag_name.nil? ? :meta : tag_name.to_sym
+        @tag_data = tag_data.symbolize_keys
+      end
+      @tag_type = determine_tag_type(type)
       @allow_duplicates = allow_duplicates
-      @tag_data = build_tag_data(tag_data)
-      @head_key = head_key || generate_head_key
+      @head_key = @tag_name == :title ? 'title' : (head_key || generate_head_key)
     end
 
-    def as_json(_options = {})
+    def as_json(_options = nil)
       {
         tagName: @tag_name,
         headKey: @head_key,
-        type: tag_type,
-        **@tag_data.except(:type).transform_keys { |k| k.to_s.camelize(:lower).to_sym },
-      }.compact_blank
+        type: @tag_type,
+      }.tap do |result|
+        result.merge!(@tag_data.transform_keys { |k| k.to_s.camelize(:lower).to_sym })
+        result.compact_blank!
+      end
     end
 
     def to_tag(tag_helper)
-      data = @tag_data.merge({ inertia: @head_key, type: tag_type })
+      data = @tag_data.merge(type: @tag_type, inertia: @head_key)
 
-      inner_content = case @tag_name
-                      when *UNARY_TAGS
-                        nil
-                      when :script
-                        tag_script_inner_content(data.delete(:inner_content))
-                      else
-                        data.delete(:inner_content)
-                      end
+      inner_content =
+        if @tag_name == :script
+          tag_script_inner_content(data.delete(:inner_content))
+        else
+          data.delete(:inner_content)
+        end
 
-      tag_helper.public_send(@tag_name, *[inner_content].compact, **data.transform_keys { |k| k.to_s.tr('_', '-').to_sym })
+      if UNARY_TAGS.include? @tag_name
+        tag_helper.public_send(@tag_name, **data.transform_keys { |k| k.to_s.tr('_', '-').to_sym })
+      else
+        tag_helper.public_send(@tag_name, inner_content, **data.transform_keys { |k| k.to_s.tr('_', '-').to_sym })
+      end
     end
 
     def [](key)
+      key = key.to_sym
       return @tag_name if key == :tag_name
       return @head_key if key == :head_key
+      return @tag_type if key == :type
 
-      @tag_data[key.to_sym]
+      @tag_data[key]
     end
 
     private
-
-    def generate_head_key
-      generate_meta_head_key || "#{@tag_name}-#{tag_digest}"
-    end
 
     def tag_script_inner_content(content)
       case content
@@ -64,27 +71,18 @@ module InertiaRails
       end
     end
 
-    def tag_type
-      return @tag_data[:type] unless @tag_name == :script
-
-      @tag_data[:type] == LD_JSON_TYPE ? LD_JSON_TYPE : DEFAULT_SCRIPT_TYPE
-    end
-
     def shortened_title_tag?(tag_name, tag_data)
       tag_name.nil? && tag_data.keys == [:title]
     end
 
-    def determine_tag_name(tag_name)
-      return :title if @is_shortened_title_tag
-      return :meta if tag_name.nil?
+    def determine_tag_type(type)
+      return type unless @tag_name == :script
 
-      tag_name.downcase.to_sym
+      type == LD_JSON_TYPE ? LD_JSON_TYPE : DEFAULT_SCRIPT_TYPE
     end
 
-    def build_tag_data(tag_data)
-      return { inner_content: tag_data[:title] } if @is_shortened_title_tag
-
-      tag_data.deep_symbolize_keys
+    def generate_head_key
+      generate_meta_head_key || "#{@tag_name}-#{tag_digest}"
     end
 
     def tag_digest
