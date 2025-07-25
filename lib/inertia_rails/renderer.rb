@@ -16,9 +16,8 @@ module InertiaRails
       :clear_history
     )
 
-    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil,
-                   deep_merge: nil, encrypt_history: nil, clear_history: nil, meta: nil)
-      if component.is_a?(Hash) && !props.nil?
+    def initialize(component, controller, request, response, render_method, **options)
+      if component.is_a?(Hash) && options.key?(:props)
         raise ArgumentError,
               'Parameter `props` is not allowed when passing a Hash as the first argument'
       end
@@ -29,13 +28,13 @@ module InertiaRails
       @request = request
       @response = response
       @render_method = render_method
-      @props = props || (component.is_a?(Hash) ? component : controller.__send__(:inertia_view_assigns))
-      @view_data = view_data || {}
-      @deep_merge = deep_merge.nil? ? configuration.deep_merge_shared_data : deep_merge
-      @encrypt_history = encrypt_history.nil? ? configuration.encrypt_history : encrypt_history
-      @clear_history = clear_history || controller.session[:inertia_clear_history] || false
+      @props = options.fetch(:props, component.is_a?(Hash) ? component : controller.__send__(:inertia_view_assigns))
+      @view_data = options.fetch(:view_data, {})
+      @deep_merge = options.fetch(:deep_merge, configuration.deep_merge_shared_data)
+      @encrypt_history = options.fetch(:encrypt_history, configuration.encrypt_history)
+      @clear_history = options.fetch(:clear_history, controller.session[:inertia_clear_history] || false)
       @controller.instance_variable_set('@_inertia_rendering', true)
-      @meta = meta
+      controller.inertia_meta.add(options[:meta]) if options[:meta]
     end
 
     def render
@@ -92,9 +91,9 @@ module InertiaRails
 
     def computed_props
       merged_props = merge_props(shared_data, props)
-      deep_transform_props(merged_props).merge({
-        _inertia_meta: computed_meta_data,
-      }.compact_blank)
+      deep_transform_props(merged_props).tap do |transformed_props|
+        transformed_props[:_inertia_meta] = meta_tags if meta_tags.present?
+      end
     end
 
     def page
@@ -210,9 +209,7 @@ module InertiaRails
       partial_except_keys.present? && (path_with_prefixes & partial_except_keys).any?
     end
 
-    def computed_meta_data
-      controller.inertia_meta.add(@meta) if @meta
-
+    def meta_tags
       controller.inertia_meta.meta_tags
     end
   end

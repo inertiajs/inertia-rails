@@ -7,6 +7,7 @@ module InertiaRails
   module Generators
     class ControllerTemplateBase < Rails::Generators::NamedBase
       include Helper
+
       class_option :frontend_framework, required: true, desc: 'Frontend framework to generate the views for.',
                                         default: Helper.guess_the_default_framework
 
