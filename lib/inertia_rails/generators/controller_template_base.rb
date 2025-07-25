@@ -7,11 +7,12 @@ module InertiaRails
   module Generators
     class ControllerTemplateBase < Rails::Generators::NamedBase
       include Helper
+
       class_option :frontend_framework, required: true, desc: 'Frontend framework to generate the views for.',
                                         default: Helper.guess_the_default_framework
 
       class_option :typescript, type: :boolean, desc: 'Whether to use TypeScript',
-                                default: Helper.guess_typescript
+                                default: Helper.guess_typescript?
 
       argument :actions, type: :array, default: [], banner: 'action action'
 

@@ -75,7 +75,7 @@ RSpec.configure do |config|
   config.before(:each, inertia: true) do
     new_renderer = InertiaRails::Renderer.method(:new)
     allow(InertiaRails::Renderer).to receive(:new) do |component, controller, request, response, render, named_args|
-      new_renderer.call(component, controller, request, response, inertia_wrap_render(render), **named_args)
+      new_renderer.call(component, controller, request, response, inertia_wrap_render(render), **(named_args || {}))
     end
   end
 end
