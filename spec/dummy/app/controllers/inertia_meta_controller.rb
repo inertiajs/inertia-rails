@@ -86,7 +86,7 @@ class InertiaMetaController < ApplicationController
 
   def meta_with_default_render
     render inertia: { some: 'prop' }, meta: [
-      { name: 'description', content: 'default rendering still works' },
+      { name: 'description', content: 'default rendering still works' }
     ]
   end
 
