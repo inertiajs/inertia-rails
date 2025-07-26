@@ -17,13 +17,14 @@ Simply add the `inertia_meta_tags` helper to your layout. This will render the m
 <html>
   <head>
     ...
-    <%= inertia_meta_tags %> <!-- Add this inside your <head> tag -->
+    <%= inertia_meta_tags %> <!-- Add this inside your <head> tag --> // [!code ++]
+    <title inertia>My Inertia App</title> <!-- Remove existing title --> // [!code --]
   </head>
 </html>
 ```
 
 > [!NOTE]
-> If you have a `<title>` tag in your Rails layout, make sure it has the `inertia` attribute on it so Inertia knows it should deduplicate it. The Inertia Rails install generator does this for you automatically.
+> Make sure to remove the `<title>` tag in your Rails layout if you plan to manage it with Inertia Rails. Otherwise you will end up with duplicate `<title>` tags.
 
 ### Client Side
 
@@ -314,12 +315,10 @@ class StoriesController < ApplicationController
     inertia_meta.add({ name: 'article:author', content: 'Tony Gilroy' })
   end
 
-
   # Renders a single article:author meta tag
   def single_author
     render inertia: 'Stories/Show'
   end
-
 
   # Renders multiple article:author meta tags
   def multiple_authors

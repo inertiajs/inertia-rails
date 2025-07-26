@@ -103,7 +103,7 @@ module Inertia
                              before: '<%= vite_client_tag %>'
           end
 
-          gsub_file application_layout.to_s, /<title>/, '<title inertia>'
+          gsub_file application_layout.to_s, /<title>/, '<title inertia>' unless svelte?
         else
           say_error 'Could not find the application layout file. Please add the following tags manually:', :red
           say_error '-  <title>...</title>'
