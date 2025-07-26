@@ -155,4 +155,22 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
     get cleared_meta_path, headers: headers
     expect(response.parsed_body['props']['_inertia_meta']).not_to be
   end
+
+  context 'with default rendering' do
+    it 'returns meta tags with default rendering' do
+      get meta_with_default_render_path, headers: headers
+
+      expect(response.parsed_body['props']['some']).to eq('prop')
+      expect(response.parsed_body['props']['_inertia_meta']).to eq(
+        [
+          {
+            'tagName' => 'meta',
+            'name' => 'description',
+            'content' => 'default rendering still works',
+            'headKey' => 'meta-name-description',
+          }
+        ]
+      )
+    end
+  end
 end

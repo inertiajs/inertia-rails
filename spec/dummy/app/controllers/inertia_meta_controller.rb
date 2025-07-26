@@ -6,6 +6,10 @@ class InertiaMetaController < ApplicationController
   before_action :set_description_meta_tag, only: [:from_before_filter, :cleared_meta]
   before_action :set_deduplicatable_tags, only: :auto_dedup
 
+  inertia_config(
+    default_render: -> { action_name == :meta_with_default_render }
+  )
+
   def basic
     render inertia: 'TestComponent', meta: [
       { name: 'description', content: 'Inertia rules', head_key: 'first_head_key' },
@@ -78,6 +82,12 @@ class InertiaMetaController < ApplicationController
   def cleared_meta
     inertia_meta.clear
     render inertia: 'TestComponent'
+  end
+
+  def meta_with_default_render
+    render inertia: { some: 'prop' }, meta: [
+      { name: 'description', content: 'default rendering still works' },
+    ]
   end
 
   protected

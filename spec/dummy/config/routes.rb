@@ -97,4 +97,5 @@ Rails.application.routes.draw do
   get 'auto_dedup_meta' => 'inertia_meta#auto_dedup'
   get 'allowed_duplicates_meta' => 'inertia_meta#allowed_duplicates'
   get 'cleared_meta' => 'inertia_meta#cleared_meta'
+  get 'meta_with_default_render' => 'inertia_meta#meta_with_default_render'
 end
