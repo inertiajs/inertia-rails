@@ -10,6 +10,8 @@ module InertiaRails
     LD_JSON_TYPE = 'application/ld+json'
     DEFAULT_SCRIPT_TYPE = 'text/plain'
 
+    GENERATABLE_HEAD_KEY_PROPERTIES = %i[name property http_equiv]
+
     def initialize(tag_name: nil, head_key: nil, allow_duplicates: false, type: nil, **tag_data)
       if shortened_title_tag?(tag_name, tag_data)
         @tag_name = :title
@@ -94,7 +96,7 @@ module InertiaRails
       return unless @tag_name == :meta
       return 'meta-charset' if @tag_data.key?(:charset)
 
-      %i[name property http_equiv].each do |key|
+      GENERATABLE_HEAD_KEY_PROPERTIES.each do |key|
         next unless @tag_data.key?(key)
 
         return [
