@@ -10,7 +10,7 @@ module InertiaRails
     LD_JSON_TYPE = 'application/ld+json'
     DEFAULT_SCRIPT_TYPE = 'text/plain'
 
-    GENERATABLE_HEAD_KEY_PROPERTIES = %i[name property http_equiv]
+    GENERATABLE_HEAD_KEY_PROPERTIES = %i[name property http_equiv].freeze
 
     def initialize(tag_name: nil, head_key: nil, allow_duplicates: false, type: nil, **tag_data)
       if shortened_title_tag?(tag_name, tag_data)
