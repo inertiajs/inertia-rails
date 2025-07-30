@@ -6,6 +6,7 @@ RSpec.describe InertiaRails::Helper do
   let(:test_helper) do
     Class.new do
       include InertiaRails::Helper
+
       attr_accessor :controller
     end.new
   end
