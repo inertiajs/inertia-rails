@@ -1,6 +1,7 @@
 require_relative "inertia_rails"
 require_relative "helper"
 require_relative "action_filter"
+require_relative "meta_tag_builder"
 
 module InertiaRails
   module Controller
@@ -125,6 +126,10 @@ module InertiaRails
     def redirect_to(options = {}, response_options = {})
       capture_inertia_session_options(response_options)
       super
+    end
+
+    def inertia_meta
+      @inertia_meta ||= InertiaRails::MetaTagBuilder.new(self)
     end
 
     private

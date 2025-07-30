@@ -88,4 +88,14 @@ Rails.application.routes.draw do
   get 'encrypt_history_override_config' => 'inertia_encrypt_history#override_config'
   get 'encrypt_history_clear_history' => 'inertia_encrypt_history#clear_history'
   post 'encrypt_history_clear_history_after_redirect' => 'inertia_encrypt_history#clear_history_after_redirect'
+
+  get 'basic_meta' => 'inertia_meta#basic'
+  get 'multiple_title_tags_meta' => 'inertia_meta#multiple_title_tags'
+  get 'from_before_filter_meta' => 'inertia_meta#from_before_filter'
+  get 'with_duplicate_head_keys_meta' => 'inertia_meta#with_duplicate_head_keys'
+  get 'override_tags_from_module_meta' => 'inertia_meta#override_tags_from_module'
+  get 'auto_dedup_meta' => 'inertia_meta#auto_dedup'
+  get 'allowed_duplicates_meta' => 'inertia_meta#allowed_duplicates'
+  get 'cleared_meta' => 'inertia_meta#cleared_meta'
+  get 'meta_with_default_render' => 'inertia_meta#meta_with_default_render'
 end
