@@ -182,6 +182,7 @@ module Inertia
               exit(false)
             end
             if (capture = run('bundle exec vite install', capture: !verbose?))
+              rename_application_js_to_ts if typescript?
               say 'Vite Rails successfully installed', :green
             else
               say capture
@@ -190,6 +191,13 @@ module Inertia
             end
           end
         end
+      end
+
+      def rename_application_js_to_ts
+        return unless File.exist?(application_js_path) && application_layout.read.include?("<%= vite_javascript_tag 'application' %>")
+
+        FileUtils.mv(application_js_path, application_ts_path)
+        gsub_file application_layout.to_s, /<%= vite_javascript_tag 'application' %>/, "<%= vite_typescript_tag 'application' %>"
       end
 
       def ruby_vite_installed?
@@ -251,6 +259,14 @@ module Inertia
         return @typescript if defined?(@typescript)
 
         @typescript = options[:typescript] || yes?('Would you like to use TypeScript? (y/n)', :green)
+      end
+
+      def application_js_path
+        js_file_path('entrypoints/application.js')
+      end
+
+      def application_ts_path
+        js_file_path('entrypoints/application.ts')
       end
 
       def inertia_entrypoint
