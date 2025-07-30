@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
 import llmstxt from 'vitepress-plugin-llms'
+import { availableSinceMarkdownPlugin } from './availableSinceMarkdownPlugin'
 import { tabsMarkdownPlugin } from './vitepress-plugin-tabs/tabsMarkdownPlugin'
 
 const title = 'Inertia Rails'
@@ -25,6 +26,7 @@ export default defineConfig({
   markdown: {
     config(md) {
       md.use(tabsMarkdownPlugin)
+      md.use(availableSinceMarkdownPlugin)
     },
   },
 
