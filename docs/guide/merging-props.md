@@ -26,6 +26,15 @@ class UsersController < ApplicationController
           records: records.as_json(...),
           pagy: pagy_metadata(pagy)
         }
+      },
+      # with match_on parameter for smart merging:
+      products: InertiaRails.merge(match_on: 'id') { Product.all.as_json(...) },
+      # nested objects with match_on:
+      categories: InertiaRails.deep_merge(match_on: %w[items.id tags.id]) {
+        {
+          items: Category.all.as_json(...),
+          tags: Tag.all.as_json(...)
+        }
       }
     }
   end
@@ -34,7 +43,14 @@ end
 
 On the client side, Inertia detects that this prop should be merged. If the prop returns an array, it will append the response to the current prop value. If it's an object, it will merge the response with the current prop value. If you have opted to `deepMerge`, Inertia ensures a deep merge of the entire structure.
 
-**Of note:** During the merging process, if the value is an array, the incoming items will be _appended_ to the existing array, not merged by index.
+### Smart merging with `match_on`
+
+By default, arrays are simply appended during merging. If you need to update specific items in an array or replace them based on a unique identifier, you can use the `match_on` parameter.
+
+The `match_on` parameter enables smart merging by specifying a field to match on when merging arrays of objects:
+
+- For `merge` with simple arrays, specify the object key to match on (e.g., `'id'`)
+- For `deep_merge` with nested structures, use dot notation to specify the path (e.g., `'items.id'`)
 
 You can also combine [deferred props](/guide/deferred-props) with mergeable props to defer the loading of the prop and ultimately mark it as mergeable once it's loaded.
 
@@ -53,6 +69,15 @@ class UsersController < ApplicationController
         {
           records: records.as_json(...),
           pagy: pagy_metadata(pagy)
+        }
+      },
+      # with match_on parameter:
+      products: InertiaRails.defer(merge: true, match_on: 'id') { products.as_json(...) },
+      # nested objects with match_on:
+      categories: InertiaRails.defer(deep_merge: true, match_on: %w[items.id tags.id]) {
+        {
+          items: Category.all.as_json(...),
+          tags: Tag.all.as_json(...)
         }
       }
     }
