@@ -4,6 +4,8 @@ Inertia Rails can manage a page's meta tags on the server instead of on the fron
 
 Inertia Rails renders server defined meta tags into both the server rendered HTML and the client-side Inertia page props. Because the tags share unique `head-key` attributes, the client will "take over" the meta tags after the initial page load.
 
+@available_since rails=3.10.0
+
 ## Setup
 
 ### Server Side
