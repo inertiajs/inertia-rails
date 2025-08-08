@@ -31,8 +31,5 @@ RUN mkdir -p /usr/local/bundle && chown -R user:user /usr/local/bundle
 # Switch to non-root user
 USER user
 
-# Set up git config (helps with development)
-RUN git config --global init.defaultBranch main
-
 # Set the default shell
 SHELL ["/bin/bash", "-c"]
