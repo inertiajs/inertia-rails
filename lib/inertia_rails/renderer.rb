@@ -90,10 +90,13 @@ module InertiaRails
     end
 
     def computed_props
-      merged_props = merge_props(shared_data, props)
-      deep_transform_props(merged_props).tap do |transformed_props|
-        transformed_props[:_inertia_meta] = meta_tags if meta_tags.present?
-      end
+      merge_props(shared_data, props)
+        # This performs the internal work of hydrating/filtering props
+        .then { |props| deep_transform_props(props) }
+        # Then we apply the user-defined prop transformer
+        .then { |props| configuration.prop_transformer(props: props) }
+        # Then we add meta tags after everything since they must not be transformed
+        .tap { |props| props[:_inertia_meta] = meta_tags if meta_tags.present? }
     end
 
     def page
