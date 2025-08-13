@@ -62,6 +62,12 @@ RSpec.describe 'rendering inertia views', type: :request do
       before { get inertia_route_path }
 
       it { is_expected.to include inertia_div(page) }
+
+      context 'with non html format' do
+        before { get '/inertia_route.json' }
+
+        it { is_expected.to include inertia_div(page) }
+      end
     end
 
     context 'via a resource inertia route' do
