@@ -653,6 +653,45 @@ $form.reset('field', 'anotherfield')
 
 :::
 
+@available_since core=2.0.15
+
+Sometimes, you may want to restore your form fields to their default values and clear any validation errors at the same time. Instead of calling `reset()` and `clearErrors()` separately, you can use the `resetAndClearErrors()` method, which combines both actions into a single call.
+
+:::tabs key:frameworks
+
+== Vue
+```js
+// Reset the form and clear all errors...
+form.resetAndClearErrors()
+
+// Reset specific fields and clear their errors...
+form.resetAndClearErrors('field', 'anotherfield')
+```
+
+== React
+
+```jsx
+const { resetAndClearErrors } = useForm({ ... })
+
+// Reset the form and clear all errors...
+resetAndClearErrors()
+
+// Reset specific fields and clear their errors...
+resetAndClearErrors('field', 'anotherfield')
+```
+
+== Svelte 4|Svelte 5
+
+```js
+// Reset the form and clear all errors...
+$form.resetAndClearErrors()
+
+// Reset specific fields and clear their errors...
+$form.resetAndClearErrors('field', 'anotherfield')
+```
+
+:::
+
 If your form's default values become outdated, you can use the `defaults()` method to update them. Then, the form will be reset to the correct values the next time the `reset()` method is invoked.
 
 :::tabs key:frameworks
