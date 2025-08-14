@@ -227,7 +227,7 @@ router.prefetch(
 )
 ```
 
-To make this even easier, Inertia offers a prefetch helper. This helper provides some additional insight into the request, such as the last updated timestamp and if the request is currently prefetching.
+Inertia also provides a `usePrefetch` hook that allows you to track the prefetch state for the current page. It returns information about whether the page is currently prefetching, has been prefetched, when it was last updated, and a `flush` method that flushes the cache for the current page only.
 
 :::tabs key:frameworks
 == Vue
@@ -235,11 +235,7 @@ To make this even easier, Inertia offers a prefetch helper. This helper provides
 ```js
 import { usePrefetch } from '@inertiajs/vue3'
 
-const { lastUpdatedAt, isPrefetching, isPrefetched } = usePrefetch(
-  '/users',
-  { method: 'get', data: { page: 2 } },
-  { cacheFor: '1m' },
-)
+const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch()
 ```
 
 == React
@@ -247,11 +243,7 @@ const { lastUpdatedAt, isPrefetching, isPrefetched } = usePrefetch(
 ```js
 import { usePrefetch } from '@inertiajs/react'
 
-const { lastUpdatedAt, isPrefetching, isPrefetched } = usePrefetch(
-  '/users',
-  { method: 'get', data: { page: 2 } },
-  { cacheFor: '1m' },
-)
+const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch()
 ```
 
 == Svelte 4|Svelte 5
@@ -259,14 +251,47 @@ const { lastUpdatedAt, isPrefetching, isPrefetched } = usePrefetch(
 ```js
 import { usePrefetch } from '@inertiajs/svelte'
 
-const { lastUpdatedAt, isPrefetching, isPrefetched } = usePrefetch(
-  '/users',
-  { method: 'get', data: { page: 2 } },
-  { cacheFor: '1m' },
-)
+const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch()
 ```
 
 :::
+
+You can also pass visit options when you need to differentiate between different request configurations for the same URL.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { usePrefetch } from '@inertiajs/vue3'
+
+const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
+  headers: { 'X-Custom-Header': 'value' }
+})
+```
+
+== React
+
+```js
+import { usePrefetch } from '@inertiajs/react'
+
+const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
+  headers: { 'X-Custom-Header': 'value' }
+})
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { usePrefetch } from '@inertiajs/svelte'
+
+const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
+  headers: { 'X-Custom-Header': 'value' }
+})
+```
+
+:::
+
 
 ## Flushing prefetch cache
 
@@ -274,7 +299,7 @@ You can flush the prefetch cache by calling `router.flushAll`. This will remove 
 
 If you want to flush the cache for a specific page, you can pass the page URL and options to the `router.flush` method.
 
-Furthermore, if you are using the prefetch helper, it will return a `flush` method for you to use for that specific page.
+Furthermore, if you are using the `usePrefetch` hook, it will return a `flush` method for you to use.
 
 ```js
 // Flush all prefetch cache
@@ -283,8 +308,9 @@ router.flushAll()
 // Flush cache for a specific page
 router.flush('/users', { method: 'get', data: { page: 2 } })
 
-// Flush cache for a specific page
-const { flush } = usePrefetch('/users', { method: 'get', data: { page: 2 } })
+const { flush } = usePrefetch()
+
+// Flush cache for the current page
 flush()
 ```
 
