@@ -26,7 +26,7 @@ Content-Type: text/html; charset=utf-8
 </head>
 <body>
 
-<div id="app" data-page='{"component":"Event","props":{"errors":{},"event":{"id":80,"title":"Birthday party","start_date":"2019-06-02","description":"Come out and celebrate Jonathan&apos;s 36th birthday party!"}},"url":"/events/80","version":"c32b8e4965f418ad16eaebba1d4e960f"}'></div>
+<div id="app" data-page='{"component":"Event","props":{"errors":{},"event":{"id":80,"title":"Birthday party","start_date":"2019-06-02","description":"Come out and celebrate Jonathan&apos;s 36th birthday party!"}},"url":"/events/80","version":"6b16b94d7c51cbe5b1fa42aac98241d5"}'></div>
 
 </body>
 </html>
@@ -67,7 +67,7 @@ X-Inertia: true
     }
   },
   "url": "/events/80",
-  "version": "c32b8e4965f418ad16eaebba1d4e960f",
+  "version": "6b16b94d7c51cbe5b1fa42aac98241d5",
   "encryptHistory": true,
   "clearHistory": false
 }
@@ -113,6 +113,8 @@ RESPONSE
 X-Inertia-Location: http://example.com/events/80
 ```
 
+You can read more about this on the [asset versioning](/guide/asset-versioning) page.
+
 ## Partial reloads
 
 When making Inertia requests, the partial reload option allows you to request a subset of the props (data) from the server on subsequent visits to the same page component. This can be a helpful performance optimization if it's acceptable that some page data becomes stale.
@@ -148,7 +150,7 @@ Content-Type: application/json
     "errors": {}         // always included
   },
   "url": "/events/80",
-  "version": "c32b8e4965f418ad16eaebba1d4e960f"
+  "version": "6b16b94d7c51cbe5b1fa42aac98241d5"
 }
 ```
 
