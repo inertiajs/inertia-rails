@@ -266,7 +266,7 @@ You can also pass visit options when you need to differentiate between different
 import { usePrefetch } from '@inertiajs/vue3'
 
 const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
-  headers: { 'X-Custom-Header': 'value' }
+  headers: { 'X-Custom-Header': 'value' },
 })
 ```
 
@@ -276,7 +276,7 @@ const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
 import { usePrefetch } from '@inertiajs/react'
 
 const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
-  headers: { 'X-Custom-Header': 'value' }
+  headers: { 'X-Custom-Header': 'value' },
 })
 ```
 
@@ -286,20 +286,71 @@ const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
 import { usePrefetch } from '@inertiajs/svelte'
 
 const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
-  headers: { 'X-Custom-Header': 'value' }
+  headers: { 'X-Custom-Header': 'value' },
 })
 ```
 
 :::
 
+## Cache tags
 
-## Flushing prefetch cache
+@available_since core=2.1.2
 
-You can flush the prefetch cache by calling `router.flushAll`. This will remove all cached data for all pages.
+Cache tags allow you to group related prefetched data and invalidate it all at once when specific events occur.
 
-If you want to flush the cache for a specific page, you can pass the page URL and options to the `router.flush` method.
+To tag cached data, pass a `cacheTags` prop to your `Link` component.
 
-Furthermore, if you are using the `usePrefetch` hook, it will return a `flush` method for you to use.
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup>
+import { Link } from '@inertiajs/vue3'
+</script>
+
+<template>
+  <Link href="/users" prefetch cache-tags="users">Users</Link>
+  <Link href="/dashboard" prefetch :cache-tags="['dashboard', 'stats']">
+    Dashboard
+  </Link>
+</template>
+```
+
+== React
+
+```jsx
+import { Link } from '@inertiajs/react'
+
+<Link href="/users" prefetch cacheTags="users">Users</Link>
+<Link href="/dashboard" prefetch cacheTags={['dashboard', 'stats']}>Dashboard</Link>
+```
+
+== Svelte 4 | Svelte 5
+
+```svelte
+import {inertia} from '@inertiajs/svelte'
+
+<a href="/users" use:inertia={{ prefetch: true, cacheTags: 'users' }}>Users</a>
+<a
+  href="/dashboard"
+  use:inertia={{ prefetch: true, cacheTags: ['dashboard', 'stats'] }}
+  >Dashboard</a
+>
+```
+
+:::
+
+When prefetching programmatically, pass `cacheTags` in the third argument to `router.prefetch`.
+
+```js
+router.prefetch('/users', {}, { cacheTags: 'users' })
+router.prefetch('/dashboard', {}, { cacheTags: ['dashboard', 'stats'] })
+```
+
+## Cache invalidation
+
+You can manually flush the prefetch cache by calling `router.flushAll` to remove all cached data, or `router.flush` to remove cache for a specific page.
 
 ```js
 // Flush all prefetch cache
@@ -308,10 +359,151 @@ router.flushAll()
 // Flush cache for a specific page
 router.flush('/users', { method: 'get', data: { page: 2 } })
 
+// Using the usePrefetch hook
 const { flush } = usePrefetch()
 
-// Flush cache for the current page
-flush()
+flush() // Flush cache for the current page
+```
+
+For more granular control, you can flush cached data by their tags using `router.flushByCacheTags`. This removes any cached response that contains _any_ of the specified tags.
+
+```js
+// Flush all responses tagged with 'users'
+router.flushByCacheTags('users')
+
+// Flush all responses tagged with 'dashboard' OR 'stats'
+router.flushByCacheTags(['dashboard', 'stats'])
+```
+
+### Invalidate on requests
+
+@available_since core=2.1.2
+
+To automatically invalidate caches when making requests, pass an `invalidateCacheTags` prop to the Form component. The specified tags will be flushed when the form submission succeeds.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup>
+import { Form } from '@inertiajs/vue3'
+</script>
+
+<template>
+  <Form
+    action="/users"
+    method="post"
+    :invalidate-cache-tags="['users', 'dashboard']"
+  >
+    <input type="text" name="name" />
+    <input type="email" name="email" />
+    <button type="submit">Create User</button>
+  </Form>
+</template>
+```
+
+== React
+
+```jsx
+import { Form } from '@inertiajs/react'
+
+export default () => (
+  <Form
+    action="/users"
+    method="post"
+    invalidateCacheTags={['users', 'dashboard']}
+  >
+    <input type="text" name="name" />
+    <input type="email" name="email" />
+    <button type="submit">Create User</button>
+  </Form>
+)
+```
+
+== Svelte 4 | Svelte 5
+
+```svelte
+<script>
+  import { Form } from '@inertiajs/svelte'
+</script>
+
+<Form
+  action="/users"
+  method="post"
+  invalidateCacheTags={['users', 'dashboard']}
+>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Create User</button>
+</Form>
+```
+
+:::
+
+With the `useForm` helper, you can include `invalidateCacheTags` in the visit options.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+import { useForm } from '@inertiajs/vue3' const form = useForm({ name: '',
+email: '', }) const submit = () => { form.post('/users', { invalidateCacheTags:
+['users', 'dashboard'] }) }
+```
+
+== React
+
+```jsx
+import { useForm } from '@inertiajs/react'
+
+const { data, setData, post } = useForm({
+  name: '',
+  email: '',
+})
+
+function submit(e) {
+  e.preventDefault()
+  post('/users', {
+    invalidateCacheTags: ['users', 'dashboard'],
+  })
+}
+```
+
+== Svelte 4 | Svelte 5
+
+```svelte
+import { useForm } from '@inertiajs/svelte'
+
+const form = useForm({
+  name: '',
+  email: '',
+})
+
+function submit() {
+  $form.post('/users', {
+    invalidateCacheTags: ['users', 'dashboard']
+  })
+}
+```
+
+:::
+
+You can also invalidate cache tags with programmatic visits by including `invalidateCacheTags` in the options.
+
+```js
+router.delete(
+  `/users/${userId}`,
+  {},
+  {
+    invalidateCacheTags: ['users', 'dashboard'],
+  },
+)
+
+router.post('/posts', postData, {
+  invalidateCacheTags: ['posts', 'recent-posts'],
+})
 ```
 
 ## Stale while revalidate
