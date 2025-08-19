@@ -153,6 +153,10 @@ You can pass a `transform` prop to modify the form data before submission. This 
 
 :::
 
+### Checkbox inputs
+
+When working with checkboxes, you may want to add an explicit `value` attribute such as `value="1"`. Without a value attribute, checked checkboxes will submit as `"on"`, which some server-side validation rules may not recognize as a proper boolean value.
+
 ### Slot props
 
 The `<Form>` component exposes reactive state and helper methods through its default slot, giving you access to form processing state, errors, and utility functions.
