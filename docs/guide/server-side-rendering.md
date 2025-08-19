@@ -5,30 +5,8 @@ Server-side rendering pre-renders your JavaScript pages on the server, allowing 
 > [!NOTE]
 > Server-side rendering uses Node.js to render your pages in a background process; therefore, Node must be available on your server for server-side rendering to function properly.
 
-## Install dependencies
-
-First, install the additional dependencies required for server-side rendering. This is only necessary for the Vue adapters, so you can skip this step if you're using React or Svelte.
-
-:::tabs key:frameworks
-== Vue
-
-```shell
-npm install @vue/server-renderer
-```
-
-== React
-
-```shell
-// No additional dependencies required
-```
-
-== Svelte 4|Svelte 5
-
-```shell
-// No additional dependencies required
-```
-
-:::
+> [!NOTE]
+> For Vue `< 3.2.13` you will need to install `@vue/server-renderer` as a dependency, and use it instead of `vue/server-renderer`.
 
 ## Add server entry-point
 
@@ -42,7 +20,7 @@ This file is going to look very similar to your regular inertia initialization f
 ```js
 import { createInertiaApp } from '@inertiajs/vue3'
 import createServer from '@inertiajs/vue3/server'
-import { renderToString } from '@vue/server-renderer'
+import { renderToString } from 'vue/server-renderer'
 import { createSSRApp, h } from 'vue'
 
 createServer((page) =>
@@ -141,7 +119,7 @@ You can enable clustering by passing a second argument to `createServer`:
 ```js
 import { createInertiaApp } from '@inertiajs/vue3'
 import createServer from '@inertiajs/vue3/server'
-import { renderToString } from '@vue/server-renderer'
+import { renderToString } from 'vue/server-renderer'
 import { createSSRApp, h } from 'vue'
 
 createServer(
