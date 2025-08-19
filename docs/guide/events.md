@@ -228,7 +228,7 @@ document.removeEventListener('inertia:start', startEventListener)
 
 ## Cancelling events
 
-Some events, such as `before`, `invalid`, and `error`, support cancellation, allowing you to prevent Inertia's default behavior. Just like native events, the event will be cancelled if only one event listener calls `event.preventDefault()`.
+Some events, such as `before`, `exception`, and `invalid`, support cancellation, allowing you to prevent Inertia's default behavior. Just like native events, the event will be cancelled if only one event listener calls `event.preventDefault()`.
 
 :::tabs key:frameworks
 == Vue

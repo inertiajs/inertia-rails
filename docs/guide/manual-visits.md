@@ -417,6 +417,10 @@ router.push({
   encryptHistory: false,
   preserveScroll: false,
   preserveState: false,
+  errorBag: null,
+  onSuccess: (page) => {},
+  onError: (errors) => {},
+  onFinish: (visit) => {},
 })
 ```
 
@@ -433,6 +437,10 @@ router.push({
   encryptHistory: false,
   preserveScroll: false,
   preserveState: false,
+  errorBag: null,
+  onSuccess: (page) => {},
+  onError: (errors) => {},
+  onFinish: (visit) => {},
 })
 ```
 
@@ -449,14 +457,20 @@ router.push({
   encryptHistory: false,
   preserveScroll: false,
   preserveState: false,
+  errorBag: null,
+  onSuccess: (page) => {},
+  onError: (errors) => {},
+  onFinish: (visit) => {},
 })
 ```
 
 :::
 
-All the parameters are optional. By default, all passed parameters will be merged with the current page. This means you are responsible for overriding the current page's URL, component, and props.
+All the parameters are optional. By default, all passed parameters (except `errorBag`) will be merged with the current page. This means you are responsible for overriding the current page's URL, component, and props.
 
 If you need access to the current page's props you can pass a function to the props option. This function will receive the current page's props as an argument and should return the new props.
+
+The `errorBag` option allows you to specify which error bag to use when handling validation errors in the `onError` callback.
 
 :::tabs key:frameworks
 == Vue
