@@ -4,6 +4,7 @@ react:
     - "@vitejs/plugin-react"
     - "react"
     - "react-dom"
+    - "vite@latest"
   packages_ts:
     - "@types/react"
     - "@types/react-dom"
@@ -29,6 +30,7 @@ vue:
   packages:
     - "vue"
     - "@vitejs/plugin-vue"
+    - "vite@latest"
   packages_ts:
     - "typescript@~5.6.2"
     - "vue-tsc"
@@ -52,6 +54,7 @@ svelte4:
   packages:
     - "svelte@4"
     - "@sveltejs/vite-plugin-svelte@3"
+    - "vite@5"
   packages_ts:
     - "@tsconfig/svelte@4"
     - "svelte-check"
@@ -76,7 +79,8 @@ svelte:
   inertia_package: "@inertiajs/svelte"
   packages:
     - "svelte@5"
-    - "@sveltejs/vite-plugin-svelte@4"
+    - "@sveltejs/vite-plugin-svelte"
+    - "vite@latest"
   packages_ts:
     - "@tsconfig/svelte@5"
     - "svelte-check"
