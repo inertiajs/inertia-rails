@@ -44,6 +44,33 @@ Inertia Rails supports setting any configuration option via environment variable
 
 Use `component_path_resolver` to customize component path resolution when [`default_render`](#default_render) config value is set to `true`. The value should be callable and will receive the `path` and `action` parameters, returning a string component path. See [Automatically determine component name](/guide/responses#automatically-determine-component-name).
 
+### `prop_transformer`
+
+**Default**: `->(props:) { props }`
+
+Use `prop_transformer` to apply a transformation to your props before they're sent to the view. One use-case this enables is to work with `snake_case` props within Rails while working with `camelCase` in your view:
+
+```ruby
+  inertia_config(
+    prop_transformer: lambda do |props:|
+      props.deep_transform_keys { |key| key.to_s.camelize(:lower) }
+    end
+  )
+```
+
+> [!NOTE]
+> This controls the props provided by Inertia Rails but does not concern itself with props coming _into_ Rails. You may want to add a global `before_action` to `ApplicationController`:
+
+```ruby
+before_action :underscore_params
+
+# ...
+
+def underscore_params
+  params.deep_transform_keys! { |key| key.to_s.underscore }
+end
+```
+
 ### `deep_merge_shared_data`
 
 **Default**: `false`
