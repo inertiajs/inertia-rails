@@ -91,6 +91,11 @@ module InertiaRails
 
     def computed_props
       merged_props = merge_props(shared_data, props)
+      # Always keep errors in the props
+      if merged_props.key?(:errors) && !merged_props[:errors].is_a?(BaseProp)
+        errors = merged_props[:errors]
+        merged_props[:errors] = InertiaRails.always { errors }
+      end
       deep_transform_props(merged_props).tap do |transformed_props|
         transformed_props[:_inertia_meta] = meta_tags if meta_tags.present?
       end
