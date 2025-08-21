@@ -144,7 +144,22 @@ module InertiaRails
     end
 
     def inertia_shared_data
-      initial_data = session[:inertia_errors].present? ? {errors: session[:inertia_errors]} : {}
+      initial_data =
+        if session[:inertia_errors].present?
+          { errors: session[:inertia_errors] }
+        elsif inertia_configuration.always_include_errors_hash
+          { errors: {} }
+        else
+          if inertia_configuration.always_include_errors_hash.nil?
+            InertiaRails.deprecator.warn(
+              "To comply with the Inertia protocol, an empty errors hash `{errors: {}}` " \
+              "will be included to all responses by default starting with InertiaRails 4.0. " \
+              "To opt-in now, set `config.always_include_errors_hash = true`. " \
+              "To disable this warning, set it to `false`."
+            )
+          end
+          {}
+        end
 
       self.class._inertia_shared_data.filter_map { |shared_data|
         if shared_data.respond_to?(:call)

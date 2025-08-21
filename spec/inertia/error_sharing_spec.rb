@@ -45,5 +45,27 @@ RSpec.describe 'errors shared automatically', type: :request do
       expect(response.body).to include(CGI::escape_html({ errors: { uh: 'oh' } }.to_json))
       expect(session[:inertia_errors]).not_to be
     end
+
+    context 'with partial update' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Version' => server_version,
+          'X-Inertia-Partial-Component' => 'EmptyTestComponent',
+          'X-Inertia-Partial-Data' => 'foo',
+        }
+      end
+
+      it 'keeps errors when partial inertia request redirects' do
+        post redirect_with_inertia_errors_path, headers: headers
+        expect(response.headers['Location']).to eq(empty_test_url)
+        expect(session[:inertia_errors]).to include({ uh: 'oh' })
+
+        # Follow the redirect
+        get response.headers['Location'], headers: headers
+        expect(response.body).to include({ errors: { uh: 'oh' } }.to_json)
+        expect(session[:inertia_errors]).not_to be
+      end
+    end
   end
 end
