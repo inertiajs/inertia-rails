@@ -1,4 +1,57 @@
 RSpec.describe 'errors shared automatically', type: :request do
+  context 'always_include_errors_hash configuration' do
+    let(:server_version) { 1.0 }
+    let(:headers) { { 'X-Inertia' => true } }
+
+    after { InertiaRails.configure { |c| c.always_include_errors_hash = nil } }
+
+    context 'when always_include_errors_hash is true' do
+      before { InertiaRails.configure { |c| c.always_include_errors_hash = true } }
+
+      it 'includes empty errors hash when no errors present' do
+        get empty_test_path, headers: headers
+        expect(response.body).to include({ errors: {} }.to_json)
+      end
+
+      it 'still includes actual errors when they exist' do
+        post redirect_with_inertia_errors_path, headers: headers
+        get response.headers['Location'], headers: headers
+        expect(response.body).to include({ errors: { uh: 'oh' } }.to_json)
+      end
+    end
+
+    context 'when always_include_errors_hash is false' do
+      before { InertiaRails.configure { |c| c.always_include_errors_hash = false } }
+
+      it 'does not include errors hash when no errors present' do
+        get empty_test_path, headers: headers
+        expect(response.body).not_to include('"errors"')
+      end
+
+      it 'still includes actual errors when they exist' do
+        post redirect_with_inertia_errors_path, headers: headers
+        get response.headers['Location'], headers: headers
+        expect(response.body).to include({ errors: { uh: 'oh' } }.to_json)
+      end
+    end
+
+    context 'when always_include_errors_hash is nil (default)' do
+      before { InertiaRails.configure { |c| c.always_include_errors_hash = nil } }
+
+      it 'shows deprecation warning and does not include empty errors hash' do
+        expect { get empty_test_path, headers: headers }
+          .to output(/To comply with the Inertia protocol/).to_stderr
+        expect(response.body).not_to include('"errors"')
+      end
+
+      it 'still includes actual errors when they exist' do
+        post redirect_with_inertia_errors_path, headers: headers
+        get response.headers['Location'], headers: headers
+        expect(response.body).to include({ errors: { uh: 'oh' } }.to_json)
+      end
+    end
+  end
+
   context 'rendering errors across redirects' do
     let(:server_version){ 1.0 }
     let(:headers){ { 'X-Inertia' => true, 'X-Inertia-Version' => server_version } }
