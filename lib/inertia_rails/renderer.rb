@@ -91,11 +91,19 @@ module InertiaRails
 
     def computed_props
       merge_props(shared_data, props)
-        # This performs the internal work of hydrating/filtering props
+        # Always keep errors in the props
+        .then do |merged_props|
+          if merged_props.key?(:errors) && !merged_props[:errors].is_a?(BaseProp)
+            errors = merged_props[:errors]
+            merged_props[:errors] = InertiaRails.always { errors }
+          end
+          merged_props
+        end
+        # Internal hydration/filtering
         .then { |props| deep_transform_props(props) }
-        # Then we apply the user-defined prop transformer
+        # Apply user-defined prop transformer
         .then { |props| configuration.prop_transformer(props: props) }
-        # Then we add meta tags after everything since they must not be transformed
+        # Add meta tags last (never transformed)
         .tap { |props| props[:_inertia_meta] = meta_tags if meta_tags.present? }
     end
 

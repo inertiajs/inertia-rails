@@ -130,6 +130,19 @@ forcing a full page visit instead of an XHR visit on the next request.
 
 See [assets versioning](/guide/asset-versioning).
 
+### `always_include_errors_hash`
+
+**Default**: `nil`
+**ENV**: `INERTIA_ALWAYS_INCLUDE_ERRORS_HASH`
+
+@available_since rails=master
+
+Whether to include an empty `errors` hash in the props when no validation errors are present.
+
+When set to `true`, an empty `errors: {}` object will always be included in Inertia responses. When set to `false`, the `errors` key will be omitted when there are no errors. The default value `nil` currently behaves like `false` but shows a deprecation warning.
+
+The default value will be changed to `true` in the next major version.
+
 ### `parent_controller`
 
 **Default**: `'::ApplicationController'`
