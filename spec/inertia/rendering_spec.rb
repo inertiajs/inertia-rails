@@ -62,6 +62,12 @@ RSpec.describe 'rendering inertia views', type: :request do
       before { get inertia_route_path }
 
       it { is_expected.to include inertia_div(page) }
+
+      context 'with non html format' do
+        it 'raises UnknownFormat error' do
+          expect { get '/inertia_route.json' }.to raise_error(ActionController::UnknownFormat)
+        end
+      end
     end
 
     context 'via a resource inertia route' do
