@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.shared_examples 'base prop' do
   describe '#call' do
     subject(:call) { prop.call(controller) }
