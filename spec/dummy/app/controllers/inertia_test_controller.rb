@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class MyError
-  def to_hash() { uh: 'oh' } end
+  def to_hash = { uh: 'oh' }
 end
 
 class InertiaTestController < ApplicationController
@@ -69,18 +71,18 @@ class InertiaTestController < ApplicationController
     )
   end
 
-  def error_404
+  def error_404 # rubocop:disable Naming/VariableNumber
     render inertia: 'ErrorComponent', status: 404
   end
 
-  def error_500
+  def error_500 # rubocop:disable Naming/VariableNumber
     render inertia: 'ErrorComponent', status: 500
   end
 
   def content_type_test
     respond_to do |format|
       format.html { render inertia: 'EmptyTestComponent' }
-      format.xml { render xml: [ 1, 2, 3 ] }
+      format.xml { render xml: [1, 2, 3] }
     end
   end
 
