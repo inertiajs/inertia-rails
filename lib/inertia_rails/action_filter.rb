@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #
 # Based on AbstractController::Callbacks::ActionFilter
 # https://github.com/rails/rails/blob/v7.2.0/actionpack/lib/abstract_controller/callbacks.rb#L39
@@ -6,7 +7,7 @@ module InertiaRails
   class ActionFilter
     def initialize(conditional_key, actions)
       @conditional_key = conditional_key
-      @actions = Array(actions).map(&:to_s).to_set
+      @actions = Array(actions).to_set(&:to_s)
     end
 
     def match?(controller)

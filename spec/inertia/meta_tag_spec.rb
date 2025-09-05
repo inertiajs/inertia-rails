@@ -18,7 +18,8 @@ RSpec.describe InertiaRails::MetaTag do
     end
 
     it 'transforms snake_case keys to camelCase' do
-      meta_tag = described_class.new(head_key: dummy_head_key, http_equiv: 'content-security-policy', content: "default-src 'self'")
+      meta_tag = described_class.new(head_key: dummy_head_key, http_equiv: 'content-security-policy',
+                                     content: "default-src 'self'")
 
       expected_json = {
         tagName: :meta,
@@ -31,7 +32,8 @@ RSpec.describe InertiaRails::MetaTag do
     end
 
     it 'handles JSON LD content' do
-      meta_tag = described_class.new(tag_name: 'script', head_key: dummy_head_key, type: 'application/ld+json', inner_content: { '@context': 'https://schema.org' })
+      meta_tag = described_class.new(tag_name: 'script', head_key: dummy_head_key, type: 'application/ld+json',
+                                     inner_content: { '@context': 'https://schema.org' })
 
       expected_json = {
         tagName: :script,
@@ -44,7 +46,8 @@ RSpec.describe InertiaRails::MetaTag do
     end
 
     it 'marks executable script tags with text/plain' do
-      meta_tag = described_class.new(tag_name: 'script', head_key: dummy_head_key, inner_content: '<script>alert("XSS")</script>', type: 'application/javascript')
+      meta_tag = described_class.new(tag_name: 'script', head_key: dummy_head_key,
+                                     inner_content: '<script>alert("XSS")</script>', type: 'application/javascript')
 
       expected_json = {
         tagName: :script,
@@ -113,8 +116,9 @@ RSpec.describe InertiaRails::MetaTag do
     context 'with allow_duplicates set to true' do
       it 'generates a head key with a unique suffix' do
         meta_tag = described_class.new(name: 'description', content: 'Inertia rules', allow_duplicates: true)
+        expected_hash = Digest::MD5.hexdigest('content=Inertia rules&name=description')[0, 8]
 
-        expect(meta_tag.as_json[:headKey]).to eq("meta-name-description-#{Digest::MD5.hexdigest('content=Inertia rules&name=description')[0, 8]}")
+        expect(meta_tag.as_json[:headKey]).to eq("meta-name-description-#{expected_hash}")
       end
     end
   end
@@ -127,7 +131,8 @@ RSpec.describe InertiaRails::MetaTag do
     end
 
     it 'renders kebab case' do
-      meta_tag = described_class.new(tag_name: :meta, head_key: dummy_head_key, http_equiv: 'X-UA-Compatible', content: 'IE=edge')
+      meta_tag = described_class.new(tag_name: :meta, head_key: dummy_head_key, http_equiv: 'X-UA-Compatible',
+                                     content: 'IE=edge')
 
       tag = meta_tag.to_tag(tag_helper)
 
@@ -136,7 +141,8 @@ RSpec.describe InertiaRails::MetaTag do
 
     describe 'script tag rendering' do
       it 'renders JSON LD content correctly' do
-        meta_tag = described_class.new(tag_name: :script, head_key: dummy_head_key, type: 'application/ld+json', inner_content: { '@context': 'https://schema.org' })
+        meta_tag = described_class.new(tag_name: :script, head_key: dummy_head_key, type: 'application/ld+json',
+                                       inner_content: { '@context': 'https://schema.org' })
 
         tag = meta_tag.to_tag(tag_helper)
 
@@ -144,7 +150,8 @@ RSpec.describe InertiaRails::MetaTag do
       end
 
       it 'adds text/plain and escapes all other script tags' do
-        meta_tag = described_class.new(tag_name: :script, head_key: dummy_head_key, type: 'application/javascript', inner_content: 'alert("XSS")')
+        meta_tag = described_class.new(tag_name: :script, head_key: dummy_head_key, type: 'application/javascript',
+                                       inner_content: 'alert("XSS")')
 
         tag = meta_tag.to_tag(tag_helper)
 
@@ -165,7 +172,8 @@ RSpec.describe InertiaRails::MetaTag do
     end
 
     it 'escapes inner content for non-script tags' do
-      meta_tag = described_class.new(tag_name: :div, head_key: dummy_head_key, inner_content: '<script>alert("XSS")</script>')
+      meta_tag = described_class.new(tag_name: :div, head_key: dummy_head_key,
+                                     inner_content: '<script>alert("XSS")</script>')
 
       tag = meta_tag.to_tag(tag_helper)
 

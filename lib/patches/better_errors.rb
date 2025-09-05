@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Patch BetterErrors::Middleware to render HTML for Inertia requests
 #
 # Original source:
@@ -7,13 +9,11 @@
 module InertiaRails
   module InertiaBetterErrors
     def text?(env)
-      return false if env["HTTP_X_INERTIA"]
+      return false if env['HTTP_X_INERTIA']
 
       super
     end
   end
 end
 
-if defined?(BetterErrors)
-  BetterErrors::Middleware.include InertiaRails::InertiaBetterErrors
-end
+BetterErrors::Middleware.include InertiaRails::InertiaBetterErrors if defined?(BetterErrors)

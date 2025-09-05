@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module InertiaRails
   module InertiaRequest
     def inertia?

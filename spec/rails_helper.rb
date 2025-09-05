@@ -1,16 +1,18 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 # Requiring logger fixes an issue between concurrent-ruby and activesupport in Rails < 7.1
 # https://github.com/rails/rails/issues/54260
 require 'logger'
 ENV['RAILS_ENV'] ||= 'test'
 
-require File.expand_path('../dummy/config/environment', __FILE__)
+require File.expand_path('dummy/config/environment', __dir__)
 
 # Allow using `debugger` to debug failing tests.
 require 'debug'
 
 # Prevent database truncation if the environment is production
-abort("The Rails environment is running in production mode!") if Rails.env.production?
+abort('The Rails environment is running in production mode!') if Rails.env.production?
 require 'rspec/rails'
 # Require the spec/support directory and its subdirectories.
 Dir[Pathname.new(__dir__).join('support', '**', '*.rb')].each { |f| require f }

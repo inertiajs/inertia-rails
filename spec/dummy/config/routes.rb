@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
-  mount InertiaRails::Engine => "/inertia-rails"
+  mount InertiaRails::Engine => '/inertia-rails'
 
   get 'configuration' => 'inertia_config_test#configuration'
   get 'props' => 'inertia_render_test#props'
@@ -47,14 +49,15 @@ Rails.application.routes.draw do
   get 'prop_transformer_no_props_test' => 'inertia_prop_transformer#no_props'
   get 'default_component_test' => 'inertia_rails_mimic#default_component_test'
   get 'default_component_with_props_test' => 'inertia_rails_mimic#default_component_with_props_test'
-  get 'default_component_with_duplicated_props_test' => 'inertia_rails_mimic#default_component_with_duplicated_props_test'
+  get 'default_component_with_duplicated_props_test' =>
+        'inertia_rails_mimic#default_component_with_duplicated_props_test'
   get 'provided_props_test' => 'inertia_rails_mimic#provided_props_test'
 
   post 'redirect_to_share_test' => 'inertia_test#redirect_to_share_test'
 
   inertia 'inertia_route' => 'TestComponent'
   inertia :inertia_route_with_default_component
-  scope :scoped, as: "scoped" do
+  scope :scoped, as: 'scoped' do
     inertia 'inertia_route' => 'TestComponent'
   end
   namespace :namespaced do
@@ -65,7 +68,7 @@ Rails.application.routes.draw do
     inertia :inertia_route_with_default_component
     inertia :inertia_route_with_default_component_on_member, on: :member
     inertia :inertia_route_with_default_component_on_collection, on: :collection
-    scope :scoped, as: "scoped" do
+    scope :scoped, as: 'scoped' do
       inertia :inertia_route_with_default_component
     end
   end

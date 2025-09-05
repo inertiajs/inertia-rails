@@ -88,14 +88,16 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
     it 'overrides the meta tag set from the module' do
       get override_tags_from_module_meta_path, headers: headers
 
-      expect(response.parsed_body['props']['_inertia_meta']).to eq([
-                                                                     {
-                                                                       'tagName' => 'meta',
-                                                                       'name' => 'meta_tag_from_concern',
-                                                                       'content' => 'This is overriden by the controller',
-                                                                       'headKey' => 'meta_tag_from_concern',
-                                                                     }
-                                                                   ])
+      expect(response.parsed_body['props']['_inertia_meta']).to eq(
+        [
+          {
+            'tagName' => 'meta',
+            'name' => 'meta_tag_from_concern',
+            'content' => 'This is overriden by the controller',
+            'headKey' => 'meta_tag_from_concern',
+          }
+        ]
+      )
     end
   end
 

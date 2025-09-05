@@ -1,16 +1,18 @@
+# frozen_string_literal: true
+
 RSpec.describe 'Inertia::Request', type: :request do
   describe 'it tests whether a call is an inertia call' do
     subject { response.status }
     before { get inertia_request_test_path, headers: headers }
 
     context 'it is an inertia call' do
-      let(:headers) { {'X-Inertia' => true} }
+      let(:headers) { { 'X-Inertia' => true } }
 
       it { is_expected.to eq 202 }
     end
 
     context 'it is not an inertia call' do
-      let(:headers) { Hash.new }
+      let(:headers) { {} }
 
       it { is_expected.to eq 200 }
     end
@@ -21,7 +23,9 @@ RSpec.describe 'Inertia::Request', type: :request do
     before { get inertia_partial_request_test_path, headers: headers }
 
     context 'it is a partial inertia call' do
-      let(:headers) { { 'X-Inertia' => true, 'X-Inertia-Partial-Component' => 'Component', 'X-Inertia-Partial-Data' => 'foo,bar,baz' } }
+      let(:headers) do
+        { 'X-Inertia' => true, 'X-Inertia-Partial-Component' => 'Component', 'X-Inertia-Partial-Data' => 'foo,bar,baz' }
+      end
 
       it { is_expected.to eq 202 }
     end
@@ -72,13 +76,13 @@ RSpec.describe 'Inertia::Request', type: :request do
     before { get content_type_test_path, headers: headers }
 
     context 'it is an inertia call' do
-      let(:headers) { {'X-Inertia' => true} }
+      let(:headers) { { 'X-Inertia' => true } }
 
       it { is_expected.to eq 'application/json' }
     end
 
     context 'it is not an inertia call' do
-      let(:headers) { Hash.new }
+      let(:headers) { {} }
 
       it { is_expected.to eq 'text/html' }
     end
@@ -107,22 +111,22 @@ RSpec.describe 'Inertia::Request', type: :request do
       end
 
       context 'it is not an inertia call' do
-        let(:headers) { Hash.new }
+        let(:headers) { {} }
         it { is_expected.to include('XSRF-TOKEN') }
       end
 
       context 'it is an inertia call' do
-        let(:headers){ { 'X-Inertia' => true } }
+        let(:headers) { { 'X-Inertia' => true } }
         it { is_expected.to include('XSRF-TOKEN') }
       end
     end
 
-    describe 'copying an X-XSRF-Token header (like Axios sends by default) into the X-CSRF-Token header (that Rails looks for by default)' do
+    describe 'copying an X-XSRF-Token header (Axios default) into the X-CSRF-Token header (Rails default)' do
       subject { request.headers['X-CSRF-Token'] }
       before { get inertia_request_test_path, headers: headers }
 
       context 'it is an inertia call' do
-        let(:headers) {{ 'X-Inertia' => true, 'X-XSRF-Token' => 'foo' }}
+        let(:headers) { { 'X-Inertia' => true, 'X-XSRF-Token' => 'foo' } }
         it { is_expected.to eq 'foo' }
       end
 
@@ -138,7 +142,8 @@ RSpec.describe 'Inertia::Request', type: :request do
         expect(response).to have_http_status(:ok)
         initial_xsrf_token_cookie = response.cookies['XSRF-TOKEN']
 
-        post submit_form_to_test_csrf_path, headers: { 'X-Inertia' => true, 'X-XSRF-Token' => initial_xsrf_token_cookie }
+        post submit_form_to_test_csrf_path,
+             headers: { 'X-Inertia' => true, 'X-XSRF-Token' => initial_xsrf_token_cookie }
         expect(response).to have_http_status(:ok)
 
         delete clear_session_path, headers: { 'X-Inertia' => true, 'X-XSRF-Token' => initial_xsrf_token_cookie }
@@ -149,7 +154,8 @@ RSpec.describe 'Inertia::Request', type: :request do
         expect(post_logout_xsrf_token_cookie).not_to be_nil
         expect(post_logout_xsrf_token_cookie).not_to eq(initial_xsrf_token_cookie)
 
-        post submit_form_to_test_csrf_path, headers: { 'X-Inertia' => true, 'X-XSRF-Token' => post_logout_xsrf_token_cookie }
+        post submit_form_to_test_csrf_path,
+             headers: { 'X-Inertia' => true, 'X-XSRF-Token' => post_logout_xsrf_token_cookie }
         expect(response).to have_http_status(:ok)
       end
     end
@@ -157,9 +163,9 @@ RSpec.describe 'Inertia::Request', type: :request do
 
   describe 'a non existent route' do
     it 'raises a 404 exception' do
-      expect {
+      expect do
         get '/non_existent_route', headers: { 'X-Inertia' => true }
-      }.to raise_error(ActionController::RoutingError,  /No route matches/)
+      end.to raise_error(ActionController::RoutingError, /No route matches/)
     end
   end
 end

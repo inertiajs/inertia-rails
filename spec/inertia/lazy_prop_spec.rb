@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe InertiaRails::LazyProp do
   it_behaves_like 'base prop'
 
@@ -8,7 +10,8 @@ RSpec.describe InertiaRails::LazyProp do
   end
 
   it 'is deprecated' do
-    expect(deprecator).to receive(:warn).with('`lazy` is deprecated and will be removed in InertiaRails 4.0, use `optional` instead.')
+    expect(deprecator).to receive(:warn)
+      .with('`lazy` is deprecated and will be removed in InertiaRails 4.0, use `optional` instead.')
 
     described_class.new('value')
   end

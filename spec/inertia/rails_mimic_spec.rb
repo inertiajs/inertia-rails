@@ -1,12 +1,13 @@
+# frozen_string_literal: true
+
 require_relative '../../lib/inertia_rails/rspec'
 
 RSpec.describe 'rendering when mimicking rails behavior', type: :request, inertia: true do
-
   context 'the props are provided by instance variables' do
     it 'has the props' do
       get instance_props_test_path
 
-      expect_inertia.to have_exact_props({name: 'Brandon', sport: 'hockey'})
+      expect_inertia.to have_exact_props({ name: 'Brandon', sport: 'hockey' })
     end
   end
 
@@ -14,7 +15,7 @@ RSpec.describe 'rendering when mimicking rails behavior', type: :request, inerti
     it 'only includes the provided props' do
       get provided_props_test_path
 
-      expect_inertia.to have_exact_props({'sport': 'basketball'})
+      expect_inertia.to have_exact_props({ sport: 'basketball' })
     end
   end
 
@@ -29,13 +30,13 @@ RSpec.describe 'rendering when mimicking rails behavior', type: :request, inerti
       get default_component_with_props_test_path
 
       expect_inertia.to render_component('inertia_rails_mimic/default_component_with_props_test')
-        .and have_exact_props({my: 'props'})
+        .and have_exact_props({ my: 'props' })
     end
 
     it 'raises an error when props as properties are provided' do
-      expect {
+      expect do
         get default_component_with_duplicated_props_test_path
-      }.to raise_error(ArgumentError, 'Parameter `props` is not allowed when passing a Hash as the first argument')
+      end.to raise_error(ArgumentError, 'Parameter `props` is not allowed when passing a Hash as the first argument')
     end
   end
 
@@ -44,7 +45,7 @@ RSpec.describe 'rendering when mimicking rails behavior', type: :request, inerti
       get default_render_test_path
 
       expect_inertia.to render_component('inertia_rails_mimic/default_render_test')
-      expect_inertia.to include_props({name: 'Brian'})
+      expect_inertia.to include_props({ name: 'Brian' })
     end
 
     context 'a rendering transformation is provided' do
@@ -56,4 +57,3 @@ RSpec.describe 'rendering when mimicking rails behavior', type: :request, inerti
     end
   end
 end
-

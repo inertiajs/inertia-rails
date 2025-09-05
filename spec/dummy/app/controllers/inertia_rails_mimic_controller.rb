@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 class InertiaRailsMimicController < ApplicationController
   inertia_config(
-    default_render: -> { action_name == "default_render_test" },
+    default_render: -> { action_name == 'default_render_test' }
   )
   use_inertia_instance_props
 

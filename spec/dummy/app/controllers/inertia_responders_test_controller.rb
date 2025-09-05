@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 require 'responders'
 
-class Thing
-end
+Thing = Class.new
 
 class InertiaRespondersTestController < ApplicationController
   self.responder = ActionController::Responder

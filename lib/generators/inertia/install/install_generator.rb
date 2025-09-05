@@ -128,8 +128,12 @@ module Inertia
         add_dependencies(*FRAMEWORKS[framework]['packages_ts'])
 
         say 'Copying adding scripts to package.json'
-        run 'npm pkg set scripts.check="svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"' if svelte?
-        run 'npm pkg set scripts.check="vue-tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"' if framework == 'vue'
+        if svelte?
+          run 'npm pkg set scripts.check="svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"'
+        end
+        if framework == 'vue'
+          run 'npm pkg set scripts.check="vue-tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"'
+        end
         run 'npm pkg set scripts.check="tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"' if framework == 'react'
       end
 
@@ -262,8 +266,9 @@ module Inertia
       end
 
       def inertia_resolved_version
+        package = "@inertiajs/core@#{options[:inertia_version]}"
         @inertia_resolved_version ||= Gem::Version.new(
-          `npm show @inertiajs/core@#{options[:inertia_version]} version --json | tail -n2 | head -n1 | tr -d '", '`.strip
+          `npm show #{package} version --json | tail -n2 | head -n1 | tr -d '", '`.strip
         )
       end
 

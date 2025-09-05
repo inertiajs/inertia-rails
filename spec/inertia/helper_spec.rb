@@ -22,13 +22,17 @@ RSpec.describe InertiaRails::Helper, type: :helper do
   describe '#inertia_meta_tags' do
     context 'basic rendering' do
       before do
-        controller.instance_variable_set(:@_inertia_page, {
-          props: {
-            _inertia_meta: [
-              InertiaRails::MetaTag.new(name: 'description', content: 'Inertia rules', head_key: 'my_key')
-            ],
-          },
-        })
+        controller.instance_variable_set(
+          :@_inertia_page,
+          {
+            props: {
+              _inertia_meta: [
+                InertiaRails::MetaTag.new(name: 'description', content: 'Inertia rules',
+                                          head_key: 'my_key')
+              ],
+            },
+          }
+        )
       end
 
       it 'generates a meta tag' do
@@ -38,21 +42,33 @@ RSpec.describe InertiaRails::Helper, type: :helper do
 
     context 'with multiple meta tags' do
       before do
-        controller.instance_variable_set(:@_inertia_page, {
-          props: {
-            _inertia_meta: [
-              InertiaRails::MetaTag.new(tag_name: 'title', inner_content: 'Inertia Page Title', head_key: 'meta-12345678'),
-              InertiaRails::MetaTag.new(name: 'description', content: 'Inertia rules', head_key: 'meta-23456789'),
-              InertiaRails::MetaTag.new(tag_name: 'script', type: 'application/ld+json', inner_content: { '@context': 'https://schema.org' }, head_key: 'meta-34567890')
-            ],
-          },
-        })
+        controller.instance_variable_set(
+          :@_inertia_page,
+          {
+            props: {
+              _inertia_meta: [
+                InertiaRails::MetaTag.new(
+                  tag_name: 'title', inner_content: 'Inertia Page Title', head_key: 'meta-12345678'
+                ),
+                InertiaRails::MetaTag.new(
+                  name: 'description', content: 'Inertia rules', head_key: 'meta-23456789'
+                ),
+                InertiaRails::MetaTag.new(
+                  tag_name: 'script', type: 'application/ld+json',
+                  inner_content: { '@context': 'https://schema.org' }, head_key: 'meta-34567890'
+                )
+              ],
+            },
+          }
+        )
       end
 
       it 'generates multiple meta tags' do
-        expect(helper.inertia_meta_tags).to include("<title inertia=\"title\">Inertia Page Title</title>\n")
-        expect(helper.inertia_meta_tags).to include("<meta name=\"description\" content=\"Inertia rules\" inertia=\"meta-23456789\">\n")
-        expect(helper.inertia_meta_tags).to include('<script type="application/ld+json" inertia="meta-34567890">{"@context":"https://schema.org"}</script>')
+        expect(helper.inertia_meta_tags).to include(
+          "<title inertia=\"title\">Inertia Page Title</title>\n",
+          "<meta name=\"description\" content=\"Inertia rules\" inertia=\"meta-23456789\">\n",
+          '<script type="application/ld+json" inertia="meta-34567890">{"@context":"https://schema.org"}</script>'
+        )
       end
     end
   end
