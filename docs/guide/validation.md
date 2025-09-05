@@ -32,7 +32,7 @@ Finally, since Inertia apps never generate `422` responses, Inertia needs anothe
 
 ## Sharing errors
 
-In order for your server-side validation errors to be available client-side, your server-side framework must share them via the `errors` prop. Inertia's Rails adapter do this automatically.
+In order for your server-side validation errors to be available client-side, your server-side framework must share them via the `errors` prop. Inertia's Rails adapter does this automatically.
 
 ## Displaying errors
 
