@@ -135,7 +135,9 @@ module InertiaRails
         default_page[:deepMergeProps] = configuration.merge_prop_transformer(merge_props: deep_merge_props.map(&:first))
       end
 
-      default_page[:matchPropsOn] = match_props_on if match_props_on.present?
+      if match_props_on.present?
+        default_page[:matchPropsOn] = configuration.merge_prop_transformer(merge_props: match_props_on)
+      end
 
       default_page
     end
