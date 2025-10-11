@@ -48,7 +48,7 @@ export default () => (
 
 Just like a traditional HTML form, there is no need to attach an `onChange` handler to your input fields, just give each input a `name` attribute and a `defaultValue` (if applicable) and the `Form` component will handle the data submission for you.
 
-== Svelte 4 | Svelte 5
+== Svelte 4| Svelte 5
 
 ```svelte
 <script>
@@ -62,7 +62,7 @@ Just like a traditional HTML form, there is no need to attach an `onChange` hand
 </Form>
 ```
 
-Just like a traditional HTML form, there is no need to attach a `bind:` to your input fields, just give each input a `name` attribute and the `Form` component will handle the data submission for you.
+Just like a traditional HTML form, there is no need to attach a `bind:` to your input fields, just give each input a `name` attribute and a `defaultValue` (if applicable, available since Svelte `5.6.0`) and the `Form` component will handle the data submission for you.
 
 :::
 
@@ -94,7 +94,7 @@ The component also supports advanced use cases, including nested data structures
 </Form>
 ```
 
-== Svelte 4 | Svelte 5
+== Svelte 4| Svelte 5
 
 ```svelte
 <Form action="/reports" method="post">
@@ -138,7 +138,7 @@ You can pass a `transform` prop to modify the form data before submission. This 
 </Form>
 ```
 
-== Svelte 4 | Svelte 5
+== Svelte 4| Svelte 5
 
 ```svelte
 <Form
@@ -433,7 +433,7 @@ Some props are intentionally grouped under `options` instead of being top-level 
 
 When setting the `disableWhileProcessing` prop, the `Form` component will add the `inert` attribute to the HTML `form` tag while the form is processing to prevent user interaction.
 
-== Svelte 4 | Svelte 5
+== Svelte 4| Svelte 5
 
 ```svelte
 <Form
@@ -629,7 +629,7 @@ To reset the form after a successful submission:
 </Form>
 ```
 
-== Svelte 4 | Svelte 5
+== Svelte 4| Svelte 5
 
 ```svelte
 <!-- Reset the entire form on success -->
@@ -689,7 +689,7 @@ To reset the form after errors:
 </Form>
 ```
 
-== Svelte 4 | Svelte 5
+== Svelte 4| Svelte 5
 
 ```svelte
 <!-- Reset the entire form on success -->
@@ -737,7 +737,7 @@ The `Form` component provides the `setDefaultsOnSuccess` attribute to set the cu
 </Form>
 ```
 
-== Svelte 4 | Svelte 5
+== Svelte 4| Svelte 5
 
 ```svelte
 <Form action="/users" method="post" setDefaultsOnSuccess>
@@ -777,7 +777,7 @@ The `<Form>` component supports dotted key notation for creating nested objects 
 </Form>
 ```
 
-== Svelte 4 | Svelte 5
+== Svelte 4| Svelte 5
 
 ```svelte
 <Form action="/users" method="post">
@@ -828,7 +828,7 @@ If you need literal dots in your field names (not as nested object separators), 
 </Form>
 ```
 
-== Svelte 4 | Svelte 5
+== Svelte 4| Svelte 5
 
 ```svelte
 <Form action="/config" method="post">
@@ -907,7 +907,7 @@ export default function CreateUser() {
 }
 ```
 
-== Svelte 4 | Svelte 5
+== Svelte 4| Svelte 5
 
 ```svelte
 <script>

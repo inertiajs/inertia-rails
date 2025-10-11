@@ -326,7 +326,7 @@ import { Link } from '@inertiajs/react'
 <Link href="/dashboard" prefetch cacheTags={['dashboard', 'stats']}>Dashboard</Link>
 ```
 
-== Svelte 4 | Svelte 5
+== Svelte 4| Svelte 5
 
 ```svelte
 import {inertia} from '@inertiajs/svelte'
@@ -421,7 +421,7 @@ export default () => (
 )
 ```
 
-== Svelte 4 | Svelte 5
+== Svelte 4| Svelte 5
 
 ```svelte
 <script>
@@ -471,7 +471,7 @@ function submit(e) {
 }
 ```
 
-== Svelte 4 | Svelte 5
+== Svelte 4| Svelte 5
 
 ```svelte
 import { useForm } from '@inertiajs/svelte'
