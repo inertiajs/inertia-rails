@@ -4,7 +4,7 @@ require 'spec_helper'
 # Requiring logger fixes an issue between concurrent-ruby and activesupport in Rails < 7.1
 # https://github.com/rails/rails/issues/54260
 require 'logger'
-ENV['RAILS_ENV'] ||= 'test'
+ENV['RAILS_ENV'] = 'test'
 
 require File.expand_path('dummy/config/environment', __dir__)
 

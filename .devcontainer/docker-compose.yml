@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspace:cached
+      - gem_cache:/usr/local/bundle
+    command: sleep infinity
+    environment:
+      - RAILS_ENV=development
+    working_dir: /workspace
+
+volumes:
+  gem_cache:
