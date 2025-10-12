@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module InertiaRails
   class StaticController < InertiaRails.configuration.parent_controller.constantize
     def static

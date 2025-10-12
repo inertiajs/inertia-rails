@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class InertiaMergeInstancePropsController < ApplicationController
   use_inertia_instance_props
   inertia_share do
@@ -5,7 +7,7 @@ class InertiaMergeInstancePropsController < ApplicationController
       nested: {
         points: 55,
         rebounds: 10,
-      }
+      },
     }
   end
 

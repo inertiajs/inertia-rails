@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe 'errors shared automatically', type: :request do
   context 'always_include_errors_hash configuration' do
     let(:server_version) { 1.0 }
@@ -53,11 +55,11 @@ RSpec.describe 'errors shared automatically', type: :request do
   end
 
   context 'rendering errors across redirects' do
-    let(:server_version){ 1.0 }
-    let(:headers){ { 'X-Inertia' => true, 'X-Inertia-Version' => server_version } }
+    let(:server_version) { 1.0 }
+    let(:headers) { { 'X-Inertia' => true, 'X-Inertia-Version' => server_version } }
 
-    before { InertiaRails.configure{|c| c.version = server_version} }
-    after { InertiaRails.configure{|c| c.version = nil } }
+    before { InertiaRails.configure { |c| c.version = server_version } }
+    after { InertiaRails.configure { |c| c.version = nil } }
 
     it 'automatically renders errors in inertia' do
       post redirect_with_inertia_errors_path, headers: headers
@@ -95,7 +97,7 @@ RSpec.describe 'errors shared automatically', type: :request do
 
       # Simulate the page refresh that Inertia triggers in response to a 409
       get empty_test_path
-      expect(response.body).to include(CGI::escape_html({ errors: { uh: 'oh' } }.to_json))
+      expect(response.body).to include(CGI.escape_html({ errors: { uh: 'oh' } }.to_json))
       expect(session[:inertia_errors]).not_to be
     end
 

@@ -1,7 +1,9 @@
-require_relative "inertia_rails"
-require_relative "helper"
-require_relative "action_filter"
-require_relative "meta_tag_builder"
+# frozen_string_literal: true
+
+require_relative 'inertia_rails'
+require_relative 'helper'
+require_relative 'action_filter'
+require_relative 'meta_tag_builder'
 
 module InertiaRails
   module Controller
@@ -21,8 +23,8 @@ module InertiaRails
         return push_to_inertia_share(**(hash || props), &block) if options.empty?
 
         push_to_inertia_share do
-          next unless options[:if].all? { |filter| instance_exec(&filter) } if options[:if]
-          next unless options[:unless].none? { |filter| instance_exec(&filter)  } if options[:unless]
+          next if options[:if] && !options[:if].all? { |filter| instance_exec(&filter) }
+          next if options[:unless]&.any? { |filter| instance_exec(&filter) }
 
           next hash unless block
 
@@ -81,7 +83,9 @@ module InertiaRails
         return options if options.empty?
 
         if props.except(:if, :unless, :only, :except).any?
-          raise ArgumentError, "You must not mix shared data and [:if, :unless, :only, :except] options, pass data as a hash or a block."
+          raise ArgumentError,
+                'You must not mix shared data and [:if, :unless, :only, :except] options, ' \
+                'pass data as a hash or a block.'
         end
 
         transform_inertia_share_option(options, :only, :if)
@@ -110,7 +114,7 @@ module InertiaRails
         when InertiaRails::ActionFilter
           -> { filter.match?(self) }
         else
-          raise ArgumentError, "You must pass a symbol or a proc as a filter."
+          raise ArgumentError, 'You must pass a symbol or a proc as a filter.'
         end
       end
     end
@@ -136,6 +140,7 @@ module InertiaRails
 
     def inertia_view_assigns
       return {} unless @_inertia_instance_props
+
       view_assigns.except(*@_inertia_skip_props)
     end
 
@@ -152,22 +157,22 @@ module InertiaRails
         else
           if inertia_configuration.always_include_errors_hash.nil?
             InertiaRails.deprecator.warn(
-              "To comply with the Inertia protocol, an empty errors hash `{errors: {}}` " \
-              "will be included to all responses by default starting with InertiaRails 4.0. " \
-              "To opt-in now, set `config.always_include_errors_hash = true`. " \
-              "To disable this warning, set it to `false`."
+              'To comply with the Inertia protocol, an empty errors hash `{errors: {}}` ' \
+              'will be included to all responses by default starting with InertiaRails 4.0. ' \
+              'To opt-in now, set `config.always_include_errors_hash = true`. ' \
+              'To disable this warning, set it to `false`.'
             )
           end
           {}
         end
 
-      self.class._inertia_shared_data.filter_map { |shared_data|
+      self.class._inertia_shared_data.filter_map do |shared_data|
         if shared_data.respond_to?(:call)
           instance_exec(&shared_data)
         else
           shared_data
         end
-      }.reduce(initial_data, &:merge)
+      end.reduce(initial_data, &:merge)
     end
 
     def inertia_location(url)
@@ -183,7 +188,7 @@ module InertiaRails
           session[:inertia_errors] = inertia_errors.to_hash
         else
           InertiaRails.deprecator.warn(
-            "Object passed to `inertia: { errors: ... }` must respond to `to_hash`. Pass a hash-like object instead."
+            'Object passed to `inertia: { errors: ... }` must respond to `to_hash`. Pass a hash-like object instead.'
           )
           session[:inertia_errors] = inertia_errors
         end

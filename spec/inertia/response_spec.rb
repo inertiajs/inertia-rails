@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe 'InertiaRails::Response', type: :request do
   describe 'inertia location response' do
     it 'returns an inertia location response' do
@@ -12,7 +14,7 @@ RSpec.describe 'InertiaRails::Response', type: :request do
     context 'with an [:inertia][:errors] option' do
       # In practice, a GET -> redirect + errors probably shouldn't happen
       context 'with a get request' do
-        it 'adds :inertia_errors to the session'  do
+        it 'adds :inertia_errors to the session' do
           get redirect_with_inertia_errors_path
           expect(response.status).to eq 302
           expect(response.headers['Location']).to eq(empty_test_url)
@@ -30,7 +32,7 @@ RSpec.describe 'InertiaRails::Response', type: :request do
 
         it 'serializes :inertia_errors to the session' do
           post redirect_with_inertia_error_object_path,
-            headers: { 'X-Inertia' => true }
+               headers: { 'X-Inertia' => true }
 
           expect(response.status).to eq 302
           expect(response.headers['Location']).to eq(empty_test_url)
@@ -48,7 +50,7 @@ RSpec.describe 'InertiaRails::Response', type: :request do
             redirect_back_with_inertia_errors_path,
             headers: {
               'X-Inertia' => true,
-              'HTTP_REFERER' => "http://www.example.com/current-path"
+              'HTTP_REFERER' => 'http://www.example.com/current-path',
             }
           )
           expect(response.status).to eq 302
@@ -63,13 +65,13 @@ RSpec.describe 'InertiaRails::Response', type: :request do
     context 'with an [:inertia][:errors] option' do
       context 'with a post request' do
         it 'adds :inertia_errors to the session' do
-          skip("Requires Rails 7.0 or higher") if Rails.version < '7'
+          skip('Requires Rails 7.0 or higher') if Rails.version < '7'
 
           post(
             redirect_back_or_to_with_inertia_errors_path,
             headers: {
               'X-Inertia' => true,
-              'HTTP_REFERER' => "http://www.example.com/current-path"
+              'HTTP_REFERER' => 'http://www.example.com/current-path',
             }
           )
           expect(response.status).to eq 302

@@ -15,11 +15,11 @@ RSpec.describe 'props can be transformed', type: :request, inertia: true do
 
       expect_inertia.to render_component('TestComponent')
         .and have_exact_props({
-          'LOWER_PROP' => 'lower_value',
-          'PARENT_HASH' => {
-            'LOWER_CHILD_PROP' => 'lower_child_value',
-          },
-        })
+                                'LOWER_PROP' => 'lower_value',
+                                'PARENT_HASH' => {
+                                  'LOWER_CHILD_PROP' => 'lower_child_value',
+                                },
+                              })
     end
   end
 
@@ -29,8 +29,8 @@ RSpec.describe 'props can be transformed', type: :request, inertia: true do
 
       expect_inertia.to render_component('TestComponent')
         .and include_props({
-          'LOWER_PROP' => 'lower_value',
-        })
+                             'LOWER_PROP' => 'lower_value',
+                           })
     end
 
     it 'does not transform the meta' do

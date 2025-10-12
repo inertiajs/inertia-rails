@@ -101,7 +101,9 @@ module InertiaRails
         end
         .then { |props| deep_transform_props(props) } # Internal hydration/filtering
         .then { |props| configuration.prop_transformer(props: props) } # Apply user-defined prop transformer
-        .tap { |props| props[:_inertia_meta] = meta_tags if meta_tags.present? } # Add meta tags last (never transformed)
+        .tap do |props| # Add meta tags last (never transformed)
+        props[:_inertia_meta] = meta_tags if meta_tags.present?
+      end
 
       # rubocop:enable Style/MultilineBlockChain
     end
