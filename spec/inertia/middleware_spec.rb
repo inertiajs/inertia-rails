@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe InertiaRails::Middleware, type: :request do
+RSpec.describe 'InertiaRails::Middleware', type: :request do
   context 'the version is set' do
     with_inertia_config version: '1.0'
 
@@ -52,21 +52,25 @@ RSpec.describe InertiaRails::Middleware, type: :request do
     end
 
     it 'is thread safe' do
-      delete_request_proc = -> { delete redirect_test_path, headers: { 'X-Inertia' => true } }
-      get_request_proc = -> { get empty_test_path }
+      # Capture route paths to fix flakiness
+      redirect_path = redirect_test_path
+      empty_path = empty_test_path
 
-      statusses = []
+      delete_request_proc = -> { delete redirect_path, headers: { 'X-Inertia' => true } }
+      get_request_proc = -> { get empty_path }
+
+      statuses = Concurrent::Array.new
 
       threads = []
 
       100.times do
-        threads << Thread.new { statusses << delete_request_proc.call }
+        threads << Thread.new { statuses << delete_request_proc.call }
         threads << Thread.new { get_request_proc.call }
       end
 
       threads.each(&:join)
 
-      expect(statusses.uniq).to eq([303])
+      expect(statuses.uniq).to eq([303])
     end
   end
 end
