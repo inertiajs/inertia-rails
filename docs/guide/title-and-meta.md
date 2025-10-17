@@ -317,7 +317,7 @@ export default ({ title, children }) => {
 
 :::
 
-Once you have created the custom component, you may simply start using the custom component in your pages.
+Once you have created the custom component, you can just start using it in your pages.
 
 :::tabs key:frameworks
 == Vue
