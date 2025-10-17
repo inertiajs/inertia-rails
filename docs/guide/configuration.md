@@ -135,7 +135,7 @@ See [assets versioning](/guide/asset-versioning).
 **Default**: `nil`
 **ENV**: `INERTIA_ALWAYS_INCLUDE_ERRORS_HASH`
 
-@available_since rails=master
+@available_since rails=3.11.0
 
 Whether to include an empty `errors` hash in the props when no validation errors are present.
 
