@@ -30,8 +30,6 @@ import { Form } from '@inertiajs/vue3'
 </template>
 ```
 
-Just like a traditional HTML form, there is no need to attach a `v-model` to your input fields, just give each input a `name` attribute and the `Form` component will handle the data submission for you.
-
 == React
 
 ```jsx
@@ -46,9 +44,7 @@ export default () => (
 )
 ```
 
-Just like a traditional HTML form, there is no need to attach an `onChange` handler to your input fields, just give each input a `name` attribute and a `defaultValue` (if applicable) and the `Form` component will handle the data submission for you.
-
-== Svelte 4| Svelte 5
+== Svelte 4|Svelte 5
 
 ```svelte
 <script>
@@ -62,11 +58,11 @@ Just like a traditional HTML form, there is no need to attach an `onChange` hand
 </Form>
 ```
 
-Just like a traditional HTML form, there is no need to attach a `bind:` to your input fields, just give each input a `name` attribute and a `defaultValue` (if applicable, available since Svelte `5.6.0`) and the `Form` component will handle the data submission for you.
-
 :::
 
-The component also supports advanced use cases, including nested data structures, file uploads, and dotted key notation.
+Just like a traditional HTML form, there is no need to attach <Vue>`v-model`</Vue><React>an `onChange` handler</React><Svelte>`bind:`</Svelte> to your input fields, just give each input a `name` attribute <Opt v="React|Svelte 5">and a `defaultValue` (if applicable)</Opt> and the `Form` component will handle the data submission for you.
+
+The component also supports nested data structures, file uploads, and dotted key notation.
 
 :::tabs key:frameworks
 
@@ -94,7 +90,7 @@ The component also supports advanced use cases, including nested data structures
 </Form>
 ```
 
-== Svelte 4| Svelte 5
+== Svelte 4|Svelte 5
 
 ```svelte
 <Form action="/reports" method="post">
@@ -138,7 +134,7 @@ You can pass a `transform` prop to modify the form data before submission. This 
 </Form>
 ```
 
-== Svelte 4| Svelte 5
+== Svelte 4|Svelte 5
 
 ```svelte
 <Form
@@ -148,6 +144,88 @@ You can pass a `transform` prop to modify the form data before submission. This 
 >
   <input type="text" name="title" />
   <button type="submit">Create Post</button>
+</Form>
+```
+
+:::
+
+### Default values
+
+You can set default values for form inputs using standard HTML attributes. Use <React>`defaultValue`</React><Vue>`value`</Vue><Svelte4>`value`</Svelte4><Svelte5>`defaultValue` (`value` for Svelte < `5.6.0`)</Svelte5> for text inputs and textareas, and <React>`defaultChecked`</React><Vue>`checked`</Vue><Svelte4>`checked`</Svelte4><Svelte5>`defaultChecked` (`checked` for Svelte < `5.6.0`)</Svelte5> for checkboxes and radios.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<template>
+  <Form action="/users" method="post">
+    <input type="text" name="name" value="John Doe" />
+
+    <select name="country">
+      <option value="us">United States</option>
+      <option value="ca">Canada</option>
+      <option value="uk" selected>United Kingdom</option>
+    </select>
+
+    <input type="checkbox" name="subscribe" value="yes" checked />
+
+    <button type="submit">Submit</button>
+  </Form>
+</template>
+```
+
+== React
+
+```jsx
+<Form action="/users" method="post">
+  <input type="text" name="name" defaultValue="John Doe" />
+
+  <select name="country" defaultValue="uk">
+    <option value="us">United States</option>
+    <option value="ca">Canada</option>
+    <option value="uk">United Kingdom</option>
+  </select>
+
+  <input type="checkbox" name="subscribe" value="yes" defaultChecked />
+
+  <button type="submit">Submit</button>
+</Form>
+```
+
+== Svelte 4
+
+```svelte
+<Form action="/users" method="post">
+  <input type="text" name="name" value="John Doe" />
+
+  <select name="country" value="uk">
+    <option value="us">United States</option>
+    <option value="ca">Canada</option>
+    <option value="uk">United Kingdom</option>
+  </select>
+
+  <input type="checkbox" name="subscribe" value="yes" checked />
+
+  <button type="submit">Submit</button>
+</Form>
+```
+
+== Svelte 5
+
+```svelte
+<Form action="/users" method="post">
+  <input type="text" name="name" defaultValue="John Doe" />
+
+  <select name="country" defaultValue="uk">
+    <option value="us">United States</option>
+    <option value="ca">Canada</option>
+    <option value="uk">United Kingdom</option>
+  </select>
+
+  <input type="checkbox" name="subscribe" value="yes" defaultChecked />
+
+  <button type="submit">Submit</button>
 </Form>
 ```
 
@@ -187,7 +265,10 @@ The `<Form>` component exposes reactive state and helper methods through its def
     }"
   >
     <input type="text" name="name" />
-    <div v-if="errors.name">{{ errors.name }}</div>
+
+    <div v-if="errors.name">
+      {{ errors.name }}
+    </div>
 
     <button type="submit" :disabled="processing">
       {{ processing ? 'Creating...' : 'Create User' }}
@@ -219,6 +300,7 @@ The `<Form>` component exposes reactive state and helper methods through its def
   }) => (
     <>
       <input type="text" name="name" />
+
       {errors.name && <div>{errors.name}</div>}
 
       <button type="submit" disabled={processing}>
@@ -252,6 +334,7 @@ The `<Form>` component exposes reactive state and helper methods through its def
   let:submit
 >
   <input type="text" name="name" />
+
   {#if errors.name}
     <div>{errors.name}</div>
   {/if}
@@ -286,6 +369,7 @@ The `<Form>` component exposes reactive state and helper methods through its def
     submit,
   })}
     <input type="text" name="name" />
+
     {#if errors.name}
       <div>{errors.name}</div>
     {/if}
@@ -433,7 +517,7 @@ Some props are intentionally grouped under `options` instead of being top-level 
 
 When setting the `disableWhileProcessing` prop, the `Form` component will add the `inert` attribute to the HTML `form` tag while the form is processing to prevent user interaction.
 
-== Svelte 4| Svelte 5
+== Svelte 4|Svelte 5
 
 ```svelte
 <Form
@@ -467,7 +551,7 @@ When setting the `disableWhileProcessing` prop, the `Form` component will add th
 
 :::
 
-To style the form while it's processing, you can target the inert form in the following ways:
+To style the form while it's processing, you can target the inert form in the following ways.
 
 :::tabs key:css
 
@@ -497,7 +581,7 @@ form[inert] {
 
 ### Events
 
-The `<Form>` component emits all the standard visit [events](/guide/events) for form submissions:
+The `<Form>` component emits all the standard visit [events](/guide/events) for form submissions.
 
 :::tabs key:frameworks
 
@@ -589,7 +673,7 @@ The `<Form>` component emits all the standard visit [events](/guide/events) for 
 
 The `Form` component provides several attributes that allow you to reset the form after a submission.
 
-To reset the form after a successful submission:
+`resetOnSuccess` may be used to reset the form after a successful submission.
 
 :::tabs key:frameworks
 
@@ -629,7 +713,7 @@ To reset the form after a successful submission:
 </Form>
 ```
 
-== Svelte 4| Svelte 5
+== Svelte 4|Svelte 5
 
 ```svelte
 <!-- Reset the entire form on success -->
@@ -649,7 +733,7 @@ To reset the form after a successful submission:
 
 :::
 
-To reset the form after errors:
+`resetOnError` may be used to reset the form after errors.
 
 :::tabs key:frameworks
 
@@ -689,7 +773,7 @@ To reset the form after errors:
 </Form>
 ```
 
-== Svelte 4| Svelte 5
+== Svelte 4|Svelte 5
 
 ```svelte
 <!-- Reset the entire form on success -->
@@ -709,11 +793,11 @@ To reset the form after errors:
 
 :::
 
-### Setting New Default Values
+### Setting new default values
 
 @available_since core=2.1.2
 
-The `Form` component provides the `setDefaultsOnSuccess` attribute to set the current form values as the new defaults after a successful submission:
+The `Form` component provides the `setDefaultsOnSuccess` attribute to set the current form values as the new defaults after a successful submission.
 
 :::tabs key:frameworks
 
@@ -737,7 +821,7 @@ The `Form` component provides the `setDefaultsOnSuccess` attribute to set the cu
 </Form>
 ```
 
-== Svelte 4| Svelte 5
+== Svelte 4|Svelte 5
 
 ```svelte
 <Form action="/users" method="post" setDefaultsOnSuccess>
@@ -777,7 +861,7 @@ The `<Form>` component supports dotted key notation for creating nested objects 
 </Form>
 ```
 
-== Svelte 4| Svelte 5
+== Svelte 4|Svelte 5
 
 ```svelte
 <Form action="/users" method="post">
@@ -828,7 +912,7 @@ If you need literal dots in your field names (not as nested object separators), 
 </Form>
 ```
 
-== Svelte 4| Svelte 5
+== Svelte 4|Svelte 5
 
 ```svelte
 <Form action="/config" method="post">
@@ -853,7 +937,8 @@ The example above would generate the following data structure.
 
 ### Programmatic access
 
-You can access the form's methods programmatically using refs. This provides an alternative to the [slot props](#slot-props) approach when you need to trigger form actions from outside the form.
+You can access the form's methods programmatically using refs. This provides an alternative to
+[slot props](#slot-props) when you need to trigger form actions from outside the form.
 
 :::tabs key:frameworks
 
@@ -907,7 +992,7 @@ export default function CreateUser() {
 }
 ```
 
-== Svelte 4| Svelte 5
+== Svelte 4|Svelte 5
 
 ```svelte
 <script>
@@ -934,7 +1019,7 @@ In React and Vue, refs provide access to all form methods and reactive state. In
 
 ## Form helper
 
-In addition to the `<Form>` component, Inertia also provides a `useForm` helper for when you need programmatic control over your form's data and submission behavior:
+In addition to the `<Form>` component, Inertia also provides a `useForm` helper for when you need programmatic control over your form's data and submission behavior.
 
 :::tabs key:frameworks
 
@@ -1247,6 +1332,8 @@ const { progress } = useForm({ ... })
 
 :::
 
+### Form errors
+
 If there are form validation errors, they are available via the `errors` property. When building Rails powered Inertia applications, form errors will automatically be populated when your application throws instances of `ActiveRecord::RecordInvalid`, such as when using `#save!`.
 
 :::tabs key:frameworks
@@ -1365,6 +1452,8 @@ $form.setError({
 
 When a form has been successfully submitted, the `wasSuccessful` property will be `true`. In addition to this, forms have a `recentlySuccessful` property, which will be set to `true` for two seconds after a successful form submission. This property can be utilized to show temporary success messages.
 
+### Resetting the Form
+
 To reset the form's values back to their default values, you can use the `reset()` method.
 
 :::tabs key:frameworks
@@ -1442,6 +1531,8 @@ $form.resetAndClearErrors('field', 'anotherfield')
 
 :::
 
+### Setting new default values
+
 If your form's default values become outdated, you can use the `defaults()` method to update them. Then, the form will be reset to the correct values the next time the `reset()` method is invoked.
 
 :::tabs key:frameworks
@@ -1497,6 +1588,8 @@ $form.defaults({
 
 :::
 
+### Form field change tracking
+
 To determine if a form has any changes, you may use the `isDirty` property.
 
 :::tabs key:frameworks
@@ -1524,6 +1617,8 @@ const { isDirty } = useForm({ ... })
 
 :::
 
+### Canceling Form submissions
+
 To cancel a form submission, use the `cancel()` method.
 
 :::tabs key:frameworks
@@ -1548,6 +1643,8 @@ $form.cancel()
 ```
 
 :::
+
+### Form data and history state
 
 To instruct Inertia to store a form's data and errors in [history state](/guide/remembering-state.md), you can provide a unique form key as the first argument when instantiating your form.
 
@@ -1611,7 +1708,7 @@ This redirect-based approach works with all form submission methods: the `<Form>
 
 Both the `<Form>` component and `useForm` helper automatically handle server-side validation errors. When your server returns validation errors, they're automatically available in the `errors` object without any additional configuration.
 
-Unlike traditional XHR/fetch requests where you'd check for a `422` status code, Inertia handles validation errors as part of its redirect-based flow, just like classic server-side form submissions, but without the full page reload.
+Unlike traditional XHR/fetch requests where you might check for a `422` status code, Inertia handles validation errors as part of its redirect-based flow, just like classic server-side form submissions, but without the full page reload.
 
 For a complete guide on validation error handling, including error bags and advanced scenarios, see the [validation documentation](/guide/validation).
 

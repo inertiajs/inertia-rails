@@ -73,9 +73,34 @@ X-Inertia: true
 }
 ```
 
+## Request headers
+
+The following headers are automatically sent by Inertia when making requests. You don't need to set these manually, they're handled by the Inertia client-side adapter.
+
+1. `X-Inertia`: Set to `true` to indicate this is an Inertia request.
+2. `X-Requested-With`: Set to `XMLHttpRequest` on all Inertia requests.
+3. `Accept`: Set to `text/html, application/xhtml+xml` to indicate acceptable response types.
+4. `X-Inertia-Version`: The current asset version to check for asset mismatches.
+5. `Purpose`: Set to `prefetch` when making [prefetch](/guide/prefetching) requests.
+6. `X-Inertia-Partial-Component`: The component name for [partial reloads](/guide/partial-reloads).
+7. `X-Inertia-Partial-Data`: Comma-separated list of props to include in partial reloads.
+8. `X-Inertia-Partial-Except`: Comma-separated list of props to exclude from partial reloads.
+9. `X-Inertia-Reset`: Comma-separated list of props to reset on navigation.
+10. `Cache-Control`: Set to `no-cache` for reload requests to prevent serving stale content.
+11. `X-Inertia-Error-Bag`: Specifies which error bag to use for [validation errors](/guide/validation).
+12. `X-Inertia-Infinite-Scroll-Merge-Intent`: Indicates whether the requested data should be appended or prepended when using [Infinite scroll](/guide/infinite-scroll).
+
+## Response headers
+
+The following headers should be sent by your server-side adapter in Inertia responses. If you're using Rails server-side adapter, these are handled automatically.
+
+1. `X-Inertia`: Set to true to confirm this is an Inertia response.
+2. `X-Inertia-Location`: Used for external redirects when a `409 Conflict` response is returned due to asset version mismatches.
+3. `Vary`: Set to `X-Inertia` to help browsers correctly differentiate between HTML and JSON responses. This header must be included on both HTML and JSON responses to prevent browsers from showing JSON content instead of rendered HTML or triggering Inertia error handling for normal page visits. Some browsers require this header on all responses, including redirects that lead to Inertia endpoints.
+
 ## The page object
 
-Inertia shares data between the server and client via a page object. This object includes the necessary information required to render the page component, update the browser's history state, and track the site's asset version. The page object includes the following four properties:
+Inertia shares data between the server and client via a page object. This object includes the necessary information required to render the page component, update the browser's history state, and track the site's asset version. The page object can include the following properties:
 
 1. `component`: The name of the JavaScript page component.
 2. `props`: The page props. Contains all of the page data along with an `errors` object (defaults to `{}` if there are no errors).
@@ -83,8 +108,117 @@ Inertia shares data between the server and client via a page object. This object
 4. `version`: The current asset version.
 5. `encryptHistory`: Whether or not to encrypt the current page's history state.
 6. `clearHistory`: Whether or not to clear any encrypted history state.
+7. `mergeProps`: Array of prop keys that should be merged (appended) during navigation. See the [merging props](/guide/merging-props) documentation for details.
+8. `prependProps`: Array of prop keys that should be prepended during navigation.
+9. `deepMergeProps`: Array of prop keys that should be deep merged during navigation.
+10. `matchPropsOn`: Array of prop keys to use for matching when merging props.
+11. `scrollProps`: Configuration for infinite scroll prop merging behavior.
+12. `deferredProps`: Configuration for client-side lazy loading of props. See the [deferred props](/guide/deferred-props) documentation for details.
 
 On standard full page visits, the page object is JSON encoded into the `data-page` attribute in the root `<div>`. On Inertia visits, the page object is returned as the JSON payload.
+
+### Basic page object
+
+A minimal page object contains the core properties.
+
+```json
+{
+  "component": "User/Edit",
+  "props": {
+    "user": {
+      "name": "Jonathan"
+    }
+  },
+  "url": "/user/123",
+  "version": "6b16b94d7c51cbe5b1fa42aac98241d5",
+  "clearHistory": false,
+  "encryptHistory": false
+}
+```
+
+### Page object with deferred props
+
+When using deferred props, the page object includes a `deferredProps` configuration. Note that deferred props are not included in the initial props since they are loaded in a subsequent request.
+
+```json
+{
+  "component": "Posts/Index",
+  "props": {
+    "user": {
+      "name": "Jonathan"
+    }
+  },
+  "url": "/posts",
+  "version": "6b16b94d7c51cbe5b1fa42aac98241d5",
+  "clearHistory": false,
+  "encryptHistory": false,
+  "deferredProps": {
+    "default": ["comments", "analytics"],
+    "sidebar": ["relatedPosts"]
+  }
+}
+```
+
+### Page object with merge props
+
+When using merge props, additional configuration is included.
+
+```json
+{
+  "component": "Feed/Index",
+  "props": {
+    "user": {
+      "name": "Jonathan"
+    },
+    "posts": [{ "id": 1, "title": "First Post" }],
+    "notifications": [{ "id": 2, "message": "New comment" }],
+    "conversations": {
+      "data": [
+        { "id": 1, "title": "Support Chat", "participants": ["John", "Jane"] }
+      ]
+    }
+  },
+  "url": "/feed",
+  "version": "6b16b94d7c51cbe5b1fa42aac98241d5",
+  "clearHistory": false,
+  "encryptHistory": false,
+  "mergeProps": ["posts"],
+  "prependProps": ["notifications"],
+  "deepMergeProps": ["conversations"],
+  "matchPropsOn": ["posts.id", "notifications.id", "conversations.data.id"]
+}
+```
+
+### Page object with scroll props
+
+When using [Infinite scroll](/guide/infinite-scroll), the page object includes a `scrollProps` configuration.
+
+```json
+{
+  "component": "Posts/Index",
+  "props": {
+    "posts": {
+      "data": [
+        { "id": 1, "title": "First Post" },
+        { "id": 2, "title": "Second Post" }
+      ]
+    }
+  },
+  "url": "/posts?page=1",
+  "version": "6b16b94d7c51cbe5b1fa42aac98241d5",
+  "clearHistory": false,
+  "encryptHistory": false,
+  "mergeProps": ["posts.data"],
+  "scrollProps": {
+    "posts": {
+      "pageName": "page",
+      "previousPage": null,
+      "nextPage": 2,
+      "currentPage": 1
+    }
+  }
+}
+```
 
 ## Asset versioning
 
@@ -117,7 +251,7 @@ You can read more about this on the [asset versioning](/guide/asset-versioning) 
 
 ## Partial reloads
 
-When making Inertia requests, the partial reload option allows you to request a subset of the props (data) from the server on subsequent visits to the same page component. This can be a helpful performance optimization if it's acceptable that some page data becomes stale.
+When making Inertia requests, the partial reload option allows you to request a subset of the props (data) from the server on subsequent visits to the same page component. This can be a helpful performance optimization if it's acceptable that some page data becomes stale. See the [partial reloads](/guide/partial-reloads) documentation for details.
 
 When a partial reload request is made, Inertia includes the `X-Inertia-Partial-Component` header and may include `X-Inertia-Partial-Data` and/or `X-Inertia-Partial-Except` headers with the request.
 
@@ -153,5 +287,14 @@ Content-Type: application/json
   "version": "6b16b94d7c51cbe5b1fa42aac98241d5"
 }
 ```
+
+## HTTP status codes
+
+Inertia uses specific HTTP status codes to handle different scenarios.
+
+1. `200 OK`: Standard successful response for both HTML and Inertia JSON responses.
+2. `302 Found`: Standard redirect response. Inertia's server-side adapters automatically convert this to `303 See Other` when returned after `PUT`, `PATCH`, or `DELETE` requests.
+3. `303 See Other`: Used for redirects after non-GET requests. This status code tells the browser to make a `GET` request to the redirect URL, preventing duplicate form submissions that could occur if the browser repeated the original request method.
+4. `409 Conflict`: Returned when there's an asset version mismatch or for external redirects. For asset mismatches, this prompts a full page reload. For external redirects, the response includes an `X-Inertia-Location` header and triggers a `window.location` redirect client-side.
 
 [page object]: #the-page-object

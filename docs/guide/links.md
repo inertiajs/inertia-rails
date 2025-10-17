@@ -369,7 +369,7 @@ export default () => (
 
 :::
 
-For more information on managing scroll position, please consult the documentation on [scroll management](/guide/scroll-management).
+For more information on managing scroll position, check out the documentation on [scroll management](/guide/scroll-management).
 
 ## Partial reloads
 
@@ -414,11 +414,11 @@ export default () => (
 
 :::
 
-For more information on this topic, please consult the complete documentation on [partial reloads](/guide/partial-reloads.md).
+For more information on this topic, check out the complete documentation on [partial reloads](/guide/partial-reloads.md).
 
 ## Active states
 
-It's often desirable to set an active state for navigation links based on the current page. This can be accomplished when using Inertia by inspecting the `page` object and doing string comparisons against the `page.url` and `page.component` properties.
+It's common to set an active state for navigation links based on the current page. This can be accomplished when using Inertia by inspecting the `page` object and doing string comparisons against the `page.url` and `page.component` properties.
 
 :::tabs key:frameworks
 == Vue

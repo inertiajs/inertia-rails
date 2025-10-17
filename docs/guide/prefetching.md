@@ -4,7 +4,7 @@ Inertia supports prefetching data for pages that are likely to be visited next. 
 
 ## Link prefetching
 
-To prefetch data for a page, you can use the `prefetch` method on the Inertia link component. By default, Inertia will prefetch the data for the page when the user hovers over the link after more than 75ms.
+To prefetch data for a page, you can add the `prefetch` prop to the Inertia link component. By default, Inertia will prefetch the data for the page when the user hovers over the link for more than 75ms.
 
 :::tabs key:frameworks
 == Vue
@@ -94,7 +94,7 @@ export default () => (
 
 :::
 
-You can also start prefetching on `mousedown` by passing the `click` value to the `prefetch` prop.
+Instead of prefetching on hover, you can also start prefetching on `mousedown` by passing the `click` value to the `prefetch` prop.
 
 :::tabs key:frameworks
 == Vue
@@ -172,7 +172,7 @@ export default () => (
 
 :::
 
-You can also combine strategies by passing an array of values to the `prefetch` prop.
+You can also combine prefetch strategies by passing an array of values to the `prefetch` prop.
 
 :::tabs key:frameworks
 == Vue
@@ -213,7 +213,7 @@ export default () => (
 
 ## Programmatic prefetching
 
-You can also prefetch data programmatically using `router.prefetch`. The signature is identical to `router.visit` with the exception of a third argument that allows you to specify prefetch options.
+You can prefetch data programmatically using `router.prefetch`. This method's signature is identical to `router.visit` with the exception of a third argument that allows you to specify prefetch options.
 
 When the `cacheFor` option is not specified, it defaults to 30 seconds.
 
@@ -296,7 +296,7 @@ const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
 
 @available_since core=2.1.2
 
-Cache tags allow you to group related prefetched data and invalidate it all at once when specific events occur.
+Cache tags allow you to group related prefetched data and invalidate all cached data with that tag when specific events occur.
 
 To tag cached data, pass a `cacheTags` prop to your `Link` component.
 
@@ -326,7 +326,7 @@ import { Link } from '@inertiajs/react'
 <Link href="/dashboard" prefetch cacheTags={['dashboard', 'stats']}>Dashboard</Link>
 ```
 
-== Svelte 4| Svelte 5
+== Svelte 4|Svelte 5
 
 ```svelte
 import {inertia} from '@inertiajs/svelte'
@@ -362,7 +362,8 @@ router.flush('/users', { method: 'get', data: { page: 2 } })
 // Using the usePrefetch hook
 const { flush } = usePrefetch()
 
-flush() // Flush cache for the current page
+// Flush cache for the current page
+flush()
 ```
 
 For more granular control, you can flush cached data by their tags using `router.flushByCacheTags`. This removes any cached response that contains _any_ of the specified tags.
@@ -374,6 +375,38 @@ router.flushByCacheTags('users')
 // Flush all responses tagged with 'dashboard' OR 'stats'
 router.flushByCacheTags(['dashboard', 'stats'])
 ```
+
+### Automatic cache flushing
+
+By default, Inertia does not automatically flush the prefetch cache when you navigate to new pages. Cached data is only evicted when it expires based on the cache duration. If you want to flush all cached data on every navigation, you can set up an event listener.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.on('navigate', () => router.flushAll())
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+
+router.on('navigate', () => router.flushAll())
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.on('navigate', () => router.flushAll())
+```
+
+:::
 
 ### Invalidate on requests
 
@@ -421,7 +454,7 @@ export default () => (
 )
 ```
 
-== Svelte 4| Svelte 5
+== Svelte 4|Svelte 5
 
 ```svelte
 <script>
@@ -441,7 +474,7 @@ export default () => (
 
 :::
 
-With the `useForm` helper, you can include `invalidateCacheTags` in the visit options.
+When using the `useForm` helper, you can include `invalidateCacheTags` in the visit options.
 
 :::tabs key:frameworks
 
@@ -471,7 +504,7 @@ function submit(e) {
 }
 ```
 
-== Svelte 4| Svelte 5
+== Svelte 4|Svelte 5
 
 ```svelte
 import { useForm } from '@inertiajs/svelte'
@@ -555,6 +588,6 @@ export default () => (
 
 If a request is made within the fresh period (before the first value), the cache is returned immediately without making a request to the server.
 
-If a request is made during the stale period (between the two values), the stale value is served to the user, and a request is made in the background to refresh the cached value. Once the value is returned, the data is merged into the page so the user has the most recent data.
+If a request is made during the stale period (between the two values), the stale value is served to the user, and a request is made in the background to refresh the cached data. Once the fresh data is returned, it is merged into the page so the user has the most recent data.
 
-If a request is made after the second value, the cache is considered expired, and the value is fetched from the sever as a regular request.
+If a request is made after the second value, the cache is considered expired, and the page and data is fetched from the sever as a regular request.
