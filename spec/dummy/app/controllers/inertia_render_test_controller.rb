@@ -128,4 +128,41 @@ class InertiaRenderTestController < ApplicationController
       grit: InertiaRails.defer { 'intense' },
     }
   end
+
+  def scroll_test
+    pagy = Pagy.new(
+      vars: { page_param: 'page' },
+      prev: nil,
+      next: 2,
+      page: 1,
+      count: 100
+    )
+
+    render inertia: 'TestComponent', props: {
+      users: InertiaRails.scroll(pagy) { [{ id: 1, name: 'User 1' }, { id: 2, name: 'User 2' }] },
+    }
+  end
+
+  def prepend_merge_test
+    render inertia: 'TestComponent', props: {
+      prepend_prop: InertiaRails.merge(prepend: true) { %w[item1 item2] },
+      append_prop: InertiaRails.merge { %w[item3 item4] },
+    }
+  end
+
+  def nested_paths_test
+    render inertia: 'TestComponent', props: {
+      foo: InertiaRails.merge(append: { data: :id }) { { data: [{ id: 1 }, { id: 2 }] } },
+      bar: InertiaRails.merge(prepend: { 'data.items' => 'uuid' }) do
+        { data: { items: [{ uuid: 1 }, { uuid: 2 }] } }
+      end,
+    }
+  end
+
+  def reset_test
+    render inertia: 'TestComponent', props: {
+      merge_prop: InertiaRails.merge { 'merge value' },
+      regular_prop: 'regular value',
+    }
+  end
 end

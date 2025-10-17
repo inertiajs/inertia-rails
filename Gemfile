@@ -17,3 +17,6 @@ gem 'responders'
 gem 'rspec-rails', '~> 6.0'
 gem 'rubocop', '~> 1.21'
 gem 'sqlite3'
+
+gem 'kaminari'
+gem 'pagy'

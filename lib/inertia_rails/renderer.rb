@@ -104,12 +104,13 @@ module InertiaRails
         .tap do |props| # Add meta tags last (never transformed)
         props[:_inertia_meta] = meta_tags if meta_tags.present?
       end
-
       # rubocop:enable Style/MultilineBlockChain
     end
 
     def page
-      default_page = {
+      return @page if defined?(@page)
+
+      @page = {
         component: component,
         props: computed_props,
         url: @request.original_fullpath,
@@ -119,21 +120,11 @@ module InertiaRails
       }
 
       deferred_props = deferred_props_keys
-      default_page[:deferredProps] = deferred_props if deferred_props.present?
+      @page[:deferredProps] = deferred_props if deferred_props.present?
+      @page[:scrollProps] = scroll_props if scroll_props.present?
+      @page.merge!(resolve_merge_props)
 
-      deep_merge_props, merge_props = all_merge_props.partition do |_key, prop|
-        prop.deep_merge?
-      end
-
-      match_props_on = all_merge_props.filter_map do |key, prop|
-        prop.match_on.map { |ms| "#{key}.#{ms}" } if prop.match_on.present?
-      end.flatten
-
-      default_page[:mergeProps] = merge_props.map(&:first) if merge_props.present?
-      default_page[:deepMergeProps] = deep_merge_props.map(&:first) if deep_merge_props.present?
-      default_page[:matchPropsOn] = match_props_on if match_props_on.present?
-
-      default_page
+      @page
     end
 
     def deep_transform_props(props, parent_path = [])
@@ -165,10 +156,28 @@ module InertiaRails
       end
     end
 
-    def all_merge_props
-      @all_merge_props ||= @props.select do |key, prop|
+    def resolve_merge_props
+      deep_merge_props, merge_props = all_merge_props.partition do |_key, prop|
+        prop.deep_merge?
+      end
+
+      {
+        mergeProps: append_merge_props(merge_props),
+        prependProps: prepend_merge_props(merge_props),
+        deepMergeProps: deep_merge_props.map!(&:first),
+        matchPropsOn: resolve_match_on_props,
+      }.delete_if { |_, v| v.blank? }
+    end
+
+    def resolve_match_on_props
+      all_merge_props.filter_map do |key, prop|
+        prop.match_on.map! { |ms| "#{key}.#{ms}" } if prop.match_on.present?
+      end.flatten
+    end
+
+    def requested_merge_props
+      @requested_merge_props ||= @props.select do |key, prop|
         next unless prop.try(:merge?)
-        next if reset_keys.include?(key)
         next if rendering_partial_component? && (
           (partial_keys.present? && partial_keys.exclude?(key.name)) ||
             (partial_except_keys.present? && partial_except_keys.include?(key.name))
@@ -178,16 +187,64 @@ module InertiaRails
       end
     end
 
+    def append_merge_props(props)
+      return props if props.empty?
+
+      root_append_props, nested_append_props = props.partition { |_key, prop| prop.appends_at_root? }
+
+      result = Set.new(root_append_props.map!(&:first))
+
+      nested_append_props.each do |key, prop|
+        prop.appends_at_paths.each do |path|
+          result.add("#{key}.#{path}")
+        end
+      end
+
+      result.to_a
+    end
+
+    def prepend_merge_props(props)
+      return props if props.empty?
+
+      root_prepend_props, nested_prepend_props = props.partition { |_key, prop| prop.prepends_at_root? }
+
+      result = Set.new(root_prepend_props.map!(&:first))
+
+      nested_prepend_props.each do |key, prop|
+        prop.prepends_at_paths.each do |path|
+          result.add("#{key}.#{path}")
+        end
+      end
+
+      result.to_a
+    end
+
+    def scroll_props
+      return @scroll_props if defined?(@scroll_props)
+
+      @scroll_props = {}
+      requested_merge_props.each do |key, prop|
+        next unless prop.is_a?(ScrollProp)
+
+        @scroll_props[key] = prop.metadata.merge!(reset: reset_keys.include?(key))
+      end
+      @scroll_props
+    end
+
+    def all_merge_props
+      @all_merge_props ||= requested_merge_props.reject { |key,| reset_keys.include?(key) }
+    end
+
     def partial_keys
-      @partial_keys ||= (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact
+      @partial_keys ||= (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact_blank!
     end
 
     def reset_keys
-      (@request.headers['X-Inertia-Reset'] || '').split(',').compact.map(&:to_sym)
+      @reset_keys ||= (@request.headers['X-Inertia-Reset'] || '').split(',').compact_blank!.map!(&:to_sym)
     end
 
     def partial_except_keys
-      (@request.headers['X-Inertia-Partial-Except'] || '').split(',').compact
+      @partial_except_keys ||= (@request.headers['X-Inertia-Partial-Except'] || '').split(',').compact_blank!
     end
 
     def rendering_partial_component?

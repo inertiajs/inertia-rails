@@ -626,6 +626,96 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'scroll props rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    before do
+      # Create a mock controller action that returns scroll props
+      get '/scroll_test', headers: headers
+    end
+
+    it 'includes scroll props metadata in response without reset' do
+      expect(response).to be_successful
+      expect(response.parsed_body['scrollProps']).to include('users')
+      expect(response.parsed_body['scrollProps']['users']).to include(
+        'pageName' => 'page',
+        'currentPage' => 1,
+        'nextPage' => 2,
+        'previousPage' => nil,
+        'reset' => false
+      )
+    end
+
+    context 'with reset header' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Reset' => 'users',
+        }
+      end
+
+      it 'marks scroll props as reset' do
+        expect(response).to be_successful
+        expect(response.parsed_body['scrollProps']['users']['reset']).to be true
+      end
+    end
+  end
+
+  context 'prepend merge props rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    before do
+      get '/prepend_merge_test', headers: headers
+    end
+
+    it 'includes prepend props in response' do
+      expect(response).to be_successful
+      expect(response.parsed_body['prependProps']).to include('prepend_prop')
+      expect(response.parsed_body['mergeProps']).to include('append_prop')
+    end
+  end
+
+  context 'nested paths merge props rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    before do
+      get '/nested_paths_test', headers: headers
+    end
+
+    it 'includes nested paths in merge props' do
+      expect(response).to be_successful
+      expect(response.parsed_body['mergeProps']).to include('foo.data')
+      expect(response.parsed_body['prependProps']).to include('bar.data.items')
+    end
+
+    it 'includes match strategies for nested paths' do
+      expect(response).to be_successful
+      expect(response.parsed_body['matchPropsOn']).to include('foo.data.id')
+      expect(response.parsed_body['matchPropsOn']).to include('bar.data.items.uuid')
+    end
+  end
+
+  context 'enhanced reset header handling' do
+    let(:headers) do
+      {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'merge_prop',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Reset' => 'merge_prop',
+      }
+    end
+
+    before do
+      get '/reset_test', headers: headers
+    end
+
+    it 'excludes reset merge props from mergeProps array' do
+      expect(response).to be_successful
+      expect(response.parsed_body['props']).to include('merge_prop')
+      expect(response.parsed_body['mergeProps']).to be_nil
+    end
+  end
+
   context 'deferred prop rendering' do
     context 'on first load' do
       let(:headers) { { 'X-Inertia' => true } }

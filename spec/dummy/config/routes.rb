@@ -38,6 +38,10 @@ Rails.application.routes.draw do
   get 'except_props' => 'inertia_render_test#except_props'
   get 'merge_props' => 'inertia_render_test#merge_props'
   get 'deferred_props' => 'inertia_render_test#deferred_props'
+  get 'scroll_test' => 'inertia_render_test#scroll_test'
+  get 'prepend_merge_test' => 'inertia_render_test#prepend_merge_test'
+  get 'nested_paths_test' => 'inertia_render_test#nested_paths_test'
+  get 'reset_test' => 'inertia_render_test#reset_test'
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
   get 'deeply_nested_props' => 'inertia_render_test#deeply_nested_props'
 
