@@ -132,13 +132,14 @@ Now you can import and use your new button component from `@/components/ui/butto
 > [!NOTE]
 > Check out the [`shadcn/ui` components gallery](https://ui.shadcn.com/docs/components/accordion) to explore all the beautiful components at your disposal.
 
-
 ## Troubleshooting
 
 If you're using `vite` and see this error `No Tailwind CSS configuration found at path....` (but do have a `tailwind.config.js`) ensure you've imported the CSS properly.
+
 ```
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 ```
+
 Reference: [Link to Common Github Issue](https://github.com/shadcn-ui/ui/issues/4677)

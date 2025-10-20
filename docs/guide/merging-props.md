@@ -66,7 +66,7 @@ If you have opted to use `deep_merge`, Inertia ensures a deep merge of the entir
 
 ### Smart merging with `match_on`
 
-@available_since rails=master core=2.0.13
+@available_since rails=3.11.0 core=2.0.13
 
 By default, arrays are simply appended during merging. If you need to update specific items in an array or replace them based on a unique identifier, you can use the `match_on` parameter.
 
