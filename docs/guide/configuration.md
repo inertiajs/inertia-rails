@@ -71,6 +71,25 @@ def underscore_params
 end
 ```
 
+### `merge_prop_transformer`
+
+**Default**: `->(merge_props:) { merge_props }`
+
+Use `merge_prop_transformer` to apply a transformation to the array of merge prop keys before they're sent to the client. This is particularly useful to maintain consistency when using `prop_transformer` to convert prop keys to `camelCase`, as it ensures that merge props (used with `InertiaRails.merge` and `InertiaRails.deep_merge`) also follow the same naming convention:
+
+```ruby
+  inertia_config(
+    prop_transformer: lambda do |props:|
+      props.deep_transform_keys { |key| key.to_s.camelize(:lower) }
+    end,
+    merge_prop_transformer: lambda do |merge_props:|
+      merge_props.map { |prop| prop.to_s.camelize(:lower) }
+    end
+  )
+```
+
+Without `merge_prop_transformer`, you would have inconsistent naming where regular props use `camelCase` but merge prop keys remain in `snake_case`. This transformer only affects the array of merge prop keys that gets sent to the client in the `mergeProps` and `deepMergeProps` fields.
+
 ### `deep_merge_shared_data`
 
 **Default**: `false`

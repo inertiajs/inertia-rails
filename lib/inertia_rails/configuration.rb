@@ -15,6 +15,9 @@ module InertiaRails
       # A function that transforms the props before they are sent to the client.
       prop_transformer: ->(props:) { props },
 
+      # A function that transforms the array of merge props before they are sent to the client.
+      merge_prop_transformer: ->(merge_props:) { merge_props },
+
       # DEPRECATED: Let Rails decide which layout should be used based on the
       # controller configuration.
       layout: true,
@@ -97,6 +100,10 @@ module InertiaRails
 
     def prop_transformer(props:)
       @options[:prop_transformer].call(props: props)
+    end
+
+    def merge_prop_transformer(merge_props:)
+      @options[:merge_prop_transformer].call(merge_props: merge_props)
     end
 
     OPTION_NAMES.each do |option|

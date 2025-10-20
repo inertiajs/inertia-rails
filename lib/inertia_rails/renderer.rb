@@ -129,9 +129,17 @@ module InertiaRails
         prop.match_on.map { |ms| "#{key}.#{ms}" } if prop.match_on.present?
       end.flatten
 
-      default_page[:mergeProps] = merge_props.map(&:first) if merge_props.present?
-      default_page[:deepMergeProps] = deep_merge_props.map(&:first) if deep_merge_props.present?
-      default_page[:matchPropsOn] = match_props_on if match_props_on.present?
+      if merge_props.present?
+        default_page[:mergeProps] = configuration.merge_prop_transformer(merge_props: merge_props.map(&:first))
+      end
+
+      if deep_merge_props.present?
+        default_page[:deepMergeProps] = configuration.merge_prop_transformer(merge_props: deep_merge_props.map(&:first))
+      end
+
+      if match_props_on.present?
+        default_page[:matchPropsOn] = configuration.merge_prop_transformer(merge_props: match_props_on)
+      end
 
       default_page
     end
