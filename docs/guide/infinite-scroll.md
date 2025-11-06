@@ -14,10 +14,10 @@ To configure your paginated data for infinite scrolling, you should use the `Ine
 
 ```ruby
 class UsersController < ApplicationController
-  include Pagy::Backend
+  include Pagy::Method
 
   def index
-    pagy, records = pagy(User.all)
+    pagy, records = pagy(:countless, User.all)
 
     render inertia: {
       users: InertiaRails.scroll(pagy) { records.as_json(...) }
@@ -1112,11 +1112,11 @@ Sometimes you may need to render multiple infinite scroll components on a single
 
 ```ruby
 class DashboardController < ApplicationController
-  include Pagy::Backend
+  include Pagy::Method
 
   def index
-    pagy_users, users = pagy(User.all, page_param: :users)
-    pagy_orders, orders = pagy(Order.all, page_param: :orders)
+    pagy_users, users = pagy(:countless, User.all, page_param: :users)
+    pagy_orders, orders = pagy(:countless, Order.all, page_param: :orders)
 
     render inertia: {
       users: InertiaRails.scroll(pagy_users) { users.as_json(...) },

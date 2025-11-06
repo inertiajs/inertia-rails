@@ -12,10 +12,10 @@ To merge a prop instead of overwriting it, you may use the `InertiaRails.merge` 
 
 ```ruby
 class UsersController < ApplicationController
-  include Pagy::Backend
+  include Pagy::Method
 
   def index
-    _pagy, records = pagy(User.all)
+    _pagy, records = pagy(:offset, User.all)
 
     render inertia: {
       users: InertiaRails.merge { records.as_json(...) },
@@ -133,10 +133,10 @@ You can also combine [deferred props](/guide/deferred-props) with mergeable prop
 
 ```ruby
 class UsersController < ApplicationController
-  include Pagy::Backend
+  include Pagy::Method
 
   def index
-    pagy, records = pagy(User.all)
+    pagy, records = pagy(:offset, User.all)
 
     render inertia: {
       results: InertiaRails.defer(deep_merge: true) { records.as_json(...) },

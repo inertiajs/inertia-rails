@@ -6,7 +6,9 @@ RSpec.describe InertiaRails::ScrollProp do
   describe '#metadata' do
     it 'resolves metadata from Pagy paginator' do
       collection = Array.new(100) { |i| "item#{i}" }
-      pagy, = Pagy.new(count: collection.size, page: 1, items: 20)
+      pagy, = (defined?(Pagy::Offset) ? Pagy::Offset : Pagy).new(
+        count: collection.size, page: 1, items: 20
+      )
 
       prop = described_class.new(metadata: pagy) { collection }
       metadata = prop.metadata

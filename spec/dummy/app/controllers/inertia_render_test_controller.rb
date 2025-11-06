@@ -130,9 +130,7 @@ class InertiaRenderTestController < ApplicationController
   end
 
   def scroll_test
-    pagy = Pagy.new(
-      vars: { page_param: 'page' },
-      prev: nil,
+    pagy = (defined?(Pagy::Offset) ? Pagy::Offset : Pagy).new(
       next: 2,
       page: 1,
       count: 100

@@ -59,16 +59,12 @@ RSpec.describe InertiaRails::ScrollMetadata do
     end
 
     context 'with Pagy adapter' do
-      before do
-        stub_const('Pagy', Class.new)
-      end
-
       let(:pagy_metadata) do
-        instance_double('Pagy').tap do |metadata|
+        instance_double('Pagy::Offset').tap do |metadata|
           allow(metadata).to receive(:is_a?).and_return(false)
           allow(metadata).to receive(:is_a?).with(Pagy).and_return(true)
-          allow(metadata).to receive(:vars).and_return({ page_param: :page })
-          allow(metadata).to receive(:prev).and_return(1)
+          allow(metadata).to receive(:options).and_return({ page_key: :page })
+          allow(metadata).to receive(:previous).and_return(1)
           allow(metadata).to receive(:next).and_return(3)
           allow(metadata).to receive(:page).and_return(2)
         end
@@ -83,14 +79,6 @@ RSpec.describe InertiaRails::ScrollMetadata do
           nextPage: 3,
           currentPage: 2
         )
-      end
-
-      it 'raises error when page_param is missing from vars' do
-        allow(pagy_metadata).to receive(:vars).and_return({})
-
-        expect do
-          described_class.extract(pagy_metadata)
-        end.to raise_error(KeyError)
       end
 
       it 'allows options to override metadata values' do

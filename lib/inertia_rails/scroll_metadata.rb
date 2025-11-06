@@ -43,9 +43,10 @@ module InertiaRails
       end
 
       def call(metadata, **_options)
+        page_name = metadata.respond_to?(:vars) ? metadata.vars.fetch(:page_param) : metadata.options[:page_key]
         {
-          page_name: metadata.vars.fetch(:page_param).to_s,
-          previous_page: metadata.prev,
+          page_name: page_name.to_s,
+          previous_page: metadata.try(:prev) || metadata.try(:previous),
           next_page: metadata.next,
           current_page: metadata.page,
         }
