@@ -1,5 +1,10 @@
 name: Documentation Preview
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 on:
   pull_request:
     types:
