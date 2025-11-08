@@ -1,6 +1,6 @@
 # Infinite scroll
 
-@available_since rails=master core=2.2.0
+@available_since rails=3.12.0 core=2.2.0
 
 Inertia's infinite scroll feature loads additional pages of content as users scroll, replacing traditional pagination controls. This is great for applications like chat interfaces, social feeds, photo grids, and product listings.
 
