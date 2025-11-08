@@ -31,7 +31,7 @@ The `InertiaRails.merge` method will append new items to existing arrays at the 
 InertiaRails.merge { items }
 ```
 
-@available_since rails=master core=2.2.0
+@available_since rails=3.12.0 core=2.2.0
 
 You may change this behavior to prepend items instead.
 
@@ -77,7 +77,7 @@ When merging arrays, you may use the `match_on` parameter to match existing item
 InertiaRails.merge(match_on: 'id') { post_data }
 ```
 
-@available_since rails=master core=2.2.0
+@available_since rails=3.12.0 core=2.2.0
 
 You may also use append and prepend with a hash to specify the field to match.
 
