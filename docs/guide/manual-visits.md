@@ -363,7 +363,7 @@ router.post('/companies', data, {
 
 :::
 
-For more information on uploading files, please consult the dedicated [file uploads](/guide/file-uploads.md) documentation.
+For more information on uploading files, check out the dedicated [file uploads](/guide/file-uploads.md) documentation.
 
 ## Browser history
 
@@ -468,7 +468,7 @@ router.push({
 
 All the parameters are optional. By default, all passed parameters (except `errorBag`) will be merged with the current page. This means you are responsible for overriding the current page's URL, component, and props.
 
-If you need access to the current page's props you can pass a function to the props option. This function will receive the current page's props as an argument and should return the new props.
+If you need access to the current page's props, you can pass a function to the props option. This function will receive the current page's props as an argument and should return the new props.
 
 The `errorBag` option allows you to specify which error bag to use when handling validation errors in the `onError` callback.
 
@@ -479,6 +479,7 @@ The `errorBag` option allows you to specify which error bag to use when handling
 import { router } from '@inertiajs/vue3'
 
 router.push({ url: '/users', component: 'Users' })
+
 router.replace({
   props: (currentProps) => ({ ...currentProps, search: 'John' }),
 })
@@ -490,6 +491,7 @@ router.replace({
 import { router } from '@inertiajs/react'
 
 router.push({ url: '/users', component: 'Users' })
+
 router.replace({
   props: (currentProps) => ({ ...currentProps, search: 'John' }),
 })
@@ -501,6 +503,7 @@ router.replace({
 import { router } from '@inertiajs/svelte'
 
 router.push({ url: '/users', component: 'Users' })
+
 router.replace({
   props: (currentProps) => ({ ...currentProps, search: 'John' }),
 })
@@ -510,6 +513,100 @@ router.replace({
 
 > [!NOTE]
 > Make sure that any route you push on the client side is also defined on the server side. If the user refreshes the page, the server will need to know how to render the page.
+
+### Prop helpers
+
+@available_since core=2.2.0
+
+Inertia provides three helper methods for updating page props without making server requests. These methods are shortcuts to `router.replace()` and automatically set `preserveScroll` and `preserveState` to `true`.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+// Replace a prop value...
+router.replaceProp('user.name', 'Jane Smith')
+// Append to an array prop...
+router.appendToProp('messages', { id: 4, text: 'New message' })
+// Prepend to an array prop...
+router.prependToProp('tags', 'urgent')
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+// Replace a prop value...
+router.replaceProp('user.name', 'Jane Smith')
+// Append to an array prop...
+router.appendToProp('messages', { id: 4, text: 'New message' })
+// Prepend to an array prop...
+router.prependToProp('tags', 'urgent')
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+// Replace a prop value...
+router.replaceProp('user.name', 'Jane Smith')
+// Append to an array prop...
+router.appendToProp('messages', { id: 4, text: 'New message' })
+// Prepend to an array prop...
+router.prependToProp('tags', 'urgent')
+```
+
+:::
+
+All three methods support dot notation for nested props and can accept a callback function that receives the current value as the first argument and the current page props as the second argument.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.prependToProp('notifications', (current, props) => {
+  return {
+    id: Date.now(),
+    message: `Hello ${props.user.name}`,
+    timestamp: new Date(),
+  }
+})
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+
+router.prependToProp('notifications', (current, props) => {
+  return {
+    id: Date.now(),
+    message: `Hello ${props.user.name}`,
+    timestamp: new Date(),
+  }
+})
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.prependToProp('notifications', (current, props) => {
+  return {
+    id: Date.now(),
+    message: `Hello ${props.user.name}`,
+    timestamp: new Date(),
+  }
+})
+```
+
+:::
 
 ## State preservation
 
@@ -618,7 +715,7 @@ router.post('/users', data, {
 
 When navigating between pages, Inertia mimics default browser behavior by automatically resetting the scroll position of the document body (as well as any [scroll regions](/guide/scroll-management.md#scroll-regions) you've defined) back to the top of the page.
 
-You can disable this behaviour by setting the `preserveScroll` option to `false`.
+You can disable this behavior by setting the `preserveScroll` option to `true`.
 
 :::tabs key:frameworks
 == Vue
@@ -626,7 +723,7 @@ You can disable this behaviour by setting the `preserveScroll` option to `false`
 ```js
 import { router } from '@inertiajs/vue3'
 
-router.visit(url, { preserveScroll: false })
+router.visit(url, { preserveScroll: true })
 ```
 
 == React
@@ -634,7 +731,7 @@ router.visit(url, { preserveScroll: false })
 ```js
 import { router } from '@inertiajs/react'
 
-router.visit(url, { preserveScroll: false })
+router.visit(url, { preserveScroll: true })
 ```
 
 == Svelte 4|Svelte 5
@@ -642,7 +739,7 @@ router.visit(url, { preserveScroll: false })
 ```js
 import { router } from '@inertiajs/svelte'
 
-router.visit(url, { preserveScroll: false })
+router.visit(url, { preserveScroll: true })
 ```
 
 :::
@@ -711,7 +808,7 @@ router.post('/users', data, {
 
 :::
 
-For more information regarding this feature, please consult the [scroll management](/guide/scroll-management.md) documentation.
+For more information regarding this feature, check out the [scroll management](/guide/scroll-management.md) documentation.
 
 ## Partial reloads
 
@@ -744,7 +841,7 @@ router.get('/users', { search: 'John' }, { only: ['users'] })
 
 :::
 
-For more information on this feature, please consult the [partial reloads](/guide/partial-reloads.md) documentation.
+For more information on this feature, check out the [partial reloads](/guide/partial-reloads.md) documentation.
 
 ## Visit cancellation
 
@@ -894,11 +991,10 @@ import { router } from '@inertiajs/vue3'
 
 router.post(url, {
   onSuccess: () => {
-    return Promise.all([this.doThing(), this.doAnotherThing()])
+    return Promise.all([this.firstTask(), this.secondTask()])
   },
   onFinish: (visit) => {
-    // This won't be called until doThing()
-    // and doAnotherThing() have finished.
+    // Not called until firstTask() and secondTask() have finished
   },
 })
 ```
@@ -910,11 +1006,10 @@ import { router } from '@inertiajs/react'
 
 router.post(url, {
   onSuccess: () => {
-    return Promise.all([this.doThing(), this.doAnotherThing()])
+    return Promise.all([this.firstTask(), this.secondTask()])
   },
   onFinish: (visit) => {
-    // This won't be called until doThing()
-    // and doAnotherThing() have finished.
+    // Not called until firstTask() and secondTask() have finished
   },
 })
 ```
@@ -926,11 +1021,10 @@ import { router } from '@inertiajs/svelte'
 
 router.post(url, {
   onSuccess: () => {
-    return Promise.all([this.doThing(), this.doAnotherThing()])
+    return Promise.all([this.firstTask(), this.secondTask()])
   },
   onFinish: (visit) => {
-    // This won't be called until doThing()
-    // and doAnotherThing() have finished.
+    // Not called until firstTask() and secondTask() have finished
   },
 })
 ```

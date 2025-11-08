@@ -4,7 +4,7 @@ Code splitting breaks apart the various pages of your application into smaller b
 
 While code splitting is helpful for very large projects, it does require extra requests when visiting new pages. Generally speaking, if you're able to use a single bundle, your app is going to feel snappier.
 
-To enable code splitting you'll need to tweak the resolve callback in your `createInertiaApp()` configuration, and how you do this is different depending on which bundler you're using.
+To enable code splitting, you will need to tweak the `resolve` callback in your `createInertiaApp()` configuration, and how you do this is different depending on which bundler you're using.
 
 ## Using Vite
 

@@ -111,7 +111,7 @@ When creating this file, be sure to add anything that's missing from your regula
 
 By default, the SSR server will run on a single thread. Clustering starts multiple Node servers on the same port, requests are then handled by each thread in a round-robin way.
 
-You can enable clustering by passing a second argument to `createServer`:
+You can enable clustering by passing a second argument of options to `createServer`.
 
 :::tabs key:frameworks
 == Vue
@@ -221,7 +221,7 @@ With the server running, you should be able to access your app within the browse
 
 Since your website is now being server-side rendered, you can instruct your client to "hydrate" the static markup and make it interactive instead of re-rendering all the HTML that we just generated.
 
-To enable client-side hydration, update your initialization file:
+To enable client-side hydration, update your initialization file.
 
 :::tabs key:frameworks
 == Vue
@@ -284,7 +284,7 @@ createInertiaApp({
 })
 ```
 
-You will also need to set the `hydratable` compiler option to `true` in your `vite.config.js` file:
+You will also need to set the `hydratable` compiler option to `true` in your `vite.config.js` file.
 
 <!-- prettier-ignore -->
 ```js

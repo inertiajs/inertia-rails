@@ -8,7 +8,7 @@ To mitigate this issue, you can tell Inertia which local component state to save
 
 ## Saving local state
 
-To save local component state to the history state, use the "useRemember" hook to tell Inertia which data it should remember.
+To save local component state to the history state, use the `useRemember` hook to tell Inertia which data it should remember.
 
 :::tabs key:frameworks
 == Vue
@@ -195,7 +195,7 @@ const form = useForm(`EditUser:${user.id}`, data)
 
 The `useRemember` hook watches for data changes and automatically saves them to the history state. When navigating back to the page, Inertia will restore this data.
 
-However, it's also possible to manage this manually using the underlying `remember()` and `restore()` methods in Inertia.
+However, it's also possible to manage this manually using the underlying `remember()` and `restore()` methods exposed by Inertia.
 
 :::tabs key:frameworks
 == Vue
@@ -203,10 +203,10 @@ However, it's also possible to manage this manually using the underlying `rememb
 ```js
 import { router } from '@inertiajs/vue3'
 
-// Save local component state to history state...
+// Save local component state to history state
 router.remember(data, 'my-key')
 
-// Restore local component state from history state...
+// Restore local component state from history state
 let data = router.restore('my-key')
 ```
 
@@ -215,10 +215,10 @@ let data = router.restore('my-key')
 ```js
 import { router } from '@inertiajs/react'
 
-// Save local component state to history state...
+// Save local component state to history state
 router.remember(data, 'my-key')
 
-// Restore local component state from history state...
+// Restore local component state from history state
 let data = router.restore('my-key')
 ```
 
@@ -227,10 +227,10 @@ let data = router.restore('my-key')
 ```js
 import { router } from '@inertiajs/svelte'
 
-// Save local component state to history state...
+// Save local component state to history state
 router.remember(data, 'my-key')
 
-// Restore local component state from history state...
+// Restore local component state from history state
 let data = router.restore('my-key')
 ```
 

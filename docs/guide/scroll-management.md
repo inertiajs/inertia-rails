@@ -8,7 +8,7 @@ In addition, Inertia keeps track of the scroll position of each page and automat
 
 ## Scroll preservation
 
-Sometimes it's desirable to prevent the default scroll resetting when making visits. You can disable this behaviour by setting the `preserveScroll` option to `false`.
+Sometimes it's desirable to prevent the default scroll resetting when making visits. You can disable this behavior by setting the `preserveScroll` option to `true`.
 
 :::tabs key:frameworks
 == Vue
@@ -16,7 +16,7 @@ Sometimes it's desirable to prevent the default scroll resetting when making vis
 ```js
 import { router } from '@inertiajs/vue3'
 
-router.visit(url, { preserveScroll: false })
+router.visit(url, { preserveScroll: true })
 ```
 
 == React
@@ -24,7 +24,7 @@ router.visit(url, { preserveScroll: false })
 ```js
 import { router } from '@inertiajs/react'
 
-router.visit(url, { preserveScroll: false })
+router.visit(url, { preserveScroll: true })
 ```
 
 == Svelte 4|Svelte 5
@@ -32,7 +32,7 @@ router.visit(url, { preserveScroll: false })
 ```js
 import { router } from '@inertiajs/svelte'
 
-router.visit(url, { preserveScroll: false })
+router.visit(url, { preserveScroll: true })
 ```
 
 :::
@@ -153,3 +153,9 @@ In these situations, you must tell Inertia which scrollable elements to manage b
   <!-- Your page content -->
 </div>
 ```
+
+## Text fragments
+
+[Text fragments](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments) allow you to link directly to specific text on a page using a special URL syntax like `#:~:text=term`. However, the browser removes the fragment directive before any JavaScript runs, so text fragments only work if the targeted text is present in the initial HTML response.
+
+To use text fragments with your Inertia pages, enable [server-side rendering](/guide/server-side-rendering).

@@ -1,108 +1,145 @@
 # Merging props
 
-By default, Inertia overwrites props with the same name when reloading a page. However, there are instances, such as pagination or infinite scrolling, where that is not the desired behavior. In these cases, you can merge props instead of overwriting them.
+Inertia overwrites props with the same name when reloading a page. However, you may need to merge new data with existing data instead. For example, when implementing a "load more" button for paginated results. The [Infinite scroll](/guide/infinite-scroll) component uses prop merging under the hood.
 
-## Server side
+Prop merging only works during [partial reloads](/guide/partial-reloads). Full page visits will always replace props entirely, even if you've marked them for merging.
 
-### Using `merge`
+## Merge methods
 
 @available_since rails=3.8.0 core=2.0.8
 
-To specify that a prop should be merged, use the `merge` method on the prop's value. This is ideal for merging simple arrays.
-
-On the client side, Inertia detects that this prop should be merged. If the prop returns an array, it will append the response to the current prop value. If it's an object, it will merge the response with the current prop value.
+To merge a prop instead of overwriting it, you may use the `InertiaRails.merge` method when returning your response.
 
 ```ruby
 class UsersController < ApplicationController
-  include Pagy::Backend
+  include Pagy::Method
 
   def index
-    _pagy, records = pagy(User.all)
+    _pagy, records = pagy(:offset, User.all)
 
     render inertia: {
-      # simple array:
       users: InertiaRails.merge { records.as_json(...) },
-      # with match_on parameter for smart merging:
-      products: InertiaRails.merge(match_on: 'id') { Product.all.as_json(...) },
     }
   end
 end
 ```
 
-### Using `deep_merge`
+The `InertiaRails.merge` method will append new items to existing arrays at the root level.
+
+```ruby
+# Append at root level (default)...
+InertiaRails.merge { items }
+```
+
+@available_since rails=master core=2.2.0
+
+You may change this behavior to prepend items instead.
+
+```ruby
+# Prepend at root level...
+InertiaRails.merge(prepend: true) { items }
+```
+
+For more precise control, you can target specific nested properties for merging while replacing the rest of the object.
+
+```ruby
+# Only append to the 'data' array, replace everything else...
+InertiaRails.merge(append: 'data') { {data: data, meta: meta} }
+
+# Prepend to the 'messages' array...
+InertiaRails.merge(prepend: 'messages') { chat_data }
+```
+
+You can combine multiple operations and target several properties at once.
+
+```ruby
+InertiaRails.merge(
+  append: 'posts',
+  prepend: 'announcements'
+) { forum_data }
+
+# Target multiple properties...
+InertiaRails.merge(
+  append: ['notifications', 'activities']
+) { dashboard_data }
+```
+
+On the client side, Inertia handles all the merging automatically according to your server-side configuration.
+
+## Matching items
 
 @available_since rails=3.8.0 core=2.0.8
 
-For handling nested objects that include arrays or complex structures, such as pagination objects, use the `deep_merge` method.
+When merging arrays, you may use the `match_on` parameter to match existing items by a specific field and update them instead of appending new ones.
 
 ```ruby
-class UsersController < ApplicationController
-  include Pagy::Backend
+# Match posts by ID, update existing ones...
+InertiaRails.merge(match_on: 'id') { post_data }
+```
 
+@available_since rails=master core=2.2.0
+
+You may also use append and prepend with a hash to specify the field to match.
+
+```ruby
+# Match posts by ID, update existing ones...
+InertiaRails.merge(append: 'data', match_on: 'data.id') { post_data }
+
+# Same as above, but using a hash shortcut...
+InertiaRails.merge(append: { data: 'id' }) { post_data }
+
+# Multiple properties with different match fields...
+InertiaRails.merge(append: {
+  'users.data' => 'id',
+  'messages' => 'uuid',
+}) { complex_data }
+```
+
+In the first two examples, Inertia will iterate over the data array and attempt to match each item by its id field. If a match is found, the existing item will be replaced. If no match is found, the new item will be appended.
+
+## Deep merge
+
+@available_since rails=3.8.0 core=2.0.8
+
+Instead of specifying which nested paths should be merged, you may use `InertiaRails.deep_merge` to ensure a deep merge of the entire structure.
+
+```ruby
+class ChatController < ApplicationController
   def index
-    pagy, records = pagy(User.all)
+    chat_data = [
+      messages: [
+        [id: 4, text: 'Hello there!', user: 'Alice'],
+        [id: 5, text: 'How are you?', user: 'Bob'],
+      ],
+      online: 12,
+    ]
 
     render inertia: {
-      # pagination object:
-      data: InertiaRails.deep_merge {
-        {
-          records: records.as_json(...),
-          pagy: pagy_metadata(pagy)
-        }
-      },
-      # nested objects with match_on:
-      categories: InertiaRails.deep_merge(match_on: %w[items.id tags.id]) {
-        {
-          items: Category.all.as_json(...),
-          tags: Tag.all.as_json(...)
-        }
-      }
+      chat: InertiaRails.deep_merge(chat_data, match_on: 'messages.id')
     }
   end
 end
 ```
 
-If you have opted to use `deep_merge`, Inertia ensures a deep merge of the entire structure, including nested objects and arrays.
+> [!NOTE] > `InertiaRails.deep_merge` was introduced before `InertiaRails.merge` had support for prepending and targeting nested paths. In most cases, `InertiaRails.merge` with its append and prepend parameters should be sufficient.
 
-### Smart merging with `match_on`
+## Client side visits
 
-@available_since rails=3.11.0 core=2.0.13
+You can also merge props directly on the client side without making a server request using [client side visits](/guide/manual-visits#client-side-visits). Inertia provides [prop helper methods](/guide/manual-visits#prop-helpers) that allow you to append, prepend, or replace prop values.
 
-By default, arrays are simply appended during merging. If you need to update specific items in an array or replace them based on a unique identifier, you can use the `match_on` parameter.
-
-The `match_on` parameter enables smart merging by specifying a field to match on when merging arrays of objects:
-
-- For `merge` with simple arrays, specify the object key to match on (e.g., `'id'`)
-- For `deep_merge` with nested structures, use dot notation to specify the path (e.g., `'items.id'`)
+## Combining with deferred props
 
 You can also combine [deferred props](/guide/deferred-props) with mergeable props to defer the loading of the prop and ultimately mark it as mergeable once it's loaded.
 
 ```ruby
 class UsersController < ApplicationController
-  include Pagy::Backend
+  include Pagy::Method
 
   def index
-    pagy, records = pagy(User.all)
+    pagy, records = pagy(:offset, User.all)
 
     render inertia: {
-      # simple array:
-      users: InertiaRails.defer(merge: true) { records.as_json(...) },
-      # pagination object:
-      data: InertiaRails.defer(deep_merge: true) {
-        {
-          records: records.as_json(...),
-          pagy: pagy_metadata(pagy)
-        }
-      },
-      # with match_on parameter:
-      products: InertiaRails.defer(merge: true, match_on: 'id') { products.as_json(...) },
-      # nested objects with match_on:
-      categories: InertiaRails.defer(deep_merge: true, match_on: %w[items.id tags.id]) {
-        {
-          items: Category.all.as_json(...),
-          tags: Tag.all.as_json(...)
-        }
-      }
+      results: InertiaRails.defer(deep_merge: true) { records.as_json(...) },
     }
   end
 end

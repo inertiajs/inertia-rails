@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-# spec/lib/inertia_rails/action_filter_spec.rb
-
-require 'rails_helper'
-
 RSpec.describe InertiaRails::ActionFilter do
   let(:controller) do
     instance_double(

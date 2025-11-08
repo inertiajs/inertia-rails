@@ -13,13 +13,13 @@ Once you instruct Inertia to clear your history state, we simply clear the exist
 
 ## Opting in
 
-History encryption is an opt-in feature. There are several methods for enabling it:
+History encryption is an opt-in feature. There are several methods for enabling it.
 
 ### Global encryption
 
 If you'd like to enable history encryption globally, set the `encrypt_history` config value to `true`.
 
-You are able to opt out of encryption on specific pages by passing `false` to the `encrypt_history` option:
+You are able to opt out of encryption on specific pages by passing `false` to the `encrypt_history` option.
 
 ```ruby
 render inertia: 'Homepage', props: {}, encrypt_history: false
@@ -27,7 +27,7 @@ render inertia: 'Homepage', props: {}, encrypt_history: false
 
 ### Per-request encryption
 
-To encrypt the history of an individual request, simply pass `true` to the `encrypt_history` option:
+To encrypt the history of an individual request, simply pass `true` to the `encrypt_history` option.
 
 ```ruby
 render inertia: 'Dashboard', props: {}, encrypt_history: true
@@ -35,7 +35,7 @@ render inertia: 'Dashboard', props: {}, encrypt_history: true
 
 ### Controller-level encryption
 
-You can also enable history encryption for all actions in a controller by setting the `encrypt_history` config value in the controller:
+You can also enable history encryption for all actions in a controller by setting the `encrypt_history` config value in the controller.
 
 ```ruby
 class DashboardController < ApplicationController
@@ -47,7 +47,7 @@ end
 
 ## Clearing history
 
-To clear the history state on the server side, you can pass the `clear_history` option to the `render` method:
+To clear the history state on the server side, you can pass the `clear_history` option to the `render` method.
 
 ```ruby
 render inertia: 'Dashboard', props: {}, clear_history: true
@@ -57,7 +57,7 @@ Once the response has rendered on the client, the encryption key will be rotated
 
 ### Client-side clearing
 
-You can also clear history directly on the client side by calling the `router.clearHistory()` method:
+You can also clear history directly on the client side by calling the `router.clearHistory()` method.
 
 :::tabs key:frameworks
 == Vue
