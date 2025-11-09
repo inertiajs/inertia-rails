@@ -6,6 +6,16 @@ require_relative 'inertia_rails'
 
 module InertiaRails
   class Renderer
+    %i[component configuration controller props view_data encrypt_history
+       clear_history].each do |method_name|
+      define_method(method_name) do
+        InertiaRails.deprecator.warn(
+          "[DEPRECATION] Accessing `InertiaRails::Renderer##{method_name}` is deprecated and will be removed in v4.0"
+        )
+        instance_variable_get("@#{method_name}")
+      end
+    end
+
     def initialize(component, controller, request, response, render_method, **options)
       if component.is_a?(Hash) && options.key?(:props)
         raise ArgumentError,
