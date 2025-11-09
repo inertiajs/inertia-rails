@@ -24,15 +24,19 @@ module InertiaRails
 
       @controller = controller
       @configuration = controller.__send__(:inertia_configuration)
-      @component = resolve_component(component)
       @request = request
       @response = response
       @render_method = render_method
-      @props = options.fetch(:props, component.is_a?(Hash) ? component : controller.__send__(:inertia_view_assigns))
       @view_data = options.fetch(:view_data, {})
-      @deep_merge = options.fetch(:deep_merge, configuration.deep_merge_shared_data)
       @encrypt_history = options.fetch(:encrypt_history, configuration.encrypt_history)
       @clear_history = options.fetch(:clear_history, controller.session[:inertia_clear_history] || false)
+
+      deep_merge = options.fetch(:deep_merge, configuration.deep_merge_shared_data)
+      passed_props = options.fetch(:props, component.is_a?(Hash) ? component : @controller.__send__(:inertia_view_assigns))
+      @props = merge_props(shared_data, passed_props, deep_merge)
+
+      @component = resolve_component(component)
+
       @controller.instance_variable_set('@_inertia_rendering', true)
       controller.inertia_meta.add(options[:meta]) if options[:meta]
     end
@@ -81,8 +85,8 @@ module InertiaRails
     #
     # Functionally, this permits using either string or symbol keys in the controller. Since the results
     # is cast to json, we should treat string/symbol keys as identical.
-    def merge_props(shared_props, props)
-      if @deep_merge
+    def merge_props(shared_props, props, deep_merge)
+      if deep_merge
         shared_props.deep_symbolize_keys.deep_merge!(props.deep_symbolize_keys)
       else
         shared_props.symbolize_keys.merge(props.symbolize_keys)
@@ -91,13 +95,12 @@ module InertiaRails
 
     def computed_props
       # rubocop:disable Style/MultilineBlockChain
-      merge_props(shared_data, props)
-        .then do |merged_props| # Always keep errors in the props
+      @props
+        .tap do |merged_props| # Always keep errors in the props
           if merged_props.key?(:errors) && !merged_props[:errors].is_a?(BaseProp)
             errors = merged_props[:errors]
             merged_props[:errors] = InertiaRails.always { errors }
           end
-          merged_props
         end
         .then { |props| deep_transform_props(props) } # Internal hydration/filtering
         .then { |props| configuration.prop_transformer(props: props) } # Apply user-defined prop transformer

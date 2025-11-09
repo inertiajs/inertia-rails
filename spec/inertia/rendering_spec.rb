@@ -661,6 +661,27 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'shared scroll props rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    before do
+      # Create a mock controller action that returns scroll props
+      get '/shared_scroll_test', headers: headers
+    end
+
+    it 'includes scroll props metadata in response without reset' do
+      expect(response).to be_successful
+      expect(response.parsed_body['scrollProps']).to include('users')
+      expect(response.parsed_body['scrollProps']['users']).to include(
+        'pageName' => 'page',
+        'currentPage' => 1,
+        'nextPage' => 2,
+        'previousPage' => nil,
+        'reset' => false
+      )
+    end
+  end
+
   context 'prepend merge props rendering' do
     let(:headers) { { 'X-Inertia' => true } }
 
@@ -758,6 +779,23 @@ RSpec.describe 'rendering inertia views', type: :request do
       it 'does not deferredProps key in json' do
         expect(response.parsed_body['deferredProps']).to eq(nil)
       end
+    end
+
+    context 'with shared data' do
+      let(:headers) { { 'X-Inertia' => true } }
+
+      before { get shared_deferred_props_path, headers: headers }
+
+      it 'does not include defer props inside props in first load' do
+        expect(response.parsed_body['props']).to eq({ 'name' => 'Brian' })
+      end
+
+      it 'returns deferredProps' do
+        expect(response.parsed_body['deferredProps']).to eq(
+          'default' => ['grit']
+        )
+      end
+    
     end
   end
 end
