@@ -129,6 +129,17 @@ class InertiaRenderTestController < ApplicationController
     }
   end
 
+  inertia_share only: [:shared_deferred_props] do
+    {
+      grit: InertiaRails.defer { 'intense' },
+    }
+  end
+  def shared_deferred_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+    }
+  end
+
   def scroll_test
     pagy = (defined?(Pagy::Offset) ? Pagy::Offset : Pagy).new(
       next: 2,
@@ -139,6 +150,21 @@ class InertiaRenderTestController < ApplicationController
     render inertia: 'TestComponent', props: {
       users: InertiaRails.scroll(pagy) { [{ id: 1, name: 'User 1' }, { id: 2, name: 'User 2' }] },
     }
+  end
+
+  inertia_share only: [:shared_scroll_test] do
+    pagy = (defined?(Pagy::Offset) ? Pagy::Offset : Pagy).new(
+      next: 2,
+      page: 1,
+      count: 100
+    )
+    {
+      users: InertiaRails.scroll(pagy) { [{ id: 1, name: 'User 1' }, { id: 2, name: 'User 2' }] },
+    }
+  end
+
+  def shared_scroll_test
+    render inertia: 'TestComponent'
   end
 
   def prepend_merge_test
