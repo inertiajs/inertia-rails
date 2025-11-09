@@ -22,7 +22,8 @@ module InertiaRails
       @clear_history = options.fetch(:clear_history, controller.session[:inertia_clear_history] || false)
 
       deep_merge = options.fetch(:deep_merge, @configuration.deep_merge_shared_data)
-      passed_props = options.fetch(:props, component.is_a?(Hash) ? component : @controller.__send__(:inertia_view_assigns))
+      passed_props = options.fetch(:props,
+                                   component.is_a?(Hash) ? component : @controller.__send__(:inertia_view_assigns))
       @props = merge_props(shared_data, passed_props, deep_merge)
 
       @component = resolve_component(component)

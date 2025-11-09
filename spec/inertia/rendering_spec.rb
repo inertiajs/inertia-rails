@@ -795,7 +795,6 @@ RSpec.describe 'rendering inertia views', type: :request do
           'default' => ['grit']
         )
       end
-    
     end
   end
 end
