@@ -116,14 +116,44 @@ First, setup the root template that will be loaded on the first page visit. This
 <!DOCTYPE html>
 <html>
   <head>
+    <title inertia><%= content_for(:title) || "Inertia Rails Poc" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Inertia Rails Poc">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
 
     <%= inertia_ssr_head %>
 
     <%# If you want to use React add `vite_react_refresh_tag` %>
     <%= vite_client_tag %>
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app %>
+
+    <%= vite_typescript_tag "inertia" %>
+    <%= vite_stylesheet_tag "application" %>
     <%= vite_javascript_tag 'application' %>
+    <!--
+      If using a TypeScript entrypoint file:
+        vite_typescript_tag 'application'
+
+      If using a .jsx or .tsx entrypoint, add the extension:
+        vite_javascript_tag 'application.jsx'
+
+      Visit the guide for more information: https://vite-ruby.netlify.app/guide/rails
+    -->
+
   </head>
 
   <body>
@@ -138,10 +168,27 @@ First, setup the root template that will be loaded on the first page visit. This
 <!DOCTYPE html>
 <html>
   <head>
+    <title inertia><%= content_for(:title) || "Inertia Rails Poc" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Inertia Rails Poc">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <%= yield :head %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
     <%= inertia_ssr_head %>
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app %>
 
     <%= stylesheet_pack_tag 'application' %>
     <%= javascript_pack_tag 'application', defer: true %>
