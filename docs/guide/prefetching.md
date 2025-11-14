@@ -4,7 +4,7 @@ Inertia supports prefetching data for pages that are likely to be visited next. 
 
 ## Link prefetching
 
-To prefetch data for a page, you can add the `prefetch` prop to the Inertia link component. By default, Inertia will prefetch the data for the page when the user hovers over the link for more than 75ms.
+To prefetch data for a page, you can add the `prefetch` prop to the Inertia link component. By default, Inertia will prefetch the data for the page when the user hovers over the link for more than 75ms. You may customize this hover delay by setting the `prefetch.hoverDelay` option in your [application defaults](/guide/client-side-setup#configuring-defaults).
 
 :::tabs key:frameworks
 == Vue
@@ -43,7 +43,7 @@ export default () => (
 
 :::
 
-By default, data is cached for 30 seconds before being evicted. You can customize this behavior by passing a `cacheFor` prop to the `Link` component.
+By default, data is cached for 30 seconds before being evicted. You may customize this default value by setting the `prefetch.cacheFor` option in your [application defaults](/guide/client-side-setup#configuring-defaults). You may also customize the cache duration on a per-link basis by passing a `cacheFor` prop to the `Link` component.
 
 :::tabs key:frameworks
 == Vue

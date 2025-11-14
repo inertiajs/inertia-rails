@@ -1452,6 +1452,8 @@ $form.setError({
 
 When a form has been successfully submitted, the `wasSuccessful` property will be `true`. In addition to this, forms have a `recentlySuccessful` property, which will be set to `true` for two seconds after a successful form submission. This property can be utilized to show temporary success messages.
 
+You may customize the duration of the `recentlySuccessful` state by setting the `form.recentlySuccessfulDuration` option in your [application defaults](/guide/client-side-setup#configuring-defaults). The default value is `2000` milliseconds.
+
 ### Resetting the Form
 
 To reset the form's values back to their default values, you can use the `reset()` method.

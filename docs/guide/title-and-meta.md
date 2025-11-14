@@ -347,3 +347,20 @@ export default () => <AppHead title="About" />
 ```
 
 :::
+
+## Inertia attribute on elements
+
+Inertia has historically used the `inertia` attribute to track and manage elements in the document `<head>`. However, you can now opt-in to using the more standards-compliant `data-inertia` attribute instead. According to the HTML specification, custom attributes should be prefixed with `data-` to avoid conflicts with future HTML standards.
+
+To enable this, configure the `future.useDataInertiaHeadAttribute` option in your [application defaults](/guide/client-side-setup#configuring-defaults).
+
+```js
+createInertiaApp({
+  // resolve, setup, etc.
+  defaults: {
+    future: {
+      useDataInertiaHeadAttribute: true,
+    },
+  },
+})
+```

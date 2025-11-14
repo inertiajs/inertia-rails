@@ -326,6 +326,75 @@ router.post('/users', data, {
 > [!NOTE]
 > The headers Inertia uses internally to communicate its state to the server take priority and therefore cannot be overwritten.
 
+## Global visit options
+
+You may configure a `visitOptions` callback when [initializing your Inertia app](/guide/client-side-setup#configuring-defaults) to modify visit options globally for every request. The callback receives the target URL and the current visit options, and should return an object with any options you want to override.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { createApp, h } from 'vue'
+import { createInertiaApp } from '@inertiajs/vue3'
+
+createInertiaApp({
+  // ...
+  defaults: {
+    visitOptions: (href, options) => {
+      return {
+        headers: {
+          ...options.headers,
+          'X-Custom-Header': 'value',
+        },
+      }
+    },
+  },
+})
+```
+
+== React
+
+```js
+import { createInertiaApp } from '@inertiajs/react'
+import { createRoot } from 'react-dom/client'
+
+createInertiaApp({
+  // ...
+  defaults: {
+    visitOptions: (href, options) => {
+      return {
+        headers: {
+          ...options.headers,
+          'X-Custom-Header': 'value',
+        },
+      }
+    },
+  },
+})
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { createInertiaApp } from '@inertiajs/svelte'
+
+createInertiaApp({
+  // ...
+  defaults: {
+    visitOptions: (href, options) => {
+      return {
+        headers: {
+          ...options.headers,
+          'X-Custom-Header': 'value',
+        },
+      }
+    },
+  },
+})
+```
+
+:::
+
 ## File uploads
 
 When making visits / requests that include files, Inertia will automatically convert the request data into a `FormData` object. If you would like the request to always use a `FormData` object, you may use the `forceFormData` option.
