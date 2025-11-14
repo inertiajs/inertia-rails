@@ -26,6 +26,7 @@ router.visit(url, {
   reset: [],
   preserveUrl: false,
   prefetch: false,
+  viewTransition: false,
   onCancelToken: (cancelToken) => {},
   onCancel: () => {},
   onBefore: (visit) => {},
@@ -62,6 +63,7 @@ router.visit(url, {
   reset: [],
   preserveUrl: false,
   prefetch: false,
+  viewTransition: false,
   onCancelToken: (cancelToken) => {},
   onCancel: () => {},
   onBefore: (visit) => {},
@@ -98,6 +100,7 @@ router.visit(url, {
   reset: [],
   preserveUrl: false,
   prefetch: false,
+  viewTransition: false,
   onCancelToken: (cancelToken) => {},
   onCancel: () => {},
   onBefore: (visit) => {},
@@ -911,6 +914,37 @@ router.get('/users', { search: 'John' }, { only: ['users'] })
 :::
 
 For more information on this feature, check out the [partial reloads](/guide/partial-reloads.md) documentation.
+
+## View transitions
+
+You may enable [View transitions](/guide/view-transitions) for a visit by setting the `viewTransition` option to `true`. This will use the browser's View Transitions API to animate the page transition.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.visit('/another-page', { viewTransition: true })
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+
+router.visit('/another-page', { viewTransition: true })
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.visit('/another-page', { viewTransition: true })
+```
+
+:::
 
 ## Visit cancellation
 

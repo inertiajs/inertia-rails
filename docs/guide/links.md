@@ -416,6 +416,47 @@ export default () => (
 
 For more information on this topic, check out the complete documentation on [partial reloads](/guide/partial-reloads.md).
 
+## View transitions
+
+You may enable [View transitions](/guide/view-transitions) for a link by setting the `viewTransition` prop to `true`. This will use the browser's View Transitions API to animate the page transition.
+
+:::tabs key:frameworks
+== Vue
+
+```vue
+<script setup>
+import { router } from '@inertiajs/vue3'
+</script>
+
+<template>
+  <Link href="/another-page" view-transition>Navigate</Link>
+</template>
+```
+
+== React
+
+```jsx
+import { router } from '@inertiajs/react'
+
+export default () => (
+  <Link href="/another-page" viewTransition>
+    Navigate
+  </Link>
+)
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<script>
+  import { router } from '@inertiajs/svelte'
+</script>
+
+<Link href="/another-page" viewTransition>Navigate</Link>
+```
+
+:::
+
 ## Active states
 
 It's common to set an active state for navigation links based on the current page. This can be accomplished when using Inertia by inspecting the `page` object and doing string comparisons against the `page.url` and `page.component` properties.
