@@ -1,5 +1,7 @@
 # View Transitions
 
+@available_since core=2.2.13
+
 Inertia supports the [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions), allowing you to animate page transitions.
 
 > [!NOTE]

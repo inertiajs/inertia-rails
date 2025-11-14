@@ -8,6 +8,8 @@ Inertia solves this issue by showing all non-Inertia responses in a modal. This 
 
 ## Dialog element
 
+@available_since core=2.2.13
+
 By default, Inertia displays error modals using a custom `<div>` overlay. However, you can opt-in to using the native HTML `<dialog>` element instead, which provides built-in modal functionality including backdrop handling.
 
 To enable this, configure the `future.useDialogForErrorModal` option in your [application defaults](/guide/client-side-setup#configuring-defaults).

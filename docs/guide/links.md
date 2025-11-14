@@ -418,6 +418,8 @@ For more information on this topic, check out the complete documentation on [par
 
 ## View transitions
 
+@available_since core=2.2.13
+
 You may enable [View transitions](/guide/view-transitions) for a link by setting the `viewTransition` prop to `true`. This will use the browser's View Transitions API to animate the page transition.
 
 :::tabs key:frameworks

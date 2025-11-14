@@ -917,6 +917,8 @@ For more information on this feature, check out the [partial reloads](/guide/par
 
 ## View transitions
 
+@available_since core=2.2.13
+
 You may enable [View transitions](/guide/view-transitions) for a visit by setting the `viewTransition` option to `true`. This will use the browser's View Transitions API to animate the page transition.
 
 :::tabs key:frameworks

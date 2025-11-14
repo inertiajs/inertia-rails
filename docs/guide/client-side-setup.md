@@ -116,6 +116,8 @@ The `setup` callback receives everything necessary to initialize the client-side
 
 ## Configuring defaults
 
+@available_since core=2.2.11
+
 You may pass a `defaults` object to `createInertiaApp()` to configure default settings for various features. You don't have to pass all keys, just the ones you want to tweak.
 
 ```js
