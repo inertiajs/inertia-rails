@@ -352,3 +352,121 @@ export default () => (
 ```
 
 :::
+
+## Form submissions
+
+When submitting forms, you may want to use the `except` option to exclude the props that are being used by the `WhenVisible` component. This prevents the props from being reloaded when you get redirected back to the current page because of validation errors.
+
+:::tabs key:frameworks
+== Vue
+
+```vue
+<script setup>
+import { useForm, WhenVisible } from '@inertiajs/vue3'
+
+const form = useForm({
+  name: '',
+  email: '',
+})
+
+function submit() {
+  form.post('/users', {
+    except: ['permissions'],
+  })
+}
+</script>
+
+<template>
+  <form @submit.prevent="submit">
+    <!-- ... -->
+  </form>
+
+  <WhenVisible data="permissions">
+    <!-- ... -->
+  </WhenVisible>
+</template>
+```
+
+== React
+
+```jsx
+import { useForm, WhenVisible } from '@inertiajs/react'
+
+export default function CreateUser() {
+  const { data, setData, post } = useForm({
+    name: '',
+    email: '',
+  })
+
+  function submit(e) {
+    e.preventDefault()
+    post('/users', {
+      except: ['permissions'],
+    })
+  }
+
+  return (
+    <>
+      <form onSubmit={submit}>{/* ... */}</form>
+
+      <WhenVisible data="permissions">{/* ... */}</WhenVisible>
+    </>
+  )
+}
+```
+
+== Svelte 4
+
+```svelte
+<script>
+  import { useForm, WhenVisible } from '@inertiajs/svelte'
+
+  const form = useForm({
+    name: '',
+    email: '',
+  })
+
+  function submit() {
+    $form.post('/users', {
+      except: ['permissions'],
+    })
+  }
+</script>
+
+<form on:submit|preventDefault={submit}>
+  <!-- ... -->
+</form>
+
+<WhenVisible data="permissions">
+  <!-- ... -->
+</WhenVisible>
+```
+
+== Svelte 5
+
+```svelte
+<script>
+  import { useForm, WhenVisible } from '@inertiajs/svelte'
+
+  const form = useForm({
+    name: '',
+    email: '',
+  })
+
+  function submit() {
+    form.post('/users', {
+      except: ['permissions'],
+    })
+  }
+</script>
+
+<form onsubmit={submit}>
+  <!-- ... -->
+</form>
+
+<WhenVisible data="permissions">
+  <!-- ... -->
+</WhenVisible>
+```
+
+:::
