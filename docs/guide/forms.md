@@ -151,7 +151,7 @@ You can pass a `transform` prop to modify the form data before submission. This 
 
 ### Default values
 
-You can set default values for form inputs using standard HTML attributes. Use <React>`defaultValue`</React><Vue>`value`</Vue><Svelte4>`value`</Svelte4><Svelte5>`defaultValue` (`value` for Svelte < `5.6.0`)</Svelte5> for text inputs and textareas, and <React>`defaultChecked`</React><Vue>`checked`</Vue><Svelte4>`checked`</Svelte4><Svelte5>`defaultChecked` (`checked` for Svelte < `5.6.0`)</Svelte5> for checkboxes and radios.
+You can set default values for form inputs using standard HTML attributes. Use <React>`defaultValue`</React><Vue>`defaultValue`</Vue><Svelte4>`value`</Svelte4><Svelte5>`defaultValue` (`value` for Svelte < `5.6.0`)</Svelte5> for text inputs and textareas, and <React>`defaultChecked`</React><Vue>`defaultChecked`</Vue><Svelte4>`checked`</Svelte4><Svelte5>`defaultChecked` (`checked` for Svelte < `5.6.0`)</Svelte5> for checkboxes and radios.
 
 :::tabs key:frameworks
 
@@ -160,7 +160,7 @@ You can set default values for form inputs using standard HTML attributes. Use <
 ```vue
 <template>
   <Form action="/users" method="post">
-    <input type="text" name="name" value="John Doe" />
+    <input type="text" name="name" defaultValue="John Doe" />
 
     <select name="country">
       <option value="us">United States</option>
@@ -168,7 +168,7 @@ You can set default values for form inputs using standard HTML attributes. Use <
       <option value="uk" selected>United Kingdom</option>
     </select>
 
-    <input type="checkbox" name="subscribe" value="yes" checked />
+    <input type="checkbox" name="subscribe" value="yes" defaultChecked />
 
     <button type="submit">Submit</button>
   </Form>
