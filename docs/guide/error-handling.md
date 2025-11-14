@@ -6,6 +6,25 @@ One of the advantages to working with a robust server-side framework is the buil
 
 Inertia solves this issue by showing all non-Inertia responses in a modal. This means you get the same beautiful error-reporting you're accustomed to, even though you've made that request over XHR.
 
+## Dialog element
+
+@available_since core=2.2.13
+
+By default, Inertia displays error modals using a custom `<div>` overlay. However, you can opt-in to using the native HTML `<dialog>` element instead, which provides built-in modal functionality including backdrop handling.
+
+To enable this, configure the `future.useDialogForErrorModal` option in your [application defaults](/guide/client-side-setup#configuring-defaults).
+
+```js
+createInertiaApp({
+  // resolve, setup, etc.
+  defaults: {
+    future: {
+      useDialogForErrorModal: true,
+    },
+  },
+})
+```
+
 ## Production
 
 In production you will want to return a proper Inertia error response instead of relying on the modal-driven error reporting that is present during development. To accomplish this, you'll need to update your framework's default exception handler to return a custom error page.

@@ -115,6 +115,7 @@ export default defineConfig({
             { text: 'Forms', link: '/guide/forms' },
             { text: 'File uploads', link: '/guide/file-uploads' },
             { text: 'Validation', link: '/guide/validation' },
+            { text: 'View transitions', link: '/guide/view-transitions' },
           ],
         },
         {

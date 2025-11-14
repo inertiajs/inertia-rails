@@ -26,6 +26,7 @@ router.visit(url, {
   reset: [],
   preserveUrl: false,
   prefetch: false,
+  viewTransition: false,
   onCancelToken: (cancelToken) => {},
   onCancel: () => {},
   onBefore: (visit) => {},
@@ -62,6 +63,7 @@ router.visit(url, {
   reset: [],
   preserveUrl: false,
   prefetch: false,
+  viewTransition: false,
   onCancelToken: (cancelToken) => {},
   onCancel: () => {},
   onBefore: (visit) => {},
@@ -98,6 +100,7 @@ router.visit(url, {
   reset: [],
   preserveUrl: false,
   prefetch: false,
+  viewTransition: false,
   onCancelToken: (cancelToken) => {},
   onCancel: () => {},
   onBefore: (visit) => {},
@@ -325,6 +328,75 @@ router.post('/users', data, {
 
 > [!NOTE]
 > The headers Inertia uses internally to communicate its state to the server take priority and therefore cannot be overwritten.
+
+## Global visit options
+
+You may configure a `visitOptions` callback when [initializing your Inertia app](/guide/client-side-setup#configuring-defaults) to modify visit options globally for every request. The callback receives the target URL and the current visit options, and should return an object with any options you want to override.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { createApp, h } from 'vue'
+import { createInertiaApp } from '@inertiajs/vue3'
+
+createInertiaApp({
+  // ...
+  defaults: {
+    visitOptions: (href, options) => {
+      return {
+        headers: {
+          ...options.headers,
+          'X-Custom-Header': 'value',
+        },
+      }
+    },
+  },
+})
+```
+
+== React
+
+```js
+import { createInertiaApp } from '@inertiajs/react'
+import { createRoot } from 'react-dom/client'
+
+createInertiaApp({
+  // ...
+  defaults: {
+    visitOptions: (href, options) => {
+      return {
+        headers: {
+          ...options.headers,
+          'X-Custom-Header': 'value',
+        },
+      }
+    },
+  },
+})
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { createInertiaApp } from '@inertiajs/svelte'
+
+createInertiaApp({
+  // ...
+  defaults: {
+    visitOptions: (href, options) => {
+      return {
+        headers: {
+          ...options.headers,
+          'X-Custom-Header': 'value',
+        },
+      }
+    },
+  },
+})
+```
+
+:::
 
 ## File uploads
 
@@ -842,6 +914,39 @@ router.get('/users', { search: 'John' }, { only: ['users'] })
 :::
 
 For more information on this feature, check out the [partial reloads](/guide/partial-reloads.md) documentation.
+
+## View transitions
+
+@available_since core=2.2.13
+
+You may enable [View transitions](/guide/view-transitions) for a visit by setting the `viewTransition` option to `true`. This will use the browser's View Transitions API to animate the page transition.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.visit('/another-page', { viewTransition: true })
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+
+router.visit('/another-page', { viewTransition: true })
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.visit('/another-page', { viewTransition: true })
+```
+
+:::
 
 ## Visit cancellation
 

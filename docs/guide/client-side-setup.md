@@ -114,6 +114,102 @@ createInertiaApp({
 
 The `setup` callback receives everything necessary to initialize the client-side framework, including the root Inertia `App` component.
 
+## Configuring defaults
+
+@available_since core=2.2.11
+
+You may pass a `defaults` object to `createInertiaApp()` to configure default settings for various features. You don't have to pass all keys, just the ones you want to tweak.
+
+```js
+createInertiaApp({
+  // ...
+  defaults: {
+    form: {
+      recentlySuccessfulDuration: 5000,
+    },
+    prefetch: {
+      cacheFor: '1m',
+      hoverDelay: 150,
+    },
+    visitOptions: (href, options) => {
+      return {
+        headers: {
+          ...options.headers,
+          'X-Custom-Header': 'value',
+        },
+      }
+    },
+  },
+})
+```
+
+The `visitOptions` callback receives the target URL and the current visit options, and should return an object with any options you want to override. For more details on the available configuration options, see the [forms](/guide/forms#form-errors), [prefetching](/guide/prefetching), and [manual visits](/guide/manual-visits#global-visit-options) documentation.
+
+### Updating at runtime
+
+You may also update configuration values at runtime using the exported `config` instance. This is
+particularly useful when you need to adjust settings based on user preferences or application state.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+// Set a single value using dot notation...
+config.set('form.recentlySuccessfulDuration', 1000)
+config.set('prefetch.cacheFor', '5m')
+
+// Set multiple values at once...
+config.set({
+  'form.recentlySuccessfulDuration': 1000,
+  'prefetch.cacheFor': '5m',
+})
+
+// Get a configuration value...
+const duration = config.get('form.recentlySuccessfulDuration')
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+
+// Set a single value using dot notation...
+config.set('form.recentlySuccessfulDuration', 1000)
+config.set('prefetch.cacheFor', '5m')
+
+// Set multiple values at once...
+config.set({
+  'form.recentlySuccessfulDuration': 1000,
+  'prefetch.cacheFor': '5m',
+})
+
+// Get a configuration value...
+const duration = config.get('form.recentlySuccessfulDuration')
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+
+// Set a single value using dot notation...
+config.set('form.recentlySuccessfulDuration', 1000)
+config.set('prefetch.cacheFor', '5m')
+
+// Set multiple values at once...
+config.set({
+  'form.recentlySuccessfulDuration': 1000,
+  'prefetch.cacheFor': '5m',
+})
+
+// Get a configuration value...
+const duration = config.get('form.recentlySuccessfulDuration')
+```
+
+:::
+
 # Resolving components
 
 The `resolve` callback tells Inertia how to load a page component. It receives a page name (string), and returns a page component module. How you implement this callback depends on which bundler (Vite or Webpack) you're using.
