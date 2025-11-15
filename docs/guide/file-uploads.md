@@ -9,7 +9,7 @@ If you would like the request to always use a `FormData` object regardless of wh
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.post('/users', data, {
@@ -19,7 +19,7 @@ router.post('/users', data, {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.post('/users', data, {
@@ -29,7 +29,7 @@ router.post('/users', data, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.post('/users', data, {
@@ -51,7 +51,7 @@ Let's examine a complete file upload example using Inertia. This example include
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { useForm } from '@inertiajs/vue3'
 
@@ -79,7 +79,7 @@ function submit() {
 
 == React
 
-```jsx
+```jsx twoslash
 import { useForm } from '@inertiajs/react'
 
 const { data, setData, post, progress } = useForm({
@@ -112,7 +112,7 @@ return (
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   import { useForm } from '@inertiajs/svelte'
 
@@ -140,7 +140,7 @@ return (
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { useForm } from '@inertiajs/svelte'
 
@@ -183,7 +183,7 @@ However, some frameworks, such as Laravel and Rails, support form method spoofin
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.post(`/users/${user.id}`, {
@@ -200,7 +200,7 @@ form.post(`/users/${user.id}`, {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.post(`/users/${user.id}`, {
@@ -217,7 +217,7 @@ form.post(`/users/${user.id}`, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.post(`/users/${user.id}`, {

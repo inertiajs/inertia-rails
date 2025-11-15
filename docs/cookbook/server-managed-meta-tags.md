@@ -36,7 +36,7 @@ Copy the following code into your application. It should be rendered **once** in
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script>
 import { Head } from '@inertiajs/vue3'
 import { usePage } from '@inertiajs/vue3'
@@ -83,7 +83,7 @@ export default {
 
 == React
 
-```jsx
+```jsx twoslash
 import React from 'react'
 import { Head, usePage } from '@inertiajs/react'
 
@@ -121,7 +121,7 @@ export default MetaTags
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <!-- MetaTags.svelte -->
 <script>
   import { onMount } from 'svelte'

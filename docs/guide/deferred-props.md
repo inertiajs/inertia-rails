@@ -52,7 +52,7 @@ On the client side, Inertia provides the `Deferred` component to help you manage
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Deferred } from '@inertiajs/vue3'
 </script>
@@ -71,7 +71,7 @@ import { Deferred } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Deferred } from '@inertiajs/react'
 
 export default () => (
@@ -83,7 +83,7 @@ export default () => (
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   import { Deferred } from '@inertiajs/svelte'
   export let permissions
@@ -102,7 +102,7 @@ export default () => (
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { Deferred } from '@inertiajs/svelte'
   let { permissions } = $props()
@@ -126,7 +126,7 @@ If you need to wait for multiple deferred props to become available, you can spe
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Deferred } from '@inertiajs/vue3'
 </script>
@@ -143,7 +143,7 @@ import { Deferred } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Deferred } from '@inertiajs/react'
 
 export default () => (
@@ -155,7 +155,7 @@ export default () => (
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   import { Deferred } from '@inertiajs/svelte'
   export let teams
@@ -173,7 +173,7 @@ export default () => (
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { Deferred } from '@inertiajs/svelte'
   let { teams, users } = $props()

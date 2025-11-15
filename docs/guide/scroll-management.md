@@ -13,7 +13,7 @@ Sometimes it's desirable to prevent the default scroll resetting when making vis
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.visit(url, { preserveScroll: true })
@@ -21,7 +21,7 @@ router.visit(url, { preserveScroll: true })
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.visit(url, { preserveScroll: true })
@@ -29,7 +29,7 @@ router.visit(url, { preserveScroll: true })
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.visit(url, { preserveScroll: true })
@@ -42,7 +42,7 @@ If you'd like to only preserve the scroll position if the response includes vali
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.visit(url, { preserveScroll: 'errors' })
@@ -50,7 +50,7 @@ router.visit(url, { preserveScroll: 'errors' })
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.visit(url, { preserveScroll: 'errors' })
@@ -58,7 +58,7 @@ router.visit(url, { preserveScroll: 'errors' })
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.visit(url, { preserveScroll: 'errors' })
@@ -71,7 +71,7 @@ You can also lazily evaluate the `preserveScroll` option based on the response b
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.post('/users', data, {
@@ -81,7 +81,7 @@ router.post('/users', data, {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.post('/users', data, {
@@ -91,7 +91,7 @@ router.post('/users', data, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.post('/users', data, {
@@ -106,7 +106,7 @@ When using an [Inertia link](/guide/links), you can preserve the scroll position
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -118,7 +118,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -130,7 +130,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia, Link } from '@inertiajs/svelte'
 </script>

@@ -52,7 +52,7 @@ Update your Inertia app setup to include the modal plugin:
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import { createApp, h } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
@@ -74,7 +74,7 @@ createInertiaApp({
 
 == React
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import { createInertiaApp } from '@inertiajs/react'
 import { createElement } from 'react' // [!code --]
@@ -110,7 +110,7 @@ For Tailwind CSS v4, add the modal styles to your CSS:
 
 For Tailwind CSS v3, update your `tailwind.config.js`:
 
-```js
+```js twoslash
 export default {
   content: [
     './node_modules/@inertiaui/modal-vue/src/**/*.{js,vue}',
@@ -130,7 +130,7 @@ For Tailwind CSS v4, add the modal styles to your CSS:
 
 For Tailwind CSS v3, update your `tailwind.config.js`:
 
-```js
+```js twoslash
 export default {
   content: [
     './node_modules/@inertiaui/modal-react/src/**/*.{js,jsx}',
@@ -158,7 +158,7 @@ link that you want to open in a modal, you can simply replace `Link` with `Modal
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3' // [!code --]
 import { ModalLink } from '@inertiaui/modal-vue' // [!code ++]
@@ -174,15 +174,15 @@ import { ModalLink } from '@inertiaui/modal-vue' // [!code ++]
 
 == React
 
-```jsx
+```jsx twoslash
 import {Link} from '@inertiajs/react' // [!code --]
 import {ModalLink} from '@inertiaui/modal-react' // [!code ++]
 
 export const CreateUserButton = () => {
-  return (
-    <Link href="/users/create">Create User</Link> // [!code --]
-    <ModalLink href="/users/create">Create User</ModalLink> // [!code ++]
-  )
+ return (
+   <Link href="/users/create">Create User</Link> // [!code --]
+   <ModalLink href="/users/create">Create User</ModalLink> // [!code ++]
+ )
 }
 ```
 
@@ -193,7 +193,7 @@ The page you linked can then use the `Modal` component to wrap its content in a 
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Modal } from '@inertiaui/modal-vue'
 </script>
@@ -212,24 +212,24 @@ import { Modal } from '@inertiaui/modal-vue'
 
 == React
 
-```jsx
+```jsx twoslash
 import {Modal} from '@inertiaui/modal-react'
 
 export const CreateUser = () => {
-  return (
-    {/* [!code --] */}
-    <>
-    {/* [!code ++] */}
-    <Modal>
-      <h1>Create User</h1>
-      <form>
-        {/* Form fields */}
-      </form>
-      {/* [!code --] */}
-    </Modal>
-    {/* [!code ++] */}
-    </>
-  )
+ return (
+   {/* [!code --] */}
+   <>
+   {/* [!code ++] */}
+   <Modal>
+     <h1>Create User</h1>
+     <form>
+       {/* Form fields */}
+     </form>
+     {/* [!code --] */}
+   </Modal>
+   {/* [!code ++] */}
+   </>
+ )
 }
 ```
 
@@ -296,7 +296,7 @@ to add the `navigate` attribute to the `ModalLink` component:
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <ModalLink navigate href="/users/create"> Create User </ModalLink>
 </template>
@@ -304,7 +304,7 @@ to add the `navigate` attribute to the `ModalLink` component:
 
 == React
 
-```jsx
+```jsx twoslash
 export default function UserIndex() {
   return (
     <ModalLink navigate href="/users/create">

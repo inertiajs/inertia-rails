@@ -11,7 +11,7 @@ Inertia pages are simply JavaScript components. If you have ever written a Vue, 
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import Layout from '../Layout'
 import { Head } from '@inertiajs/vue3'
@@ -30,7 +30,7 @@ defineProps({ user: Object })
 
 == React
 
-```jsx
+```jsx twoslash
 import Layout from '../Layout'
 import { Head } from '@inertiajs/react'
 
@@ -47,7 +47,7 @@ export default function Welcome({ user }) {
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   import Layout from '../Layout'
 
@@ -66,7 +66,7 @@ export default function Welcome({ user }) {
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import Layout from './Layout.svelte'
 
@@ -106,7 +106,7 @@ While not required, for most projects it makes sense to create a layout componen
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -127,7 +127,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default function Layout({ children }) {
@@ -146,7 +146,7 @@ export default function Layout({ children }) {
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia } from '@inertiajs/svelte'
 </script>
@@ -165,7 +165,7 @@ export default function Layout({ children }) {
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia } from '@inertiajs/svelte'
 
@@ -197,7 +197,7 @@ For example, maybe you have an audio player on a podcast website that you want t
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script>
 import Layout from '../Layout'
 
@@ -222,7 +222,7 @@ defineProps({ user: Object })
 
 == React
 
-```jsx
+```jsx twoslash
 import Layout from '../Layout'
 
 const Home = ({ user }) => {
@@ -241,7 +241,7 @@ export default Home
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script context="module">
   export { default as layout } from './Layout.svelte'
 </script>
@@ -257,7 +257,7 @@ export default Home
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script module>
   export { default as layout } from './Layout.svelte'
 </script>
@@ -278,7 +278,7 @@ You can also create more complex layout arrangements using nested layouts.
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script>
 import SiteLayout from './SiteLayout'
 import NestedLayout from './NestedLayout'
@@ -307,7 +307,7 @@ defineProps({ user: Object })
 If you're using Vue 3.3+, you can alternatively use [`defineOptions`](https://vuejs.org/api/sfc-script-setup.html#defineoptions) to define a layout within `<script setup>`.
 Older versions of Vue can use the [defineOptions plugin](https://vue-macros.sxzz.moe/macros/define-options.html).
 
-```vue
+```vue twoslash
 <script setup>
 import Layout from '../Layout'
 
@@ -317,7 +317,7 @@ defineOptions({ layout: Layout })
 
 == React
 
-```jsx
+```jsx twoslash
 import SiteLayout from './SiteLayout'
 import NestedLayout from './NestedLayout'
 
@@ -341,7 +341,7 @@ export default Home
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script context="module">
   import SiteLayout from './SiteLayout.svelte'
   import NestedLayout from './NestedLayout.svelte'
@@ -366,7 +366,7 @@ export default Home
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script module>
   import SiteLayout from './SiteLayout.svelte'
   import NestedLayout from './NestedLayout.svelte'
@@ -396,7 +396,7 @@ If you're using persistent layouts, you may find it convenient to define the def
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import Layout from '../Layout'
 
@@ -413,7 +413,7 @@ createInertiaApp({
 
 == React
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import Layout from '../Layout'
 
@@ -431,7 +431,7 @@ createInertiaApp({
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import Layout from '../Layout'
 
@@ -454,7 +454,7 @@ You can even go a step further and conditionally set the default page layout bas
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import Layout from '../Layout'
 
@@ -471,7 +471,7 @@ createInertiaApp({
 
 == React
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import Layout from '../Layout'
 
@@ -490,7 +490,7 @@ createInertiaApp({
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import Layout from '../Layout'
 

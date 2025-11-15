@@ -13,7 +13,7 @@ To save local component state to the history state, use the `useRemember` hook t
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { useRemember } from '@inertiajs/vue3'
 
 const form = useRemember({
@@ -24,7 +24,7 @@ const form = useRemember({
 
 == React
 
-```js
+```js twoslash
 import { useRemember } from '@inertiajs/react'
 
 export default function Profile() {
@@ -40,7 +40,7 @@ export default function Profile() {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { useRemember } from '@inertiajs/svelte'
 
 const form = useRemember({
@@ -62,7 +62,7 @@ If your page contains multiple components that use the remember functionality pr
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { useRemember } from '@inertiajs/vue3'
 
 const form = useRemember(
@@ -76,7 +76,7 @@ const form = useRemember(
 
 == React
 
-```js
+```js twoslash
 import { useRemember } from '@inertiajs/react'
 
 export default function Profile() {
@@ -92,7 +92,7 @@ export default function Profile() {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { page, useRemember } from '@inertiajs/svelte'
 
 let form = useRemember(
@@ -111,7 +111,7 @@ If you have multiple instances of the same component on the page using the remem
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { useRemember } from '@inertiajs/vue3'
 
 const props = defineProps({ user: Object })
@@ -127,7 +127,7 @@ const form = useRemember(
 
 == React
 
-```js
+```js twoslash
 import { useRemember } from '@inertiajs/react'
 
 export default function Profile() {
@@ -143,7 +143,7 @@ export default function Profile() {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { page, useRemember } from '@inertiajs/svelte'
 
 let form = useRemember(
@@ -164,7 +164,7 @@ If you're using the Inertia [form helper](/guide/forms.md#form-helper), you can 
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { useForm } from '@inertiajs/vue3'
 
 const form = useForm('CreateUser', data)
@@ -173,7 +173,7 @@ const form = useForm(`EditUser:${props.user.id}`, data)
 
 == React
 
-```js
+```js twoslash
 import { useForm } from '@inertiajs/react'
 
 const form = useForm('CreateUser', data)
@@ -182,7 +182,7 @@ const form = useForm(`EditUser:${user.id}`, data)
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { useForm } from '@inertiajs/svelte'
 
 const form = useForm('CreateUser', data)
@@ -200,7 +200,7 @@ However, it's also possible to manage this manually using the underlying `rememb
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 // Save local component state to history state
@@ -212,7 +212,7 @@ let data = router.restore('my-key')
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 // Save local component state to history state
@@ -224,7 +224,7 @@ let data = router.restore('my-key')
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 // Save local component state to history state

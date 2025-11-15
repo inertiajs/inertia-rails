@@ -9,7 +9,7 @@ To create an Inertia link, use the Inertia `<Link>` component. Any attributes yo
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -21,7 +21,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => <Link href="/">Home</Link>
@@ -29,7 +29,7 @@ export default () => <Link href="/">Home</Link>
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia, Link } from '@inertiajs/svelte'
 </script>
@@ -49,7 +49,7 @@ By default, Inertia renders links as anchor `<a>` elements. However, you can cha
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -63,7 +63,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -78,7 +78,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { Link } from '@inertiajs/svelte'
 </script>
@@ -101,7 +101,7 @@ You can specify the HTTP request method for an Inertia link request using the `m
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -113,7 +113,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -125,9 +125,9 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
-  import { inertia, Link } from '@inertiajs/svelte'
+ import { inertia, Link } from '@inertiajs/svelte'
 </script>
 
 <button use:inertia={{ href: '/logout', method: 'post' }} type="button">Logout</button>
@@ -144,7 +144,7 @@ When making `POST` or `PUT` requests, you may wish to add additional data to the
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -158,7 +158,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -170,7 +170,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia, Link } from '@inertiajs/svelte'
 </script>
@@ -194,7 +194,7 @@ The `headers` prop allows you to add custom headers to an Inertia link. However,
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -206,7 +206,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -218,7 +218,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia, Link } from '@inertiajs/svelte'
 </script>
@@ -237,7 +237,7 @@ The `replace` prop allows you to specify the browser's history behavior. By defa
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -249,7 +249,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -261,7 +261,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia, Link } from '@inertiajs/svelte'
 </script>
@@ -280,7 +280,7 @@ You can preserve a page component's local state using the `preserveState` prop. 
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -294,7 +294,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -310,7 +310,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia, Link } from '@inertiajs/svelte'
 </script>
@@ -333,7 +333,7 @@ You can use the `preserveScroll` prop to prevent Inertia from automatically rese
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -345,7 +345,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -357,7 +357,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia, Link } from '@inertiajs/svelte'
 </script>
@@ -378,7 +378,7 @@ The `only` prop allows you to specify that only a subset of a page's props (data
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -390,7 +390,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -402,7 +402,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia, Link } from '@inertiajs/svelte'
 </script>
@@ -425,7 +425,7 @@ You may enable [View transitions](/guide/view-transitions) for a link by setting
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { router } from '@inertiajs/vue3'
 </script>
@@ -437,7 +437,7 @@ import { router } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 export default () => (
@@ -449,7 +449,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { router } from '@inertiajs/svelte'
 </script>
@@ -466,7 +466,7 @@ It's common to set an active state for navigation links based on the current pag
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -494,7 +494,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { usePage } from '@inertiajs/react'
 
 export default () => {
@@ -531,7 +531,7 @@ export default () => {
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia, Link, page } from '@inertiajs/svelte'
 </script>

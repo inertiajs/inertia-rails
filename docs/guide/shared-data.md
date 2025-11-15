@@ -90,7 +90,7 @@ Once you have shared the data server-side, you will be able to access it within 
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { computed } from 'vue'
 import { usePage } from '@inertiajs/vue3'
@@ -112,7 +112,7 @@ const user = computed(() => page.props.auth.user)
 
 == React
 
-```jsx
+```jsx twoslash
 import { usePage } from '@inertiajs/react'
 
 export default function Layout({ children }) {
@@ -129,7 +129,7 @@ export default function Layout({ children }) {
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { page } from '@inertiajs/svelte'
 </script>
@@ -163,7 +163,7 @@ Next, display the flash message in a frontend component, such as the site layout
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <main>
     <header></header>
@@ -183,7 +183,7 @@ Next, display the flash message in a frontend component, such as the site layout
 
 == React
 
-```jsx
+```jsx twoslash
 import { usePage } from '@inertiajs/react'
 
 export default function Layout({ children }) {
@@ -205,7 +205,7 @@ export default function Layout({ children }) {
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { page } from '@inertiajs/svelte'
 </script>

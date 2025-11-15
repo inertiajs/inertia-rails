@@ -13,7 +13,7 @@ Vite enables code splitting (or lazy-loading as they call it) by default when us
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 createInertiaApp({
   resolve: (name) => {
@@ -28,7 +28,7 @@ createInertiaApp({
 
 == React
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 createInertiaApp({
   resolve: (name) => {
@@ -43,7 +43,7 @@ createInertiaApp({
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 createInertiaApp({
   resolve: (name) => {
@@ -82,7 +82,7 @@ Finally, update the `resolve` callback in your app's initialization code to use 
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 // javascript/packs/inertia.js
 createInertiaApp({
   resolve: (name) => require(`../pages/${name}`), // [!code ii]
@@ -93,7 +93,7 @@ createInertiaApp({
 
 == React
 
-```js
+```js twoslash
 // javascript/packs/inertia.js
 createInertiaApp({
   resolve: (name) => require(`../pages/${name}`), // [!code ii]
@@ -104,7 +104,7 @@ createInertiaApp({
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // javascript/packs/inertia.js
 createInertiaApp({
   resolve: (name) => require(`../pages/${name}.svelte`), // [!code ii]
@@ -117,7 +117,7 @@ createInertiaApp({
 
 You should also consider using cache busting to force browsers to load the latest version of your assets. To accomplish this, add the following configuration to your webpack configuration file.
 
-```js
+```js twoslash
 // webpack.config.js
 module.exports = {
   //...

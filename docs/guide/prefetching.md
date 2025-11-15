@@ -9,7 +9,7 @@ To prefetch data for a page, you can add the `prefetch` prop to the Inertia link
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -21,7 +21,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -33,7 +33,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia } from '@inertiajs/svelte'
 </script>
@@ -48,7 +48,7 @@ By default, data is cached for 30 seconds before being evicted. You may customiz
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -62,7 +62,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -82,7 +82,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia } from '@inertiajs/svelte'
 </script>
@@ -99,7 +99,7 @@ Instead of prefetching on hover, you can also start prefetching on `mousedown` b
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -111,7 +111,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -123,7 +123,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia } from '@inertiajs/svelte'
 </script>
@@ -138,7 +138,7 @@ If you're confident that the user will visit a page next, you can prefetch the d
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -150,7 +150,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -162,7 +162,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia } from '@inertiajs/svelte'
 </script>
@@ -177,7 +177,7 @@ You can also combine prefetch strategies by passing an array of values to the `p
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -189,7 +189,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -201,7 +201,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia } from '@inertiajs/svelte'
 </script>
@@ -217,7 +217,7 @@ You can prefetch data programmatically using `router.prefetch`. This method's si
 
 When the `cacheFor` option is not specified, it defaults to 30 seconds.
 
-```js
+```js twoslash
 router.prefetch('/users', { method: 'get', data: { page: 2 } })
 
 router.prefetch(
@@ -232,7 +232,7 @@ Inertia also provides a `usePrefetch` hook that allows you to track the prefetch
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { usePrefetch } from '@inertiajs/vue3'
 
 const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch()
@@ -240,7 +240,7 @@ const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch()
 
 == React
 
-```js
+```js twoslash
 import { usePrefetch } from '@inertiajs/react'
 
 const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch()
@@ -248,7 +248,7 @@ const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch()
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { usePrefetch } from '@inertiajs/svelte'
 
 const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch()
@@ -262,7 +262,7 @@ You can also pass visit options when you need to differentiate between different
 
 == Vue
 
-```js
+```js twoslash
 import { usePrefetch } from '@inertiajs/vue3'
 
 const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
@@ -272,7 +272,7 @@ const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
 
 == React
 
-```js
+```js twoslash
 import { usePrefetch } from '@inertiajs/react'
 
 const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
@@ -282,7 +282,7 @@ const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { usePrefetch } from '@inertiajs/svelte'
 
 const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
@@ -304,7 +304,7 @@ To tag cached data, pass a `cacheTags` prop to your `Link` component.
 
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -319,7 +319,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 <Link href="/users" prefetch cacheTags="users">Users</Link>
@@ -328,7 +328,7 @@ import { Link } from '@inertiajs/react'
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 import {inertia} from '@inertiajs/svelte'
 
 <a href="/users" use:inertia={{ prefetch: true, cacheTags: 'users' }}>Users</a>
@@ -343,7 +343,7 @@ import {inertia} from '@inertiajs/svelte'
 
 When prefetching programmatically, pass `cacheTags` in the third argument to `router.prefetch`.
 
-```js
+```js twoslash
 router.prefetch('/users', {}, { cacheTags: 'users' })
 router.prefetch('/dashboard', {}, { cacheTags: ['dashboard', 'stats'] })
 ```
@@ -352,7 +352,7 @@ router.prefetch('/dashboard', {}, { cacheTags: ['dashboard', 'stats'] })
 
 You can manually flush the prefetch cache by calling `router.flushAll` to remove all cached data, or `router.flush` to remove cache for a specific page.
 
-```js
+```js twoslash
 // Flush all prefetch cache
 router.flushAll()
 
@@ -368,7 +368,7 @@ flush()
 
 For more granular control, you can flush cached data by their tags using `router.flushByCacheTags`. This removes any cached response that contains _any_ of the specified tags.
 
-```js
+```js twoslash
 // Flush all responses tagged with 'users'
 router.flushByCacheTags('users')
 
@@ -384,7 +384,7 @@ By default, Inertia does not automatically flush the prefetch cache when you nav
 
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('navigate', () => router.flushAll())
@@ -392,7 +392,7 @@ router.on('navigate', () => router.flushAll())
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.on('navigate', () => router.flushAll())
@@ -400,7 +400,7 @@ router.on('navigate', () => router.flushAll())
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('navigate', () => router.flushAll())
@@ -418,7 +418,7 @@ To automatically invalidate caches when making requests, pass an `invalidateCach
 
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Form } from '@inertiajs/vue3'
 </script>
@@ -438,7 +438,7 @@ import { Form } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Form } from '@inertiajs/react'
 
 export default () => (
@@ -456,7 +456,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { Form } from '@inertiajs/svelte'
 </script>
@@ -480,7 +480,7 @@ When using the `useForm` helper, you can include `invalidateCacheTags` in the vi
 
 == Vue
 
-```vue
+```vue twoslash
 import { useForm } from '@inertiajs/vue3' const form = useForm({ name: '',
 email: '', }) const submit = () => { form.post('/users', { invalidateCacheTags:
 ['users', 'dashboard'] }) }
@@ -488,7 +488,7 @@ email: '', }) const submit = () => { form.post('/users', { invalidateCacheTags:
 
 == React
 
-```jsx
+```jsx twoslash
 import { useForm } from '@inertiajs/react'
 
 const { data, setData, post } = useForm({
@@ -506,18 +506,18 @@ function submit(e) {
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 import { useForm } from '@inertiajs/svelte'
 
 const form = useForm({
-  name: '',
-  email: '',
+ name: '',
+ email: '',
 })
 
 function submit() {
-  $form.post('/users', {
-    invalidateCacheTags: ['users', 'dashboard']
-  })
+ $form.post('/users', {
+   invalidateCacheTags: ['users', 'dashboard']
+ })
 }
 ```
 
@@ -525,7 +525,7 @@ function submit() {
 
 You can also invalidate cache tags with programmatic visits by including `invalidateCacheTags` in the options.
 
-```js
+```js twoslash
 router.delete(
   `/users/${userId}`,
   {},
@@ -548,7 +548,7 @@ The first value in the array represents the number of seconds the cache is consi
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -560,7 +560,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -572,7 +572,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia } from '@inertiajs/svelte'
 </script>

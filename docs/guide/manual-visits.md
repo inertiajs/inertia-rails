@@ -5,7 +5,7 @@ In addition to [creating links](/guide/links.md), it's also possible to manually
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.visit(url, {
@@ -42,7 +42,7 @@ router.visit(url, {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.visit(url, {
@@ -79,7 +79,7 @@ router.visit(url, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.visit(url, {
@@ -121,7 +121,7 @@ However, it's generally more convenient to use one of Inertia's shortcut request
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.get(url, data, options)
@@ -134,7 +134,7 @@ router.reload(options) // Uses the current URL
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.get(url, data, options)
@@ -147,7 +147,7 @@ router.reload(options) // Uses the current URL
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.get(url, data, options)
@@ -169,7 +169,7 @@ When making manual visits, you may use the `method` option to set the request's 
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.visit(url, { method: 'post' })
@@ -177,7 +177,7 @@ router.visit(url, { method: 'post' })
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.visit(url, { method: 'post' })
@@ -185,7 +185,7 @@ router.visit(url, { method: 'post' })
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.visit(url, { method: 'post' })
@@ -203,7 +203,7 @@ You may use the `data` option to add data to the request.
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.visit('/users', {
@@ -217,7 +217,7 @@ router.visit('/users', {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.visit('/users', {
@@ -231,7 +231,7 @@ router.visit('/users', {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.visit('/users', {
@@ -250,7 +250,7 @@ For convenience, the `get()`, `post()`, `put()`, and `patch()` methods all accep
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.post('/users', {
@@ -261,7 +261,7 @@ router.post('/users', {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.post('/users', {
@@ -272,7 +272,7 @@ router.post('/users', {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.post('/users', {
@@ -290,7 +290,7 @@ The `headers` option allows you to add custom headers to a request.
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.post('/users', data, {
@@ -302,7 +302,7 @@ router.post('/users', data, {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.post('/users', data, {
@@ -314,7 +314,7 @@ router.post('/users', data, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.post('/users', data, {
@@ -336,7 +336,7 @@ You may configure a `visitOptions` callback when [initializing your Inertia app]
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { createApp, h } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
 
@@ -357,7 +357,7 @@ createInertiaApp({
 
 == React
 
-```js
+```js twoslash
 import { createInertiaApp } from '@inertiajs/react'
 import { createRoot } from 'react-dom/client'
 
@@ -378,7 +378,7 @@ createInertiaApp({
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { createInertiaApp } from '@inertiajs/svelte'
 
 createInertiaApp({
@@ -405,7 +405,7 @@ When making visits / requests that include files, Inertia will automatically con
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.post('/companies', data, {
@@ -415,7 +415,7 @@ router.post('/companies', data, {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.post('/companies', data, {
@@ -425,7 +425,7 @@ router.post('/companies', data, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.post('/companies', data, {
@@ -444,7 +444,7 @@ When making visits, Inertia automatically adds a new entry into the browser hist
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.get('/users', { search: 'John' }, { replace: true })
@@ -452,7 +452,7 @@ router.get('/users', { search: 'John' }, { replace: true })
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.get('/users', { search: 'John' }, { replace: true })
@@ -460,7 +460,7 @@ router.get('/users', { search: 'John' }, { replace: true })
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.get('/users', { search: 'John' }, { replace: true })
@@ -478,7 +478,7 @@ You can use the `router.push` and `router.replace` method to make client-side vi
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.push({
@@ -498,7 +498,7 @@ router.push({
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.push({
@@ -518,7 +518,7 @@ router.push({
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.push({
@@ -547,7 +547,7 @@ The `errorBag` option allows you to specify which error bag to use when handling
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.push({ url: '/users', component: 'Users' })
@@ -559,7 +559,7 @@ router.replace({
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.push({ url: '/users', component: 'Users' })
@@ -571,7 +571,7 @@ router.replace({
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.push({ url: '/users', component: 'Users' })
@@ -596,7 +596,7 @@ Inertia provides three helper methods for updating page props without making ser
 
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 // Replace a prop value...
 router.replaceProp('user.name', 'Jane Smith')
@@ -608,7 +608,7 @@ router.prependToProp('tags', 'urgent')
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 // Replace a prop value...
 router.replaceProp('user.name', 'Jane Smith')
@@ -620,7 +620,7 @@ router.prependToProp('tags', 'urgent')
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 // Replace a prop value...
 router.replaceProp('user.name', 'Jane Smith')
@@ -638,7 +638,7 @@ All three methods support dot notation for nested props and can accept a callbac
 
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.prependToProp('notifications', (current, props) => {
@@ -652,7 +652,7 @@ router.prependToProp('notifications', (current, props) => {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.prependToProp('notifications', (current, props) => {
@@ -666,7 +666,7 @@ router.prependToProp('notifications', (current, props) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.prependToProp('notifications', (current, props) => {
@@ -693,7 +693,7 @@ You can instruct Inertia to preserve the component's state when using the `get` 
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.get('/users', { search: 'John' }, { preserveState: true })
@@ -701,7 +701,7 @@ router.get('/users', { search: 'John' }, { preserveState: true })
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.get('/users', { search: 'John' }, { preserveState: true })
@@ -709,7 +709,7 @@ router.get('/users', { search: 'John' }, { preserveState: true })
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.get('/users', { search: 'John' }, { preserveState: true })
@@ -724,7 +724,7 @@ If you'd like to only preserve state if the response includes validation errors,
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.get('/users', { search: 'John' }, { preserveState: 'errors' })
@@ -732,7 +732,7 @@ router.get('/users', { search: 'John' }, { preserveState: 'errors' })
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.get('/users', { search: 'John' }, { preserveState: 'errors' })
@@ -740,7 +740,7 @@ router.get('/users', { search: 'John' }, { preserveState: 'errors' })
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.get('/users', { search: 'John' }, { preserveState: 'errors' })
@@ -753,7 +753,7 @@ You can also lazily evaluate the `preserveState` option based on the response by
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.post('/users', data, {
@@ -763,7 +763,7 @@ router.post('/users', data, {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.post('/users', data, {
@@ -773,7 +773,7 @@ router.post('/users', data, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.post('/users', data, {
@@ -792,7 +792,7 @@ You can disable this behavior by setting the `preserveScroll` option to `true`.
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.visit(url, { preserveScroll: true })
@@ -800,7 +800,7 @@ router.visit(url, { preserveScroll: true })
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.visit(url, { preserveScroll: true })
@@ -808,7 +808,7 @@ router.visit(url, { preserveScroll: true })
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.visit(url, { preserveScroll: true })
@@ -821,7 +821,7 @@ If you'd like to only preserve the scroll position if the response includes vali
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.visit(url, { preserveScroll: 'errors' })
@@ -829,7 +829,7 @@ router.visit(url, { preserveScroll: 'errors' })
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.visit(url, { preserveScroll: 'errors' })
@@ -837,7 +837,7 @@ router.visit(url, { preserveScroll: 'errors' })
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.visit(url, { preserveScroll: 'errors' })
@@ -850,7 +850,7 @@ You can also lazily evaluate the `preserveScroll` option based on the response b
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.post('/users', data, {
@@ -860,7 +860,7 @@ router.post('/users', data, {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.post('/users', data, {
@@ -870,7 +870,7 @@ router.post('/users', data, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.post('/users', data, {
@@ -889,7 +889,7 @@ The `only` option allows you to request a subset of the props (data) from the se
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.get('/users', { search: 'John' }, { only: ['users'] })
@@ -897,7 +897,7 @@ router.get('/users', { search: 'John' }, { only: ['users'] })
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.get('/users', { search: 'John' }, { only: ['users'] })
@@ -905,7 +905,7 @@ router.get('/users', { search: 'John' }, { only: ['users'] })
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.get('/users', { search: 'John' }, { only: ['users'] })
@@ -924,7 +924,7 @@ You may enable [View transitions](/guide/view-transitions) for a visit by settin
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.visit('/another-page', { viewTransition: true })
@@ -932,7 +932,7 @@ router.visit('/another-page', { viewTransition: true })
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.visit('/another-page', { viewTransition: true })
@@ -940,7 +940,7 @@ router.visit('/another-page', { viewTransition: true })
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.visit('/another-page', { viewTransition: true })
@@ -955,7 +955,7 @@ You can cancel a visit using a cancel token, which Inertia automatically generat
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.post('/users', data, {
@@ -968,7 +968,7 @@ this.cancelToken.cancel()
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.post('/users', data, {
@@ -981,7 +981,7 @@ this.cancelToken.cancel()
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.post('/users', data, {
@@ -1003,7 +1003,7 @@ In addition to Inertia's [global events](/guide/events.md), Inertia also provide
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.post('/users', data, {
@@ -1019,7 +1019,7 @@ router.post('/users', data, {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.post('/users', data, {
@@ -1035,7 +1035,7 @@ router.post('/users', data, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.post('/users', data, {
@@ -1056,7 +1056,7 @@ Returning `false` from the `onBefore()` callback will cause the visit to be canc
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.delete(`/users/${user.id}`, {
@@ -1066,7 +1066,7 @@ router.delete(`/users/${user.id}`, {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.delete(`/users/${user.id}`, {
@@ -1076,7 +1076,7 @@ router.delete(`/users/${user.id}`, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.delete(`/users/${user.id}`, {
@@ -1091,7 +1091,7 @@ It's also possible to return a promise from the `onSuccess()` and `onError()` ca
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.post(url, {
@@ -1106,7 +1106,7 @@ router.post(url, {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.post(url, {
@@ -1121,7 +1121,7 @@ router.post(url, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.post(url, {

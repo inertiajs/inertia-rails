@@ -16,7 +16,7 @@ While it's possible to make classic HTML form submissions with Inertia, it's not
 
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Form } from '@inertiajs/vue3'
 </script>
@@ -32,7 +32,7 @@ import { Form } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Form } from '@inertiajs/react'
 
 export default () => (
@@ -46,7 +46,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { Form } from '@inertiajs/svelte'
 </script>
@@ -68,19 +68,19 @@ The component also supports nested data structures, file uploads, and dotted key
 
 == Vue
 
-```vue
+```vue twoslash
 <Form action="/reports" method="post">
-  <input type="text" name="name" />
-  <textarea name="report[description]"></textarea>
-  <input type="text" name="report[tags][]" />
-  <input type="file" name="documents" multiple />
-  <button type="submit">Create Report</button>
+ <input type="text" name="name" />
+ <textarea name="report[description]"></textarea>
+ <input type="text" name="report[tags][]" />
+ <input type="file" name="documents" multiple />
+ <button type="submit">Create Report</button>
 </Form>
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 <Form action="/reports" method="post">
   <input type="text" name="name" />
   <textarea name="report[description]"></textarea>
@@ -92,7 +92,7 @@ The component also supports nested data structures, file uploads, and dotted key
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <Form action="/reports" method="post">
   <input type="text" name="name" />
   <textarea name="report[description]"></textarea>
@@ -110,20 +110,20 @@ You can pass a `transform` prop to modify the form data before submission. This 
 
 == Vue
 
-```vue
+```vue twoslash
 <Form
   action="/posts"
   method="post"
   :transform="(data) => ({ ...data, user_id: 123 })"
 >
-  <input type="text" name="title" />
-  <button type="submit">Create Post</button>
+ <input type="text" name="title" />
+ <button type="submit">Create Post</button>
 </Form>
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 <Form
   action="/posts"
   method="post"
@@ -136,7 +136,7 @@ You can pass a `transform` prop to modify the form data before submission. This 
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <Form
   action="/posts"
   method="post"
@@ -157,7 +157,7 @@ You can set default values for form inputs using standard HTML attributes. Use <
 
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <Form action="/users" method="post">
     <input type="text" name="name" defaultValue="John Doe" />
@@ -177,7 +177,7 @@ You can set default values for form inputs using standard HTML attributes. Use <
 
 == React
 
-```jsx
+```jsx twoslash
 <Form action="/users" method="post">
   <input type="text" name="name" defaultValue="John Doe" />
 
@@ -195,7 +195,7 @@ You can set default values for form inputs using standard HTML attributes. Use <
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <Form action="/users" method="post">
   <input type="text" name="name" value="John Doe" />
 
@@ -213,7 +213,7 @@ You can set default values for form inputs using standard HTML attributes. Use <
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <Form action="/users" method="post">
   <input type="text" name="name" defaultValue="John Doe" />
 
@@ -243,7 +243,7 @@ The `<Form>` component exposes reactive state and helper methods through its def
 
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <Form
     action="/users"
@@ -281,7 +281,7 @@ The `<Form>` component exposes reactive state and helper methods through its def
 
 == React
 
-```jsx
+```jsx twoslash
 <Form action="/users" method="post">
   {({
     errors,
@@ -315,7 +315,7 @@ The `<Form>` component exposes reactive state and helper methods through its def
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <Form
   action="/users"
   method="post"
@@ -351,7 +351,7 @@ The `<Form>` component exposes reactive state and helper methods through its def
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <Form action="/users" method="post">
   {#snippet children({
     errors,
@@ -401,16 +401,16 @@ The `errors` object uses dotted notation for nested fields, allowing you to disp
 
 == Vue
 
-```vue
+```vue twoslash
 <Form action="/users" method="post" #default="{ errors }">
-  <input type="text" name="user.name" />
-  <div v-if="errors['user.name']">{{ errors['user.name'] }}</div>
+ <input type="text" name="user.name" />
+ <div v-if="errors['user.name']">{{ errors['user.name'] }}</div>
 </Form>
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 <Form action="/users" method="post">
   {({ errors }) => (
     <>
@@ -423,7 +423,7 @@ The `errors` object uses dotted notation for nested fields, allowing you to disp
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <Form action="/users" method="post" let:errors>
   <input type="text" name="user.name" />
   {#if errors['user.name']}
@@ -434,7 +434,7 @@ The `errors` object uses dotted notation for nested fields, allowing you to disp
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <Form action="/users" method="post">
   {#snippet children({ errors })}
     <input type="text" name="user.name" />
@@ -455,7 +455,7 @@ In addition to `action` and `method`, the `<Form>` component accepts several pro
 
 == Vue
 
-```vue
+```vue twoslash
 <Form
   action="/profile"
   method="put"
@@ -476,8 +476,8 @@ In addition to `action` and `method`, the `<Form>` component accepts several pro
     reset: ['page'],
   }"
 >
-  <input type="text" name="name" />
-  <button type="submit">Update</button>
+ <input type="text" name="name" />
+ <button type="submit">Update</button>
 </Form>
 ```
 
@@ -487,7 +487,7 @@ When setting the `disable-while-processing` prop, the `Form` component will add 
 
 == React
 
-```jsx
+```jsx twoslash
 <Form
   action="/profile"
   method="put"
@@ -519,7 +519,7 @@ When setting the `disableWhileProcessing` prop, the `Form` component will add th
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <Form
   action="/profile"
   method="put"
@@ -587,7 +587,7 @@ The `<Form>` component emits all the standard visit [events](/guide/events) for 
 
 == Vue
 
-```vue
+```vue twoslash
 <Form
   action="/users"
   method="post"
@@ -600,14 +600,14 @@ The `<Form>` component emits all the standard visit [events](/guide/events) for 
   @cancel="handleCancel"
   @cancelToken="handleCancelToken"
 >
-  <input type="text" name="name" />
-  <button type="submit">Create User</button>
+ <input type="text" name="name" />
+ <button type="submit">Create User</button>
 </Form>
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 <Form
   action="/users"
   method="post"
@@ -627,7 +627,7 @@ The `<Form>` component emits all the standard visit [events](/guide/events) for 
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <Form
   action="/users"
   method="post"
@@ -647,7 +647,7 @@ The `<Form>` component emits all the standard visit [events](/guide/events) for 
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <Form
   action="/users"
   method="post"
@@ -679,43 +679,43 @@ The `Form` component provides several attributes that allow you to reset the for
 
 == Vue
 
-```vue
+```vue twoslash
 <!-- Reset the entire form on success -->
 <Form action="/users" method="post" resetOnSuccess>
-  <input type="text" name="name" />
-  <input type="email" name="email" />
-  <button type="submit">Submit</button>
+ <input type="text" name="name" />
+ <input type="email" name="email" />
+ <button type="submit">Submit</button>
 </Form>
 
 <!-- Reset specific fields on success -->
 <Form action="/users" method="post" :resetOnSuccess="['name']">
-  <input type="text" name="name" />
-  <input type="email" name="email" />
-  <button type="submit">Submit</button>
+ <input type="text" name="name" />
+ <input type="email" name="email" />
+ <button type="submit">Submit</button>
 </Form>
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 // Reset the entire form on success
 <Form action="/users" method="post" resetOnSuccess>
-  <input type="text" name="name" />
-  <input type="email" name="email" />
-  <button type="submit">Submit</button>
+ <input type="text" name="name" />
+ <input type="email" name="email" />
+ <button type="submit">Submit</button>
 </Form>
 
 // Reset specific fields on success
 <Form action="/users" method="post" resetOnSuccess={['name']}>
-  <input type="text" name="name" />
-  <input type="email" name="email" />
-  <button type="submit">Submit</button>
+ <input type="text" name="name" />
+ <input type="email" name="email" />
+ <button type="submit">Submit</button>
 </Form>
 ```
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <!-- Reset the entire form on success -->
 <Form action="/users" method="post" resetOnSuccess>
   <input type="text" name="name" />
@@ -739,43 +739,43 @@ The `Form` component provides several attributes that allow you to reset the for
 
 == Vue
 
-```vue
+```vue twoslash
 <!-- Reset the entire form on success -->
 <Form action="/users" method="post" resetOnError>
-  <input type="text" name="name" />
-  <input type="email" name="email" />
-  <button type="submit">Submit</button>
+ <input type="text" name="name" />
+ <input type="email" name="email" />
+ <button type="submit">Submit</button>
 </Form>
 
 <!-- Reset specific fields on success -->
 <Form action="/users" method="post" :resetOnError="['name']">
-  <input type="text" name="name" />
-  <input type="email" name="email" />
-  <button type="submit">Submit</button>
+ <input type="text" name="name" />
+ <input type="email" name="email" />
+ <button type="submit">Submit</button>
 </Form>
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 // Reset the entire form on success
 <Form action="/users" method="post" resetOnError>
-  <input type="text" name="name" />
-  <input type="email" name="email" />
-  <button type="submit">Submit</button>
+ <input type="text" name="name" />
+ <input type="email" name="email" />
+ <button type="submit">Submit</button>
 </Form>
 
 // Reset specific fields on success
 <Form action="/users" method="post" resetOnError={['name']}>
-  <input type="text" name="name" />
-  <input type="email" name="email" />
-  <button type="submit">Submit</button>
+ <input type="text" name="name" />
+ <input type="email" name="email" />
+ <button type="submit">Submit</button>
 </Form>
 ```
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <!-- Reset the entire form on success -->
 <Form action="/users" method="post" resetOnError>
   <input type="text" name="name" />
@@ -803,17 +803,17 @@ The `Form` component provides the `setDefaultsOnSuccess` attribute to set the cu
 
 == Vue
 
-```vue
+```vue twoslash
 <Form action="/users" method="post" setDefaultsOnSuccess>
-  <input type="text" name="name" />
-  <input type="email" name="email" />
-  <button type="submit">Submit</button>
+ <input type="text" name="name" />
+ <input type="email" name="email" />
+ <button type="submit">Submit</button>
 </Form>
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 <Form action="/users" method="post" setDefaultsOnSuccess>
   <input type="text" name="name" />
   <input type="email" name="email" />
@@ -823,7 +823,7 @@ The `Form` component provides the `setDefaultsOnSuccess` attribute to set the cu
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <Form action="/users" method="post" setDefaultsOnSuccess>
   <input type="text" name="name" />
   <input type="email" name="email" />
@@ -841,18 +841,18 @@ The `<Form>` component supports dotted key notation for creating nested objects 
 
 == Vue
 
-```vue
+```vue twoslash
 <Form action="/users" method="post">
-  <input type="text" name="user.name" />
-  <input type="text" name="user.skills[]" />
-  <input type="text" name="address.street" />
-  <button type="submit">Submit</button>
+ <input type="text" name="user.name" />
+ <input type="text" name="user.skills[]" />
+ <input type="text" name="address.street" />
+ <button type="submit">Submit</button>
 </Form>
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 <Form action="/users" method="post">
   <input type="text" name="user.name" />
   <input type="text" name="user.skills[]" />
@@ -863,7 +863,7 @@ The `<Form>` component supports dotted key notation for creating nested objects 
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <Form action="/users" method="post">
   <input type="text" name="user.name" />
   <input type="text" name="user.skills[]" />
@@ -894,17 +894,17 @@ If you need literal dots in your field names (not as nested object separators), 
 
 == Vue
 
-```vue
+```vue twoslash
 <Form action="/config" method="post">
-  <input type="text" name="app\.name" />
-  <input type="text" name="settings.theme\.mode" />
-  <button type="submit">Save</button>
+ <input type="text" name="app\.name" />
+ <input type="text" name="settings.theme\.mode" />
+ <button type="submit">Save</button>
 </Form>
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 <Form action="/config" method="post">
   <input type="text" name="app\.name" />
   <input type="text" name="settings.theme\.mode" />
@@ -914,7 +914,7 @@ If you need literal dots in your field names (not as nested object separators), 
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <Form action="/config" method="post">
   <input type="text" name="app\.name" />
   <input type="text" name="settings.theme\.mode" />
@@ -944,7 +944,7 @@ You can access the form's methods programmatically using refs. This provides an 
 
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { ref } from 'vue'
 import { Form } from '@inertiajs/vue3'
@@ -968,7 +968,7 @@ const handleSubmit = () => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { useRef } from 'react'
 import { Form } from '@inertiajs/react'
 
@@ -994,7 +994,7 @@ export default function CreateUser() {
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { Form } from '@inertiajs/svelte'
 
@@ -1025,7 +1025,7 @@ In addition to the `<Form>` component, Inertia also provides a `useForm` helper 
 
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { useForm } from '@inertiajs/vue3'
 
@@ -1054,7 +1054,7 @@ const form = useForm({
 
 == React
 
-```jsx
+```jsx twoslash
 import { useForm } from '@inertiajs/react'
 
 const { data, setData, post, processing, errors } = useForm({
@@ -1097,7 +1097,7 @@ return (
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   import { useForm } from '@inertiajs/svelte'
 
@@ -1128,7 +1128,7 @@ return (
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { useForm } from '@inertiajs/svelte'
 
@@ -1165,7 +1165,7 @@ To submit the form, you may use the `get`, `post`, `put`, `patch` and `delete` m
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 form.submit(method, url, options)
 form.get(url, options)
 form.post(url, options)
@@ -1176,7 +1176,7 @@ form.delete(url, options)
 
 == React
 
-```jsx
+```jsx twoslash
 const { submit, get, post, put, patch, delete: destroy } = useForm({ ... })
 
 submit(method, url, options)
@@ -1189,7 +1189,7 @@ destroy(url, options)
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 $form.submit(method, url, options)
 $form.get(url, options)
 $form.post(url, options)
@@ -1205,7 +1205,7 @@ The submit methods support all of the typical [visit options](/guide/manual-visi
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 form.post('/profile', {
   preserveScroll: true,
   onSuccess: () => form.reset('password'),
@@ -1214,7 +1214,7 @@ form.post('/profile', {
 
 == React
 
-```jsx
+```jsx twoslash
 const { post, reset } = useForm({ ... })
 
 post('/profile', {
@@ -1225,7 +1225,7 @@ onSuccess: () => reset('password'),
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 $form.post('/profile', {
   preserveScroll: true,
   onSuccess: () => $form.reset('password'),
@@ -1239,7 +1239,7 @@ If you need to modify the form data before it's sent to the server, you can do s
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 form
   .transform((data) => ({
     ...data,
@@ -1250,18 +1250,18 @@ form
 
 == React
 
-```jsx
+```jsx twoslash
 const { transform } = useForm({ ... })
 
 transform((data) => ({
-  ...data,
-  remember: data.remember ? 'on' : '',
+ ...data,
+ remember: data.remember ? 'on' : '',
 }))
 ```
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 $form
   .transform((data) => ({
     ...data,
@@ -1277,13 +1277,13 @@ You can use the `processing` property to track if a form is currently being subm
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <button type="submit" :disabled="form.processing">Submit</button>
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 const { processing } = useForm({ ... })
 
 <button type="submit" disabled={processing}>Submit</button>
@@ -1291,7 +1291,7 @@ const { processing } = useForm({ ... })
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <button type="submit" disabled={$form.processing}>Submit</button>
 ```
 
@@ -1302,27 +1302,27 @@ If your form is uploading files, the current progress event is available via the
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <progress v-if="form.progress" :value="form.progress.percentage" max="100">
-  {{ form.progress.percentage }}%
+ {{ form.progress.percentage }}%
 </progress>
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 const { progress } = useForm({ ... })
 
 {progress && (
-  <progress value={progress.percentage} max="100">
-    {progress.percentage}%
-  </progress>
+ <progress value={progress.percentage} max="100">
+   {progress.percentage}%
+ </progress>
 )}
 ```
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 {#if $form.progress}
   <progress value={$form.progress.percentage} max="100">
     {$form.progress.percentage}%
@@ -1339,13 +1339,13 @@ If there are form validation errors, they are available via the `errors` propert
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <div v-if="form.errors.email">{{ form.errors.email }}</div>
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 const { errors } = useForm({ ... })
 
 {errors.email && <div>{errors.email}</div>}
@@ -1353,7 +1353,7 @@ const { errors } = useForm({ ... })
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 {#if $form.errors.email}
   <div>{$form.errors.email}</div>
 {/if}
@@ -1369,7 +1369,7 @@ To determine if a form has any errors, you may use the `hasErrors` property. To 
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 // Clear all errors...
 form.clearErrors()
 
@@ -1379,7 +1379,7 @@ form.clearErrors('field', 'anotherfield')
 
 == React
 
-```jsx
+```jsx twoslash
 const { clearErrors } = useForm({ ... })
 
 // Clear all errors...
@@ -1391,7 +1391,7 @@ clearErrors('field', 'anotherfield')
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // Clear all errors...
 $form.clearErrors()
 
@@ -1406,7 +1406,7 @@ If you're using a client-side input validation libraries or do client-side valid
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 // Set a single error...
 form.setError('field', 'Your error message.')
 
@@ -1419,7 +1419,7 @@ form.setError({
 
 == React
 
-```jsx
+```jsx twoslash
 const { setError } = useForm({ ... })
 
 // Set a single error...
@@ -1427,14 +1427,14 @@ setError('field', 'Your error message.');
 
 // Set multiple errors at once...
 setError({
-  foo: 'Your error message for the foo field.',
-  bar: 'Some other error for the bar field.'
+ foo: 'Your error message for the foo field.',
+ bar: 'Some other error for the bar field.'
 });
 ```
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // Set a single error
 $form.setError('field', 'Your error message.')
 
@@ -1461,7 +1461,7 @@ To reset the form's values back to their default values, you can use the `reset(
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 // Reset the form...
 form.reset()
 
@@ -1471,7 +1471,7 @@ form.reset('field', 'anotherfield')
 
 == React
 
-```jsx
+```jsx twoslash
 const { reset } = useForm({ ... })
 
 // Reset the form...
@@ -1483,7 +1483,7 @@ reset('field', 'anotherfield')
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // Reset the form...
 $form.reset()
 
@@ -1501,7 +1501,7 @@ Sometimes, you may want to restore your form fields to their default values and 
 
 == Vue
 
-```js
+```js twoslash
 // Reset the form and clear all errors...
 form.resetAndClearErrors()
 
@@ -1511,7 +1511,7 @@ form.resetAndClearErrors('field', 'anotherfield')
 
 == React
 
-```jsx
+```jsx twoslash
 const { resetAndClearErrors } = useForm({ ... })
 
 // Reset the form and clear all errors...
@@ -1523,7 +1523,7 @@ resetAndClearErrors('field', 'anotherfield')
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // Reset the form and clear all errors...
 $form.resetAndClearErrors()
 
@@ -1540,7 +1540,7 @@ If your form's default values become outdated, you can use the `defaults()` meth
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 // Set the form's current values as the new defaults...
 form.defaults()
 
@@ -1556,7 +1556,7 @@ form.defaults({
 
 == React
 
-```jsx
+```jsx twoslash
 const { setDefaults } = useForm({ ... })
 
 // Set the form's current values as the new defaults...
@@ -1567,14 +1567,14 @@ setDefaults('email', 'updated-default@example.com')
 
 // Update the default value of multiple fields...
 setDefaults({
-  name: 'Updated Example',
-  email: 'updated-default@example.com',
+ name: 'Updated Example',
+ email: 'updated-default@example.com',
 })
 ```
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // Set the form's current values as the new defaults...
 $form.defaults()
 
@@ -1597,13 +1597,13 @@ To determine if a form has any changes, you may use the `isDirty` property.
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <div v-if="form.isDirty">There are unsaved form changes.</div>
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 const { isDirty } = useForm({ ... })
 
 {isDirty && <div>There are unsaved form changes.</div>}
@@ -1611,7 +1611,7 @@ const { isDirty } = useForm({ ... })
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 {#if $form.isDirty}
   <div>There are unsaved form changes.</div>
 {/if}
@@ -1626,13 +1626,13 @@ To cancel a form submission, use the `cancel()` method.
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 form.cancel()
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 const { cancel } = useForm({ ... })
 
 cancel()
@@ -1640,7 +1640,7 @@ cancel()
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 $form.cancel()
 ```
 
@@ -1653,7 +1653,7 @@ To instruct Inertia to store a form's data and errors in [history state](/guide/
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { useForm } from '@inertiajs/vue3'
 
 const form = useForm('CreateUser', data)
@@ -1662,7 +1662,7 @@ const form = useForm(`EditUser:${user.id}`, data)
 
 == React
 
-```js
+```js twoslash
 import { useForm } from '@inertiajs/react'
 
 const form = useForm('CreateUser', data)
@@ -1671,7 +1671,7 @@ const form = useForm(`EditUser:${user.id}`, data)
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { useForm } from '@inertiajs/svelte'
 
 const form = useForm('CreateUser', data)
@@ -1722,7 +1722,7 @@ It's also possible to submit forms manually using Inertia's `router` methods dir
 
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { reactive } from 'vue'
 import { router } from '@inertiajs/vue3'
@@ -1753,7 +1753,7 @@ function submit() {
 
 == React
 
-```jsx
+```jsx twoslash
 import { useState } from 'react'
 import { router } from '@inertiajs/react'
 
@@ -1798,7 +1798,7 @@ export default function Edit() {
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   import { router } from '@inertiajs/svelte'
 
@@ -1829,7 +1829,7 @@ export default function Edit() {
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { router } from '@inertiajs/svelte'
 

@@ -1,7 +1,10 @@
 // https://vitepress.dev/guide/custom-theme
+import TwoslashFloatingVue from '@shikijs/vitepress-twoslash/client'
+import '@shikijs/vitepress-twoslash/style.css'
 import type { Theme } from 'vitepress'
 import { enhanceAppWithTabs } from 'vitepress-plugin-tabs/client'
 import DefaultTheme from 'vitepress/theme'
+
 import { h } from 'vue'
 import {
   AvailableSince,
@@ -23,6 +26,7 @@ export default {
     })
   },
   enhanceApp({ app, router, siteData }) {
+    app.use(TwoslashFloatingVue)
     enhanceAppWithTabs(app)
     app.component('AvailableSince', AvailableSince)
     app.component('Opt', Opt)

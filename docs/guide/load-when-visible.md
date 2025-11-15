@@ -7,7 +7,7 @@ The `WhenVisible` component accepts a `data` prop that specifies the key of the 
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { WhenVisible } from '@inertiajs/vue3'
 </script>
@@ -26,7 +26,7 @@ import { WhenVisible } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { WhenVisible } from '@inertiajs/react'
 
 export default () => (
@@ -38,7 +38,7 @@ export default () => (
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   import { WhenVisible } from '@inertiajs/svelte'
   export let permissions
@@ -57,7 +57,7 @@ export default () => (
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { WhenVisible } from '@inertiajs/svelte'
 
@@ -82,7 +82,7 @@ If you'd like to load multiple props when an element becomes visible, you can pr
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { WhenVisible } from '@inertiajs/vue3'
 </script>
@@ -99,7 +99,7 @@ import { WhenVisible } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { WhenVisible } from '@inertiajs/react'
 
 export default () => (
@@ -111,7 +111,7 @@ export default () => (
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   import { WhenVisible } from '@inertiajs/svelte'
 
@@ -130,7 +130,7 @@ export default () => (
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { WhenVisible } from '@inertiajs/svelte'
 
@@ -155,7 +155,7 @@ If you'd like to start loading data before the element is visible, you can provi
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { WhenVisible } from '@inertiajs/vue3'
 </script>
@@ -175,7 +175,7 @@ import { WhenVisible } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { WhenVisible } from '@inertiajs/react'
 
 export default () => (
@@ -187,7 +187,7 @@ export default () => (
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   import { WhenVisible } from '@inertiajs/svelte'
 
@@ -207,7 +207,7 @@ export default () => (
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { WhenVisible } from '@inertiajs/svelte'
 
@@ -234,7 +234,7 @@ By default, the `WhenVisible` component wraps the fallback template in a `div` e
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { WhenVisible } from '@inertiajs/vue3'
 </script>
@@ -248,7 +248,7 @@ import { WhenVisible } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { WhenVisible } from '@inertiajs/react'
 
 export default () => (
@@ -260,7 +260,7 @@ export default () => (
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   import { WhenVisible } from '@inertiajs/svelte'
 
@@ -274,7 +274,7 @@ export default () => (
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { WhenVisible } from '@inertiajs/svelte'
 
@@ -299,7 +299,7 @@ Note that if the data loading request is already in flight, the component will w
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { WhenVisible } from '@inertiajs/vue3'
 </script>
@@ -313,7 +313,7 @@ import { WhenVisible } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { WhenVisible } from '@inertiajs/react'
 
 export default () => (
@@ -325,7 +325,7 @@ export default () => (
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   import { WhenVisible } from '@inertiajs/svelte'
 
@@ -339,7 +339,7 @@ export default () => (
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { WhenVisible } from '@inertiajs/svelte'
 
@@ -360,7 +360,7 @@ When submitting forms, you may want to use the `except` option to exclude the pr
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { useForm, WhenVisible } from '@inertiajs/vue3'
 
@@ -389,7 +389,7 @@ function submit() {
 
 == React
 
-```jsx
+```jsx twoslash
 import { useForm, WhenVisible } from '@inertiajs/react'
 
 export default function CreateUser() {
@@ -417,7 +417,7 @@ export default function CreateUser() {
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   import { useForm, WhenVisible } from '@inertiajs/svelte'
 
@@ -444,7 +444,7 @@ export default function CreateUser() {
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { useForm, WhenVisible } from '@inertiajs/svelte'
 

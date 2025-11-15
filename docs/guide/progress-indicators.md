@@ -8,7 +8,7 @@ Of course, if you prefer, you can disable Inertia's default loading indicator an
 
 Inertia's default progress indicator is a light-weight wrapper around the [NProgress](https://ricostacruz.com/nprogress/) library. You can customize it via the `progress` property of the `createInertiaApp()` function.
 
-```js
+```js twoslash
 createInertiaApp({
   progress: {
     // The delay after which the progress bar will appear, in milliseconds...
@@ -29,7 +29,7 @@ createInertiaApp({
 
 You can disable Inertia's default loading indicator by setting the `progress` property to `false`.
 
-```js
+```js twoslash
 createInertiaApp({
   progress: false,
   // ...
@@ -46,7 +46,7 @@ When you need to control the progress indicator outside of Inertia requests, for
 
 == Vue
 
-```js
+```js twoslash
 import { progress } from '@inertiajs/vue3'
 
 progress.start() // Begin progress animation
@@ -62,7 +62,7 @@ progress.getStatus() // Returns current percentage or null
 
 == React
 
-```js
+```js twoslash
 import { progress } from '@inertiajs/react'
 
 progress.start() // Begin progress animation
@@ -78,7 +78,7 @@ progress.getStatus() // Returns current percentage or null
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { progress } from '@inertiajs/svelte'
 
 progress.start() // Begin progress animation
@@ -98,7 +98,7 @@ The `hide()` and `reveal()` methods work together to prevent conflicts when sepa
 
 However, `reveal()` accepts an optional `force` parameter that bypasses this counter. Inertia uses this pattern internally to hide progress during prefetching while ensuring it appears for actual navigation.
 
-```js
+```js twoslash
 progress.hide() // Counter = 1, bar hidden
 progress.hide() // Counter = 2, bar still hidden
 progress.reveal() // Counter = 1, bar still hidden
@@ -117,7 +117,7 @@ It's also possible to setup your own custom page loading indicators using [Inert
 
 First, disable Inertia's default loading indicator.
 
-```js
+```js twoslash
 createInertiaApp({
   progress: false,
   // ...
@@ -144,21 +144,21 @@ Then, import both `NProgress` and the Inertia `router` into your application.
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import NProgress from 'nprogress'
 import { router } from '@inertiajs/vue3'
 ```
 
 == React
 
-```js
+```js twoslash
 import NProgress from 'nprogress'
 import { router } from '@inertiajs/react'
 ```
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import NProgress from 'nprogress'
 import { router } from '@inertiajs/svelte'
 ```
@@ -167,13 +167,13 @@ import { router } from '@inertiajs/svelte'
 
 Next, add a `start` event listener. We'll use this listener to show the progress bar when a new Inertia visit begins.
 
-```js
+```js twoslash
 router.on('start', () => NProgress.start())
 ```
 
 Finally, add a `finish` event listener to hide the progress bar when the page visit finishes.
 
-```js
+```js twoslash
 router.on('finish', () => NProgress.done())
 ```
 
@@ -185,7 +185,7 @@ While this custom progress implementation works great for page visits that finis
 
 We can accomplish this by inspecting the `event.detail.visit` object that's provided to the finish event.
 
-```js
+```js twoslash
 router.on('finish', (event) => {
   if (event.detail.visit.completed) {
     NProgress.done()
@@ -202,7 +202,7 @@ router.on('finish', (event) => {
 
 Let's take this a step further. When files are being uploaded, it would be great to update the loading indicator to reflect the upload progress. This can be done using the `progress` event.
 
-```js
+```js twoslash
 router.on('progress', (event) => {
   if (event.detail.progress.percentage) {
     NProgress.set((event.detail.progress.percentage / 100) * 0.9)
@@ -218,13 +218,13 @@ The last thing we're going to implement is a loading indicator delay. It's often
 
 To implement the delay behavior, we'll use the `setTimeout` and `clearTimeout` functions. Let's start by defining a variable to keep track of the timeout.
 
-```js
+```js twoslash
 let timeout = null
 ```
 
 Next, let's update the `start` event listener to start a new timeout that will show the progress bar after 250 milliseconds.
 
-```js
+```js twoslash
 router.on('start', () => {
   timeout = setTimeout(() => NProgress.start(), 250)
 })
@@ -232,7 +232,7 @@ router.on('start', () => {
 
 Next, we'll update the `finish` event listener to clear any existing timeouts in the event that the page visit finishes before the timeout does.
 
-```js
+```js twoslash
 router.on('finish', (event) => {
   clearTimeout(timeout)
   // ...
@@ -241,7 +241,7 @@ router.on('finish', (event) => {
 
 In the `finish` event listener, we need to determine if the progress bar has actually started displaying progress, otherwise we'll inadvertently cause it to show before the timeout has finished.
 
-```js
+```js twoslash
 router.on('finish', (event) => {
   clearTimeout(timeout)
   if (!NProgress.isStarted()) {
@@ -253,12 +253,12 @@ router.on('finish', (event) => {
 
 And, finally, we need to do the same check in the `progress` event listener.
 
-```js
+```js twoslash
 router.on('progress', event => {
-  if (!NProgress.isStarted()) {
-    return
-  }
-  // ...
+ if (!NProgress.isStarted()) {
+   return
+ }
+ // ...
 }
 ```
 
@@ -271,7 +271,7 @@ For convenience, here is the full source code of the final version of our custom
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import NProgress from 'nprogress'
 import { router } from '@inertiajs/vue3'
 
@@ -304,7 +304,7 @@ router.on('finish', (event) => {
 
 == React
 
-```js
+```js twoslash
 import NProgress from 'nprogress'
 import { router } from '@inertiajs/react'
 
@@ -337,7 +337,7 @@ router.on('finish', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import NProgress from 'nprogress'
 import { router } from '@inertiajs/svelte'
 
@@ -378,7 +378,7 @@ In addition to these configurations, Inertia.js provides two visit options to co
 
 The `showProgress` option provides fine-grained control over the visibility of the loading indicator during requests.
 
-```js
+```js twoslash
 router.get('/settings', {}, { showProgress: false })
 ```
 
@@ -386,7 +386,7 @@ router.get('/settings', {}, { showProgress: false })
 
 The `async` option allows you to perform asynchronous requests without displaying the default progress indicator. It can be used in combination with the `showProgress` option.
 
-```js
+```js twoslash
 // Disable the progress indicator
 router.get('/settings', {}, { async: true })
 // Enable the progress indicator with async requests

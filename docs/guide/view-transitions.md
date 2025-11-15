@@ -14,7 +14,7 @@ You may enable view transitions for a visit by setting the `viewTransition` opti
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.visit('/another-page', { viewTransition: true })
@@ -22,7 +22,7 @@ router.visit('/another-page', { viewTransition: true })
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.visit('/another-page', { viewTransition: true })
@@ -30,7 +30,7 @@ router.visit('/another-page', { viewTransition: true })
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.visit('/another-page', { viewTransition: true })
@@ -45,7 +45,7 @@ You may also pass a callback to the `viewTransition` option, which will receive 
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.visit('/another-page', {
@@ -59,7 +59,7 @@ router.visit('/another-page', {
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.visit('/another-page', {
@@ -73,7 +73,7 @@ router.visit('/another-page', {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.visit('/another-page', {
@@ -94,7 +94,7 @@ The `viewTransition` option is also available on the `Link` component.
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { router } from '@inertiajs/vue3'
 </script>
@@ -106,7 +106,7 @@ import { router } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 export default () => (
@@ -118,7 +118,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { router } from '@inertiajs/svelte'
 </script>
@@ -133,7 +133,7 @@ You may also pass a callback to access the `ViewTransition` instance.
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { router } from '@inertiajs/vue3'
 </script>
@@ -152,7 +152,7 @@ import { router } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 export default () => (
@@ -169,7 +169,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { router } from '@inertiajs/svelte'
 </script>
@@ -193,7 +193,7 @@ when [initializing your Inertia app](/guide/client-side-setup#configuring-defaul
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 createInertiaApp({
@@ -208,7 +208,7 @@ createInertiaApp({
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 createInertiaApp({
@@ -223,7 +223,7 @@ createInertiaApp({
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 createInertiaApp({
@@ -285,7 +285,7 @@ You may also animate individual elements between pages by assigning them a uniqu
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <!-- Profile.vue -->
 <template>
   <img src="/avatar.jpg" alt="User" class="avatar-large" />
@@ -300,7 +300,7 @@ You may also animate individual elements between pages by assigning them a uniqu
 </style>
 ```
 
-```vue
+```vue twoslash
 <!-- Dashboard.vue -->
 <template>
   <img src="/avatar.jpg" alt="User" class="avatar-small" />
@@ -317,14 +317,14 @@ You may also animate individual elements between pages by assigning them a uniqu
 
 == React
 
-```jsx
+```jsx twoslash
 // Profile.jsx
 export default function Profile() {
   return <img src="/avatar.jpg" alt="User" className="avatar-large" />
 }
 ```
 
-```jsx
+```jsx twoslash
 // Dashboard.jsx
 export default function Dashboard() {
   return <img src="/avatar.jpg" alt="User" className="avatar-small" />
@@ -347,7 +347,7 @@ export default function Dashboard() {
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <!-- Profile.svelte -->
 <img src="/avatar.jpg" alt="User" class="avatar-large" />
 
@@ -360,7 +360,7 @@ export default function Dashboard() {
 </style>
 ```
 
-```svelte
+```svelte twoslash
 <!-- Dashboard.svelte -->
 <img src="/avatar.jpg" alt="User" class="avatar-small" />
 

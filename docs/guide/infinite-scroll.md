@@ -86,7 +86,7 @@ On the client side, Inertia provides the `<InfiniteScroll>` component to automat
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <InfiniteScroll data="users">
     <div v-for="user in users" :key="user.id">
@@ -98,7 +98,7 @@ On the client side, Inertia provides the `<InfiniteScroll>` component to automat
 
 == React
 
-```jsx
+```jsx twoslash
 import { InfiniteScroll } from '@inertiajs/react'
 
 export default function Users({ users }) {
@@ -114,7 +114,7 @@ export default function Users({ users }) {
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { InfiniteScroll } from '@inertiajs/svelte'
   export let users
@@ -138,7 +138,7 @@ You can control how early content begins loading by setting a buffer distance. T
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <InfiniteScroll data="users" :buffer="500">
     <!-- ... -->
@@ -148,7 +148,7 @@ You can control how early content begins loading by setting a buffer distance. T
 
 == React
 
-```jsx
+```jsx twoslash
 <InfiniteScroll data="users" buffer={500}>
   {/* ... */}
 </InfiniteScroll>
@@ -156,7 +156,7 @@ You can control how early content begins loading by setting a buffer distance. T
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <InfiniteScroll data="users" buffer={500}>
   <!-- ... -->
 </InfiniteScroll>
@@ -173,7 +173,7 @@ The infinite scroll component updates the browser URL's query string (`?page=...
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <InfiniteScroll data="users" preserve-url>
     <!-- ... -->
@@ -183,7 +183,7 @@ The infinite scroll component updates the browser URL's query string (`?page=...
 
 == React
 
-```jsx
+```jsx twoslash
 <InfiniteScroll data="users" preserveUrl>
   {/* ... */}
 </InfiniteScroll>
@@ -191,7 +191,7 @@ The infinite scroll component updates the browser URL's query string (`?page=...
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <InfiniteScroll data="users" preserve-url>
   <!-- ... -->
 </InfiniteScroll>
@@ -210,7 +210,7 @@ You can reset data using the `reset` visit option.
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { router } from '@inertiajs/vue3'
 
@@ -237,7 +237,7 @@ const show = (role) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { InfiniteScroll, router } from '@inertiajs/react'
 
 export default function Users({ users }) {
@@ -266,7 +266,7 @@ export default function Users({ users }) {
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { InfiniteScroll, router } from '@inertiajs/svelte'
   export let users
@@ -301,7 +301,7 @@ The infinite scroll component loads content in both directions when you scroll n
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <!-- Only load the next page -->
   <InfiniteScroll data="users" only-next>
@@ -322,18 +322,18 @@ The infinite scroll component loads content in both directions when you scroll n
 
 == React
 
-```jsx
+```jsx twoslash
 /* Only load the next page */
 export default () => (
 <InfiniteScroll data="users" onlyNext>
-  {/* ... */}
+ {/* ... */}
 </InfiniteScroll>
 )
 
 /* Only load the previous page */
 export default () => (
 <InfiniteScroll data="messages" onlyPrevious>
-  {/* ... */}
+ {/* ... */}
 </InfiniteScroll>
 )
 
@@ -345,7 +345,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <!-- Only load the next page -->
 <InfiniteScroll data="users" only-next>
   <!-- ... -->
@@ -373,7 +373,7 @@ For chat applications, timelines, or interfaces where content is sorted descendi
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <InfiniteScroll data="messages" reverse>
     <!-- ... -->
@@ -383,7 +383,7 @@ For chat applications, timelines, or interfaces where content is sorted descendi
 
 == React
 
-```jsx
+```jsx twoslash
 <InfiniteScroll data="messages" reverse>
   {/* ... */}
 </InfiniteScroll>
@@ -391,7 +391,7 @@ For chat applications, timelines, or interfaces where content is sorted descendi
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <InfiniteScroll data="messages" reverse>
   <!-- ... -->
 </InfiniteScroll>
@@ -406,7 +406,7 @@ Reverse mode also enables automatic scrolling to the bottom on initial load, whi
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <InfiniteScroll data="messages" reverse :auto-scroll="false">
     <!-- ... -->
@@ -416,7 +416,7 @@ Reverse mode also enables automatic scrolling to the bottom on initial load, whi
 
 == React
 
-```jsx
+```jsx twoslash
 <InfiniteScroll data="messages" reverse autoScroll={false}>
   {/* ... */}
 </InfiniteScroll>
@@ -424,7 +424,7 @@ Reverse mode also enables automatic scrolling to the bottom on initial load, whi
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <InfiniteScroll data="messages" reverse auto-scroll={false}>
   <!-- ... -->
 </InfiniteScroll>
@@ -439,7 +439,7 @@ Manual mode disables automatic loading when scrolling and allows you to control 
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <InfiniteScroll data="users" manual>
     <template #previous="{ loading, fetch, hasMore }">
@@ -461,7 +461,7 @@ Manual mode disables automatic loading when scrolling and allows you to control 
 
 == React
 
-```jsx
+```jsx twoslash
 import { InfiniteScroll } from '@inertiajs/react'
 
 export default ({ users }) => (
@@ -492,7 +492,7 @@ export default ({ users }) => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { InfiniteScroll } from '@inertiajs/svelte'
   export let users
@@ -528,7 +528,7 @@ You can also configure the component to automatically switch to manual mode afte
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <InfiniteScroll data="users" :manual-after="3">
     <!-- ... -->
@@ -538,7 +538,7 @@ You can also configure the component to automatically switch to manual mode afte
 
 == React
 
-```jsx
+```jsx twoslash
 <InfiniteScroll data="users" manualAfter={3}>
   {/* ... */}
 </InfiniteScroll>
@@ -546,7 +546,7 @@ You can also configure the component to automatically switch to manual mode afte
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <InfiniteScroll data="users" manual-after={3}>
   <!-- ... -->
 </InfiniteScroll>
@@ -565,7 +565,7 @@ The main content area where you render your data items. This slot receives loadi
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <InfiniteScroll
     data="users"
@@ -578,7 +578,7 @@ The main content area where you render your data items. This slot receives loadi
 
 == React
 
-```jsx
+```jsx twoslash
 <InfiniteScroll data="users">
   {({ loading, loadingPrevious, loadingNext }) => (
     <div>{/* Your content with access to loading states */}</div>
@@ -588,7 +588,7 @@ The main content area where you render your data items. This slot receives loadi
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <InfiniteScroll data="users" let:loading let:loadingPrevious let:loadingNext>
   <!-- Your content with access to loading states -->
 </InfiniteScroll>
@@ -603,7 +603,7 @@ The loading slot is used as a fallback when loading content and no custom `befor
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <InfiniteScroll data="users">
     <!-- Your content -->
@@ -614,7 +614,7 @@ The loading slot is used as a fallback when loading content and no custom `befor
 
 == React
 
-```jsx
+```jsx twoslash
 <InfiniteScroll data="users" loading={() => 'Loading more users...'}>
   {/* Your content */}
 </InfiniteScroll>
@@ -622,7 +622,7 @@ The loading slot is used as a fallback when loading content and no custom `befor
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <InfiniteScroll data="users">
   <!-- Your content -->
   <div slot="loading">Loading more users...</div>
@@ -638,7 +638,7 @@ The `previous` and `next` slots are rendered above and below the main content, t
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <InfiniteScroll data="users" :manual-after="3">
     <template #previous="{ loading, fetch, hasMore, manualMode }">
@@ -660,7 +660,7 @@ The `previous` and `next` slots are rendered above and below the main content, t
 
 == React
 
-```jsx
+```jsx twoslash
 import { InfiniteScroll } from '@inertiajs/react'
 
 export default ({ users }) => (
@@ -693,7 +693,7 @@ export default ({ users }) => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { InfiniteScroll } from '@inertiajs/svelte'
   export let users
@@ -741,7 +741,7 @@ The `InfiniteScroll` component renders as a `<div>` element. You may customize t
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <InfiniteScroll data="products" as="ul">
     <li v-for="product in products" :key="product.id">
@@ -753,7 +753,7 @@ The `InfiniteScroll` component renders as a `<div>` element. You may customize t
 
 == React
 
-```jsx
+```jsx twoslash
 <InfiniteScroll data="products" as="ul">
   {products.map((product) => (
     <li key={product.id}>{product.name}</li>
@@ -763,7 +763,7 @@ The `InfiniteScroll` component renders as a `<div>` element. You may customize t
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <InfiniteScroll data="products" as="ul">
   {#each products as product (product.id)}
     <li>{product.name}</li>
@@ -780,7 +780,7 @@ The infinite scroll component automatically tracks content and assigns page numb
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <InfiniteScroll data="users" items-element="#table-body">
     <table>
@@ -801,7 +801,7 @@ The infinite scroll component automatically tracks content and assigns page numb
 
 == React
 
-```jsx
+```jsx twoslash
 <InfiniteScroll data="users" itemsElement="#table-body">
   <table>
     <thead>
@@ -822,7 +822,7 @@ The infinite scroll component automatically tracks content and assigns page numb
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <InfiniteScroll data="users" items-element="#table-body">
   <table>
     <thead>
@@ -848,7 +848,7 @@ You can also specify custom trigger elements for loading more content using CSS 
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <InfiniteScroll
     data="users"
@@ -879,7 +879,7 @@ You can also specify custom trigger elements for loading more content using CSS 
 
 == React
 
-```jsx
+```jsx twoslash
 <InfiniteScroll
   data="users"
   itemsElement="#table-body"
@@ -910,7 +910,7 @@ You can also specify custom trigger elements for loading more content using CSS 
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <InfiniteScroll
   data="users"
   items-element="#table-body"
@@ -942,7 +942,7 @@ Alternatively, you can use template refs instead of CSS selectors. This avoids a
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { ref } from 'vue'
 const tableHeader = ref()
@@ -980,7 +980,7 @@ const tableBody = ref()
 
 == React
 
-```jsx
+```jsx twoslash
 import { useRef } from 'react'
 
 export default ({ users }) => {
@@ -1021,7 +1021,7 @@ export default ({ users }) => {
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { InfiniteScroll } from '@inertiajs/svelte'
   export let users
@@ -1064,7 +1064,7 @@ The infinite scroll component works within any scrollable container, not just th
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <template>
   <div style="height: 400px; overflow-y: auto;">
     <InfiniteScroll data="users">
@@ -1078,7 +1078,7 @@ The infinite scroll component works within any scrollable container, not just th
 
 == React
 
-```jsx
+```jsx twoslash
 <div style={{ height: '400px', overflowY: 'auto' }}>
   <InfiniteScroll data="users">
     {users.data.map((user) => (
@@ -1090,7 +1090,7 @@ The infinite scroll component works within any scrollable container, not just th
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <div style="height: 400px; overflow-y: auto;">
   <InfiniteScroll data="users">
     {#each users.data as user (user.id)}
@@ -1189,7 +1189,7 @@ When you need to trigger loading actions programmatically, you may use a templat
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { ref } from 'vue'
 const infiniteScrollRef = ref(null)
@@ -1210,7 +1210,7 @@ const fetchNext = () => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { InfiniteScroll } from '@inertiajs/react'
 import { useRef } from 'react'
 
@@ -1237,7 +1237,7 @@ export default ({ users }) => {
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { InfiniteScroll } from '@inertiajs/svelte'
   export let users

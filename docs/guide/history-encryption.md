@@ -62,7 +62,7 @@ You can also clear history directly on the client side by calling the `router.cl
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.clearHistory()
@@ -70,7 +70,7 @@ router.clearHistory()
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.clearHistory()
@@ -78,7 +78,7 @@ router.clearHistory()
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.clearHistory()

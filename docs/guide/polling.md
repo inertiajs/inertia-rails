@@ -9,21 +9,21 @@ The only required argument is the polling interval in milliseconds.
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { usePoll } from '@inertiajs/vue3'
 usePoll(2000)
 ```
 
 == React
 
-```js
+```js twoslash
 import { usePoll } from '@inertiajs/react'
 usePoll(2000)
 ```
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { usePoll } from '@inertiajs/svelte'
 usePoll(2000)
 ```
@@ -35,7 +35,7 @@ If you need to pass additional request options to the poll helper, you can pass 
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { usePoll } from '@inertiajs/vue3'
 
 usePoll(2000, {
@@ -50,7 +50,7 @@ usePoll(2000, {
 
 == React
 
-```js
+```js twoslash
 import { usePoll } from '@inertiajs/react'
 
 usePoll(2000, {
@@ -65,7 +65,7 @@ usePoll(2000, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { usePoll } from '@inertiajs/svelte'
 
 usePoll(2000, {
@@ -85,7 +85,7 @@ If you'd like more control over the polling behavior, the poll helper provides `
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { usePoll } from '@inertiajs/vue3'
 const { start, stop } = usePoll(
@@ -105,7 +105,7 @@ const { start, stop } = usePoll(
 
 == React
 
-```jsx
+```jsx twoslash
 import { usePoll } from '@inertiajs/react'
 
 export default () => {
@@ -127,7 +127,7 @@ export default () => {
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { usePoll } from '@inertiajs/svelte'
 
@@ -153,7 +153,7 @@ By default, the poll helper will throttle requests by 90% when the browser tab i
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { usePoll } from '@inertiajs/vue3'
 
 usePoll(
@@ -167,7 +167,7 @@ usePoll(
 
 == React
 
-```js
+```js twoslash
 import { usePoll } from '@inertiajs/react'
 
 usePoll(
@@ -181,7 +181,7 @@ usePoll(
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { usePoll } from '@inertiajs/svelte'
 
 usePoll(

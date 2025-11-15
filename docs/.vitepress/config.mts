@@ -1,3 +1,4 @@
+import { transformerTwoslash } from '@shikijs/vitepress-twoslash'
 import { defineConfig } from 'vitepress'
 import llmstxt from 'vitepress-plugin-llms'
 import { availableSinceMarkdownPlugin } from './availableSinceMarkdownPlugin'
@@ -28,6 +29,9 @@ export default defineConfig({
       md.use(tabsMarkdownPlugin)
       md.use(availableSinceMarkdownPlugin)
     },
+    codeTransformers: [transformerTwoslash()],
+    // Explicitly load these languages for types highlighting
+    languages: ['js', 'jsx', 'ts', 'tsx', 'vue', 'svelte'],
   },
 
   head: [

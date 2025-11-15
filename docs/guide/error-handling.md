@@ -14,7 +14,7 @@ By default, Inertia displays error modals using a custom `<div>` overlay. Howeve
 
 To enable this, configure the `future.useDialogForErrorModal` option in your [application defaults](/guide/client-side-setup#configuring-defaults).
 
-```js
+```js twoslash
 createInertiaApp({
   // resolve, setup, etc.
   defaults: {
@@ -52,7 +52,7 @@ You may have noticed we're returning an `ErrorPage` page component in the exampl
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { computed } from 'vue'
 
@@ -89,7 +89,7 @@ const description = computed(() => {
 
 == React
 
-```jsx
+```jsx twoslash
 export default function ErrorPage({ status }) {
   const title =
     {
@@ -119,7 +119,7 @@ export default function ErrorPage({ status }) {
 
 == Svelte 4
 
-```svelte
+```svelte twoslash
 <script>
   export let status
 
@@ -147,7 +147,7 @@ export default function ErrorPage({ status }) {
 
 == Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   let { status } = $props()
   const title = {

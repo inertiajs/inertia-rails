@@ -9,7 +9,7 @@ However, if you need to handle CSRF protection manually, one approach is to incl
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router, usePage } from '@inertiajs/vue3'
 
 const page = usePage()
@@ -23,7 +23,7 @@ router.post('/users', {
 
 == React
 
-```js
+```js twoslash
 import { router, usePage } from '@inertiajs/react'
 
 const props = usePage().props
@@ -37,7 +37,7 @@ router.post('/users', {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { page, router } from '@inertiajs/svelte'
 
 router.post('/users', {

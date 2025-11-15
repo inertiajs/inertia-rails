@@ -14,7 +14,7 @@ To perform a partial reload, use the `only` visit option to specify which data t
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.visit(url, {
@@ -24,7 +24,7 @@ router.visit(url, {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.visit(url, {
@@ -34,7 +34,7 @@ router.visit(url, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.visit(url, {
@@ -51,7 +51,7 @@ In addition to the only visit option you can also use the except option to speci
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.visit(url, {
@@ -61,7 +61,7 @@ router.visit(url, {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.visit(url, {
@@ -71,7 +71,7 @@ router.visit(url, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.visit(url, {
@@ -88,7 +88,7 @@ Both the `only` and `except` visit options support dot notation to specify neste
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.visit(url, {
@@ -99,7 +99,7 @@ router.visit(url, {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.visit(url, {
@@ -110,7 +110,7 @@ router.visit(url, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.visit(url, {
@@ -136,7 +136,7 @@ Since partial reloads can only be made to the same page component the user is al
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.reload({ only: ['users'] })
@@ -144,7 +144,7 @@ router.reload({ only: ['users'] })
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.reload({ only: ['users'] })
@@ -152,7 +152,7 @@ router.reload({ only: ['users'] })
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.reload({ only: ['users'] })
@@ -167,7 +167,7 @@ It's also possible to perform partial reloads with Inertia links using the `only
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Link } from '@inertiajs/vue3'
 </script>
@@ -179,7 +179,7 @@ import { Link } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Link } from '@inertiajs/react'
 
 export default () => (
@@ -191,7 +191,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { inertia, Link } from '@inertiajs/svelte'
 </script>

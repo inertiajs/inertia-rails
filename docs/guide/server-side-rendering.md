@@ -17,7 +17,7 @@ This file is going to look very similar to your regular inertia initialization f
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { createInertiaApp } from '@inertiajs/vue3'
 import createServer from '@inertiajs/vue3/server'
 import { renderToString } from 'vue/server-renderer'
@@ -42,7 +42,7 @@ createServer((page) =>
 
 == React
 
-```js
+```js twoslash
 import { createInertiaApp } from '@inertiajs/react'
 import createServer from '@inertiajs/react/server'
 import ReactDOMServer from 'react-dom/server'
@@ -62,7 +62,7 @@ createServer((page) =>
 
 == Svelte 4
 
-```js
+```js twoslash
 import { createInertiaApp } from '@inertiajs/svelte'
 import createServer from '@inertiajs/svelte/server'
 
@@ -82,7 +82,7 @@ createServer((page) =>
 
 == Svelte 5
 
-```js
+```js twoslash
 import { createInertiaApp } from '@inertiajs/svelte'
 import createServer from '@inertiajs/svelte/server'
 import { render } from 'svelte/server'
@@ -116,7 +116,7 @@ You can enable clustering by passing a second argument of options to `createServ
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { createInertiaApp } from '@inertiajs/vue3'
 import createServer from '@inertiajs/vue3/server'
 import { renderToString } from 'vue/server-renderer'
@@ -133,7 +133,7 @@ createServer(
 
 == React
 
-```js
+```js twoslash
 import { createInertiaApp } from '@inertiajs/react'
 import createServer from '@inertiajs/react/server'
 import ReactDOMServer from 'react-dom/server'
@@ -149,7 +149,7 @@ createServer(
 
 == Svelte 4
 
-```js
+```js twoslash
 import { createInertiaApp } from '@inertiajs/svelte'
 import createServer from '@inertiajs/svelte/server'
 
@@ -164,7 +164,7 @@ createServer(
 
 == Svelte 5
 
-```js
+```js twoslash
 import { createInertiaApp } from '@inertiajs/svelte'
 import createServer from '@inertiajs/svelte/server'
 import { render } from 'svelte/server'
@@ -226,7 +226,7 @@ To enable client-side hydration, update your initialization file.
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import { createApp, h } from 'vue' // [!code --]
 import { createSSRApp, h } from 'vue' // [!code ++]
@@ -248,7 +248,7 @@ createInertiaApp({
 
 == React
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import { createInertiaApp } from '@inertiajs/react'
 import { createRoot } from 'react-dom/client' // [!code --]
@@ -268,7 +268,7 @@ createInertiaApp({
 
 == Svelte 4
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import { createInertiaApp } from '@inertiajs/svelte'
 
@@ -287,7 +287,7 @@ createInertiaApp({
 You will also need to set the `hydratable` compiler option to `true` in your `vite.config.js` file.
 
 <!-- prettier-ignore -->
-```js
+ ```js twoslash
 // vite.config.js
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 import laravel from 'laravel-vite-plugin'
@@ -315,7 +315,7 @@ export default defineConfig({
 == Svelte 5
 
 <!-- prettier-ignore -->
-```js
+ ```js twoslash
 // frontend/entrypoints/inertia.js
 import { createInertiaApp } from '@inertiajs/svelte'
 import { mount } from 'svelte' // [!code --]

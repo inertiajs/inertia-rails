@@ -37,7 +37,7 @@ Next, update your main JavaScript file to boot your Inertia app. To accomplish t
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import { createApp, h } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
@@ -57,7 +57,7 @@ createInertiaApp({
 
 == React
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import { createInertiaApp } from '@inertiajs/react'
 import { createElement } from 'react'
@@ -77,7 +77,7 @@ createInertiaApp({
 
 == Svelte 4
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import { createInertiaApp } from '@inertiajs/svelte'
 
@@ -94,7 +94,7 @@ createInertiaApp({
 
 == Svelte 5
 
-```js
+```js twoslash
 // frontend/entrypoints/inertia.js
 import { createInertiaApp } from '@inertiajs/svelte'
 import { mount } from 'svelte'
@@ -120,7 +120,7 @@ The `setup` callback receives everything necessary to initialize the client-side
 
 You may pass a `defaults` object to `createInertiaApp()` to configure default settings for various features. You don't have to pass all keys, just the ones you want to tweak.
 
-```js
+```js twoslash
 createInertiaApp({
   // ...
   defaults: {
@@ -153,7 +153,7 @@ particularly useful when you need to adjust settings based on user preferences o
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 // Set a single value using dot notation...
@@ -172,7 +172,7 @@ const duration = config.get('form.recentlySuccessfulDuration')
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 // Set a single value using dot notation...
@@ -191,7 +191,7 @@ const duration = config.get('form.recentlySuccessfulDuration')
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 // Set a single value using dot notation...
@@ -217,7 +217,7 @@ The `resolve` callback tells Inertia how to load a page component. It receives a
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 // Vite
 // frontend/entrypoints/inertia.js
 createInertiaApp({
@@ -238,7 +238,7 @@ createInertiaApp({
 
 == React
 
-```js
+```js twoslash
 // Vite
 // frontend/entrypoints/inertia.js
 createInertiaApp({
@@ -259,7 +259,7 @@ createInertiaApp({
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // Vite
 // frontend/entrypoints/inertia.js
 createInertiaApp({
@@ -286,7 +286,7 @@ By default we recommend eager loading your components, which will result in a si
 
 By default, Inertia assumes that your application's root template has a root element with an `id` of `app`. If your application's root element has a different `id`, you can provide it using the `id` property.
 
-```js
+```js twoslash
 createInertiaApp({
   id: 'my-app',
   // ...

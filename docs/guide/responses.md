@@ -187,11 +187,11 @@ $ bin/rails generate inertia:controller pages welcome next_steps
 
 Rails generators allow templates customization. You can create custom template files in your application to override the default templates used by the generators. For example, to customize the controller generator view template for React, create a file at the path `lib/templates/inertia_templates/controller/react/view.jsx.tt`:
 
-```jsx
+```jsx twoslash
 export default function <%= @action.camelize %>() {
-  return (
-    <h1>Hello from my new default template</h1>
-  );
+ return (
+   <h1>Hello from my new default template</h1>
+ );
 }
 ```
 

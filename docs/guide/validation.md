@@ -41,7 +41,7 @@ Since validation errors are made available client-side as page component props, 
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { reactive } from 'vue'
 import { router } from '@inertiajs/vue3'
@@ -80,7 +80,7 @@ function submit() {
 
 == React
 
-```jsx
+```jsx twoslash
 import { useState } from 'react'
 import { router, usePage } from '@inertiajs/react'
 
@@ -128,7 +128,7 @@ export default function Edit() {
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <script>
   import { router } from '@inertiajs/svelte'
 
@@ -184,7 +184,7 @@ To solve this issue, you can use "error bags". Error bags scope the validation e
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.post('/companies', data, {
@@ -198,7 +198,7 @@ router.post('/users', data, {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.post('/companies', data, {
@@ -212,7 +212,7 @@ router.post('/users', data, {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.post('/companies', data, {

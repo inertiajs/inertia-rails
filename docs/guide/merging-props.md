@@ -154,7 +154,7 @@ The `reset` request option accepts an array of the props keys you would like to 
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.reload({ reset: ['users'] })
@@ -162,7 +162,7 @@ router.reload({ reset: ['users'] })
 
 == React
 
-```js
+```js twoslash
 import { router } from '@inertiajs/react'
 
 router.reload({ reset: ['users'] })
@@ -170,7 +170,7 @@ router.reload({ reset: ['users'] })
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.reload({ reset: ['users'] })

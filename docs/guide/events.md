@@ -9,7 +9,7 @@ To register an event listener, use the `router.on()` method.
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('start', (event) => {
@@ -19,7 +19,7 @@ router.on('start', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('start', (event) => {
@@ -29,7 +29,7 @@ router.on('start', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('start', (event) => {
@@ -44,7 +44,7 @@ Under the hood, Inertia uses native browser events, so you can also interact wit
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 document.addEventListener('inertia:start', (event) => {
@@ -54,7 +54,7 @@ document.addEventListener('inertia:start', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 document.addEventListener('inertia:start', (event) => {
@@ -64,7 +64,7 @@ document.addEventListener('inertia:start', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 document.addEventListener('inertia:start', (event) => {
@@ -81,7 +81,7 @@ When you register an event listener, Inertia automatically returns a callback th
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 let removeStartEventListener = router.on('start', (event) => {
@@ -94,7 +94,7 @@ removeStartEventListener()
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 let removeStartEventListener = router.on('start', (event) => {
@@ -107,7 +107,7 @@ removeStartEventListener()
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 let removeStartEventListener = router.on('start', (event) => {
@@ -125,7 +125,7 @@ Combined with hooks, you can automatically remove the event listener when compon
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 import { onUnmounted } from 'vue'
 
@@ -138,7 +138,7 @@ onUnmounted(
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 import { useEffect } from 'react'
 
@@ -151,7 +151,7 @@ useEffect(() => {
 
 == Svelte 4
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 import { onMount } from 'svelte'
 
@@ -164,7 +164,7 @@ onMount(() => {
 
 == Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 $effect(() => {
@@ -181,7 +181,7 @@ Alternatively, if you're using native browser events, you can remove the event l
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 let startEventListener = (event) => {
@@ -196,7 +196,7 @@ document.removeEventListener('inertia:start', startEventListener)
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 let startEventListener = (event) => {
@@ -211,7 +211,7 @@ document.removeEventListener('inertia:start', startEventListener)
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 let startEventListener = (event) => {
@@ -233,7 +233,7 @@ Some events, such as `before`, `exception`, and `invalid`, support cancellation,
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('before', (event) => {
@@ -245,7 +245,7 @@ router.on('before', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('before', (event) => {
@@ -257,7 +257,7 @@ router.on('before', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('before', (event) => {
@@ -274,7 +274,7 @@ For convenience, if you register your event listener using `router.on()`, you ca
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('before', (event) => {
@@ -284,7 +284,7 @@ router.on('before', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('before', (event) => {
@@ -294,7 +294,7 @@ router.on('before', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('before', (event) => {
@@ -313,7 +313,7 @@ The `before` event fires when a request is about to be made to the server. This 
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('before', (event) => {
@@ -323,7 +323,7 @@ router.on('before', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('before', (event) => {
@@ -333,7 +333,7 @@ router.on('before', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('before', (event) => {
@@ -348,7 +348,7 @@ The primary purpose of this event is to allow you to prevent a visit from happen
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('before', (event) => {
@@ -358,7 +358,7 @@ router.on('before', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('before', (event) => {
@@ -368,7 +368,7 @@ router.on('before', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('before', (event) => {
@@ -385,7 +385,7 @@ The `start` event fires when a request to the server has started. This is useful
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('start', (event) => {
@@ -395,7 +395,7 @@ router.on('start', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('start', (event) => {
@@ -405,7 +405,7 @@ router.on('start', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('start', (event) => {
@@ -424,7 +424,7 @@ The `progress` event fires as progress increments during file uploads.
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('progress', (event) => {
@@ -434,7 +434,7 @@ router.on('progress', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('progress', (event) => {
@@ -444,7 +444,7 @@ router.on('progress', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('progress', (event) => {
@@ -463,7 +463,7 @@ The `success` event fires on successful page visits, unless validation errors ar
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('success', (event) => {
@@ -473,7 +473,7 @@ router.on('success', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('success', (event) => {
@@ -483,7 +483,7 @@ router.on('success', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('success', (event) => {
@@ -502,7 +502,7 @@ The `error` event fires when validation errors are present on "successful" page 
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('error', (errors) => {
@@ -512,7 +512,7 @@ router.on('error', (errors) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('error', (errors) => {
@@ -522,7 +522,7 @@ router.on('error', (errors) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('error', (errors) => {
@@ -543,7 +543,7 @@ This event is fired for all response types, including `200`, `400`, and `500` re
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('invalid', (event) => {
@@ -554,7 +554,7 @@ router.on('invalid', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('invalid', (event) => {
@@ -565,7 +565,7 @@ router.on('invalid', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('invalid', (event) => {
@@ -581,7 +581,7 @@ You may cancel the `invalid` event to prevent Inertia from showing the non-Inert
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('invalid', (event) => {
@@ -593,7 +593,7 @@ router.on('invalid', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('invalid', (event) => {
@@ -605,7 +605,7 @@ router.on('invalid', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('invalid', (event) => {
@@ -624,7 +624,7 @@ The `exception` event fires on unexpected XHR errors such as network interruptio
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('exception', (event) => {
@@ -635,7 +635,7 @@ router.on('exception', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('exception', (event) => {
@@ -646,7 +646,7 @@ router.on('exception', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('exception', (event) => {
@@ -662,7 +662,7 @@ You may cancel the `exception` event to prevent the error from being thrown.
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('exception', (event) => {
@@ -673,7 +673,7 @@ router.on('exception', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('exception', (event) => {
@@ -684,7 +684,7 @@ router.on('exception', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('exception', (event) => {
@@ -704,7 +704,7 @@ The `finish` event fires after an XHR request has completed for both "successful
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('finish', (event) => {
@@ -714,7 +714,7 @@ router.on('finish', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('finish', (event) => {
@@ -724,7 +724,7 @@ router.on('finish', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('finish', (event) => {
@@ -743,7 +743,7 @@ The `navigate` event fires on successful page visits, as well as when navigating
 :::tabs key:frameworks
 == Vue
 
-```js
+```js twoslash
 import { router } from '@inertiajs/vue3'
 
 router.on('navigate', (event) => {
@@ -753,7 +753,7 @@ router.on('navigate', (event) => {
 
 == React
 
-```jsx
+```jsx twoslash
 import { router } from '@inertiajs/react'
 
 router.on('navigate', (event) => {
@@ -763,7 +763,7 @@ router.on('navigate', (event) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 import { router } from '@inertiajs/svelte'
 
 router.on('navigate', (event) => {

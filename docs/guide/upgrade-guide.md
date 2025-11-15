@@ -19,19 +19,19 @@ To upgrade to the Inertia.js v2.0 beta, first use npm to install the client-side
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 npm install @inertiajs/vue3@^2.0
 ```
 
 == React
 
-```jsx
+```jsx twoslash
 npm install @inertiajs/react@^2.0
 ```
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 npm install @inertiajs/svelte@^2.0
 ```
 

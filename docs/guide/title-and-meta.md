@@ -18,7 +18,7 @@ To add `<head>` elements to your page, use the `<Head>` component. Within this c
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Head } from '@inertiajs/vue3'
 </script>
@@ -33,7 +33,7 @@ import { Head } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Head } from '@inertiajs/react'
 
 export default () => (
@@ -46,7 +46,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```svelte
+```svelte twoslash
 <svelte:head>
   <title>Your page title</title>
   <meta name="description" content="Your page description" />
@@ -65,7 +65,7 @@ If you only need to add a `<title>` to the document `<head>`, you may simply pas
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Head } from '@inertiajs/vue3'
 </script>
@@ -77,7 +77,7 @@ import { Head } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Head } from '@inertiajs/react'
 
 export default () => <Head title="Your page title" />
@@ -85,7 +85,7 @@ export default () => <Head title="Your page title" />
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // Not supported
 ```
 
@@ -95,7 +95,7 @@ export default () => <Head title="Your page title" />
 
 You can globally modify the page `<title>` using the title callback in the `createInertiaApp` setup method. Typically, this method is invoked in your application's main JavaScript file. A common use case for the title callback is automatically adding an app name before or after each page title.
 
-```js
+```js twoslash
 createInertiaApp({
   title: (title) => `${title} - My App`,
   // ...
@@ -107,7 +107,7 @@ After defining the title callback, the callback will automatically be invoked wh
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Head } from '@inertiajs/vue3'
 </script>
@@ -119,7 +119,7 @@ import { Head } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Head } from '@inertiajs/react'
 
 export default () => <Head title="Home" />
@@ -127,7 +127,7 @@ export default () => <Head title="Home" />
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // Not supported
 ```
 
@@ -144,7 +144,7 @@ The `title` callback will also be invoked when you set the title using a `<title
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import { Head } from '@inertiajs/vue3'
 </script>
@@ -158,7 +158,7 @@ import { Head } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 import { Head } from '@inertiajs/react'
 
 export default () => (
@@ -170,7 +170,7 @@ export default () => (
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // Not supported
 ```
 
@@ -183,7 +183,7 @@ It's possible to have multiple instances of the `<Head>` component throughout yo
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <!-- Layout.vue -->
 <script setup>
 import { Head } from '@inertiajs/vue3'
@@ -220,40 +220,40 @@ import { Head } from '@inertiajs/vue3'
 
 == React
 
-```jsx
+```jsx twoslash
 // Layout.jsx
 import { Head } from '@inertiajs/react'
 
 export default () => (
-  <Head>
-    <title>My app</title>
-    <meta
-      head-key="description"
-      name="description"
-      content="This is the default description"
-    />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  </Head>
+ <Head>
+   <title>My app</title>
+   <meta
+     head-key="description"
+     name="description"
+     content="This is the default description"
+   />
+   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+ </Head>
 )
 
 // About.jsx
 import { Head } from '@inertiajs/react'
 
 export default () => (
-  <Head>
-    <title>About - My app</title>
-    <meta
-      head-key="description"
-      name="description"
-      content="This is a page specific description"
-    />
-  </Head>
+ <Head>
+   <title>About - My app</title>
+   <meta
+     head-key="description"
+     name="description"
+     content="This is a page specific description"
+   />
+ </Head>
 )
 ```
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // Not supported
 ```
 
@@ -278,7 +278,7 @@ When building a real application, it can sometimes be helpful to create a custom
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <!-- AppHead.vue -->
 <script setup>
 import { Head } from '@inertiajs/vue3'
@@ -295,7 +295,7 @@ defineProps({ title: String })
 
 == React
 
-```jsx
+```jsx twoslash
 // AppHead.jsx
 import { Head } from '@inertiajs/react'
 
@@ -311,7 +311,7 @@ export default ({ title, children }) => {
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // Not supported
 ```
 
@@ -322,7 +322,7 @@ Once you have created the custom component, you can just start using it in your 
 :::tabs key:frameworks
 == Vue
 
-```vue
+```vue twoslash
 <script setup>
 import AppHead from './AppHead'
 </script>
@@ -334,7 +334,7 @@ import AppHead from './AppHead'
 
 == React
 
-```jsx
+```jsx twoslash
 import AppHead from './AppHead'
 
 export default () => <AppHead title="About" />
@@ -342,7 +342,7 @@ export default () => <AppHead title="About" />
 
 == Svelte 4|Svelte 5
 
-```js
+```js twoslash
 // Not supported
 ```
 
@@ -356,7 +356,7 @@ Inertia has historically used the `inertia` attribute to track and manage elemen
 
 To enable this, configure the `future.useDataInertiaHeadAttribute` option in your [application defaults](/guide/client-side-setup#configuring-defaults).
 
-```js
+```js twoslash
 createInertiaApp({
   // resolve, setup, etc.
   defaults: {
