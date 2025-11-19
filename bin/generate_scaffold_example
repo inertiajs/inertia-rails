@@ -14,8 +14,8 @@ options = {
 OptionParser.new do |opts|
   opts.banner = "Usage: #{$PROGRAM_NAME} [options]"
 
-  opts.on('--framework FRAMEWORK', %w[react vue svelte svelte4],
-          'Choose framework (react/vue/svelte4/svelte)') do |f|
+  opts.on('--framework FRAMEWORK', %w[react vue svelte],
+          'Choose framework (react/vue/svelte)') do |f|
     options[:framework] = f
   end
 

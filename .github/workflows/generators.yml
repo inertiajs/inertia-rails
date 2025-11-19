@@ -20,10 +20,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [react, vue, svelte, svelte4]
+        framework: [react, vue, svelte]
         typescript: [true, false]
         tailwind: [true, false]
-        ruby: ['3.3']
+        ruby: ['3.4']
         node: ['22']
         inertia_version: ['latest']
 

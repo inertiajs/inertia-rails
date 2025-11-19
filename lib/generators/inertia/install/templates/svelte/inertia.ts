@@ -27,14 +27,24 @@ createInertiaApp({
 
   setup({ el, App, props }) {
     if (el) {
-<%= "      // @ts-expect-error 1.3.0 contains types mismatch\n" if inertia_resolved_version.release == Gem::Version.new('1.3.0') -%>
       mount(App, { target: el, props })
     } else {
       console.error(
         'Missing root element.\n\n' +
           'If you see this error, it probably means you load Inertia.js on non-Inertia pages.\n' +
-          'Consider moving <%%= vite_typescript_tag "inertia" %> to the Inertia-specific layout instead.',
+          'Consider moving <%= vite_typescript_tag "inertia" %> to the Inertia-specific layout instead.',
       )
     }
+  },
+
+  defaults: {
+    form: {
+      forceIndicesArrayFormatInFormData: true,
+    },
+    future: {
+      useDataInertiaHeadAttribute: true,
+      useDialogForErrorModal: true,
+      preserveEqualProps: true,
+    },
   },
 })

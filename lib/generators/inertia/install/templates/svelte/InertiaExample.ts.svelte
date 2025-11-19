@@ -34,7 +34,7 @@
       count is {count}
     </button>
     <p>
-      Edit <code>app/frontend/pages/InertiaExample.svelte</code> and save to test
+      Edit <code>app/frontend/pages/inertia_example/index.svelte</code> and save to test
       HMR
     </p>
   </div>

@@ -5,7 +5,7 @@ import inertiaSvg from '/assets/inertia.svg'
 import reactSvg from '/assets/react.svg'
 import viteRubySvg from '/assets/vite_ruby.svg'
 
-import cs from './InertiaExample.module.css'
+import cs from './index.module.css'
 
 export default function InertiaExample({ name }: { name: string }) {
   const [count, setCount] = useState(0)
@@ -47,7 +47,7 @@ export default function InertiaExample({ name }: { name: string }) {
             count is {count}
           </button>
           <p>
-            Edit <code>app/frontend/pages/InertiaExample.jsx</code> and save to
+            Edit <code>app/frontend/pages/inertia_example/index.tsx</code> and save to
             test HMR
           </p>
         </div>

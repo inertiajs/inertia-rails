@@ -65,7 +65,7 @@ module Inertia
         install_example_page if options[:example_page]
 
         say 'Copying bin/dev'
-        copy_file "#{__dir__}/templates/dev", 'bin/dev'
+        copy_file 'dev', 'bin/dev'
         chmod 'bin/dev', 0o755, verbose: verbose?
 
         say "Inertia's Rails adapter successfully installed", :green
@@ -87,12 +87,15 @@ module Inertia
         end
 
         say "Copying #{inertia_entrypoint} entrypoint"
-        template "#{framework}/#{inertia_entrypoint}", js_file_path("entrypoints/#{inertia_entrypoint}")
+        copy_file "#{framework}/#{inertia_entrypoint}", js_file_path("entrypoints/#{inertia_entrypoint}")
+
+        say 'Copying InertiaController'
+        copy_file 'inertia_controller.rb', file_path('app/controllers/inertia_controller.rb')
 
         if application_layout.exist?
           say "Adding #{inertia_entrypoint} script tag to the application layout"
           headers = <<-ERB
-    <%= #{vite_tag} "inertia" %>
+    <%= #{vite_tag} %>
     <%= inertia_ssr_head %>
           ERB
           insert_into_file application_layout.to_s, headers, after: "<%= vite_client_tag %>\n"
@@ -103,14 +106,14 @@ module Inertia
                              before: '<%= vite_client_tag %>'
           end
 
-          gsub_file application_layout.to_s, /<title>/, '<title inertia>' unless svelte?
+          gsub_file application_layout.to_s, /<title>/, '<title data-inertia>' unless svelte?
         else
           say_error 'Could not find the application layout file. Please add the following tags manually:', :red
           say_error '-  <title>...</title>'
-          say_error '+  <title inertia>...</title>'
+          say_error '+  <title data-inertia>...</title>'
           say_error '+  <%= inertia_ssr_head %>'
           say_error '+  <%= vite_react_refresh_tag %>' if framework == 'react'
-          say_error "+  <%= #{vite_tag} \"inertia\" %>"
+          say_error "+  <%= #{vite_tag} %>"
         end
       end
 
@@ -192,6 +195,8 @@ module Inertia
               say_error 'Failed to install Vite Rails', :red
               exit(false)
             end
+
+            add_package_manager_to_bin_setup
           end
         end
       end
@@ -258,11 +263,13 @@ module Inertia
       end
 
       def inertia_entrypoint
-        "inertia.#{typescript? ? 'ts' : 'js'}"
+        "inertia.#{typescript? ? 'ts' : 'js'}#{'x' if react?}"
       end
 
       def vite_tag
-        typescript? ? 'vite_typescript_tag' : 'vite_javascript_tag'
+        tag = typescript? ? 'vite_typescript_tag' : 'vite_javascript_tag'
+        filename = "\"#{react? ? inertia_entrypoint : 'inertia'}\""
+        "#{tag} #{filename}"
       end
 
       def inertia_resolved_version
@@ -280,6 +287,10 @@ module Inertia
         framework.start_with? 'svelte'
       end
 
+      def react?
+        framework.start_with? 'react'
+      end
+
       def inertia_package
         "#{FRAMEWORKS[framework]['inertia_package']}@#{options[:inertia_version]}"
       end
@@ -287,6 +298,26 @@ module Inertia
       def framework
         @framework ||= options[:framework] || ask('What framework do you want to use with Inertia?', :green,
                                                   limited_to: FRAMEWORKS.keys, default: 'react')
+      end
+
+      def add_package_manager_to_bin_setup
+        setup_file = file_path('bin/setup')
+        return unless File.exist?(setup_file)
+
+        content = File.read(setup_file)
+        pm_name = package_manager.name
+
+        # Check if package manager install already exists
+        return if content.include?("#{pm_name} install")
+
+        if content.match?(/system\('bundle check'\) \|\| system!\('bundle install'\)/)
+          say 'Adding package manager install to bin/setup'
+          cmd = "system! '#{pm_name} install'"
+          insert_into_file setup_file, "  #{cmd}\n",
+                           after: /system\('bundle check'\) \|\| system!\('bundle install'\)\n/
+        else
+          say_status "Couldn't add `#{cmd}` script to bin/setup, add it manually", :red
+        end
       end
     end
   end
