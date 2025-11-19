@@ -36,7 +36,7 @@ module InertiaRails
       end
 
       def inertia_base_path
-        (class_path + [file_name]).map(&:camelize).join('/')
+        (class_path + [file_name.pluralize]).join('/')
       end
 
       def inertia_component_name

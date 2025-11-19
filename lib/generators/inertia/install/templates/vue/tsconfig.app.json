@@ -27,5 +27,6 @@
       "~/*": ["<%= js_destination_path %>/*"]
     }
   },
+
   "include": ["<%= js_destination_path %>/**/*.ts", "<%= js_destination_path %>/**/*.tsx", "<%= js_destination_path %>/**/*.vue"]
 }

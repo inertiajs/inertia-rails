@@ -1,0 +1,102 @@
+<template>
+  <Form
+    :transform="data => ({ <%= singular_table_name %>: data })"
+    v-slot="{ processing, errors }"
+    v-bind="$attrs"
+  >
+<% attributes.each do |attribute| -%>
+<% if attribute.password_digest? -%>
+    <div>
+      <label class="label" for="password">Password</label>
+      <input
+        type="password"
+        name="password"
+        id="password"
+      />
+      <div v-if="errors.password" class="error">
+        {{ errors.password }}
+      </div>
+    </div>
+
+    <div>
+      <label class="label" for="password_confirmation">
+        Password confirmation
+      </label>
+      <input
+        type="password"
+        name="password_confirmation"
+        id="password_confirmation"
+      />
+      <div v-if="errors.password_confirmation" class="error">
+        {{ errors.password_confirmation }}
+      </div>
+    </div>
+<% else -%>
+    <div>
+      <label class="label" for="<%= attribute.singular_name %>"><%= attribute.human_name %></label>
+<% if input_type(attribute) == "text_area" -%>
+      <textarea
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+        :value="<%= singular_table_name %>.<%= attribute.column_name %>"
+      />
+<% elsif attribute.attachment? -%>
+      <input
+        type="file"
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+      />
+<% elsif attribute.attachments? -%>
+      <input
+        type="file"
+        multiple
+        name="<%= attribute.singular_name %>[]"
+        id="<%= attribute.singular_name %>"
+      />
+<% elsif input_type(attribute) == "checkbox" -%>
+      <input
+        type="<%= input_type(attribute) %>"
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+        :checked="<%= singular_table_name %>.<%= attribute.column_name %>"
+      />
+<% else -%>
+      <input
+        type="<%= input_type(attribute) %>"
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+        :value="<%= singular_table_name %>.<%= attribute.column_name %>"
+      />
+<% end -%>
+      <div v-if="errors.<%= attribute.column_name %>" class="error">
+        {{ errors.<%= attribute.column_name %> }}
+      </div>
+    </div>
+<% end -%>
+<% end -%>
+    <div>
+      <button type="submit" :disabled="processing">
+        {{ submitText }}
+      </button>
+    </div>
+  </Form>
+</template>
+
+<script setup lang="ts">
+import { Form } from '@inertiajs/vue3'
+import { <%= inertia_model_type %> } from './types'
+
+const { <%= singular_table_name %>, submitText } = defineProps<{
+  <%= singular_table_name %>: <%= inertia_model_type %>
+  submitText: string
+}>()
+</script>
+
+<style scoped>
+.label {
+  display: block;
+}
+.error {
+  color: red;
+}
+</style>

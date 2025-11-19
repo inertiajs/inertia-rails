@@ -322,11 +322,11 @@ module Inertia
         # Check if package manager install already exists
         return if content.include?("#{pm_name} install")
 
-        if content.match?(/system\('bundle check'\) \|\| system!\('bundle install'\)/)
+        if content.include?('system("bundle check") || system!("bundle install")')
           say 'Adding package manager install to bin/setup'
-          cmd = "system! '#{pm_name} install'"
-          insert_into_file setup_file, "  #{cmd}\n",
-                           after: /system\('bundle check'\) \|\| system!\('bundle install'\)\n/
+          cmd = "system! \"#{pm_name} install\""
+          insert_into_file setup_file, "\n  #{cmd}",
+                           after: 'system("bundle check") || system!("bundle install")'
         else
           say_status "Couldn't add `#{cmd}` script to bin/setup, add it manually", :red
         end

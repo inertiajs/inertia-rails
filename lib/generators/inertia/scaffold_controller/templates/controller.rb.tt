@@ -1,17 +1,19 @@
 <% module_namespacing do -%>
-class <%= controller_class_name %>Controller < ApplicationController
+class <%= controller_class_name %>Controller < <%= parent_controller %>
   before_action :set_<%= singular_table_name %>, only: %i[ show edit update destroy ]
 
 <% if regular_class_path.any? -%>
   wrap_parameters :<%= singular_table_name %>
 
 <% end -%>
+<% if parent_controller != 'InertiaController' -%>
   inertia_share flash: -> { flash.to_hash }
 
+<% end -%>
   # GET <%= route_url %>
   def index
     @<%= plural_table_name %> = <%= orm_class.all(class_name) %>
-    render inertia: '<%= "#{inertia_base_path}/Index" %>', props: {
+    render inertia: {
       <%= plural_table_name %>: @<%= plural_table_name %>.map do |<%= singular_table_name %>|
         <%= "serialize_#{singular_table_name}" %>(<%= singular_table_name %>)
       end
@@ -20,7 +22,7 @@ class <%= controller_class_name %>Controller < ApplicationController
 
   # GET <%= route_url %>/1
   def show
-    render inertia: '<%= "#{inertia_base_path}/Show" %>', props: {
+    render inertia: {
       <%= singular_table_name %>: <%= "serialize_#{singular_table_name}" %>(@<%= singular_table_name %>)
     }
   end
@@ -28,14 +30,14 @@ class <%= controller_class_name %>Controller < ApplicationController
   # GET <%= route_url %>/new
   def new
     @<%= singular_table_name %> = <%= orm_class.build(class_name) %>
-    render inertia: '<%= "#{inertia_base_path}/New" %>', props: {
+    render inertia: {
       <%= singular_table_name %>: <%= "serialize_#{singular_table_name}" %>(@<%= singular_table_name %>)
     }
   end
 
   # GET <%= route_url %>/1/edit
   def edit
-    render inertia: '<%= "#{inertia_base_path}/Edit" %>', props: {
+    render inertia: {
       <%= singular_table_name %>: <%= "serialize_#{singular_table_name}" %>(@<%= singular_table_name %>)
     }
   end

@@ -1,0 +1,26 @@
+<template>
+  <Head title="New <%= human_name.downcase %>" />
+
+  <h1>New <%= human_name.downcase %></h1>
+
+  <Form
+    :<%= singular_table_name %>="<%= singular_table_name %>"
+    submitText="Create <%= human_name %>"
+    action="<%= js_resources_path %>"
+    method="post"
+  />
+
+  <br />
+
+  <div>
+    <Link href="<%= js_resources_path %>">Back to <%= human_name.pluralize.downcase %></Link>
+  </div>
+</template>
+
+<script setup>
+import { Head, Link } from '@inertiajs/vue3'
+
+import Form from './form.vue'
+
+const { <%= singular_table_name %> } = defineProps(['<%= singular_table_name %>'])
+</script>
