@@ -50,7 +50,7 @@ module InertiaRails
         case options.frontend_framework
         when 'react' then typescript? ? 'tsx' : 'jsx'
         when 'vue' then 'vue'
-        when 'svelte', 'svelte4' then 'svelte'
+        when 'svelte' then 'svelte'
         else
           raise ArgumentError, "Unknown frontend framework: #{options.frontend_framework}"
         end

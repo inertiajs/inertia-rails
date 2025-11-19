@@ -19,9 +19,6 @@ RSpec.describe InertiaRails::Generators::Helper, type: :helper do
 
     it_behaves_like 'framework detection', 'react_package.json', 'react'
     it_behaves_like 'framework detection', 'svelte5_caret_package.json', 'svelte'
-    it_behaves_like 'framework detection', 'svelte5_exact_package.json', 'svelte'
-    it_behaves_like 'framework detection', 'svelte5_tilde_package.json', 'svelte'
-    it_behaves_like 'framework detection', 'svelte4_package.json', 'svelte4'
     it_behaves_like 'framework detection', 'vue_package.json', 'vue'
 
     # Handle exception

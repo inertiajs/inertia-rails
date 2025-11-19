@@ -13,8 +13,7 @@ module InertiaRails
           if dependencies['@inertiajs/react']
             'react'
           elsif dependencies['@inertiajs/svelte']
-            version = dependencies['svelte'].gsub(/[\^~]/, '') # Remove ^ or ~ from version
-            version.start_with?('5') ? 'svelte' : 'svelte4'
+            'svelte'
           elsif dependencies['@inertiajs/vue3']
             'vue'
           else

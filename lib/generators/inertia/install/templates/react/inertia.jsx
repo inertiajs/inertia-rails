@@ -1,5 +1,6 @@
-import { createInertiaApp } from '@inertiajs/vue3'
-import { createApp, DefineComponent, h } from 'vue'
+import { createInertiaApp } from '@inertiajs/react'
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
 
 createInertiaApp({
   // Set default page title
@@ -13,37 +14,39 @@ createInertiaApp({
   // progress: false,
 
   resolve: (name) => {
-    const pages = import.meta.glob<DefineComponent>('../pages/**/*.vue', {
+    const pages = import.meta.glob('../pages/**/*.jsx', {
       eager: true,
     })
-    const page = pages[`../pages/${name}.vue`]
+    const page = pages[`../pages/${name}.jsx`]
     if (!page) {
-      console.error(`Missing Inertia page component: '${name}.vue'`)
+      console.error(`Missing Inertia page component: '${name}.jsx'`)
     }
 
     // To use a default layout, import the Layout component
     // and use the following lines.
     // see https://inertia-rails.dev/guide/pages#default-layouts
     //
-    // page.default.layout = page.default.layout || Layout
+    // page.default.layout ||= (page) => (<Layout>{page}</Layout>)
 
     return page
   },
 
-  setup({ el, App, props, plugin }) {
-    createApp({ render: () => h(App, props) })
-      .use(plugin)
-      .mount(el)
+  setup({ el, App, props }) {
+    createRoot(el).render(
+      <StrictMode>
+        <App {...props} />
+      </StrictMode>
+    )
   },
 
   defaults: {
+    form: {
+      forceIndicesArrayFormatInFormData: true,
+    },
     future: {
       useDataInertiaHeadAttribute: true,
       useDialogForErrorModal: true,
       preserveEqualProps: true,
-    },
-    visitOptions: () => {
-      return { queryStringArrayFormat: "brackets" }
     },
   },
 }).catch((error) => {
@@ -56,8 +59,7 @@ createInertiaApp({
     console.error(
       "Missing root element.\n\n" +
       "If you see this error, it probably means you loaded Inertia.js on non-Inertia pages.\n" +
-      'Consider moving <%= vite_javascript_tag "inertia" %> to the Inertia-specific layout instead.',
+      'Consider moving <%= vite_javascript_tag "inertia.jsx" %> to the Inertia-specific layout instead.',
     )
   }
 })
-
