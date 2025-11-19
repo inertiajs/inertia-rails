@@ -11,10 +11,8 @@ export default function New({ <%= singular_table_name %> }) {
 
         <Form
           <%= singular_table_name %>={<%= singular_table_name %>}
-          onSubmit={(form) => {
-            form.transform((data) => ({ <%= singular_table_name %>: data }))
-            form.post('<%= js_resources_path %>')
-          }}
+          method="post"
+          action="<%= js_resources_path %>"
           submitText="Create <%= human_name %>"
         />
 

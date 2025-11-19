@@ -7,7 +7,13 @@
     <Form
       :<%= singular_table_name %>="<%= singular_table_name %>"
       submitText="Update <%= human_name %>"
-      @onSubmit="handleSubmit"
+      :action="`<%= js_resource_path %>`"
+<% if attributes.any?(&:attachments?) -%>
+      method="post"
+      :headers="{ 'X-HTTP-METHOD-OVERRIDE': 'patch' }"
+<% else -%>
+      method="patch"
+<% end -%>
     />
 
     <Link
@@ -26,20 +32,9 @@
 </template>
 
 <script setup lang="ts">
-import { Head, InertiaForm, Link } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import Form from './form.vue'
-import { <%= inertia_model_form_type %>, <%= inertia_model_type %> } from './types'
+import type { <%= inertia_model_type %> } from './types'
 
 const { <%= singular_table_name %> } = defineProps<{ <%= singular_table_name %>: <%= inertia_model_type %> }>()
-
-const handleSubmit = (form: InertiaForm<<%= inertia_model_form_type %>>) => {
-  form.transform((data) => ({ <%= singular_table_name %>: data }))
-<% if attributes.any?(&:attachments?) -%>
-  form.post(`<%= js_resource_path %>`, {
-    headers: { 'X-HTTP-METHOD-OVERRIDE': 'put' },
-  })
-<% else -%>
-  form.patch(`<%= js_resource_path %>`)
-<% end -%>
-}
 </script>

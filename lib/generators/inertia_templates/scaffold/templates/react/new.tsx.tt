@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react'
+
 import Form from './form'
-import { <%= inertia_model_type %> } from './types'
+import type { <%= inertia_model_type %> } from './types'
 
 interface NewProps {
   <%= singular_table_name %>: <%= inertia_model_type %>
@@ -15,10 +16,8 @@ export default function New({ <%= singular_table_name %> }: NewProps) {
 
       <Form
         <%= singular_table_name %>={<%= singular_table_name %>}
-        onSubmit={(form) => {
-          form.transform((data) => ({ <%= singular_table_name %>: data }))
-          form.post('<%= js_resources_path %>')
-        }}
+        action="<%= js_resources_path %>"
+        method="post"
         submitText="Create <%= human_name %>"
       />
 

@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react'
+
 import Form from './form'
-import { <%= inertia_model_type %> } from './types'
+import type { <%= inertia_model_type %> } from './types'
 
 interface EditProps {
   <%= singular_table_name %>: <%= inertia_model_type %>
@@ -15,16 +16,13 @@ export default function Edit({ <%= singular_table_name %> }: EditProps) {
 
       <Form
         <%= singular_table_name %>={<%= singular_table_name %>}
-        onSubmit={(form) => {
-          form.transform((data) => ({ <%= singular_table_name %>: data }))
+        action={`<%= js_resource_path %>`}
 <% if attributes.any?(&:attachments?) -%>
-          form.post(`<%= js_resource_path %>`, {
-            headers: { 'X-HTTP-METHOD-OVERRIDE': 'put' },
-          })
+        method="post"
+        headers={{ 'X-HTTP-METHOD-OVERRIDE': 'patch' }}
 <% else -%>
-          form.patch(`<%= js_resource_path %>`)
+        method="patch"
 <% end -%>
-        }}
         submitText="Update <%= human_name %>"
       />
 

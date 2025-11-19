@@ -1,91 +1,90 @@
 <script>
-  import { useForm } from '@inertiajs/svelte'
+  import { Form } from '@inertiajs/svelte'
 
-  let { <%= singular_table_name %>, submitText, onSubmit } = $props()
-
-  const form = useForm({
-<% attributes.each do |attribute| -%>
-<% if attribute.password_digest? -%>
-    password: '',
-    password_confirmation: '',
-<% else -%>
-    <%= attribute.column_name %>: <%= singular_table_name %>.<%= attribute.column_name %> || <%= default_value(attribute) %>,
-<% end -%>
-<% end -%>
-  })
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onSubmit({ form: $form })
-  }
+  let { <%= singular_table_name %>, submitText, restProps } = $props()
 </script>
 
-<form onsubmit={handleSubmit}>
+<Form
+  transform={(data) => ({ <%= singular_table_name %>: data })}
+  {...restProps}
+>
+  {#snippet children({
+    errors,
+    processing,
+  })}
 <% attributes.each do |attribute| -%>
 <% if attribute.password_digest? -%>
-  <div>
-    <label for="password">Password</label>
-    <input
-      type="password"
-      name="password"
-      id="password"
-      bind:value={$form.password}
-    />
-    {#if $form.errors.password}
-      <div class="error">{$form.errors.password.join(', ')}</div>
-    {/if}
-  </div>
+    <div>
+      <label for="password">Password</label>
+      <input
+        type="password"
+        name="password"
+        id="password"
+      />
+      {#if errors.password}
+        <div class="error">{errors.password.join(', ')}</div>
+      {/if}
+    </div>
 
-  <div>
-    <label for="password_confirmation">Password confirmation</label>
-    <input
-      type="password"
-      name="password_confirmation"
-      id="password_confirmation"
-      bind:value={$form.password_confirmation}
-    />
-    {#if $form.errors.password_confirmation}
-      <div class="error">{$form.errors.password_confirmation.join(', ')}</div>
-    {/if}
-  </div>
+    <div>
+      <label for="password_confirmation">Password confirmation</label>
+      <input
+        type="password"
+        name="password_confirmation"
+        id="password_confirmation"
+      />
+      {#if errors.password_confirmation}
+        <div class="error">{errors.password_confirmation.join(', ')}</div>
+      {/if}
+    </div>
 <% else -%>
-  <div>
-    <label for="<%= attribute.singular_name %>"><%= attribute.human_name %></label>
+    <div>
+      <label for="<%= attribute.singular_name %>"><%= attribute.human_name %></label>
 <% if input_type(attribute) == "text_area" -%>
-    <textarea name="<%= attribute.singular_name %>" id="<%= attribute.singular_name %>" bind:value={$form.<%= attribute.column_name %>}></textarea>
+      <textarea
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+        defaultValue={<%= singular_table_name %>.<%= attribute.column_name %> ?? ''}
+      ></textarea>
 <% elsif attribute.attachment? -%>
-    <input
-      type="file"
-      name="<%= attribute.singular_name %>"
-      id="<%= attribute.singular_name %>"
-      oninput={(e) => ($form.<%= attribute.column_name %> = e.target.files[0])}
-    />
+      <input
+        type="file"
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+      />
 <% elsif attribute.attachments? -%>
-    <input
-      type="file"
-      multiple
-      name="<%= attribute.singular_name %>[]"
-      id="<%= attribute.singular_name %>"
-      oninput={(e) => ($form.<%= attribute.column_name %> = Array.from(e.target.files))}
-    />
+      <input
+        type="file"
+        multiple
+        name="<%= attribute.singular_name %>[]"
+        id="<%= attribute.singular_name %>"
+      />
+<% elsif input_type(attribute) == "checkbox" -%>
+      <input
+        type="<%= input_type(attribute) %>"
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+        defaultChecked={<%= singular_table_name %>.<%= attribute.column_name %>}
+      />
 <% else -%>
-    <input
-      type="<%= input_type(attribute) %>"
-      name="<%= attribute.singular_name %>"
-      id="<%= attribute.singular_name %>"
-      <%= input_type(attribute) == "checkbox" ? "bind:checked" : "bind:value" %>={$form.<%= attribute.column_name %>}
-    />
+      <input
+        type="<%= input_type(attribute) %>"
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+        defaultValue={<%= singular_table_name %>.<%= attribute.column_name %> ?? ''}
+      />
 <% end -%>
-    {#if $form.errors.<%= attribute.column_name %>}
-      <div class="error">{$form.errors.<%= attribute.column_name %>.join(', ')}</div>
-    {/if}
-  </div>
+      {#if errors.<%= attribute.column_name %>}
+        <div class="error">{errors.<%= attribute.column_name %>.join(', ')}</div>
+      {/if}
+    </div>
 <% end -%>
 <% end -%>
-  <div>
-    <button type="submit" disabled={$form.processing}>{submitText}</button>
-  </div>
-</form>
+    <div>
+      <button type="submit" disabled={processing}>{submitText}</button>
+    </div>
+  {/snippet}
+</Form>
 
 <style>
   label {

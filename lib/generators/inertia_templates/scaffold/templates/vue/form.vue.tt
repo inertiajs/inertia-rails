@@ -1,5 +1,9 @@
 <template>
-  <form @submit.prevent="emit('onSubmit', form)">
+  <Form
+    :transform="data => ({ <%= singular_table_name %>: data })"
+    v-slot="{ processing, errors }"
+    v-bind="$attrs"
+  >
 <% attributes.each do |attribute| -%>
 <% if attribute.password_digest? -%>
     <div>
@@ -8,10 +12,9 @@
         type="password"
         name="password"
         id="password"
-        v-model="form.password"
       />
-      <div v-if="form.errors.password" class="error">
-        {{ form.errors.password.join(', ') }}
+      <div v-if="errors.password" class="error">
+        {{ errors.password.join(', ') }}
       </div>
     </div>
 
@@ -23,23 +26,25 @@
         type="password"
         name="password_confirmation"
         id="password_confirmation"
-        v-model="form.password_confirmation"
       />
-      <div v-if="form.errors.password_confirmation" class="error">
-        {{ form.errors.password_confirmation.join(', ') }}
+      <div v-if="errors.password_confirmation" class="error">
+        {{ errors.password_confirmation.join(', ') }}
       </div>
     </div>
 <% else -%>
     <div>
       <label class="label" for="<%= attribute.singular_name %>"><%= attribute.human_name %></label>
 <% if input_type(attribute) == "text_area" -%>
-      <textarea name="<%= attribute.singular_name %>" id="<%= attribute.singular_name %>" v-model="form.<%= attribute.column_name %>" />
+      <textarea
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+        :value="<%= singular_table_name %>.<%= attribute.column_name %>"
+      />
 <% elsif attribute.attachment? -%>
       <input
         type="file"
         name="<%= attribute.singular_name %>"
         id="<%= attribute.singular_name %>"
-        @input="form.<%= attribute.column_name %> = $event.target.files[0]"
       />
 <% elsif attribute.attachments? -%>
       <input
@@ -47,41 +52,40 @@
         multiple
         name="<%= attribute.singular_name %>[]"
         id="<%= attribute.singular_name %>"
-        @input="form.<%= attribute.column_name %> = Array.from($event.target.files)"
+      />
+<% elsif input_type(attribute) == "checkbox" -%>
+      <input
+        type="<%= input_type(attribute) %>"
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+        :checked="<%= singular_table_name %>.<%= attribute.column_name %>"
       />
 <% else -%>
-      <input type="<%= input_type(attribute) %>" name="<%= attribute.singular_name %>" id="<%= attribute.singular_name %>" v-model="form.<%= attribute.column_name %>" />
+      <input
+        type="<%= input_type(attribute) %>"
+        name="<%= attribute.singular_name %>"
+        id="<%= attribute.singular_name %>"
+        :value="<%= singular_table_name %>.<%= attribute.column_name %>"
+      />
 <% end -%>
-      <div v-if="form.errors.<%= attribute.column_name %>" class="error">
-        {{ form.errors.<%= attribute.column_name %>.join(', ') }}
+      <div v-if="errors.<%= attribute.column_name %>" class="error">
+        {{ errors.<%= attribute.column_name %>.join(', ') }}
       </div>
     </div>
 <% end -%>
 <% end -%>
     <div>
-      <button type="submit" :disabled="form.processing">
+      <button type="submit" :disabled="processing">
         {{ submitText }}
       </button>
     </div>
-  </form>
+  </Form>
 </template>
 
 <script setup>
-import { useForm } from '@inertiajs/vue3'
+import { Form } from '@inertiajs/vue3'
 
 const { <%= singular_table_name %>, submitText } = defineProps(['<%= singular_table_name %>', 'submitText'])
-const emit = defineEmits(['onSubmit'])
-
-const form = useForm({
-<% attributes.each do |attribute| -%>
-<% if attribute.password_digest? -%>
-  password: '',
-  password_confirmation: '',
-<% else -%>
-  <%= attribute.column_name %>: <%= singular_table_name %>.<%= attribute.column_name %> || <%= default_value(attribute) %>,
-<% end -%>
-<% end -%>
-})
 </script>
 
 <style scoped>

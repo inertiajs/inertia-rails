@@ -6,7 +6,8 @@
   <Form
     :<%= singular_table_name %>="<%= singular_table_name %>"
     submitText="Create <%= human_name %>"
-    @onSubmit="handleSubmit"
+    action="<%= js_resources_path %>"
+    method="post"
   />
 
   <br />
@@ -18,12 +19,8 @@
 
 <script setup>
 import { Head, Link } from '@inertiajs/vue3'
+
 import Form from './form.vue'
 
 const { <%= singular_table_name %> } = defineProps(['<%= singular_table_name %>'])
-
-const handleSubmit = (form) => {
-  form.transform((data) => ({ <%= singular_table_name %>: data }))
-  form.post('<%= js_resources_path %>')
-}
 </script>

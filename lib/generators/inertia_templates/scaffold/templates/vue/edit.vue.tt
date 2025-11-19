@@ -6,7 +6,13 @@
   <Form
     :<%= singular_table_name %>="<%= singular_table_name %>"
     submitText="Update <%= human_name %>"
-    @onSubmit="handleSubmit"
+    :action="`<%= js_resource_path %>`"
+<% if attributes.any?(&:attachments?) -%>
+    method="post"
+    :headers="{ 'X-HTTP-METHOD-OVERRIDE': 'patch' }"
+<% else -%>
+    method="patch"
+<% end -%>
   />
 
   <br />
@@ -19,18 +25,8 @@
 
 <script setup>
 import { Head, Link } from '@inertiajs/vue3'
+
 import Form from './form.vue'
 
 const { <%= singular_table_name %> } = defineProps(['<%= singular_table_name %>'])
-
-const handleSubmit = (form) => {
-  form.transform((data) => ({ <%= singular_table_name %>: data }))
-<% if attributes.any?(&:attachments?) -%>
-  form.post(`<%= js_resource_path %>`, {
-    headers: { 'X-HTTP-METHOD-OVERRIDE': 'put' },
-  })
-<% else -%>
-  form.patch(`<%= js_resource_path %>`)
-<% end -%>
-}
 </script>

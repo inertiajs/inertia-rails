@@ -1,5 +1,10 @@
 <template>
-  <form @submit.prevent="emit('onSubmit', form)" class="contents">
+  <Form
+    class="contents"
+    :transform="data => ({ <%= singular_table_name %>: data })"
+    v-slot="{ processing, errors }"
+    v-bind="$attrs"
+  >
 <% attributes.each do |attribute| -%>
 <% if attribute.password_digest? -%>
     <div class="my-5">
@@ -8,14 +13,13 @@
         type="password"
         name="password"
         id="password"
-        v-model="form.password"
         class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
       />
       <div
-        v-if="form.errors.password"
+        v-if="errors.password"
         class="text-red-500 px-3 py-2 font-medium"
       >
-        {{ form.errors.password }}
+        {{ errors.password }}
       </div>
     </div>
 
@@ -25,14 +29,13 @@
         type="password"
         name="password_confirmation"
         id="password_confirmation"
-        v-model="form.password_confirmation"
         class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
       />
       <div
-        v-if="form.errors.password_confirmation"
+        v-if="errors.password_confirmation"
         class="text-red-500 px-3 py-2 font-medium"
       >
-        {{ form.errors.password_confirmation }}
+        {{ errors.password_confirmation }}
       </div>
     </div>
 <% else -%>
@@ -42,7 +45,7 @@
       <textarea
         name="<%= attribute.singular_name %>"
         id="<%= attribute.singular_name %>"
-        v-model="form.<%= attribute.column_name %>"
+        :value="<%= singular_table_name %>.<%= attribute.column_name %>"
         rows="4"
         class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
       />
@@ -51,7 +54,6 @@
         type="file"
         name="<%= attribute.singular_name %>"
         id="<%= attribute.singular_name %>"
-        @input="form.<%= attribute.column_name %> = (($event.target as HTMLInputElement).files || [])[0]"
         class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
       />
 <% elsif attribute.attachments? -%>
@@ -60,7 +62,6 @@
         multiple
         name="<%= attribute.singular_name %>[]"
         id="<%= attribute.singular_name %>"
-        @input="form.<%= attribute.column_name %> = Array.from(($event.target as HTMLInputElement).files || [])"
         class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
       />
 <% elsif input_type(attribute) == "checkbox" -%>
@@ -68,7 +69,7 @@
         type="<%= input_type(attribute) %>"
         name="<%= attribute.singular_name %>"
         id="<%= attribute.singular_name %>"
-        v-model="form.<%= attribute.column_name %>"
+        :checked="<%= singular_table_name %>.<%= attribute.column_name %>"
         class="block mt-2 h-5 w-5"
       />
 <% else -%>
@@ -76,12 +77,12 @@
         type="<%= input_type(attribute) %>"
         name="<%= attribute.singular_name %>"
         id="<%= attribute.singular_name %>"
-        v-model="form.<%= attribute.column_name %>"
+        :value="<%= singular_table_name %>.<%= attribute.column_name %>"
         class="block shadow rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full"
       />
 <% end -%>
-      <div v-if="form.errors.<%= attribute.column_name %>" :class="$style.error">
-        {{ form.errors.<%= attribute.column_name %> }}
+      <div v-if="errors.<%= attribute.column_name %>" class="text-red-500 px-3 py-2 font-medium">
+        {{ errors.<%= attribute.column_name %> }}
       </div>
     </div>
 <% end -%>
@@ -90,45 +91,21 @@
     <div class="inline">
       <button
         type="submit"
-        :disabled="form.processing"
+        :disabled="processing"
         class="rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer"
       >
         {{ submitText }}
       </button>
     </div>
-  </form>
+  </Form>
 </template>
 
 <script setup lang="ts">
-import { InertiaForm, useForm } from '@inertiajs/vue3'
-import { <%= inertia_model_form_type %>, <%= inertia_model_type %> } from './types'
+import { Form } from '@inertiajs/vue3'
+import { <%= inertia_model_type %> } from './types'
 
 const { <%= singular_table_name %>, submitText } = defineProps<{
   <%= singular_table_name %>: <%= inertia_model_type %>
   submitText: string
 }>()
-
-const emit = defineEmits<{
-  onSubmit: [form: InertiaForm<<%= inertia_model_form_type %>>]
-}>()
-
-const form = useForm<<%= inertia_model_form_type %>>({
-<% attributes.reject { |a| a.attachment? || a.attachments? }.each do |attribute| -%>
-<% if attribute.password_digest? -%>
-  password: '',
-  password_confirmation: '',
-<% else -%>
-  <%= attribute.column_name %>: <%= singular_table_name %>.<%= attribute.column_name %>,
-<% end -%>
-<% end -%>
-})
 </script>
-
-<style module>
-.label {
-  display: block;
-}
-.error {
-  color: red;
-}
-</style>

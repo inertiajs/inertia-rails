@@ -1,13 +1,9 @@
 <script>
   import { Link } from '@inertiajs/svelte'
+
   import Form from './form.svelte'
 
   let { <%= singular_table_name %> } = $props()
-
-  const handleSubmit = ({ form }) => {
-    form.transform((data) => ({ <%= singular_table_name %>: data }))
-    form.post('<%= js_resources_path %>')
-  }
 </script>
 
 <svelte:head>
@@ -19,7 +15,8 @@
 <Form
   {<%= singular_table_name %>}
   submitText="Create <%= human_name %>"
-  onSubmit={handleSubmit}
+  action="<%= js_resource_path %>"
+  method="post"
 />
 
 <br />
