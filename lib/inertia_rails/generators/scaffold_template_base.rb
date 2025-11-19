@@ -19,7 +19,7 @@ module InertiaRails
         end
 
         template "#{options.frontend_framework}/#{partial_name}.#{template_extension}",
-                 File.join(base_path, "#{inertia_component_name}.#{extension}")
+                 File.join(base_path, "#{singular_name}.#{extension}")
 
         template "#{options.frontend_framework}/types.ts", File.join(base_path, 'types.ts') if typescript?
       end
@@ -34,11 +34,11 @@ module InertiaRails
       end
 
       def available_views
-        %w[Index Edit Show New Form]
+        %w[index edit show new form]
       end
 
       def partial_name
-        'One'
+        'one'
       end
     end
   end
