@@ -187,6 +187,12 @@ export default defineConfig({
                 },
               ],
             },
+            {
+              text: 'Deployment',
+              items: [
+                { text: 'Deploy with Kamal', link: '/cookbook/deploy-with-kamal' },
+              ],
+            },
           ],
         },
       ],
