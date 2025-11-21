@@ -101,6 +101,12 @@ module Inertia
         say "Copying #{inertia_entrypoint} entrypoint"
         copy_file "#{framework}/#{inertia_entrypoint}", js_file_path("entrypoints/#{inertia_entrypoint}")
 
+        # Copy framework-specific config files
+        if svelte?
+          say 'Copying svelte.config.js'
+          copy_file 'svelte/svelte.config.js', file_path('svelte.config.js')
+        end
+
         say 'Copying InertiaController'
         copy_file 'inertia_controller.rb', file_path('app/controllers/inertia_controller.rb')
 

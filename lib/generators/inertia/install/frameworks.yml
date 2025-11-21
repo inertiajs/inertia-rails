@@ -76,7 +76,6 @@ svelte:
   copy_files_js:
     "InertiaExample.svelte": "%{js_destination_path}/pages/inertia_example/index.svelte"
   copy_files:
-    "svelte.config.js": "svelte.config.js"
     "../assets/svelte.svg": "%{js_destination_path}/assets/svelte.svg"
     "../assets/inertia.svg": "%{js_destination_path}/assets/inertia.svg"
     "../assets/vite_ruby.svg": "%{js_destination_path}/assets/vite_ruby.svg"
