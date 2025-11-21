@@ -16,8 +16,7 @@
   <Form
     {<%= singular_table_name %>}
     submitText="Create <%= human_name %>"
-    onSubmit={handleSubmit}
-    action="<%= js_resource_path %>"
+    action="<%= js_resources_path %>"
     method="post"
   />
 
