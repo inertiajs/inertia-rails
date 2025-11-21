@@ -14,7 +14,7 @@ void createInertiaApp({
   // progress: false,
 
   resolve: (name) => {
-    const pages = import.meta.glob<ResolvedComponent>('../pages/**/*.tsx', {
+    const pages = import.meta.glob<{default: ResolvedComponent}>('../pages/**/*.tsx', {
       eager: true,
     })
     const page = pages[`../pages/${name}.tsx`]
@@ -26,7 +26,7 @@ void createInertiaApp({
     // and use the following line.
     // see https://inertia-rails.dev/guide/pages#default-layouts
     //
-    // page.default.layout ||= (page) => (<Layout>{page}</Layout>)
+    // page.default.layout ||= (page: ReactNode) => (<Layout>{page}</Layout>)
 
     return page
   },
