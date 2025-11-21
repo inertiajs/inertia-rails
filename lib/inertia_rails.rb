@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'inertia_rails/version'
 require 'inertia_rails/renderer'
 require 'inertia_rails/engine'
 
