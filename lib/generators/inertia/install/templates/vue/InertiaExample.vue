@@ -24,7 +24,7 @@
       </button>
       <p>
         Edit <code>app/frontend/pages/inertia_example/index.vue</code> and save to test
-        HMR
+        <abbr title="Hot Module Replacement">HMR</abbr>
       </p>
     </div>
     <p class="readTheDocs">
