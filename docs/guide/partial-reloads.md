@@ -210,7 +210,7 @@ For partial reloads to be most effective, be sure to also use lazy data evaluati
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
+    render inertia: {
       users: -> { User.all },
       companies: -> { Company.all },
     }
@@ -225,7 +225,7 @@ Additionally, Inertia provides an `InertiaRails.optional` method to specify that
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
+    render inertia: {
       users: InertiaRails.optional { User.all },
     }
   end
@@ -240,7 +240,7 @@ On the inverse, you can use the `InertiaRails.always` method to specify that a p
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
+    render inertia: {
       users: InertiaRails.always { User.all },
     }
   end
@@ -252,7 +252,7 @@ Here's a summary of each approach:
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
+    render inertia: {
       # ALWAYS included on standard visits
       # OPTIONALLY included on partial reloads
       # ALWAYS evaluated

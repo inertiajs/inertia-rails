@@ -174,7 +174,7 @@ class EventsController < ApplicationController
   def show
     event = Event.find(params[:id])
 
-    render inertia: 'Event/Show', props: {
+    render inertia: {
       event: event.as_json(
         only: [:id, :title, :start_date, :description]
       )

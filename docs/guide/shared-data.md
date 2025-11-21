@@ -244,9 +244,9 @@ Let's say we want a particular action to change only part of that data structure
 ```ruby
 class CrazyScorersController < ApplicationController
   def index
-    render inertia: 'CrazyScorersComponent',
-      props: { basketball_data: { points: 100 } },
-      deep_merge: true
+    render inertia: {
+      basketball_data: { points: 100 }
+    }, deep_merge: true
   end
 end
 
@@ -283,9 +283,9 @@ class CrazyScorersController < ApplicationController
   end
 
   def index
-    render inertia: 'CrazyScorersComponent',
-      props: { basketball_data: { points: 100 } },
-      deep_merge: false
+    render inertia: {
+      basketball_data: { points: 100 }
+    }, deep_merge: false
   end
 end
 

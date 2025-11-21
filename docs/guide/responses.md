@@ -2,14 +2,36 @@
 
 ## Creating responses
 
-Creating an Inertia response is simple. To get started, just use the `inertia` renderer in your controller methods, providing both the name of the [JavaScript page component](/guide/pages.md) that you wish to render, as well as any props (data) for the page.
+Creating an Inertia response is simple. By default, Inertia Rails follows convention over configuration: you simply pass the props (data) you wish to send to the page, and the component name is automatically inferred from the controller and action.
+
+```ruby
+class UsersController < ApplicationController
+  def show
+    user = User.find(params[:id])
+    render inertia: { user: } # Renders '../users/show.jsx|vue|svelte'
+  end
+end
+```
+
+Within Rails applications, the `UsersController#show` action would typically correspond to the file located at `app/frontend/pages/users/show.(jsx|vue|svelte)`.
+
+> [!WARNING]
+> To ensure that pages load quickly, only return the minimum data required for the page. Also, be aware that **all data returned from the controllers will be visible client-side**, so be sure to omit sensitive information.
+
+### Customizing the Component Path
+
+While the default convention works for most cases, you may need to render a specific component or change how component paths are resolved globally.
+
+#### Explicit Component Names
+
+If you wish to render a component that does not match the current controller action, you can explicitly provide the name of the [JavaScript page component](/guide/pages) followed by the props hash.
 
 ```ruby
 class EventsController < ApplicationController
-  def show
+  def my_event
     event = Event.find(params[:id])
 
-    render inertia: 'Event/Show', props: {
+    render inertia: 'events/show', props: {
       event: event.as_json(
         only: [:id, :title, :start_date, :description]
       )
@@ -18,36 +40,23 @@ class EventsController < ApplicationController
 end
 ```
 
-Within Rails applications, the `Event/Show` page would typically correspond to the file located at `app/frontend/pages/Event/Show.(jsx|vue|svelte)`.
+#### Custom Path Resolver
 
-> [!WARNING]
-> To ensure that pages load quickly, only return the minimum data required for the page. Also, be aware that **all data returned from the controllers will be visible client-side**, so be sure to omit sensitive information.
+If the default automatic path resolution does not match your project's conventions, you can define a custom resolution method via the `component_path_resolver` config value.
 
-### Automatically determine component name
-
-You can pass props without specifying a component name:
-
-```ruby
-class UsersController < ApplicationController
-  def show
-    render inertia: { user: @user } # Will render '../users/show.jsx|vue|svelte'
-  end
-end
-```
-
-If the default component path doesn't match your convention, you can define a custom resolution method via the `component_path_resolver` config value. The value should be callable and will receive the path and action parameters, returning a string component path.
+The value should be callable and will receive the `path` and `action` parameters, returning a string component path.
 
 ```ruby
 inertia_config(
   component_path_resolver: ->(path:, action:) do
-    "Storefront/#{path.camelize}/#{action.camelize}"
+    "storefront/#{path.camelize}/#{action.camelize}"
   end
 )
 ```
 
 ### Using instance variables as props
 
-Inertia enables the automatic passing of instance variables as props. This can be achieved by invoking the `use_inertia_instance_props` function in a controller or in a base controller from which other controllers inherit.
+For convenience, Inertia can automatically pass your controller's instance variables to the page component as props. To enable this behavior, invoke the `use_inertia_instance_props` method within your controller or a base controller.
 
 ```ruby
 class EventsController < ApplicationController
@@ -56,18 +65,25 @@ class EventsController < ApplicationController
   def index
     @events = Event.all
 
-    render inertia: 'Events/Index'
+    render inertia: 'events/index'
   end
 end
 ```
 
-This action automatically passes the `@events` instance variable as the `events` prop to the `Events/Index` page component.
+In this example, the `@events` instance variable is automatically included in the response as the `events` prop.
 
-> [!NOTE]
-> Manually providing any props for a response disables the instance props feature for that specific response.
+Please note that if you manually provide a props hash in your render call, the instance variables feature is disabled for that specific response.
 
-> [!NOTE]
-> Instance props are only included if they are defined **after** the `use_inertia_instance_props` call, hence the order of `before_action` callbacks is crucial.
+> [!WARNING]
+> Security and Performance Risk
+>
+> When enabled, this feature serializes all instance variables present in the controller at the time of rendering. This includes:
+>
+> - Variables set by `before_action` filters (e.g., `@current_user`, `@breadcrumbs`) called **after** `use_inertia_instance_props`.
+> - Memoized variables (often used for caching internal state, e.g., `@_cached_result`).
+> - Variables intended only for server-side logic.
+>
+> This creates a high risk of accidentally leaking sensitive data or internal implementation details to the client. It can also negatively impact performance by serializing unnecessary heavy objects. We recommend being explicit with your props whenever possible.
 
 ## Root template data
 
@@ -89,7 +105,7 @@ Sometimes you may even want to provide data to the root template that will not b
 def show
   event = Event.find(params[:id])
 
-  render inertia: 'Event', props: { event: }, view_data: { meta: event.meta }
+  render inertia: { event: }, view_data: { meta: event.meta }
 end
 ```
 
@@ -134,13 +150,13 @@ $ bin/rails generate inertia:scaffold Post title:string body:text
       invoke  scaffold_controller
       create    app/controllers/posts_controller.rb
       invoke    inertia_templates
-      create      app/frontend/pages/Post
-      create      app/frontend/pages/Post/Index.svelte
-      create      app/frontend/pages/Post/Edit.svelte
-      create      app/frontend/pages/Post/Show.svelte
-      create      app/frontend/pages/Post/New.svelte
-      create      app/frontend/pages/Post/Form.svelte
-      create      app/frontend/pages/Post/Post.svelte
+      create      app/frontend/pages/posts
+      create      app/frontend/pages/posts/index.svelte
+      create      app/frontend/pages/posts/edit.svelte
+      create      app/frontend/pages/posts/show.svelte
+      create      app/frontend/pages/posts/new.svelte
+      create      app/frontend/pages/posts/form.svelte
+      create      app/frontend/pages/posts/post.svelte
       invoke    resource_route
       invoke    test_unit
       create      test/controllers/posts_controller_test.rb
@@ -178,9 +194,9 @@ $ bin/rails generate inertia:controller pages welcome next_steps
       create    app/helpers/pages_helper.rb
       invoke    test_unit
       invoke  inertia_templates
-      create    app/frontend/pages/Pages
-      create    app/frontend/pages/Pages/Welcome.jsx
-      create    app/frontend/pages/Pages/NextSteps.jsx
+      create    app/frontend/pages/pages
+      create    app/frontend/pages/pages/welcome.jsx
+      create    app/frontend/pages/pages/next_steps.jsx
 ```
 
 ### Customizing the generator templates
@@ -235,7 +251,7 @@ Inertia responses always operate as a `:html` response type. This means that you
 def some_action
   respond_to do |format|
     format.html do
-      render inertia: 'Some/Component', props: { data: 'value' }
+      render inertia: { data: 'value' }
     end
 
     format.json do
