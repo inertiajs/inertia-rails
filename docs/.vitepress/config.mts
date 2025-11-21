@@ -92,6 +92,7 @@ export default defineConfig({
           items: [
             { text: 'Server-side', link: '/guide/server-side-setup' },
             { text: 'Client-side', link: '/guide/client-side-setup' },
+            { text: 'Starter kits', link: '/guide/starter-kits' },
           ],
         },
         {

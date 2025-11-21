@@ -10,7 +10,7 @@ Server-side rendering pre-renders your JavaScript pages on the server, allowing 
 
 ## Add server entry-point
 
-Next, we'll create a `app/frontend/ssr/ssr.js` file within the Rails project that will serve as the SSR entry point.
+Next, we'll create a <Vue>`app/frontend/ssr/ssr.js`</Vue><React>`app/frontend/ssr/ssr.jsx`</React><Svelte>`app/frontend/ssr/ssr.js`</Svelte> file within the Rails project that will serve as the SSR entry point.
 
 This file is going to look very similar to your regular inertia initialization file, except it's not going to run in the browser, but rather in Node.js. Here's a complete example.
 
@@ -196,6 +196,7 @@ Next, we need to update our Vite configuration to build our new `ssr.js` file. W
 ## Enable SSR in the Inertia's Rails adapter
 
 ```ruby
+# config/initializers/inertia_rails.rb
 InertiaRails.configure do |config|
   config.ssr_enabled = ViteRuby.config.ssr_build_enabled
 end
@@ -249,7 +250,7 @@ createInertiaApp({
 == React
 
 ```js
-// frontend/entrypoints/inertia.js
+// frontend/entrypoints/inertia.jsx
 import { createInertiaApp } from '@inertiajs/react'
 import { createRoot } from 'react-dom/client' // [!code --]
 import { hydrateRoot } from 'react-dom/client' // [!code ++]
