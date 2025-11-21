@@ -260,8 +260,8 @@ To define the base route for your modal, you need to use the `inertia_modal` ren
 
 class UsersController < ApplicationController
   def edit
-    render inertia: 'Users/Edit', props: { # [!code --]
-    render inertia_modal: 'Users/Edit', props: { # [!code ++]
+    render inertia: { # [!code --]
+    render inertia_modal: { # [!code ++]
       user:,
       roles: -> { Role.all },
     }
@@ -275,7 +275,7 @@ Then, you can pass the `base_url` parameter to the `inertia_modal` renderer to d
 
 class UsersController < ApplicationController
   def edit
-    render inertia_modal: 'Users/Edit', props: {
+    render inertia_modal: {
       user:,
       roles: -> { Role.all },
     } # [!code --]

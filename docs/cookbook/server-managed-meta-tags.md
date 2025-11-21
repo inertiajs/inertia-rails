@@ -212,7 +212,7 @@ class EventsController < ApplicationController
   def show
     event = Event.find(params[:id])
 
-    render inertia: 'Event/Show', props: { event: event.as_json }, meta: [
+    render inertia: { event: event.as_json }, meta: [
       { title: "Check out the #{event.name} event!" },
       { name: 'description', content: event.description },
       { tag_name: 'script', type: 'application/ld+json', inner_content: { '@context': 'https://schema.org', '@type': 'Event', name: 'My Event' } }
@@ -232,7 +232,7 @@ class EventsController < ApplicationController
   before_action :set_meta_tags
 
   def show
-    render inertia: 'Event/Show', props: { event: Event.find(params[:id]) }
+    render inertia: { event: Event.find(params[:id]) }
   end
 
   private
@@ -319,12 +319,12 @@ class StoriesController < ApplicationController
 
   # Renders a single article:author meta tag
   def single_author
-    render inertia: 'Stories/Show'
+    render inertia: 'stories/show'
   end
 
   # Renders multiple article:author meta tags
   def multiple_authors
-    render inertia: 'Stories/Show', meta: [
+    render inertia: 'stories/show', meta: [
       { name: 'article:author', content: 'Dan Gilroy', allow_duplicates: true },
     ]
   end

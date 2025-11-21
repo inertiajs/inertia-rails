@@ -22,7 +22,7 @@ If you'd like to enable history encryption globally, set the `encrypt_history` c
 You are able to opt out of encryption on specific pages by passing `false` to the `encrypt_history` option.
 
 ```ruby
-render inertia: 'Homepage', props: {}, encrypt_history: false
+render inertia: {}, encrypt_history: false
 ```
 
 ### Per-request encryption
@@ -30,7 +30,7 @@ render inertia: 'Homepage', props: {}, encrypt_history: false
 To encrypt the history of an individual request, simply pass `true` to the `encrypt_history` option.
 
 ```ruby
-render inertia: 'Dashboard', props: {}, encrypt_history: true
+render inertia: {}, encrypt_history: true
 ```
 
 ### Controller-level encryption
@@ -50,7 +50,7 @@ end
 To clear the history state on the server side, you can pass the `clear_history` option to the `render` method.
 
 ```ruby
-render inertia: 'Dashboard', props: {}, clear_history: true
+render inertia: {}, clear_history: true
 ```
 
 Once the response has rendered on the client, the encryption key will be rotated, rendering the previous history state unreadable.

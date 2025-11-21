@@ -11,7 +11,7 @@ To defer a prop, you can use the `InertiaRails.defer` method when returning your
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
+    render inertia: {
       users: -> { User.all },
       roles: -> { Role.all },
       permissions: InertiaRails.defer { Permission.all },
@@ -27,7 +27,7 @@ By default, all deferred props get fetched in one request after the initial page
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
+    render inertia: {
       users: -> { User.all },
       roles: -> { Role.all },
       permissions: InertiaRails.defer { Permission.all },
