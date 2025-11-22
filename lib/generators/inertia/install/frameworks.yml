@@ -23,6 +23,7 @@ react:
     "InertiaExample.jsx": "%{js_destination_path}/pages/inertia_example/index.jsx"
   copy_files:
     "InertiaExample.module.css": "%{js_destination_path}/pages/inertia_example/index.module.css"
+    "../assets/rails.svg": "%{js_destination_path}/assets/rails.svg"
     "../assets/react.svg": "%{js_destination_path}/assets/react.svg"
     "../assets/inertia.svg": "%{js_destination_path}/assets/inertia.svg"
     "../assets/vite_ruby.svg": "%{js_destination_path}/assets/vite_ruby.svg"
@@ -39,6 +40,7 @@ vue:
   vite_plugin_import: "import vue from '@vitejs/plugin-vue'"
   vite_plugin_call: "vue()"
   copy_files:
+    "../assets/rails.svg": "%{js_destination_path}/assets/rails.svg"
     "../assets/vue.svg": "%{js_destination_path}/assets/vue.svg"
     "../assets/inertia.svg": "%{js_destination_path}/assets/inertia.svg"
     "../assets/vite_ruby.svg": "%{js_destination_path}/assets/vite_ruby.svg"
@@ -76,6 +78,7 @@ svelte:
   copy_files_js:
     "InertiaExample.svelte": "%{js_destination_path}/pages/inertia_example/index.svelte"
   copy_files:
+    "../assets/rails.svg": "%{js_destination_path}/assets/rails.svg"
     "../assets/svelte.svg": "%{js_destination_path}/assets/svelte.svg"
     "../assets/inertia.svg": "%{js_destination_path}/assets/inertia.svg"
     "../assets/vite_ruby.svg": "%{js_destination_path}/assets/vite_ruby.svg"
