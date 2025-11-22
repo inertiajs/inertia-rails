@@ -105,7 +105,7 @@ For Tailwind CSS v4, add the modal styles to your CSS:
 
 ```css
 /* app/entrypoints/frontend/application.css */
-@source "../../../node_modules/@inertiaui/modal-vue";
+@source '../../../node_modules/@inertiaui/modal-vue';
 ```
 
 For Tailwind CSS v3, update your `tailwind.config.js`:
@@ -125,7 +125,7 @@ For Tailwind CSS v4, add the modal styles to your CSS:
 
 ```css
 /* app/entrypoints/frontend/application.css */
-@source "../../../node_modules/@inertiaui/modal-react";
+@source '../../../node_modules/@inertiaui/modal-react';
 ```
 
 For Tailwind CSS v3, update your `tailwind.config.js`:

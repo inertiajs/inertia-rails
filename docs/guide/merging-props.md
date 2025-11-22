@@ -121,7 +121,8 @@ class ChatController < ApplicationController
 end
 ```
 
-> [!NOTE] > `InertiaRails.deep_merge` was introduced before `InertiaRails.merge` had support for prepending and targeting nested paths. In most cases, `InertiaRails.merge` with its append and prepend parameters should be sufficient.
+> [!NOTE]
+> `InertiaRails.deep_merge` was introduced before `InertiaRails.merge` had support for prepending and targeting nested paths. In most cases, `InertiaRails.merge` with its append and prepend parameters should be sufficient.
 
 ## Client side visits
 
