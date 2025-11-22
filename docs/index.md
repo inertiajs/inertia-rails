@@ -4,9 +4,9 @@ layout: home
 
 hero:
   name: 'Inertia.js Rails'
-  text: 'Build single-page apps, without building an API.'
+  text: 'Build frontend experiences with the backend you love'
   tagline: |-
-    Create modern single-page React, Vue, and Svelte apps using classic server-side routing.
+    Develop React, Vue, and Svelte SPAs with the elegance of server-side routing. No API required.
   actions:
     - theme: brand
       text: Get Started
