@@ -1,3 +1,7 @@
+import { buildEndGenerateOpenGraphImages } from '@nolebase/vitepress-plugin-og-image'
+import fs from 'fs-extra'
+import { createRequire } from 'node:module'
+import path from 'path'
 import { defineConfig } from 'vitepress'
 import llmstxt from 'vitepress-plugin-llms'
 import { availableSinceMarkdownPlugin } from './availableSinceMarkdownPlugin'
@@ -6,7 +10,9 @@ import { tabsMarkdownPlugin } from './vitepress-plugin-tabs/tabsMarkdownPlugin'
 const title = 'Inertia Rails'
 const description = 'Documentation for Inertia.js Rails adapter'
 const site = 'https://inertia-rails.dev'
-const image = `${site}/og_image.jpg`
+
+const image = `${site}/og-image.png`
+const require = createRequire(import.meta.url)
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -214,5 +220,41 @@ export default defineConfig({
       { icon: 'x', link: 'https://x.com/inertiajs' },
       { icon: 'discord', link: 'https://discord.gg/inertiajs' },
     ],
+  },
+  async buildEnd(siteconfig) {
+    async function loadSvgFontBuffers() {
+      const interFontFilesDirectoryPath = path.join(
+        require.resolve('@fontsource/inter'),
+        '..',
+        'files',
+      )
+      const interFontFilePaths = [
+        'inter-latin-500-normal.woff2',
+        'inter-latin-800-normal.woff2',
+      ]
+
+      return await Promise.all(
+        interFontFilePaths.map((filename) =>
+          fs.readFile(path.join(interFontFilesDirectoryPath, filename)),
+        ),
+      )
+    }
+
+    await buildEndGenerateOpenGraphImages({
+      baseUrl: 'https://inertia-rails.dev',
+      svgFontBuffers: await loadSvgFontBuffers(),
+      category: {
+        byPathPrefix: [
+          {
+            prefix: '/guide',
+            text: 'Guide',
+          },
+          {
+            prefix: '/cookbook',
+            text: 'Cookbook',
+          },
+        ],
+      },
+    })(siteconfig)
   },
 })

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+    <path fill="#f5f5f5" stroke="none" d="M 0 0 L 1200 0 L 1200 630 L 0 630 Z"/>
+    <clipPath id="a">
+        <path d="M 0 0 L 1200 0 L 1200 630 L 0 630 Z"/>
+    </clipPath>
+    <g clip-path="url(#a)">
+        <path fill="#ffffff" stroke="none" d="M 0 0 L 1200 0 L 1200 610 L 0 610 Z"/>
+        <text xml:space="preserve" x="63" y="287" font-family="Inter" font-size="32" fill="#929295">{{category}}</text>
+        <g>
+            <path fill="#2563eb" fill-rule="evenodd" stroke="none" d="M 1140 315 C 1140 204.542999 1050.457031 115 940 115 C 829.542969 115 740 204.542999 740 315 C 740 425.457001 829.542969 515 940 515 C 1050.457031 515 1140 425.457001 1140 315 Z"/>
+            <path fill="#ffffff" stroke="none" d="M 877.330994 232.600006 L 792.400024 232.600006 L 874.468994 314.669006 L 792.400024 396.737 L 877.330994 396.737 L 959.400024 314.670013 Z"/>
+            <path fill="#ffffff" stroke="none" d="M 1005.230957 232.600006 L 920.299988 232.600006 L 1002.368958 314.669006 L 920.299988 396.737 L 1005.230957 396.737 L 1087.299927 314.670013 Z"/>
+        </g>
+        <text xml:space="preserve" x="63" y="382" font-family="Inter" font-size="48" font-weight="500" fill="#67676c">{{line1}}</text>
+        <text xml:space="preserve" x="63" y="449" font-family="Inter" font-size="48" font-weight="500" fill="#67676c">{{line2}}</text>
+        <text xml:space="preserve" x="63" y="516" font-family="Inter" font-size="48" font-weight="500" fill="#67676c">{{line3}}</text>
+        <text xml:space="preserve" x="63" y="235" font-family="Inter" font-size="72" font-weight="800" fill="#3c3c43">Inertia.js Rails</text>
+    </g>
+</svg>
