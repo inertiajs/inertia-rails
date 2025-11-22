@@ -5,7 +5,7 @@ We've setup a demo app for Inertia.js called [Ping CRM](https://demo.inertiajs.c
 > [!NOTE]
 > The Ping CRM demo is hosted on Heroku and the database is reset every hour. Please be respectful when editing data.
 
-[![Ping CRM demo](/pingcrm.png)](https://demo.inertiajs.com/login)
+[![Ping CRM demo](/images/pingcrm.png)](https://demo.inertiajs.com/login)
 
 In addition to the Vue version of Ping CRM, we also maintain a Svelte version of the application, which you can find [on GitHub](https://github.com/inertiajs/pingcrm-svelte).
 
