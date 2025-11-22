@@ -7,6 +7,8 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@nolebase/vitepress-plugin-og-image": "^2.18.2",
     "markdown-it-container": "^4.0.0",
     "prettier": "^3.3.3",
     "prettier-plugin-organize-imports": "^4.1.0",
