@@ -276,9 +276,9 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
         when :svelte
           file('pages/inertia_example/index.svelte') do
             if ext == 'ts'
-              contains('let { name }: { name: string } = $props()')
+              contains('let { rails_version, rack_version, ruby_version, inertia_rails_version }:')
             else
-              contains('let { name } = $props()')
+              contains('let { rails_version, rack_version, ruby_version, inertia_rails_version } = $props()')
             end
           end
           file('assets/svelte.svg')
