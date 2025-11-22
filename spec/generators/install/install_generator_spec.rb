@@ -284,6 +284,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
           file('assets/svelte.svg')
         end
 
+        file('assets/rails.svg')
         file('assets/inertia.svg')
         file('assets/vite_ruby.svg')
       end

@@ -1,3 +1,4 @@
+import { Head } from '@inertiajs/react'
 import { version as react_version } from 'react'
 
 import railsSvg from '/assets/rails.svg'
@@ -12,8 +13,10 @@ export default function InertiaExample(
 ) {
   return (
     <div className={cs.root}>
+      <Head title="Ruby on Rails + Inertia + React" />
+
       <nav className={cs.subNav}>
-        <a href="https://rubyonrails.org" target="_blank" className={cs.logo}>
+        <a href="https://rubyonrails.org" target="_blank">
           <img  className={`${cs.logo} ${cs.rails}`} alt="Ruby on Rails Logo" src={railsSvg} />
         </a>
         <a href="https://inertia-rails.dev" target="_blank">
@@ -52,58 +55,5 @@ export default function InertiaExample(
           </ul>
       </div>
     </div>
-  )
-}
-
-
-export default function InertiaExample({ name }: { name: string }) {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <Head title="Inertia + Vite Ruby + React Example" />
-
-      <div className={cs.root}>
-        <h1 className={cs.h1}>Hello {name}!</h1>
-
-        <div>
-          <a href="https://inertia-rails.dev" target="_blank">
-            <img className={cs.logo} src={inertiaSvg} alt="Inertia logo" />
-          </a>
-          <a href="https://vite-ruby.netlify.app" target="_blank">
-            <img
-              className={`${cs.logo} ${cs.vite}`}
-              src={viteRubySvg}
-              alt="Vite Ruby logo"
-            />
-          </a>
-          <a href="https://react.dev" target="_blank">
-            <img
-              className={`${cs.logo} ${cs.react}`}
-              src={reactSvg}
-              alt="React logo"
-            />
-          </a>
-        </div>
-
-        <h2 className={cs.h2}>Inertia + Vite Ruby + React</h2>
-
-        <div className="card">
-          <button
-            className={cs.button}
-            onClick={() => setCount((count) => count + 1)}
-          >
-            count is {count}
-          </button>
-          <p>
-            Edit <code>app/frontend/pages/inertia_example/index.tsx</code> and save to
-            test HMR
-          </p>
-        </div>
-        <p className={cs.readTheDocs}>
-          Click on the Inertia, Vite Ruby, and React logos to learn more
-        </p>
-      </div>
-    </>
   )
 }

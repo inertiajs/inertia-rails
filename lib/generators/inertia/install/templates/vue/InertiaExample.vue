@@ -17,7 +17,7 @@
     <div class="footer">
       <div class="card">
         <p>
-          Edit <code>app/frontend/pages/inertia_example/index.jsx</code> and save to test <abbr title="Hot Module Replacement">HMR</abbr>.
+          Edit <code>app/frontend/pages/inertia_example/index.vue</code> and save to test <abbr title="Hot Module Replacement">HMR</abbr>.
         </p>
       </div>
 
@@ -49,7 +49,6 @@ import inertiaSvg from '/assets/inertia.svg'
 import vueSvg from '/assets/vue.svg'
 
 defineProps({
-  name: String,
   rails_version: String,
   rack_version: String,
   ruby_version: String,
@@ -65,98 +64,91 @@ defineProps({
 </style>
 
 <style scoped>
-.root {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  align-items: center;
-  background-color: #F0E7E9;
-  background-image: url(data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjEwMjQiIHZpZXdCb3g9IjAgMCAxNDQwIDEwMjQiIHdpZHRoPSIxNDQwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Im0xNDQwIDUxMC4wMDA2NDh2LTUxMC4wMDA2NDhoLTE0NDB2Mzg0LjAwMDY0OGM0MTcuMzExOTM5IDEzMS4xNDIxNzkgODkxIDE3MS41MTMgMTQ0MCAxMjZ6IiBmaWxsPSIjZmZmIi8+PC9zdmc+);
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  color: #261B23;
-  display: flex;
-  flex-direction: column;
-  font-family: Sans-Serif;
-  font-size: calc(0.9em + 0.5vw);
-  font-style: normal;
-  font-weight: 400;
-  justify-content: center;
-  line-height: 1.25;
-  min-height: 100vh;
-  text-align: center;
-}
-
-@media (prefers-color-scheme: dark) {
   .root {
-    background-color: #1a1a1a;
-    background-image: url(data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjEwMjQiIHZpZXdCb3g9IjAgMCAxNDQwIDEwMjQiIHdpZHRoPSIxNDQwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Im0xNDQwIDUxMC4wMDA2NDh2LTUxMC4wMDA2NDhoLTE0NDB2Mzg0LjAwMDY0OGM0MTcuMzExOTM5IDEzMS4xNDIxNzkgODkxIDE3MS41MTMgMTQ0MCAxMjZ6IiBmaWxsPSIjMzMzIi8+PC9zdmc+);
-    color: #e0e0e0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    background-color: #F0E7E9;
+    background-image: url(data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjEwMjQiIHZpZXdCb3g9IjAgMCAxNDQwIDEwMjQiIHdpZHRoPSIxNDQwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Im0xNDQwIDUxMC4wMDA2NDh2LTUxMC4wMDA2NDhoLTE0NDB2Mzg0LjAwMDY0OGM0MTcuMzExOTM5IDEzMS4xNDIxNzkgODkxIDE3MS41MTMgMTQ0MCAxMjZ6IiBmaWxsPSIjZmZmIi8+PC9zdmc+);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    color: #261B23;
+    display: flex;
+    flex-direction: column;
+    font-family: Sans-Serif;
+    font-size: calc(0.9em + 0.5vw);
+    font-style: normal;
+    font-weight: 400;
+    justify-content: center;
+    line-height: 1.25;
+    min-height: 100vh;
+    text-align: center;
   }
-}
 
-.logo {
-  display: inline-block;
-  height: 9.8vw;
-  min-height: 130px;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-  filter: drop-shadow(0 20px 13px rgb(0 0 0 / 0.03)) drop-shadow(0 8px 5px rgb(0 0 0 / 0.08));
-}
-.logo.inertia:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #e4023baa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-.logo.rails:hover {
-  filter: drop-shadow(0 0 2em rgb(211 0 1 / 0.6));
-}
+  @media (prefers-color-scheme: dark) {
+    .root {
+      background-color: #1a1a1a;
+      background-image: url(data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjEwMjQiIHZpZXdCb3g9IjAgMCAxNDQwIDEwMjQiIHdpZHRoPSIxNDQwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Im0xNDQwIDUxMC4wMDA2NDh2LTUxMC4wMDA2NDhoLTE0NDB2Mzg0LjAwMDY0OGM0MTcuMzExOTM5IDEzMS4xNDIxNzkgODkxIDE3MS41MTMgMTQ0MCAxMjZ6IiBmaWxsPSIjMzMzIi8+PC9zdmc+);
+      color: #e0e0e0;
+    }
+  }
 
-@media (prefers-color-scheme: dark) {
   .logo {
-    filter: drop-shadow(0 20px 13px rgb(255 255 255 / 0.03)) drop-shadow(0 8px 5px rgb(255 255 255 / 0.08));
+    display: inline-block;
+    height: 9.8vw;
+    min-height: 130px;
+    padding: 1.5em;
+    will-change: filter;
+    transition: filter 300ms;
+    filter: drop-shadow(0 20px 13px rgb(0 0 0 / 0.03)) drop-shadow(0 8px 5px rgb(0 0 0 / 0.08));
   }
-}
+  .logo.inertia:hover {
+    filter: drop-shadow(0 0 2em #646cffaa);
+  }
+  .logo.vue:hover {
+    filter: drop-shadow(0 0 2em #61dafbaa);
+  }
+  .logo.rails:hover {
+    filter: drop-shadow(0 0 2em rgb(211 0 1 / 0.6));
+  }
 
-.card {
-  padding: 2em;
-  font-size: 0.7em;
-  color: #948e90;
-}
+  @media (prefers-color-scheme: dark) {
+    .logo {
+      filter: drop-shadow(0 20px 13px rgb(255 255 255 / 0.03)) drop-shadow(0 8px 5px rgb(255 255 255 / 0.08));
+    }
+  }
 
-.card + .card {
-  padding-top: 0;
-}
+  .card {
+    padding: 2em;
+    font-size: 0.7em;
+    color: #948e90;
+  }
 
-.footer {
-  bottom: 0;
-  left: 0;
-  margin: 0 2rem 2rem 2rem;
-  position: absolute;
-  right: 0;
-}
+  .footer {
+    bottom: 0;
+    left: 0;
+    margin: 0 2rem 2rem 2rem;
+    position: absolute;
+    right: 0;
+  }
 
-.footer ul {
-  list-style: none;
-}
+  .footer ul {
+    list-style: none;
+  }
 
-.footer ul li {
-  display: inline;
-}
+  .footer ul li {
+    display: inline;
+  }
 
-.footer ul ul li:after {
-  content: " | ";
-  font-weight: 300;
-  color: #948e90;
-}
+  .footer ul ul li:after {
+    content: " | ";
+    font-weight: 300;
+    color: #948e90;
+  }
 
-.footer ul ul li:last-child:after {
-  content: "";
-}
+  .footer ul ul li:last-child:after {
+    content: "";
+  }
 </style>

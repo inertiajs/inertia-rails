@@ -41,13 +41,10 @@
 .logo.inertia:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #e4023baa);
-}
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
-.logo.rails:hover {
+.logo.rails:hover  {
   filter: drop-shadow(0 0 2em rgb(211 0 1 / 0.6));
 }
 
@@ -76,10 +73,6 @@
   padding: 2em;
   font-size: 0.7em;
   color: #948e90;
-}
-
-.card + .card {
-  padding-top: 0;
 }
 
 .footer {

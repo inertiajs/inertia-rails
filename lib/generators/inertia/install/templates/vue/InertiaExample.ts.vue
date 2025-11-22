@@ -17,7 +17,7 @@
     <div class="footer">
       <div class="card">
         <p>
-          Edit <code>app/frontend/pages/inertia_example/index.jsx</code> and save to test <abbr title="Hot Module Replacement">HMR</abbr>.
+          Edit <code>app/frontend/pages/inertia_example/index.ts.vue</code> and save to test <abbr title="Hot Module Replacement">HMR</abbr>.
         </p>
       </div>
 
@@ -49,7 +49,6 @@ import inertiaSvg from '/assets/inertia.svg'
 import vueSvg from '/assets/vue.svg'
 
 defineProps({
-  name: String,
   rails_version: String,
   rack_version: String,
   ruby_version: String,
@@ -108,9 +107,6 @@ defineProps({
 .logo.inertia:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #e4023baa);
-}
 .logo.vue:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -128,10 +124,6 @@ defineProps({
   padding: 2em;
   font-size: 0.7em;
   color: #948e90;
-}
-
-.card + .card {
-  padding-top: 0;
 }
 
 .footer {

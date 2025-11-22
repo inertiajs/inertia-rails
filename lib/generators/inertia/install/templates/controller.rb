@@ -3,7 +3,6 @@
 class InertiaExampleController < InertiaController
   def index
     render inertia: {
-      name: params.fetch(:name, 'World'),
       rails_version: Rails.version,
       ruby_version: RUBY_DESCRIPTION,
       rack_version: Rack.release,
