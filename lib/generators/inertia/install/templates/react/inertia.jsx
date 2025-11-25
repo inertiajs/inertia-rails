@@ -41,7 +41,7 @@ createInertiaApp({
 
   defaults: {
     form: {
-      forceIndicesArrayFormatInFormData: true,
+      forceIndicesArrayFormatInFormData: false,
     },
     future: {
       useDataInertiaHeadAttribute: true,
