@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { VERSION } from 'svelte/compiler'
+
   import railsSvg from '/assets/rails.svg'
   import svelteSvg from '/assets/svelte.svg'
   import inertiaSvg from '/assets/inertia.svg'
 
   let { rails_version, rack_version, ruby_version, inertia_rails_version }:
     { rails_version: string, rack_version: string, ruby_version: string, inertia_rails_version: string } = $props()
-  let svelte_version = Array.from(window.__svelte.v).join(".")
 </script>
 
 <svelte:head>
@@ -43,7 +44,7 @@
       <li>
         <ul>
           <li><strong>Inertia Rails version:</strong> {inertia_rails_version}</li>
-          <li><strong>Svelte version:</strong> {svelte_version}</li>
+          <li><strong>Svelte version:</strong> {VERSION}</li>
         </ul>
       </li>
       </ul>
