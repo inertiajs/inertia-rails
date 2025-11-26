@@ -11,6 +11,7 @@
 - [Inertia Rails Starter Kit](https://github.com/skryukov/inertia-rails-shadcn-starter) - A starter kit based on the [Laravel Starter Kit](https://github.com/laravel/react-starter-kit) (React, shadcn/ui).
 - [Kaze](https://github.com/gtkvn/kaze) - Rails authentication scaffolding (Hotwire/React/Vue).
 - [Svelte starter template](https://github.com/georgekettle/rails_svelte) - (Svelte, shadcn/ui).
+- [Kickstart] - Rails application starter kits, Inertia-based (React, Svelte, Vue) and classic (API, esbuild and importmaps)
 
 ## Real-world applications
 
