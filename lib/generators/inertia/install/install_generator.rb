@@ -164,6 +164,9 @@ module Inertia
 
         say 'Adding a route for the example Inertia controller'
         route "get 'inertia-example', to: 'inertia_example#index'"
+        unless File.read('config/routes.rb').match?(/^\s*root\s+/)
+          route "root 'inertia_example#index'"
+        end
 
         say 'Copying page assets'
         copy_files = FRAMEWORKS[framework]['copy_files'].merge(
