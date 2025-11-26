@@ -34,7 +34,7 @@ export default function InertiaExample(
       <div className={cs.footer}>
         <div className={cs.card}>
           <p>
-            Edit <code>app/frontend/pages/inertia_example/index.jsx</code> and save to test <abbr title="Hot Module Replacement">HMR</abbr>.
+            Edit <code><%= js_destination_path %>/pages/inertia_example/index.jsx</code> and save to test <abbr title="Hot Module Replacement">HMR</abbr>.
           </p>
         </div>
 

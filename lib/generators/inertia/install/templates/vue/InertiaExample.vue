@@ -17,7 +17,7 @@
     <div class="footer">
       <div class="card">
         <p>
-          Edit <code>app/frontend/pages/inertia_example/index.vue</code> and save to test <abbr title="Hot Module Replacement">HMR</abbr>.
+          Edit <code><%= js_destination_path %>/pages/inertia_example/index.vue</code> and save to test <abbr title="Hot Module Replacement">HMR</abbr>.
         </p>
       </div>
 
