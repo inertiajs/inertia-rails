@@ -59,8 +59,8 @@ svelte:
   inertia_package: "@inertiajs/svelte"
   packages:
     - "svelte@5"
-    - "@sveltejs/vite-plugin-svelte@4"
-    - "vite@5"
+    - "@sveltejs/vite-plugin-svelte"
+    - "vite@latest"
   packages_ts:
     - "@tsconfig/svelte@5"
     - "svelte-check"
