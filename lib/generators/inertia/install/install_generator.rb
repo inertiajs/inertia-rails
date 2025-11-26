@@ -221,10 +221,13 @@ module Inertia
       end
 
       def rename_application_js_to_ts
-        return unless File.exist?(application_js_path) && application_layout.read.include?("<%= vite_javascript_tag 'application' %>")
+        unless File.exist?(application_js_path) && application_layout.read.include?("<%= vite_javascript_tag 'application' %>")
+          return
+        end
 
         FileUtils.mv(application_js_path, application_ts_path)
-        gsub_file application_layout.to_s, /<%= vite_javascript_tag 'application' %>/, "<%= vite_typescript_tag 'application' %>"
+        gsub_file application_layout.to_s, /<%= vite_javascript_tag 'application' %>/,
+                  "<%= vite_typescript_tag 'application' %>"
       end
 
       def ruby_vite_installed?
