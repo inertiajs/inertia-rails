@@ -35,6 +35,22 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
     end
   end
 
+  shared_context 'assert application.js entrypoint renaming' do
+    let(:typescript_enabled?) { args.include?('--typescript') }
+
+    it 'renames application.js to application.ts if TypeScript flag is enabled' do
+      expect { generator }.not_to raise_error
+
+      if typescript_enabled?
+        expect(File.exist?(File.join(destination_root, 'app/frontend/entrypoints/application.ts'))).to be true
+        expect(File.exist?(File.join(destination_root, 'app/frontend/entrypoints/application.js'))).to be false
+      else
+        expect(File.exist?(File.join(destination_root, 'app/frontend/entrypoints/application.js'))).to be true
+        expect(File.exist?(File.join(destination_root, 'app/frontend/entrypoints/application.ts'))).to be false
+      end
+    end
+  end
+
   context 'without vite' do
     before do
       prepare_application(with_vite: false)
@@ -56,6 +72,14 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
             no_file('entrypoints/application.css')
           end
         end)
+      end
+
+      include_context 'assert application.js entrypoint renaming'
+
+      context 'with --typescript' do
+        let(:args) { super() + %w[--typescript] }
+
+        include_context 'assert application.js entrypoint renaming'
       end
     end
   end
@@ -172,7 +196,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
     end)
   end
 
-  def expect_inertia_prepared_for(framework, ext: 'js')
+  def expect_inertia_prepared_for(framework, ext: 'js', application_js_exists: false)
     expect(destination_root).to(have_structure do
       case framework
       when :react
@@ -206,10 +230,15 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
         end
       end
       file('app/views/layouts/application.html.erb') do
-        if ext == 'ts'
+        if ext == 'ts' && application_js_exists
           contains("<%= vite_typescript_tag \"inertia#{'.tsx' if framework == :react}\" %>")
+          contains("<%= vite_typescript_tag 'application' %>")
+        elsif ext == 'ts' && !application_js_exists
+          contains("<%= vite_typescript_tag \"inertia#{'.tsx' if framework == :react}\" %>")
+          contains("<%= vite_javascript_tag 'application' %>")
         else
           contains("<%= vite_javascript_tag \"inertia#{'.jsx' if framework == :react}\" %>")
+          contains("<%= vite_javascript_tag 'application' %>")
         end
         if framework == :react
           contains('<%= vite_react_refresh_tag %>')
