@@ -13,8 +13,7 @@ module InertiaRails
           if dependencies['@inertiajs/react']
             'react'
           elsif dependencies['@inertiajs/svelte']
-            version = dependencies['svelte'].gsub(/[\^~]/, '') # Remove ^ or ~ from version
-            version.start_with?('5') ? 'svelte' : 'svelte4'
+            'svelte'
           elsif dependencies['@inertiajs/vue3']
             'vue'
           else
@@ -23,7 +22,7 @@ module InertiaRails
           end
         end
 
-        def guess_typescript
+        def uses_typescript?
           Rails.root.join('tsconfig.json').exist?
         end
 
@@ -37,7 +36,7 @@ module InertiaRails
       end
 
       def inertia_base_path
-        (class_path + [file_name]).map(&:camelize).join('/')
+        (class_path + [file_name.pluralize]).join('/')
       end
 
       def inertia_component_name

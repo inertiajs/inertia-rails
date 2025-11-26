@@ -1,0 +1,109 @@
+import { Form as InertiaForm } from '@inertiajs/react'
+import { type ComponentProps } from 'react'
+
+import type { <%= inertia_model_type %> } from './types'
+
+type FormProps = Omit<ComponentProps<typeof InertiaForm>, 'children'> & {
+  <%= singular_table_name %>: <%= inertia_model_type %>
+  submitText: string
+}
+
+export default function Form({ <%= singular_table_name %>, submitText, ...formProps }: FormProps) {
+  return (
+    <InertiaForm
+      transform={data => ({ <%= singular_table_name %>: data })}
+      {...formProps}
+    >
+      {({ errors, processing }) => (
+        <>
+<% attributes.each do |attribute| -%>
+<% if attribute.password_digest? -%>
+          <div>
+            <label style={{ display: 'block' }} htmlFor="password">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              id="password"
+            />
+            {errors.password && (
+              <div style={{ color: 'red' }}>{errors.password}</div>
+            )}
+          </div>
+
+          <div>
+            <label style={{ display: 'block' }} htmlFor="password_confirmation">
+              Password confirmation
+            </label>
+            <input
+              type="password"
+              name="password_confirmation"
+              id="password_confirmation"
+            />
+            {errors.password_confirmation && (
+              <div style={{ color: 'red' }}>{errors.password_confirmation}</div>
+            )}
+          </div>
+<% else -%>
+          <div>
+            <label style={{ display: 'block' }} htmlFor="<%= attribute.singular_name %>">
+              <%= attribute.human_name %>
+            </label>
+<% if input_type(attribute) == "text_area" -%>
+            <textarea
+              name="<%= attribute.singular_name %>"
+              id="<%= attribute.singular_name %>"
+              defaultValue={<%= singular_table_name %>.<%= attribute.column_name %>}
+            />
+<% elsif attribute.attachment? -%>
+            <input
+              type="file"
+              name="<%= attribute.singular_name %>"
+              id="<%= attribute.singular_name %>"
+            />
+<% elsif attribute.attachments? -%>
+            <input
+              type="file"
+              multiple
+              name="<%= attribute.singular_name %>[]"
+              id="<%= attribute.singular_name %>"
+            />
+<% elsif input_type(attribute) == "checkbox" -%>
+            <input
+              type="<%= input_type(attribute) %>"
+              name="<%= attribute.singular_name %>"
+              id="<%= attribute.singular_name %>"
+              defaultChecked={<%= singular_table_name %>.<%= attribute.column_name %>}
+            />
+<% elsif input_type(attribute) == "number" -%>
+            <input
+              type="<%= input_type(attribute) %>"
+              name="<%= attribute.singular_name %>"
+              id="<%= attribute.singular_name %>"
+              defaultValue={<%= singular_table_name %>.<%= attribute.column_name %>}
+            />
+<% else -%>
+            <input
+              type="<%= input_type(attribute) %>"
+              name="<%= attribute.singular_name %>"
+              id="<%= attribute.singular_name %>"
+              defaultValue={<%= singular_table_name %>.<%= attribute.column_name %>}
+            />
+<% end -%>
+            {errors.<%= attribute.column_name %> && (
+              <div style={{ color: 'red' }}>{errors.<%= attribute.column_name %>}</div>
+            )}
+          </div>
+<% end -%>
+<% end -%>
+          <div>
+            <button type="submit" disabled={processing}>
+              {submitText}
+            </button>
+          </div>
+        </>
+      )}
+    </InertiaForm>
+  )
+}

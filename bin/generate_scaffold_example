@@ -14,8 +14,8 @@ options = {
 OptionParser.new do |opts|
   opts.banner = "Usage: #{$PROGRAM_NAME} [options]"
 
-  opts.on('--framework FRAMEWORK', %w[react vue svelte svelte4],
-          'Choose framework (react/vue/svelte4/svelte)') do |f|
+  opts.on('--framework FRAMEWORK', %w[react vue svelte],
+          'Choose framework (react/vue/svelte)') do |f|
     options[:framework] = f
   end
 
@@ -76,7 +76,8 @@ Dir.chdir(app_dir) do
   system("bin/rails g inertia:install --no-interactive --force --vite #{generator_args} --verbose", exception: true)
 
   # Generate a scaffold
-  system('bin/rails g inertia:scaffold user name email admin:boolean password:digest avatar:attachment', exception: true)
+  system('bin/rails g inertia:scaffold user name email admin:boolean password:digest avatar:attachment',
+         exception: true)
   system('bin/rails g inertia:scaffold post content:text published_at:date gallery:attachments', exception: true)
   system('bin/rails db:migrate', exception: true)
 

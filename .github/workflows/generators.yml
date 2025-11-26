@@ -20,19 +20,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [react, vue, svelte, svelte4]
+        framework: [react, vue, svelte]
         typescript: [true, false]
         tailwind: [true, false]
-        ruby: ['3.3']
+        ruby: ['3.4']
         node: ['22']
-        inertia_version: ['1.2.0', '1.3', '2.0']
-        exclude:
-          # 1.2.0 does not support typescript
-          - typescript: true
-            inertia_version: '1.2.0'
-          # 1.2.0 doesn't support Svelte 5
-          - framework: svelte
-            inertia_version: '1.2.0'
+        inertia_version: ['latest']
 
     name: ${{ matrix.framework }} (TS:${{ matrix.typescript }}, TW:${{ matrix.tailwind }}, Inertia:${{ matrix.inertia_version }})
 

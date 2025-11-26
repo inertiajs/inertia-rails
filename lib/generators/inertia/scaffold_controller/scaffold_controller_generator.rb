@@ -55,6 +55,10 @@ module Inertia
         attribute = attributes.find { |attr| attr.name == name }
         attribute&.attachments?
       end
+
+      def parent_controller
+        defined?(InertiaController) ? 'InertiaController' : 'ApplicationController'
+      end
     end
   end
 end

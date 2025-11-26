@@ -1,6 +1,4 @@
-# spec/lib/inertia_rails/action_filter_spec.rb
-
-require 'rails_helper'
+# frozen_string_literal: true
 
 RSpec.describe InertiaRails::ActionFilter do
   let(:controller) do
@@ -46,9 +44,9 @@ RSpec.describe InertiaRails::ActionFilter do
           :only option.
         MSG
 
-        expect {
+        expect do
           filter.match?(controller)
-        }.to raise_error(AbstractController::ActionNotFound, expected_message)
+        end.to raise_error(AbstractController::ActionNotFound, expected_message)
       end
     end
   end

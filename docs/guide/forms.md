@@ -1,194 +1,1028 @@
 # Forms
 
-## Submitting forms
+Inertia provides two primary ways to build forms: the `<Form>` component and the `useForm` helper. Both integrate with your server-side framework's validation and handle form submissions without full page reloads.
+
+## Form component
+
+@available_since core=2.1.0
+
+Inertia provides a `<Form>` component that behaves much like a classic HTML form, but uses Inertia under the hood to avoid full page reloads. This is the simplest way to get started with forms in Inertia:
+
+### Submitting forms
 
 While it's possible to make classic HTML form submissions with Inertia, it's not recommended since they cause full-page reloads. Instead, it's better to intercept form submissions and then make the [request using Inertia](/guide/manual-visits.md).
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
 <script setup>
-import { reactive } from 'vue'
-import { router } from '@inertiajs/vue3'
-
-const form = reactive({
-  first_name: null,
-  last_name: null,
-  email: null,
-})
-
-function submit() {
-  router.post('/users', form)
-}
+import { Form } from '@inertiajs/vue3'
 </script>
 
 <template>
-  <form @submit.prevent="submit">
-    <label for="first_name">First name:</label>
-    <input id="first_name" v-model="form.first_name" />
-
-    <label for="last_name">Last name:</label>
-    <input id="last_name" v-model="form.last_name" />
-
-    <label for="email">Email:</label>
-    <input id="email" v-model="form.email" />
-
-    <button type="submit">Submit</button>
-  </form>
+  <Form action="/users" method="post">
+    <input type="text" name="name" />
+    <input type="email" name="email" />
+    <button type="submit">Create User</button>
+  </Form>
 </template>
 ```
 
 == React
 
 ```jsx
-import { useState } from 'react'
-import { router } from '@inertiajs/react'
+import { Form } from '@inertiajs/react'
 
-export default function Edit() {
-  const [values, setValues] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-  })
+export default () => (
+  <Form action="/users" method="post">
+    <input type="text" name="name" />
+    <input type="email" name="email" />
+    <button type="submit">Create User</button>
+  </Form>
+)
+```
 
-  function handleChange(e) {
-    const key = e.target.id
-    const value = e.target.value
-    setValues((values) => ({
-      ...values,
-      [key]: value,
-    }))
-  }
+== Svelte 4|Svelte 5
 
-  function handleSubmit(e) {
-    e.preventDefault()
-    router.post('/users', values)
-  }
+```svelte
+<script>
+  import { Form } from '@inertiajs/svelte'
+</script>
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <label htmlFor="first_name">First name:</label>
-      <input
-        id="first_name"
-        value={values.first_name}
-        onChange={handleChange}
-      />
+<Form action="/users" method="post">
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Create User</button>
+</Form>
+```
 
-      <label htmlFor="last_name">Last name:</label>
-      <input id="last_name" value={values.last_name} onChange={handleChange} />
+:::
 
-      <label htmlFor="email">Email:</label>
-      <input id="email" value={values.email} onChange={handleChange} />
+Just like a traditional HTML form, there is no need to attach <Vue>`v-model`</Vue><React>an `onChange` handler</React><Svelte>`bind:`</Svelte> to your input fields, just give each input a `name` attribute <Opt v="React|Svelte 5">and a `defaultValue` (if applicable)</Opt> and the `Form` component will handle the data submission for you.
 
-      <button type="submit">Submit</button>
-    </form>
-  )
-}
+The component also supports nested data structures, file uploads, and dotted key notation.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form action="/reports" method="post">
+  <input type="text" name="name" />
+  <textarea name="report[description]"></textarea>
+  <input type="text" name="report[tags][]" />
+  <input type="file" name="documents" multiple />
+  <button type="submit">Create Report</button>
+</Form>
+```
+
+== React
+
+```jsx
+<Form action="/reports" method="post">
+  <input type="text" name="name" />
+  <textarea name="report[description]"></textarea>
+  <input type="text" name="report[tags][]" />
+  <input type="file" name="documents" multiple />
+  <button type="submit">Create Report</button>
+</Form>
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<Form action="/reports" method="post">
+  <input type="text" name="name" />
+  <textarea name="report[description]"></textarea>
+  <input type="text" name="report[tags][]" />
+  <input type="file" name="documents" multiple />
+  <button type="submit">Create Report</button>
+</Form>
+```
+
+:::
+
+You can pass a `transform` prop to modify the form data before submission. This is useful for injecting additional fields or transforming existing data, although hidden inputs work too.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form
+  action="/posts"
+  method="post"
+  :transform="(data) => ({ ...data, user_id: 123 })"
+>
+  <input type="text" name="title" />
+  <button type="submit">Create Post</button>
+</Form>
+```
+
+== React
+
+```jsx
+<Form
+  action="/posts"
+  method="post"
+  transform={(data) => ({ ...data, user_id: 123 })}
+>
+  <input type="text" name="title" />
+  <button type="submit">Create Post</button>
+</Form>
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<Form
+  action="/posts"
+  method="post"
+  transform={(data) => ({ ...data, user_id: 123 })}
+>
+  <input type="text" name="title" />
+  <button type="submit">Create Post</button>
+</Form>
+```
+
+:::
+
+### Default values
+
+You can set default values for form inputs using standard HTML attributes. Use <React>`defaultValue`</React><Vue>`defaultValue`</Vue><Svelte4>`value`</Svelte4><Svelte5>`defaultValue` (`value` for Svelte < `5.6.0`)</Svelte5> for text inputs and textareas, and <React>`defaultChecked`</React><Vue>`defaultChecked`</Vue><Svelte4>`checked`</Svelte4><Svelte5>`defaultChecked` (`checked` for Svelte < `5.6.0`)</Svelte5> for checkboxes and radios.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<template>
+  <Form action="/users" method="post">
+    <input type="text" name="name" defaultValue="John Doe" />
+
+    <select name="country">
+      <option value="us">United States</option>
+      <option value="ca">Canada</option>
+      <option value="uk" selected>United Kingdom</option>
+    </select>
+
+    <input type="checkbox" name="subscribe" value="yes" defaultChecked />
+
+    <button type="submit">Submit</button>
+  </Form>
+</template>
+```
+
+== React
+
+```jsx
+<Form action="/users" method="post">
+  <input type="text" name="name" defaultValue="John Doe" />
+
+  <select name="country" defaultValue="uk">
+    <option value="us">United States</option>
+    <option value="ca">Canada</option>
+    <option value="uk">United Kingdom</option>
+  </select>
+
+  <input type="checkbox" name="subscribe" value="yes" defaultChecked />
+
+  <button type="submit">Submit</button>
+</Form>
 ```
 
 == Svelte 4
 
 ```svelte
-<script>
-  import { router } from '@inertiajs/svelte'
+<Form action="/users" method="post">
+  <input type="text" name="name" value="John Doe" />
 
-  let values = {
-    first_name: null,
-    last_name: null,
-    email: null,
-  }
+  <select name="country" value="uk">
+    <option value="us">United States</option>
+    <option value="ca">Canada</option>
+    <option value="uk">United Kingdom</option>
+  </select>
 
-  function submit() {
-    router.post('/users', values)
-  }
-</script>
-
-<form on:submit|preventDefault={submit}>
-  <label for="first_name">First name:</label>
-  <input id="first_name" bind:value={values.first_name} />
-
-  <label for="last_name">Last name:</label>
-  <input id="last_name" bind:value={values.last_name} />
-
-  <label for="email">Email:</label>
-  <input id="email" bind:value={values.email} />
+  <input type="checkbox" name="subscribe" value="yes" checked />
 
   <button type="submit">Submit</button>
-</form>
+</Form>
 ```
 
 == Svelte 5
 
 ```svelte
-<script>
-  import { router } from '@inertiajs/svelte'
+<Form action="/users" method="post">
+  <input type="text" name="name" defaultValue="John Doe" />
 
-  let values = {
-    first_name: null,
-    last_name: null,
-    email: null,
-  }
+  <select name="country" defaultValue="uk">
+    <option value="us">United States</option>
+    <option value="ca">Canada</option>
+    <option value="uk">United Kingdom</option>
+  </select>
 
-  function submit(e) {
-    e.preventDefault()
-    router.post('/users', values)
-  }
-</script>
-
-<form onsubmit={submit}>
-  <label for="first_name">First name:</label>
-  <input id="first_name" bind:value={values.first_name} />
-
-  <label for="last_name">Last name:</label>
-  <input id="last_name" bind:value={values.last_name} />
-
-  <label for="email">Email:</label>
-  <input id="email" bind:value={values.email} />
+  <input type="checkbox" name="subscribe" value="yes" defaultChecked />
 
   <button type="submit">Submit</button>
-</form>
+</Form>
 ```
 
 :::
 
-As you may have noticed in the example above, when using Inertia, you don't typically need to inspect form responses client-side like you would when making XHR / fetch requests manually.
+### Checkbox inputs
 
-Instead, your server-side route / controller typically issues a [redirect](/guide/redirects.md) response. And, Of course, there is nothing stopping you from redirecting the user right back to the page they were previously on. Using this approach, handling Inertia form submissions feels very similar to handling classic HTML form submissions.
+When working with checkboxes, you may want to add an explicit `value` attribute such as `value="1"`. Without a value attribute, checked checkboxes will submit as `"on"`, which some server-side validation rules may not recognize as a proper boolean value.
 
-```ruby
-class UsersController < ApplicationController
-  def create
-    user = User.new(user_params)
+### Slot props
 
-    if user.save
-      redirect_to users_url
-    else
-      redirect_to new_user_url, inertia: { errors: user.errors }
-    end
-  end
+The `<Form>` component exposes reactive state and helper methods through its default slot, giving you access to form processing state, errors, and utility functions.
 
-  private
+:::tabs key:frameworks
 
-  def user_params
-    params.require(:user).permit(:name, :email)
-  end
-end
+== Vue
+
+```vue
+<template>
+  <Form
+    action="/users"
+    method="post"
+    #default="{
+      errors,
+      hasErrors,
+      processing,
+      progress,
+      wasSuccessful,
+      recentlySuccessful,
+      setError,
+      clearErrors,
+      resetAndClearErrors,
+      defaults,
+      isDirty,
+      reset,
+      submit,
+    }"
+  >
+    <input type="text" name="name" />
+
+    <div v-if="errors.name">
+      {{ errors.name }}
+    </div>
+
+    <button type="submit" :disabled="processing">
+      {{ processing ? 'Creating...' : 'Create User' }}
+    </button>
+
+    <div v-if="wasSuccessful">User created successfully!</div>
+  </Form>
+</template>
 ```
 
-## Server-side validation
+== React
 
-Handling server-side validation errors in Inertia works a little different than handling errors from manual XHR / fetch requests. When making XHR / fetch requests, you typically inspect the response for a `422` status code and manually update the form's error state.
+```jsx
+<Form action="/users" method="post">
+  {({
+    errors,
+    hasErrors,
+    processing,
+    progress,
+    wasSuccessful,
+    recentlySuccessful,
+    setError,
+    clearErrors,
+    resetAndClearErrors,
+    defaults,
+    isDirty,
+    reset,
+    submit,
+  }) => (
+    <>
+      <input type="text" name="name" />
 
-However, when using Inertia, a `422` response is never returned by your server. Instead, as we saw in the example above, your routes / controllers will typically return a redirect response - much like a classic, full-page form submission.
+      {errors.name && <div>{errors.name}</div>}
 
-For a full discussion on handling and displaying [validation](/guide/validation.md) errors with Inertia, please consult the validation documentation.
+      <button type="submit" disabled={processing}>
+        {processing ? 'Creating...' : 'Create User'}
+      </button>
+
+      {wasSuccessful && <div>User created successfully!</div>}
+    </>
+  )}
+</Form>
+```
+
+== Svelte 4
+
+```svelte
+<Form
+  action="/users"
+  method="post"
+  let:errors
+  let:hasErrors
+  let:processing
+  let:progress
+  let:wasSuccessful
+  let:recentlySuccessful
+  let:setError
+  let:clearErrors
+  let:resetAndClearErrors
+  let:defaults
+  let:isDirty
+  let:reset
+  let:submit
+>
+  <input type="text" name="name" />
+
+  {#if errors.name}
+    <div>{errors.name}</div>
+  {/if}
+
+  <button type="submit" disabled={processing}>
+    {processing ? 'Creating...' : 'Create User'}
+  </button>
+
+  {#if wasSuccessful}
+    <div>User created successfully!</div>
+  {/if}
+</Form>
+```
+
+== Svelte 5
+
+```svelte
+<Form action="/users" method="post">
+  {#snippet children({
+    errors,
+    hasErrors,
+    processing,
+    progress,
+    wasSuccessful,
+    recentlySuccessful,
+    setError,
+    clearErrors,
+    resetAndClearErrors,
+    defaults,
+    isDirty,
+    reset,
+    submit,
+  })}
+    <input type="text" name="name" />
+
+    {#if errors.name}
+      <div>{errors.name}</div>
+    {/if}
+
+    <button type="submit" disabled={processing}>
+      {processing ? 'Creating...' : 'Create User'}
+    </button>
+
+    {#if wasSuccessful}
+      <div>User created successfully!</div>
+    {/if}
+  {/snippet}
+</Form>
+```
+
+:::
+
+#### `defaults` method
+
+@available_since core=2.1.1
+
+The `defaults` method allows you to update the form's default values to match the current field values. When called, subsequent `reset()` calls will restore fields to these new defaults, and the `isDirty` property will track changes from these updated defaults. Unlike `useForm`, this method accepts no arguments and always uses all current form values.
+
+#### `errors` object
+
+The `errors` object uses dotted notation for nested fields, allowing you to display validation messages for complex form structures.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form action="/users" method="post" #default="{ errors }">
+  <input type="text" name="user.name" />
+  <div v-if="errors['user.name']">{{ errors['user.name'] }}</div>
+</Form>
+```
+
+== React
+
+```jsx
+<Form action="/users" method="post">
+  {({ errors }) => (
+    <>
+      <input type="text" name="user.name" />
+      {errors['user.name'] && <div>{errors['user.name']}</div>}
+    </>
+  )}
+</Form>
+```
+
+== Svelte 4
+
+```svelte
+<Form action="/users" method="post" let:errors>
+  <input type="text" name="user.name" />
+  {#if errors['user.name']}
+    <div>{errors['user.name']}</div>
+  {/if}
+</Form>
+```
+
+== Svelte 5
+
+```svelte
+<Form action="/users" method="post">
+  {#snippet children({ errors })}
+    <input type="text" name="user.name" />
+    {#if errors['user.name']}
+      <div>{errors['user.name']}</div>
+    {/if}
+  {/snippet}
+</Form>
+```
+
+:::
+
+### Props and options
+
+In addition to `action` and `method`, the `<Form>` component accepts several props. Many of them are identical to the options available in Inertia's [visit options](/guide/manual-visits).
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form
+  action="/profile"
+  method="put"
+  error-bag="profile"
+  query-string-array-format="indices"
+  :headers="{ 'X-Custom-Header': 'value' }"
+  :show-progress="false"
+  :transform="(data) => ({ ...data, timestamp: Date.now() })"
+  :invalidate-cache-tags="['users', 'dashboard']"
+  disable-while-processing
+  :options="{
+    preserveScroll: true,
+    preserveState: true,
+    preserveUrl: true,
+    replace: true,
+    only: ['users', 'flash'],
+    except: ['secret'],
+    reset: ['page'],
+  }"
+>
+  <input type="text" name="name" />
+  <button type="submit">Update</button>
+</Form>
+```
+
+Some props are intentionally grouped under `options` instead of being top-level to avoid confusion. For example, `only`, `except`, and `reset` relate to _partial reloads_, not _partial submissions_. The general rule: top-level props are for the form submission itself, while `options` control how Inertia handles the subsequent visit.
+
+When setting the `disable-while-processing` prop, the `Form` component will add the `inert` attribute to the HTML `form` tag while the form is processing to prevent user interaction.
+
+== React
+
+```jsx
+<Form
+  action="/profile"
+  method="put"
+  errorBag="profile"
+  queryStringArrayFormat="indices"
+  headers={{ 'X-Custom-Header': 'value' }}
+  showProgress={false}
+  transform={(data) => ({ ...data, timestamp: Date.now() })}
+  invalidateCacheTags={['users', 'dashboard']}
+  disableWhileProcessing
+  options={{
+    preserveScroll: true,
+    preserveState: true,
+    preserveUrl: true,
+    replace: true,
+    only: ['users', 'flash'],
+    except: ['secret'],
+    reset: ['page'],
+  }}
+>
+  <input type="text" name="name" />
+  <button type="submit">Update</button>
+</Form>
+```
+
+Some props are intentionally grouped under `options` instead of being top-level to avoid confusion. For example, `only`, `except`, and `reset` relate to _partial reloads_, not _partial submissions_. The general rule: top-level props are for the form submission itself, while `options` control how Inertia handles the subsequent visit.
+
+When setting the `disableWhileProcessing` prop, the `Form` component will add the `inert` attribute to the HTML `form` tag while the form is processing to prevent user interaction.
+
+== Svelte 4|Svelte 5
+
+```svelte
+<Form
+  action="/profile"
+  method="put"
+  errorBag="profile"
+  queryStringArrayFormat="indices"
+  headers={{ 'X-Custom-Header': 'value' }}
+  showProgress={false}
+  transform={(data) => ({ ...data, timestamp: Date.now() })}
+  invalidateCacheTags={['users', 'dashboard']}
+  disableWhileProcessing
+  options={{
+    preserveScroll: true,
+    preserveState: true,
+    preserveUrl: true,
+    replace: true,
+    only: ['users', 'flash'],
+    except: ['secret'],
+    reset: ['page'],
+  }}
+>
+  <input type="text" name="name" />
+  <button type="submit">Update</button>
+</Form>
+```
+
+Some props are intentionally grouped under `options` instead of being top-level to avoid confusion. For example, `only`, `except`, and `reset` relate to _partial reloads_, not _partial submissions_. The general rule: top-level props are for the form submission itself, while `options` control how Inertia handles the subsequent visit.
+
+When setting the `disableWhileProcessing` prop, the `Form` component will add the `inert` attribute to the HTML `form` tag while the form is processing to prevent user interaction.
+
+:::
+
+To style the form while it's processing, you can target the inert form in the following ways.
+
+:::tabs key:css
+
+== Tailwind 4
+
+```html
+<form
+  action="/profile"
+  method="put"
+  disableWhileProcessing
+  className="inert:opacity-50 inert:pointer-events-none"
+>
+  {/* Your form fields here */}
+</form>
+```
+
+== CSS
+
+```css
+form[inert] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+```
+
+:::
+
+### Events
+
+The `<Form>` component emits all the standard visit [events](/guide/events) for form submissions.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form
+  action="/users"
+  method="post"
+  @before="handleBefore"
+  @start="handleStart"
+  @progress="handleProgress"
+  @success="handleSuccess"
+  @error="handleError"
+  @finish="handleFinish"
+  @cancel="handleCancel"
+  @cancelToken="handleCancelToken"
+>
+  <input type="text" name="name" />
+  <button type="submit">Create User</button>
+</Form>
+```
+
+== React
+
+```jsx
+<Form
+  action="/users"
+  method="post"
+  onCancelToken={handleCancelToken}
+  onBefore={handleBefore}
+  onStart={handleStart}
+  onProgress={handleProgress}
+  onCancel={handleCancel}
+  onSuccess={handleSuccess}
+  onError={handleError}
+  onFinish={handleFinish}
+>
+  <input type="text" name="name" />
+  <button type="submit">Create User</button>
+</Form>
+```
+
+== Svelte 4
+
+```svelte
+<Form
+  action="/users"
+  method="post"
+  on:cancelToken={handleCancelToken}
+  on:before={handleBefore}
+  on:start={handleStart}
+  on:progress={handleProgress}
+  on:cancel={handleCancel}
+  on:success={handleSuccess}
+  on:error={handleError}
+  on:finish={handleFinish}
+>
+  <input type="text" name="name" />
+  <button type="submit">Create User</button>
+</Form>
+```
+
+== Svelte 5
+
+```svelte
+<Form
+  action="/users"
+  method="post"
+  onCancelToken={handleCancelToken}
+  onBefore={handleBefore}
+  onStart={handleStart}
+  onProgress={handleProgress}
+  onCancel={handleCancel}
+  onSuccess={handleSuccess}
+  onError={handleError}
+  onFinish={handleFinish}
+>
+  <input type="text" name="name" />
+  <button type="submit">Create User</button>
+</Form>
+```
+
+:::
+
+### Resetting the Form
+
+@available_since core=2.1.2
+
+The `Form` component provides several attributes that allow you to reset the form after a submission.
+
+`resetOnSuccess` may be used to reset the form after a successful submission.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<!-- Reset the entire form on success -->
+<Form action="/users" method="post" resetOnSuccess>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+
+<!-- Reset specific fields on success -->
+<Form action="/users" method="post" :resetOnSuccess="['name']">
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+```
+
+== React
+
+```jsx
+// Reset the entire form on success
+<Form action="/users" method="post" resetOnSuccess>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+
+// Reset specific fields on success
+<Form action="/users" method="post" resetOnSuccess={['name']}>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<!-- Reset the entire form on success -->
+<Form action="/users" method="post" resetOnSuccess>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+
+<!-- Reset specific fields on success -->
+<Form action="/users" method="post" resetOnSuccess={['name']}>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+```
+
+:::
+
+`resetOnError` may be used to reset the form after errors.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<!-- Reset the entire form on success -->
+<Form action="/users" method="post" resetOnError>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+
+<!-- Reset specific fields on success -->
+<Form action="/users" method="post" :resetOnError="['name']">
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+```
+
+== React
+
+```jsx
+// Reset the entire form on success
+<Form action="/users" method="post" resetOnError>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+
+// Reset specific fields on success
+<Form action="/users" method="post" resetOnError={['name']}>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<!-- Reset the entire form on success -->
+<Form action="/users" method="post" resetOnError>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+
+<!-- Reset specific fields on success -->
+<Form action="/users" method="post" resetOnError={['name']}>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+```
+
+:::
+
+### Setting new default values
+
+@available_since core=2.1.2
+
+The `Form` component provides the `setDefaultsOnSuccess` attribute to set the current form values as the new defaults after a successful submission.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form action="/users" method="post" setDefaultsOnSuccess>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+```
+
+== React
+
+```jsx
+<Form action="/users" method="post" setDefaultsOnSuccess>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<Form action="/users" method="post" setDefaultsOnSuccess>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <button type="submit">Submit</button>
+</Form>
+```
+
+:::
+
+### Dotted key notation
+
+The `<Form>` component supports dotted key notation for creating nested objects from flat input names. This provides a convenient way to structure form data.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form action="/users" method="post">
+  <input type="text" name="user.name" />
+  <input type="text" name="user.skills[]" />
+  <input type="text" name="address.street" />
+  <button type="submit">Submit</button>
+</Form>
+```
+
+== React
+
+```jsx
+<Form action="/users" method="post">
+  <input type="text" name="user.name" />
+  <input type="text" name="user.skills[]" />
+  <input type="text" name="address.street" />
+  <button type="submit">Submit</button>
+</Form>
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<Form action="/users" method="post">
+  <input type="text" name="user.name" />
+  <input type="text" name="user.skills[]" />
+  <input type="text" name="address.street" />
+  <button type="submit">Submit</button>
+</Form>
+```
+
+:::
+
+The example above would generate the following data structure.
+
+```json
+{
+  "user": {
+    "name": "John Doe",
+    "skills": ["JavaScript"]
+  },
+  "address": {
+    "street": "123 Main St"
+  }
+}
+```
+
+If you need literal dots in your field names (not as nested object separators), you can escape them using backslashes.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form action="/config" method="post">
+  <input type="text" name="app\.name" />
+  <input type="text" name="settings.theme\.mode" />
+  <button type="submit">Save</button>
+</Form>
+```
+
+== React
+
+```jsx
+<Form action="/config" method="post">
+  <input type="text" name="app\.name" />
+  <input type="text" name="settings.theme\.mode" />
+  <button type="submit">Save</button>
+</Form>
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<Form action="/config" method="post">
+  <input type="text" name="app\.name" />
+  <input type="text" name="settings.theme\.mode" />
+  <button type="submit">Save</button>
+</Form>
+```
+
+:::
+
+The example above would generate the following data structure.
+
+```json
+{
+  "app.name": "My Application",
+  "settings": {
+    "theme.mode": "dark"
+  }
+}
+```
+
+### Programmatic access
+
+You can access the form's methods programmatically using refs. This provides an alternative to
+[slot props](#slot-props) when you need to trigger form actions from outside the form.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup>
+import { ref } from 'vue'
+import { Form } from '@inertiajs/vue3'
+
+const formRef = ref()
+
+const handleSubmit = () => {
+  formRef.value.submit()
+}
+</script>
+
+<template>
+  <Form ref="formRef" action="/users" method="post">
+    <input type="text" name="name" />
+    <button type="submit">Submit</button>
+  </Form>
+
+  <button @click="handleSubmit">Submit Programmatically</button>
+</template>
+```
+
+== React
+
+```jsx
+import { useRef } from 'react'
+import { Form } from '@inertiajs/react'
+
+export default function CreateUser() {
+  const formRef = useRef()
+
+  const handleSubmit = () => {
+    formRef.current.submit()
+  }
+
+  return (
+    <>
+      <Form ref={formRef} action="/users" method="post">
+        <input type="text" name="name" />
+        <button type="submit">Submit</button>
+      </Form>
+
+      <button onClick={handleSubmit}>Submit Programmatically</button>
+    </>
+  )
+}
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<script>
+  import { Form } from '@inertiajs/svelte'
+
+  let formRef
+
+  function handleSubmit() {
+    formRef.submit()
+  }
+</script>
+
+<Form bind:this={formRef} action="/users" method="post">
+  <input type="text" name="name" />
+  <button type="submit">Submit</button>
+</Form>
+
+<button on:click={handleSubmit}>Submit Programmatically</button>
+```
+
+:::
+
+In React and Vue, refs provide access to all form methods and reactive state. In Svelte, refs expose only methods, so reactive state like isDirty and errors should be accessed via [slot props](#slot-props) instead.
 
 ## Form helper
 
-Since working with forms is so common, Inertia includes a form helper designed to help reduce the amount of boilerplate code needed for handling typical form submissions.
+In addition to the `<Form>` component, Inertia also provides a `useForm` helper for when you need programmatic control over your form's data and submission behavior.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -498,6 +1332,8 @@ const { progress } = useForm({ ... })
 
 :::
 
+### Form errors
+
 If there are form validation errors, they are available via the `errors` property. When building Rails powered Inertia applications, form errors will automatically be populated when your application throws instances of `ActiveRecord::RecordInvalid`, such as when using `#save!`.
 
 :::tabs key:frameworks
@@ -616,6 +1452,10 @@ $form.setError({
 
 When a form has been successfully submitted, the `wasSuccessful` property will be `true`. In addition to this, forms have a `recentlySuccessful` property, which will be set to `true` for two seconds after a successful form submission. This property can be utilized to show temporary success messages.
 
+You may customize the duration of the `recentlySuccessful` state by setting the `form.recentlySuccessfulDuration` option in your [application defaults](/guide/client-side-setup#configuring-defaults). The default value is `2000` milliseconds.
+
+### Resetting the Form
+
 To reset the form's values back to their default values, you can use the `reset()` method.
 
 :::tabs key:frameworks
@@ -652,6 +1492,48 @@ $form.reset('field', 'anotherfield')
 ```
 
 :::
+
+@available_since core=2.0.15
+
+Sometimes, you may want to restore your form fields to their default values and clear any validation errors at the same time. Instead of calling `reset()` and `clearErrors()` separately, you can use the `resetAndClearErrors()` method, which combines both actions into a single call.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+// Reset the form and clear all errors...
+form.resetAndClearErrors()
+
+// Reset specific fields and clear their errors...
+form.resetAndClearErrors('field', 'anotherfield')
+```
+
+== React
+
+```jsx
+const { resetAndClearErrors } = useForm({ ... })
+
+// Reset the form and clear all errors...
+resetAndClearErrors()
+
+// Reset specific fields and clear their errors...
+resetAndClearErrors('field', 'anotherfield')
+```
+
+== Svelte 4|Svelte 5
+
+```js
+// Reset the form and clear all errors...
+$form.resetAndClearErrors()
+
+// Reset specific fields and clear their errors...
+$form.resetAndClearErrors('field', 'anotherfield')
+```
+
+:::
+
+### Setting new default values
 
 If your form's default values become outdated, you can use the `defaults()` method to update them. Then, the form will be reset to the correct values the next time the `reset()` method is invoked.
 
@@ -708,6 +1590,8 @@ $form.defaults({
 
 :::
 
+### Form field change tracking
+
 To determine if a form has any changes, you may use the `isDirty` property.
 
 :::tabs key:frameworks
@@ -735,6 +1619,8 @@ const { isDirty } = useForm({ ... })
 
 :::
 
+### Canceling Form submissions
+
 To cancel a form submission, use the `cancel()` method.
 
 :::tabs key:frameworks
@@ -759,6 +1645,8 @@ $form.cancel()
 ```
 
 :::
+
+### Form data and history state
 
 To instruct Inertia to store a form's data and errors in [history state](/guide/remembering-state.md), you can provide a unique form key as the first argument when instantiating your form.
 
@@ -792,12 +1680,193 @@ const form = useForm(`EditUser:${user.id}`, data)
 
 :::
 
+## Server-side responses
+
+When using Inertia, you don't typically inspect form responses client-side like you would with traditional XHR/fetch requests. Instead, your server-side route or controller issues a [redirect](/guide/redirects) response after processing the form, often redirecting to a success page.
+
+```ruby
+class UsersController < ApplicationController
+  def create
+    user = User.new(user_params)
+
+    if user.save
+      redirect_to users_url
+    else
+      redirect_to new_user_url, inertia: { errors: user.errors }
+    end
+  end
+
+  private
+
+  def user_params
+    params.require(:user).permit(:name, :email)
+  end
+end
+```
+
+This redirect-based approach works with all form submission methods: the `<Form>` component, `useForm` helper, and manual router submissions. It makes handling Inertia forms feel very similar to classic server-side form submissions.
+
+## Server-side validation
+
+Both the `<Form>` component and `useForm` helper automatically handle server-side validation errors. When your server returns validation errors, they're automatically available in the `errors` object without any additional configuration.
+
+Unlike traditional XHR/fetch requests where you might check for a `422` status code, Inertia handles validation errors as part of its redirect-based flow, just like classic server-side form submissions, but without the full page reload.
+
+For a complete guide on validation error handling, including error bags and advanced scenarios, see the [validation documentation](/guide/validation).
+
+## Manual form submissions
+
+It's also possible to submit forms manually using Inertia's `router` methods directly, without using the `<Form>` component or `useForm` helper:
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup>
+import { reactive } from 'vue'
+import { router } from '@inertiajs/vue3'
+
+const form = reactive({
+  first_name: null,
+  last_name: null,
+  email: null,
+})
+
+function submit() {
+  router.post('/users', form)
+}
+</script>
+
+<template>
+  <form @submit.prevent="submit">
+    <label for="first_name">First name:</label>
+    <input id="first_name" v-model="form.first_name" />
+    <label for="last_name">Last name:</label>
+    <input id="last_name" v-model="form.last_name" />
+    <label for="email">Email:</label>
+    <input id="email" v-model="form.email" />
+    <button type="submit">Submit</button>
+  </form>
+</template>
+```
+
+== React
+
+```jsx
+import { useState } from 'react'
+import { router } from '@inertiajs/react'
+
+export default function Edit() {
+  const [values, setValues] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+  })
+
+  function handleChange(e) {
+    const key = e.target.id
+    const value = e.target.value
+    setValues((values) => ({
+      ...values,
+      [key]: value,
+    }))
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    router.post('/users', values)
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="first_name">First name:</label>
+      <input
+        id="first_name"
+        value={values.first_name}
+        onChange={handleChange}
+      />
+      <label htmlFor="last_name">Last name:</label>
+      <input id="last_name" value={values.last_name} onChange={handleChange} />
+      <label htmlFor="email">Email:</label>
+      <input id="email" value={values.email} onChange={handleChange} />
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+```
+
+== Svelte 4
+
+```svelte
+<script>
+  import { router } from '@inertiajs/svelte'
+
+  let values = {
+    first_name: null,
+    last_name: null,
+    email: null,
+  }
+
+  function submit() {
+    router.post('/users', values)
+  }
+</script>
+
+<form on:submit|preventDefault={submit}>
+  <label for="first_name">First name:</label>
+  <input id="first_name" bind:value={values.first_name} />
+
+  <label for="last_name">Last name:</label>
+  <input id="last_name" bind:value={values.last_name} />
+
+  <label for="email">Email:</label>
+  <input id="email" bind:value={values.email} />
+
+  <button type="submit">Submit</button>
+</form>
+```
+
+== Svelte 5
+
+```svelte
+<script>
+  import { router } from '@inertiajs/svelte'
+
+  let values = {
+    first_name: null,
+    last_name: null,
+    email: null,
+  }
+
+  function submit(e) {
+    e.preventDefault()
+    router.post('/users', values)
+  }
+</script>
+
+<form onsubmit={submit}>
+  <label for="first_name">First name:</label>
+  <input id="first_name" bind:value={values.first_name} />
+
+  <label for="last_name">Last name:</label>
+  <input id="last_name" bind:value={values.last_name} />
+
+  <label for="email">Email:</label>
+  <input id="email" bind:value={values.email} />
+
+  <button type="submit">Submit</button>
+</form>
+```
+
+:::
+
 ## File uploads
 
-When making requests or form submissions that include files, Inertia will automatically convert the request data into a `FormData` object.
+When making requests or form submissions that include files, Inertia will automatically convert the request data into a `FormData` object. This works with the `<Form>` component, `useForm` helper, and manual router submissions.
 
-For a more thorough discussion of file uploads, please consult the [file uploads documentation](/guide/file-uploads.md).
+For more information on file uploads, including progress tracking, see the [file uploads documentation](/guide/file-uploads).
 
 ## XHR / fetch submissions
 
-Using Inertia to submit forms works great for the vast majority of situations; however, in the event that you need more control over the form submission, you're free to make plain XHR or `fetch` requests instead using the library of your choice.
+Using Inertia to submit forms works great for the vast majority of situations. However, in the event that you need more control over the form submission, you're free to make plain XHR or `fetch` requests instead, using the library of your choice.

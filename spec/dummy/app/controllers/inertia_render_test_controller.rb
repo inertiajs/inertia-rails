@@ -106,10 +106,14 @@ class InertiaRenderTestController < ApplicationController
   def merge_props
     render inertia: 'TestComponent', props: {
       merge: InertiaRails.merge { 'merge prop' },
+      match_on: InertiaRails.merge(match_on: 'id') { [id: 1] },
       deep_merge: InertiaRails.deep_merge { { deep: 'merge prop' } },
+      deep_match_on: InertiaRails.deep_merge(match_on: 'deep.id') { { deep: [id: 1] } },
       regular: 'regular prop',
       deferred_merge: InertiaRails.defer(merge: true) { 'deferred and merge prop' },
+      deferred_match_on: InertiaRails.defer(merge: true, match_on: 'id') { [id: 1] },
       deferred_deep_merge: InertiaRails.defer(deep_merge: true) { { deep: 'deferred and merge prop' } },
+      deferred_deep_match_on: InertiaRails.defer(deep_merge: true, match_on: 'deep.id') { { deep: [id: 1] } },
       deferred: InertiaRails.defer { 'deferred' },
     }
   end
@@ -122,6 +126,67 @@ class InertiaRenderTestController < ApplicationController
         'worse than he believes'
       end,
       grit: InertiaRails.defer { 'intense' },
+    }
+  end
+
+  inertia_share only: [:shared_deferred_props] do
+    {
+      grit: InertiaRails.defer { 'intense' },
+    }
+  end
+  def shared_deferred_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+    }
+  end
+
+  def scroll_test
+    pagy = (defined?(Pagy::Offset) ? Pagy::Offset : Pagy).new(
+      next: 2,
+      page: 1,
+      count: 100
+    )
+
+    render inertia: 'TestComponent', props: {
+      users: InertiaRails.scroll(pagy) { [{ id: 1, name: 'User 1' }, { id: 2, name: 'User 2' }] },
+    }
+  end
+
+  inertia_share only: [:shared_scroll_test] do
+    pagy = (defined?(Pagy::Offset) ? Pagy::Offset : Pagy).new(
+      next: 2,
+      page: 1,
+      count: 100
+    )
+    {
+      users: InertiaRails.scroll(pagy) { [{ id: 1, name: 'User 1' }, { id: 2, name: 'User 2' }] },
+    }
+  end
+
+  def shared_scroll_test
+    render inertia: 'TestComponent'
+  end
+
+  def prepend_merge_test
+    render inertia: 'TestComponent', props: {
+      prepend_prop: InertiaRails.merge(prepend: true) { %w[item1 item2] },
+      append_prop: InertiaRails.merge { %w[item3 item4] },
+    }
+  end
+
+  def nested_paths_test
+    render inertia: 'TestComponent', props: {
+      foo: InertiaRails.merge(append: { data: :id }) { { data: [{ id: 1 }, { id: 2 }] } },
+      bar: InertiaRails.merge(prepend: { 'data.items' => 'uuid' }) do
+        { data: { items: [{ uuid: 1 }, { uuid: 2 }] } }
+      end,
+    }
+  end
+
+  def reset_test
+    render inertia: 'TestComponent', props: {
+      merge_prop: InertiaRails.merge { 'merge value' },
+      regular_prop: 'regular value',
     }
   end
 end

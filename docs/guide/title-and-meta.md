@@ -3,6 +3,9 @@
 Since Inertia powered JavaScript apps are rendered within the document `<body>`, they are unable to render markup to the document `<head>`, as it's outside of their scope. To help with this, Inertia ships with a `<Head>` component which can be used to set the page `<title>`, `<meta>` tags, and other `<head>` elements.
 
 > [!NOTE]
+> Since v3.10.0, Inertia Rails supports managing meta tags via Rails. This allows your meta tags to work with link preview services without setting up server-side rendering. Since this isn't a part of the Inertia.js core, it's documented in the [server driven meta tags cookbook](/cookbook/server-managed-meta-tags).
+
+> [!NOTE]
 > The `<Head>` component will only replace `<head>` elements that are not in your server-side layout.
 
 > [!NOTE]
@@ -314,7 +317,7 @@ export default ({ title, children }) => {
 
 :::
 
-Once you have created the custom component, you may simply start using the custom component in your pages.
+Once you have created the custom component, you can just start using it in your pages.
 
 :::tabs key:frameworks
 == Vue
@@ -344,3 +347,22 @@ export default () => <AppHead title="About" />
 ```
 
 :::
+
+## Inertia attribute on elements
+
+@available_since core=2.2.13
+
+Inertia has historically used the `inertia` attribute to track and manage elements in the document `<head>`. However, you can now opt-in to using the more standards-compliant `data-inertia` attribute instead. According to the HTML specification, custom attributes should be prefixed with `data-` to avoid conflicts with future HTML standards.
+
+To enable this, configure the `future.useDataInertiaHeadAttribute` option in your [application defaults](/guide/client-side-setup#configuring-defaults).
+
+```js
+createInertiaApp({
+  // resolve, setup, etc.
+  defaults: {
+    future: {
+      useDataInertiaHeadAttribute: true,
+    },
+  },
+})
+```

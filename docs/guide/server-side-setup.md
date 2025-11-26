@@ -27,7 +27,7 @@ This command will:
 
 - Check for Vite Rails and install it if not present
 - Ask if you want to use TypeScript
-- Ask you to choose your preferred frontend framework (React, Vue, Svelte 4, or Svelte 5)
+- Ask you to choose your preferred frontend framework (React, Vue, Svelte)
 - Ask if you want to install Tailwind CSS
 - Install necessary dependencies
 - Set up the application to work with Inertia
@@ -49,7 +49,7 @@ Vite Rails gem successfully installed
 Vite Rails successfully installed
 Would you like to use TypeScript? (y/n) y
 Adding TypeScript support
-What framework do you want to use with Inertia? [react, vue, svelte4, svelte] (react)
+What framework do you want to use with Inertia? [react, vue, svelte] (react)
          run  npm add @types/react @types/react-dom typescript --silent from "."
 Would you like to install Tailwind CSS? (y/n) y
 Installing Tailwind CSS
@@ -174,7 +174,7 @@ class EventsController < ApplicationController
   def show
     event = Event.find(params[:id])
 
-    render inertia: 'Event/Show', props: {
+    render inertia: {
       event: event.as_json(
         only: [:id, :title, :start_date, :description]
       )

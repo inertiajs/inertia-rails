@@ -3,7 +3,7 @@
 Once you have your [server-side framework configured](/guide/server-side-setup.md), you then need to setup your client-side framework. Inertia currently provides support for React, Vue, and Svelte.
 
 > [!NOTE]
-> See [Rails generator](/guide/server-side-setup#rails-generator) for a quick way to setup Inertia in your Rails application.
+> You can skip this step if you have already executed the [Rails generator](/guide/server-side-setup#rails-generator).
 
 ## Install dependencies
 
@@ -32,7 +32,7 @@ npm install @inertiajs/svelte svelte
 
 ## Initialize the Inertia app
 
-Next, update your main JavaScript file to boot your Inertia app. To accomplish this, we'll initialize the client-side framework with the base Inertia component.
+Next, update your main JavaScript file to boot your Inertia app. To accomplish this, we'll use the `createInertiaApp` function to initialize the client-side framework with the base Inertia component.
 
 :::tabs key:frameworks
 == Vue
@@ -113,6 +113,102 @@ createInertiaApp({
 :::
 
 The `setup` callback receives everything necessary to initialize the client-side framework, including the root Inertia `App` component.
+
+## Configuring defaults
+
+@available_since core=2.2.11
+
+You may pass a `defaults` object to `createInertiaApp()` to configure default settings for various features. You don't have to pass all keys, just the ones you want to tweak.
+
+```js
+createInertiaApp({
+  // ...
+  defaults: {
+    form: {
+      recentlySuccessfulDuration: 5000,
+    },
+    prefetch: {
+      cacheFor: '1m',
+      hoverDelay: 150,
+    },
+    visitOptions: (href, options) => {
+      return {
+        headers: {
+          ...options.headers,
+          'X-Custom-Header': 'value',
+        },
+      }
+    },
+  },
+})
+```
+
+The `visitOptions` callback receives the target URL and the current visit options, and should return an object with any options you want to override. For more details on the available configuration options, see the [forms](/guide/forms#form-errors), [prefetching](/guide/prefetching), and [manual visits](/guide/manual-visits#global-visit-options) documentation.
+
+### Updating at runtime
+
+You may also update configuration values at runtime using the exported `config` instance. This is
+particularly useful when you need to adjust settings based on user preferences or application state.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+// Set a single value using dot notation...
+config.set('form.recentlySuccessfulDuration', 1000)
+config.set('prefetch.cacheFor', '5m')
+
+// Set multiple values at once...
+config.set({
+  'form.recentlySuccessfulDuration': 1000,
+  'prefetch.cacheFor': '5m',
+})
+
+// Get a configuration value...
+const duration = config.get('form.recentlySuccessfulDuration')
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+
+// Set a single value using dot notation...
+config.set('form.recentlySuccessfulDuration', 1000)
+config.set('prefetch.cacheFor', '5m')
+
+// Set multiple values at once...
+config.set({
+  'form.recentlySuccessfulDuration': 1000,
+  'prefetch.cacheFor': '5m',
+})
+
+// Get a configuration value...
+const duration = config.get('form.recentlySuccessfulDuration')
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+
+// Set a single value using dot notation...
+config.set('form.recentlySuccessfulDuration', 1000)
+config.set('prefetch.cacheFor', '5m')
+
+// Set multiple values at once...
+config.set({
+  'form.recentlySuccessfulDuration': 1000,
+  'prefetch.cacheFor': '5m',
+})
+
+// Get a configuration value...
+const duration = config.get('form.recentlySuccessfulDuration')
+```
+
+:::
 
 # Resolving components
 

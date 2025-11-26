@@ -23,7 +23,7 @@
         count is {{ count }}
       </button>
       <p>
-        Edit <code>app/frontend/pages/InertiaExample.vue</code> and save to test
+        Edit <code>app/frontend/pages/inertia_example/index.vue</code> and save to test
         HMR
       </p>
     </div>

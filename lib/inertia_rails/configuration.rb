@@ -12,6 +12,9 @@ module InertiaRails
       # Allows the user to hook into the default rendering behavior and change it to fit their needs
       component_path_resolver: ->(path:, action:) { "#{path}/#{action}" },
 
+      # A function that transforms the props before they are sent to the client.
+      prop_transformer: ->(props:) { props },
+
       # DEPRECATED: Let Rails decide which layout should be used based on the
       # controller configuration.
       layout: true,
@@ -25,6 +28,12 @@ module InertiaRails
 
       # Used to detect version drift between server and client.
       version: nil,
+
+      # Allows configuring the base controller for StaticController.
+      parent_controller: '::ApplicationController',
+
+      # Whether to include empty `errors` hash to the props when no errors are present.
+      always_include_errors_hash: nil,
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze
@@ -84,6 +93,10 @@ module InertiaRails
 
     def component_path_resolver(path:, action:)
       @options[:component_path_resolver].call(path: path, action: action)
+    end
+
+    def prop_transformer(props:)
+      @options[:prop_transformer].call(props: props)
     end
 
     OPTION_NAMES.each do |option|

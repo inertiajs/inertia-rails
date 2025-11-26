@@ -9,19 +9,37 @@ When using Inertia, all of your application's routes are defined server-side. Th
 If you have a page that doesn't need a corresponding controller method, like an "FAQ" or "about" page, you can route directly to a component via the `inertia` method.
 
 ```ruby
-inertia 'about' => 'AboutComponent'
+# In config/routes.rb
+Rails.application.routes.draw do
+  # Basic usage - maps 'dashboard' URL to 'Dashboard' component
+  inertia 'dashboard' => 'Dashboard'
+
+  # Using a symbol - infers component name from route
+  inertia :settings
+
+  # Within namespaces and scopes
+  namespace :admin do
+    inertia 'dashboard' => 'Admin/Dashboard'
+  end
+
+  # Within resource definitions
+  resources :users do
+    inertia :activity, on: :member
+    inertia :statistics, on: :collection
+  end
+end
 ```
 
 ## Generating URLs
 
 Some server-side frameworks allow you to generate URLs from named routes. However, you will not have access to those helpers client-side. Here are a couple ways to still use named routes with Inertia.
 
-The first option is to generate URLs server-side and include them as props. Notice in this example how we're passing the `edit_url` and `create_url` to the `Users/Index` component.
+The first option is to generate URLs server-side and include them as props. Notice in this example how we're passing the `edit_url` and `create_url` to the `users/index` component.
 
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
+    render inertia: {
       users: User.all.map do |user|
         user.as_json(
           only: [ :id, :name, :email ]

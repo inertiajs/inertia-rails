@@ -10,7 +10,7 @@ module InertiaRails
       )
 
       @value = value
-      @block = block
+      super(&block)
     end
 
     def call(controller)

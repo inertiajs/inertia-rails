@@ -5,34 +5,12 @@ Server-side rendering pre-renders your JavaScript pages on the server, allowing 
 > [!NOTE]
 > Server-side rendering uses Node.js to render your pages in a background process; therefore, Node must be available on your server for server-side rendering to function properly.
 
-## Install dependencies
-
-First, install the additional dependencies required for server-side rendering. This is only necessary for the Vue adapters, so you can skip this step if you're using React or Svelte.
-
-:::tabs key:frameworks
-== Vue
-
-```shell
-npm install @vue/server-renderer
-```
-
-== React
-
-```shell
-// No additional dependencies required
-```
-
-== Svelte 4|Svelte 5
-
-```shell
-// No additional dependencies required
-```
-
-:::
+> [!NOTE]
+> For Vue `< 3.2.13` you will need to install `@vue/server-renderer` as a dependency, and use it instead of `vue/server-renderer`.
 
 ## Add server entry-point
 
-Next, we'll create a `app/frontend/ssr/ssr.js` file within the Rails project that will serve as the SSR entry point.
+Next, we'll create a <Vue>`app/frontend/ssr/ssr.js`</Vue><React>`app/frontend/ssr/ssr.jsx`</React><Svelte>`app/frontend/ssr/ssr.js`</Svelte> file within the Rails project that will serve as the SSR entry point.
 
 This file is going to look very similar to your regular inertia initialization file, except it's not going to run in the browser, but rather in Node.js. Here's a complete example.
 
@@ -42,7 +20,7 @@ This file is going to look very similar to your regular inertia initialization f
 ```js
 import { createInertiaApp } from '@inertiajs/vue3'
 import createServer from '@inertiajs/vue3/server'
-import { renderToString } from '@vue/server-renderer'
+import { renderToString } from 'vue/server-renderer'
 import { createSSRApp, h } from 'vue'
 
 createServer((page) =>
@@ -133,7 +111,7 @@ When creating this file, be sure to add anything that's missing from your regula
 
 By default, the SSR server will run on a single thread. Clustering starts multiple Node servers on the same port, requests are then handled by each thread in a round-robin way.
 
-You can enable clustering by passing a second argument to `createServer`:
+You can enable clustering by passing a second argument of options to `createServer`.
 
 :::tabs key:frameworks
 == Vue
@@ -141,7 +119,7 @@ You can enable clustering by passing a second argument to `createServer`:
 ```js
 import { createInertiaApp } from '@inertiajs/vue3'
 import createServer from '@inertiajs/vue3/server'
-import { renderToString } from '@vue/server-renderer'
+import { renderToString } from 'vue/server-renderer'
 import { createSSRApp, h } from 'vue'
 
 createServer(
@@ -218,6 +196,7 @@ Next, we need to update our Vite configuration to build our new `ssr.js` file. W
 ## Enable SSR in the Inertia's Rails adapter
 
 ```ruby
+# config/initializers/inertia_rails.rb
 InertiaRails.configure do |config|
   config.ssr_enabled = ViteRuby.config.ssr_build_enabled
 end
@@ -243,7 +222,7 @@ With the server running, you should be able to access your app within the browse
 
 Since your website is now being server-side rendered, you can instruct your client to "hydrate" the static markup and make it interactive instead of re-rendering all the HTML that we just generated.
 
-To enable client-side hydration, update your initialization file:
+To enable client-side hydration, update your initialization file.
 
 :::tabs key:frameworks
 == Vue
@@ -271,7 +250,7 @@ createInertiaApp({
 == React
 
 ```js
-// frontend/entrypoints/inertia.js
+// frontend/entrypoints/inertia.jsx
 import { createInertiaApp } from '@inertiajs/react'
 import { createRoot } from 'react-dom/client' // [!code --]
 import { hydrateRoot } from 'react-dom/client' // [!code ++]
@@ -306,7 +285,7 @@ createInertiaApp({
 })
 ```
 
-You will also need to set the `hydratable` compiler option to `true` in your `vite.config.js` file:
+You will also need to set the `hydratable` compiler option to `true` in your `vite.config.js` file.
 
 <!-- prettier-ignore -->
 ```js

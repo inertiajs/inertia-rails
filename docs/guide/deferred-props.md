@@ -1,15 +1,17 @@
 # Deferred props
 
+@available_since rails=3.6.0 core=2.0.0
+
 Inertia's deferred props feature allows you to defer the loading of certain page data until after the initial page render. This can be useful for improving the perceived performance of your app by allowing the initial page render to happen as quickly as possible.
 
 ## Server side
 
-To defer a prop, you can use the defer method when returning your response. This method receives a callback that returns the prop data. The callback will be executed in a separate request after the initial page render.
+To defer a prop, you can use the `InertiaRails.defer` method when returning your response. This method receives a callback that returns the prop data. The callback will be executed in a separate request after the initial page render.
 
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
+    render inertia: {
       users: -> { User.all },
       roles: -> { Role.all },
       permissions: InertiaRails.defer { Permission.all },
@@ -20,12 +22,12 @@ end
 
 ### Grouping requests
 
-By default, all deferred props get fetched in one request after the initial page is rendered, but you can choose to fetch data in parallel by grouping props together.
+By default, all deferred props get fetched in one request after the initial page is rendered, but you can choose to fetch data in parallel by grouping props together using the `group` option with the `InertiaRails.defer` method.
 
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
+    render inertia: {
       users: -> { User.all },
       roles: -> { Role.all },
       permissions: InertiaRails.defer { Permission.all },
@@ -38,6 +40,10 @@ end
 ```
 
 In the example above, the `teams`, `projects`, and `tasks` props will be fetched in one request, while the `permissions` prop will be fetched in a separate request in parallel. Group names are arbitrary strings and can be anything you choose.
+
+### Combining with mergeable props
+
+Deferred props can be combined with mergeable props. You can learn more about this feature in the [Merging props](/guide/merging-props) section.
 
 ## Client side
 

@@ -7,14 +7,18 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@nolebase/vitepress-plugin-og-image": "^2.18.2",
     "markdown-it-container": "^4.0.0",
     "prettier": "^3.3.3",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-svelte": "^3.2.7",
-    "prettier-plugin-tailwindcss": "^0.6.8",
+    "prettier-plugin-tailwindcss": "^0.7.1",
     "prettier-plugin-vue": "^1.1.6",
     "vitepress": "^1.2.2",
-    "vitepress-plugin-tabs": "^0.6.0",
-    "vue": "^3.4.27"
+    "vitepress-plugin-llms": "^1.5.1",
+    "vitepress-plugin-tabs": "^0.7.3",
+    "vue": "^3.4.27",
+    "vue-tsc": "^3.1.4"
   }
 }

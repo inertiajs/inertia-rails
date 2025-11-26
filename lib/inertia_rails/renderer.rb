@@ -6,35 +6,40 @@ require_relative 'inertia_rails'
 
 module InertiaRails
   class Renderer
-    attr_reader(
-      :component,
-      :configuration,
-      :controller,
-      :props,
-      :view_data,
-      :encrypt_history,
-      :clear_history
-    )
+    %i[component configuration controller props view_data encrypt_history
+       clear_history].each do |method_name|
+      define_method(method_name) do
+        InertiaRails.deprecator.warn(
+          "[DEPRECATION] Accessing `InertiaRails::Renderer##{method_name}` is deprecated and will be removed in v4.0"
+        )
+        instance_variable_get("@#{method_name}")
+      end
+    end
 
-    def initialize(component, controller, request, response, render_method, props: nil, view_data: nil,
-                   deep_merge: nil, encrypt_history: nil, clear_history: nil)
-      if component.is_a?(Hash) && !props.nil?
+    def initialize(component, controller, request, response, render_method, **options)
+      if component.is_a?(Hash) && options.key?(:props)
         raise ArgumentError,
               'Parameter `props` is not allowed when passing a Hash as the first argument'
       end
 
       @controller = controller
       @configuration = controller.__send__(:inertia_configuration)
-      @component = resolve_component(component)
       @request = request
       @response = response
       @render_method = render_method
-      @props = props || (component.is_a?(Hash) ? component : controller.__send__(:inertia_view_assigns))
-      @view_data = view_data || {}
-      @deep_merge = deep_merge.nil? ? configuration.deep_merge_shared_data : deep_merge
-      @encrypt_history = encrypt_history.nil? ? configuration.encrypt_history : encrypt_history
-      @clear_history = clear_history || controller.session[:inertia_clear_history] || false
+      @view_data = options.fetch(:view_data, {})
+      @encrypt_history = options.fetch(:encrypt_history, @configuration.encrypt_history)
+      @clear_history = options.fetch(:clear_history, controller.session[:inertia_clear_history] || false)
+
+      deep_merge = options.fetch(:deep_merge, @configuration.deep_merge_shared_data)
+      passed_props = options.fetch(:props,
+                                   component.is_a?(Hash) ? component : @controller.__send__(:inertia_view_assigns))
+      @props = merge_props(shared_data, passed_props, deep_merge)
+
+      @component = resolve_component(component)
+
       @controller.instance_variable_set('@_inertia_rendering', true)
+      controller.inertia_meta.add(options[:meta]) if options[:meta]
     end
 
     def render
@@ -48,31 +53,32 @@ module InertiaRails
         @render_method.call json: page.to_json, status: @response.status, content_type: Mime[:json]
       else
         begin
-          return render_ssr if configuration.ssr_enabled
+          return render_ssr if @configuration.ssr_enabled
         rescue StandardError
           nil
         end
-        @render_method.call template: 'inertia', layout: layout, locals: view_data.merge(page: page)
+        @controller.instance_variable_set('@_inertia_page', page)
+        @render_method.call template: 'inertia', layout: layout, locals: @view_data.merge(page: page)
       end
     end
 
     private
 
     def render_ssr
-      uri = URI("#{configuration.ssr_url}/render")
+      uri = URI("#{@configuration.ssr_url}/render")
       res = JSON.parse(Net::HTTP.post(uri, page.to_json, 'Content-Type' => 'application/json').body)
 
-      controller.instance_variable_set('@_inertia_ssr_head', res['head'].join.html_safe)
-      @render_method.call html: res['body'].html_safe, layout: layout, locals: view_data.merge(page: page)
+      @controller.instance_variable_set('@_inertia_ssr_head', res['head'].join.html_safe)
+      @render_method.call html: res['body'].html_safe, layout: layout, locals: @view_data.merge(page: page)
     end
 
     def layout
-      layout = configuration.layout
+      layout = @configuration.layout
       layout.nil? || layout
     end
 
     def shared_data
-      controller.__send__(:inertia_shared_data)
+      @controller.__send__(:inertia_shared_data)
     end
 
     # Cast props to symbol keyed hash before merging so that we have a consistent data structure and
@@ -80,8 +86,8 @@ module InertiaRails
     #
     # Functionally, this permits using either string or symbol keys in the controller. Since the results
     # is cast to json, we should treat string/symbol keys as identical.
-    def merge_props(shared_props, props)
-      if @deep_merge
+    def merge_props(shared_props, props, deep_merge)
+      if deep_merge
         shared_props.deep_symbolize_keys.deep_merge!(props.deep_symbolize_keys)
       else
         shared_props.symbolize_keys.merge(props.symbolize_keys)
@@ -89,33 +95,40 @@ module InertiaRails
     end
 
     def computed_props
-      merged_props = merge_props(shared_data, props)
-      deep_transform_props(merged_props)
+      # rubocop:disable Style/MultilineBlockChain
+      @props
+        .tap do |merged_props| # Always keep errors in the props
+          if merged_props.key?(:errors) && !merged_props[:errors].is_a?(BaseProp)
+            errors = merged_props[:errors]
+            merged_props[:errors] = InertiaRails.always { errors }
+          end
+        end
+        .then { |props| deep_transform_props(props) } # Internal hydration/filtering
+        .then { |props| @configuration.prop_transformer(props: props) } # Apply user-defined prop transformer
+        .tap do |props| # Add meta tags last (never transformed)
+        props[:_inertia_meta] = meta_tags if meta_tags.present?
+      end
+      # rubocop:enable Style/MultilineBlockChain
     end
 
     def page
-      default_page = {
-        component: component,
+      return @page if defined?(@page)
+
+      @page = {
+        component: @component,
         props: computed_props,
         url: @request.original_fullpath,
-        version: configuration.version,
-        encryptHistory: encrypt_history,
-        clearHistory: clear_history,
+        version: @configuration.version,
+        encryptHistory: @encrypt_history,
+        clearHistory: @clear_history,
       }
 
       deferred_props = deferred_props_keys
-      default_page[:deferredProps] = deferred_props if deferred_props.present?
+      @page[:deferredProps] = deferred_props if deferred_props.present?
+      @page[:scrollProps] = scroll_props if scroll_props.present?
+      @page.merge!(resolve_merge_props)
 
-      all_merge_props = merge_props_keys
-
-      deep_merge_props, merge_props = all_merge_props.partition do |key|
-        @props[key].deep_merge?
-      end
-
-      default_page[:mergeProps] = merge_props if merge_props.present?
-      default_page[:deepMergeProps] = deep_merge_props if deep_merge_props.present?
-
-      default_page
+      @page
     end
 
     def deep_transform_props(props, parent_path = [])
@@ -129,9 +142,9 @@ module InertiaRails
           transformed_props[key] =
             case prop
             when BaseProp
-              prop.call(controller)
+              prop.call(@controller)
             when Proc
-              controller.instance_exec(&prop)
+              @controller.instance_exec(&prop)
             else
               prop
             end
@@ -147,31 +160,104 @@ module InertiaRails
       end
     end
 
-    def merge_props_keys
-      @props.each_with_object([]) do |(key, prop), result|
-        result << key if prop.try(:merge?) && reset_keys.exclude?(key)
+    def resolve_merge_props
+      deep_merge_props, merge_props = all_merge_props.partition do |_key, prop|
+        prop.deep_merge?
+      end
+
+      {
+        mergeProps: append_merge_props(merge_props),
+        prependProps: prepend_merge_props(merge_props),
+        deepMergeProps: deep_merge_props.map!(&:first),
+        matchPropsOn: resolve_match_on_props,
+      }.delete_if { |_, v| v.blank? }
+    end
+
+    def resolve_match_on_props
+      all_merge_props.filter_map do |key, prop|
+        prop.match_on.map! { |ms| "#{key}.#{ms}" } if prop.match_on.present?
+      end.flatten
+    end
+
+    def requested_merge_props
+      @requested_merge_props ||= @props.select do |key, prop|
+        next unless prop.try(:merge?)
+        next if rendering_partial_component? && (
+          (partial_keys.present? && partial_keys.exclude?(key.name)) ||
+            (partial_except_keys.present? && partial_except_keys.include?(key.name))
+        )
+
+        true
       end
     end
 
+    def append_merge_props(props)
+      return props if props.empty?
+
+      root_append_props, nested_append_props = props.partition { |_key, prop| prop.appends_at_root? }
+
+      result = Set.new(root_append_props.map!(&:first))
+
+      nested_append_props.each do |key, prop|
+        prop.appends_at_paths.each do |path|
+          result.add("#{key}.#{path}")
+        end
+      end
+
+      result.to_a
+    end
+
+    def prepend_merge_props(props)
+      return props if props.empty?
+
+      root_prepend_props, nested_prepend_props = props.partition { |_key, prop| prop.prepends_at_root? }
+
+      result = Set.new(root_prepend_props.map!(&:first))
+
+      nested_prepend_props.each do |key, prop|
+        prop.prepends_at_paths.each do |path|
+          result.add("#{key}.#{path}")
+        end
+      end
+
+      result.to_a
+    end
+
+    def scroll_props
+      return @scroll_props if defined?(@scroll_props)
+
+      @scroll_props = {}
+      requested_merge_props.each do |key, prop|
+        next unless prop.is_a?(ScrollProp)
+
+        @scroll_props[key] = prop.metadata.merge!(reset: reset_keys.include?(key))
+      end
+      @scroll_props
+    end
+
+    def all_merge_props
+      @all_merge_props ||= requested_merge_props.reject { |key,| reset_keys.include?(key) }
+    end
+
     def partial_keys
-      @partial_keys ||= (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact
+      @partial_keys ||= (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact_blank!
     end
 
     def reset_keys
-      (@request.headers['X-Inertia-Reset'] || '').split(',').compact.map(&:to_sym)
+      @reset_keys ||= (@request.headers['X-Inertia-Reset'] || '').split(',').compact_blank!.map!(&:to_sym)
     end
 
     def partial_except_keys
-      (@request.headers['X-Inertia-Partial-Except'] || '').split(',').compact
+      @partial_except_keys ||= (@request.headers['X-Inertia-Partial-Except'] || '').split(',').compact_blank!
     end
 
     def rendering_partial_component?
-      @request.headers['X-Inertia-Partial-Component'] == component
+      @request.headers['X-Inertia-Partial-Component'] == @component
     end
 
     def resolve_component(component)
       if component == true || component.is_a?(Hash)
-        configuration.component_path_resolver(path: controller.controller_path, action: controller.action_name)
+        @configuration.component_path_resolver(path: @controller.controller_path, action: @controller.action_name)
       else
         component
       end
@@ -180,7 +266,7 @@ module InertiaRails
     def keep_prop?(prop, path)
       return true if prop.is_a?(AlwaysProp)
 
-      if rendering_partial_component?
+      if rendering_partial_component? && (partial_keys.present? || partial_except_keys.present?)
         path_with_prefixes = path_prefixes(path)
         return false if excluded_by_only_partial_keys?(path_with_prefixes)
         return false if excluded_by_except_partial_keys?(path_with_prefixes)
@@ -204,6 +290,10 @@ module InertiaRails
 
     def excluded_by_except_partial_keys?(path_with_prefixes)
       partial_except_keys.present? && (path_with_prefixes & partial_except_keys).any?
+    end
+
+    def meta_tags
+      @controller.inertia_meta.meta_tags
     end
   end
 end

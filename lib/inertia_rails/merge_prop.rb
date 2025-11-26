@@ -2,17 +2,11 @@
 
 module InertiaRails
   class MergeProp < BaseProp
-    def initialize(deep_merge: false, &block)
+    prepend PropMergeable
+
+    def initialize(**_props, &block)
       super(&block)
-      @deep_merge = deep_merge
-    end
-
-    def merge?
-      true
-    end
-
-    def deep_merge?
-      @deep_merge
+      @merge = true
     end
   end
 end

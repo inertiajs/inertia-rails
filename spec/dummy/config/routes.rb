@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
-  mount InertiaRails::Engine => "/inertia-rails"
+  mount InertiaRails::Engine => '/inertia-rails'
 
   get 'configuration' => 'inertia_config_test#configuration'
   get 'props' => 'inertia_render_test#props'
@@ -36,22 +38,32 @@ Rails.application.routes.draw do
   get 'except_props' => 'inertia_render_test#except_props'
   get 'merge_props' => 'inertia_render_test#merge_props'
   get 'deferred_props' => 'inertia_render_test#deferred_props'
+  get 'shared_deferred_props' => 'inertia_render_test#shared_deferred_props'
+  get 'scroll_test' => 'inertia_render_test#scroll_test'
+  get 'shared_scroll_test' => 'inertia_render_test#shared_scroll_test'
+  get 'prepend_merge_test' => 'inertia_render_test#prepend_merge_test'
+  get 'nested_paths_test' => 'inertia_render_test#nested_paths_test'
+  get 'reset_test' => 'inertia_render_test#reset_test'
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
   get 'deeply_nested_props' => 'inertia_render_test#deeply_nested_props'
 
   get 'instance_props_test' => 'inertia_rails_mimic#instance_props_test'
   get 'default_render_test' => 'inertia_rails_mimic#default_render_test'
   get 'transformed_default_render_test' => 'transformed_inertia_rails_mimic#render_test'
+  get 'prop_transformer_test' => 'inertia_prop_transformer#just_props'
+  get 'prop_transformer_with_meta_test' => 'inertia_prop_transformer#props_and_meta'
+  get 'prop_transformer_no_props_test' => 'inertia_prop_transformer#no_props'
   get 'default_component_test' => 'inertia_rails_mimic#default_component_test'
   get 'default_component_with_props_test' => 'inertia_rails_mimic#default_component_with_props_test'
-  get 'default_component_with_duplicated_props_test' => 'inertia_rails_mimic#default_component_with_duplicated_props_test'
+  get 'default_component_with_duplicated_props_test' =>
+        'inertia_rails_mimic#default_component_with_duplicated_props_test'
   get 'provided_props_test' => 'inertia_rails_mimic#provided_props_test'
 
   post 'redirect_to_share_test' => 'inertia_test#redirect_to_share_test'
 
   inertia 'inertia_route' => 'TestComponent'
   inertia :inertia_route_with_default_component
-  scope :scoped, as: "scoped" do
+  scope :scoped, as: 'scoped' do
     inertia 'inertia_route' => 'TestComponent'
   end
   namespace :namespaced do
@@ -62,7 +74,7 @@ Rails.application.routes.draw do
     inertia :inertia_route_with_default_component
     inertia :inertia_route_with_default_component_on_member, on: :member
     inertia :inertia_route_with_default_component_on_collection, on: :collection
-    scope :scoped, as: "scoped" do
+    scope :scoped, as: 'scoped' do
       inertia :inertia_route_with_default_component
     end
   end
@@ -88,4 +100,14 @@ Rails.application.routes.draw do
   get 'encrypt_history_override_config' => 'inertia_encrypt_history#override_config'
   get 'encrypt_history_clear_history' => 'inertia_encrypt_history#clear_history'
   post 'encrypt_history_clear_history_after_redirect' => 'inertia_encrypt_history#clear_history_after_redirect'
+
+  get 'basic_meta' => 'inertia_meta#basic'
+  get 'multiple_title_tags_meta' => 'inertia_meta#multiple_title_tags'
+  get 'from_before_filter_meta' => 'inertia_meta#from_before_filter'
+  get 'with_duplicate_head_keys_meta' => 'inertia_meta#with_duplicate_head_keys'
+  get 'override_tags_from_module_meta' => 'inertia_meta#override_tags_from_module'
+  get 'auto_dedup_meta' => 'inertia_meta#auto_dedup'
+  get 'allowed_duplicates_meta' => 'inertia_meta#allowed_duplicates'
+  get 'cleared_meta' => 'inertia_meta#cleared_meta'
+  get 'meta_with_default_render' => 'inertia_meta#meta_with_default_render'
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class InertiaMultithreadedShareController < ApplicationController
   inertia_share name: 'Michael'
   inertia_share has_goat_status: true
@@ -8,6 +10,6 @@ class InertiaMultithreadedShareController < ApplicationController
   end
 
   def share_multithreaded_error
-    raise Exception
+    raise StandardError
   end
 end

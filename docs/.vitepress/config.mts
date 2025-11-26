@@ -1,10 +1,18 @@
+import { buildEndGenerateOpenGraphImages } from '@nolebase/vitepress-plugin-og-image'
+import fs from 'fs-extra'
+import { createRequire } from 'node:module'
+import path from 'path'
 import { defineConfig } from 'vitepress'
+import llmstxt from 'vitepress-plugin-llms'
+import { availableSinceMarkdownPlugin } from './availableSinceMarkdownPlugin'
 import { tabsMarkdownPlugin } from './vitepress-plugin-tabs/tabsMarkdownPlugin'
 
 const title = 'Inertia Rails'
 const description = 'Documentation for Inertia.js Rails adapter'
 const site = 'https://inertia-rails.dev'
-const image = `${site}/og_image.jpg`
+
+const image = `${site}/og-image.png`
+const require = createRequire(import.meta.url)
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -13,15 +21,25 @@ export default defineConfig({
 
   cleanUrls: true,
 
+  vite: {
+    plugins: [
+      llmstxt({
+        depth: 2,
+      }),
+    ],
+  },
+
   markdown: {
     config(md) {
       md.use(tabsMarkdownPlugin)
+      md.use(availableSinceMarkdownPlugin)
     },
   },
 
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico', sizes: '32x32' }],
-    ['link', { rel: 'icon', href: '/icon.svg', type: 'image/svg+xml' }],
+    ['link', { rel: 'icon', href: '/logo.svg', type: 'image/svg+xml' }],
+    ['link', { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }],
 
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:site', content: site }],
@@ -62,6 +80,7 @@ export default defineConfig({
           },
         ],
       },
+      { text: 'LLMs', link: '/llms-full.txt' },
     ],
 
     logo: '/logo.svg',
@@ -80,6 +99,7 @@ export default defineConfig({
           items: [
             { text: 'Server-side', link: '/guide/server-side-setup' },
             { text: 'Client-side', link: '/guide/client-side-setup' },
+            { text: 'Starter kits', link: '/guide/starter-kits' },
           ],
         },
         {
@@ -103,6 +123,7 @@ export default defineConfig({
             { text: 'Forms', link: '/guide/forms' },
             { text: 'File uploads', link: '/guide/file-uploads' },
             { text: 'Validation', link: '/guide/validation' },
+            { text: 'View transitions', link: '/guide/view-transitions' },
           ],
         },
         {
@@ -115,6 +136,7 @@ export default defineConfig({
             { text: 'Prefetching', link: '/guide/prefetching' },
             { text: 'Load when visible', link: '/guide/load-when-visible' },
             { text: 'Merging props', link: '/guide/merging-props' },
+            { text: 'Infinite scroll', link: '/guide/infinite-scroll' },
             { text: 'Remembering state', link: '/guide/remembering-state' },
           ],
         },
@@ -152,6 +174,25 @@ export default defineConfig({
               text: 'Integrations',
               items: [
                 { text: 'shadcn/ui', link: '/cookbook/integrating-shadcn-ui' },
+                { text: 'Inertia Modal', link: '/cookbook/inertia-modal' },
+              ],
+            },
+            {
+              text: 'Inertia-Rails-Only Features',
+              items: [
+                {
+                  text: 'Server Managed Meta Tags',
+                  link: '/cookbook/server-managed-meta-tags',
+                },
+              ],
+            },
+            {
+              text: 'Troubleshooting',
+              items: [
+                {
+                  text: 'Rails validation error types',
+                  link: '/cookbook/handling-validation-error-types',
+                },
               ],
             },
           ],
@@ -179,5 +220,41 @@ export default defineConfig({
       { icon: 'x', link: 'https://x.com/inertiajs' },
       { icon: 'discord', link: 'https://discord.gg/inertiajs' },
     ],
+  },
+  async buildEnd(siteconfig) {
+    async function loadSvgFontBuffers() {
+      const interFontFilesDirectoryPath = path.join(
+        require.resolve('@fontsource/inter'),
+        '..',
+        'files',
+      )
+      const interFontFilePaths = [
+        'inter-latin-500-normal.woff2',
+        'inter-latin-800-normal.woff2',
+      ]
+
+      return await Promise.all(
+        interFontFilePaths.map((filename) =>
+          fs.readFile(path.join(interFontFilesDirectoryPath, filename)),
+        ),
+      )
+    }
+
+    await buildEndGenerateOpenGraphImages({
+      baseUrl: 'https://inertia-rails.dev',
+      svgFontBuffers: await loadSvgFontBuffers(),
+      category: {
+        byPathPrefix: [
+          {
+            prefix: '/guide',
+            text: 'Guide',
+          },
+          {
+            prefix: '/cookbook',
+            text: 'Cookbook',
+          },
+        ],
+      },
+    })(siteconfig)
   },
 })

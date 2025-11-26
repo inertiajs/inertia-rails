@@ -292,7 +292,7 @@ export default () => (
 
 By default, the `WhenVisible` component will only trigger once when the element becomes visible. If you want to always trigger the data loading when the element is visible, you can provide the `always` prop.
 
-This is useful when you want to load data every time the element becomes visible, such as when the element is at the end of an infinite scroll list and you want to load more data.
+This is useful when you want to load data every time the element becomes visible, such as when the element is at the end of an infinite scroll list and you want to load more data. Alternatively, you can use the [Infinite scroll](/guide/infinite-scroll) component which handles this use case for you.
 
 Note that if the data loading request is already in flight, the component will wait until it is finished to start the next request if the element is still visible in the viewport.
 
@@ -347,6 +347,124 @@ export default () => (
 </script>
 
 <WhenVisible data="products" always>
+  <!-- ... -->
+</WhenVisible>
+```
+
+:::
+
+## Form submissions
+
+When submitting forms, you may want to use the `except` option to exclude the props that are being used by the `WhenVisible` component. This prevents the props from being reloaded when you get redirected back to the current page because of validation errors.
+
+:::tabs key:frameworks
+== Vue
+
+```vue
+<script setup>
+import { useForm, WhenVisible } from '@inertiajs/vue3'
+
+const form = useForm({
+  name: '',
+  email: '',
+})
+
+function submit() {
+  form.post('/users', {
+    except: ['permissions'],
+  })
+}
+</script>
+
+<template>
+  <form @submit.prevent="submit">
+    <!-- ... -->
+  </form>
+
+  <WhenVisible data="permissions">
+    <!-- ... -->
+  </WhenVisible>
+</template>
+```
+
+== React
+
+```jsx
+import { useForm, WhenVisible } from '@inertiajs/react'
+
+export default function CreateUser() {
+  const { data, setData, post } = useForm({
+    name: '',
+    email: '',
+  })
+
+  function submit(e) {
+    e.preventDefault()
+    post('/users', {
+      except: ['permissions'],
+    })
+  }
+
+  return (
+    <>
+      <form onSubmit={submit}>{/* ... */}</form>
+
+      <WhenVisible data="permissions">{/* ... */}</WhenVisible>
+    </>
+  )
+}
+```
+
+== Svelte 4
+
+```svelte
+<script>
+  import { useForm, WhenVisible } from '@inertiajs/svelte'
+
+  const form = useForm({
+    name: '',
+    email: '',
+  })
+
+  function submit() {
+    $form.post('/users', {
+      except: ['permissions'],
+    })
+  }
+</script>
+
+<form on:submit|preventDefault={submit}>
+  <!-- ... -->
+</form>
+
+<WhenVisible data="permissions">
+  <!-- ... -->
+</WhenVisible>
+```
+
+== Svelte 5
+
+```svelte
+<script>
+  import { useForm, WhenVisible } from '@inertiajs/svelte'
+
+  const form = useForm({
+    name: '',
+    email: '',
+  })
+
+  function submit() {
+    form.post('/users', {
+      except: ['permissions'],
+    })
+  }
+</script>
+
+<form onsubmit={submit}>
+  <!-- ... -->
+</form>
+
+<WhenVisible data="permissions">
   <!-- ... -->
 </WhenVisible>
 ```

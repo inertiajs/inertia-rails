@@ -14,7 +14,9 @@ If you're starting fresh, create a new Rails application with Inertia (or skip t
 rails new -JA shadcn-inertia-rails
 cd shadcn-inertia-rails
 
-rails generate inertia:install `--framework=react --typescript --vite --tailwind --no-interactive`
+bundle add inertia_rails
+
+rails generate inertia:install --framework=react --typescript --vite --tailwind --no-interactive
 Installing Inertia's Rails adapter
 ...
 ```
@@ -24,6 +26,8 @@ Installing Inertia's Rails adapter
 ```bash
 rails new -JA shadcn-inertia-rails
 cd shadcn-inertia-rails
+
+bundle add inertia_rails
 
 rails generate inertia:install --framework=react --vite --tailwind --no-interactive
 Installing Inertia's Rails adapter
@@ -127,3 +131,15 @@ Now you can import and use your new button component from `@/components/ui/butto
 
 > [!NOTE]
 > Check out the [`shadcn/ui` components gallery](https://ui.shadcn.com/docs/components/accordion) to explore all the beautiful components at your disposal.
+
+## Troubleshooting
+
+If you're using `vite` and see this error `No Tailwind CSS configuration found at path....` (but do have a `tailwind.config.js`) ensure you've imported the CSS properly.
+
+```
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+Reference: [Link to Common Github Issue](https://github.com/shadcn-ui/ui/issues/4677)

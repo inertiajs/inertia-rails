@@ -12,21 +12,21 @@ module Inertia
       end
 
       def present?
-        package_manager.present?
+        name.present?
       end
 
       def add_dependencies(*dependencies)
         options = @generator.options[:verbose] ? '' : ' --silent'
         @generator.in_root do
-          @generator.run "#{package_manager} add #{dependencies.join(' ')}#{options}"
+          @generator.run "#{name} add #{dependencies.join(' ')}#{options}"
         end
       end
 
-      private
-
-      def package_manager
-        @package_manager ||= @generator.options[:package_manager] || detect_package_manager
+      def name
+        @name ||= @generator.options[:package_manager] || detect_package_manager
       end
+
+      private
 
       def detect_package_manager
         return nil unless file?('package.json')

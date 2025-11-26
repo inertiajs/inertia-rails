@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.13.0] - 2025-11-19
+
+* Update installers (@skryukov)
+* Update scaffolds (@skryukov)
+* Remove Svelte 4 option in installation generators (@skryukov)
+
+## [3.12.1] - 2025-11-09
+
+* Fix scroll props and deferred props for shared data (@bknoles)
+* Deprecate the probably-no-actually-used-anywhere public readers on InertiaRails::Renderer (@bknoles)
+
+## [3.12.0] - 2025-11-08
+
+* Docs updates (@leenyburger, @skryukov, @bn-l)
+* Reimplement devcontainers (@kieraneglin)
+* Support for Inertia.js infinite scroll components (@skyrukov)
+* New merge options (@skryukov)
+
+## [3.11.0] - 2025-08-29
+
+* Fix Svelte generator (@skryukov)
+* Docs updates for SSR and 2.1.2 (@skryukov)
+* Devcontainers for local dev (@kieraneglin)
+* Add configurable prop transformation (@kieraneglin)
+* Gradual deprecation of null errors because Inertis.js expects an empty object (@skryukov)
+* Allow the more helpful UnknownFormat exception to raise when a static intertia route is requested with a non-HTML format (@skryukov)
+
+## [3.10.0] - 2025-07-30
+
+* llms.txt in docs (@brandonshar and @skryukov)
+* Add support for deep merging merge props (@skryukov)
+* Server managed meta tags (@bknoles and @skryukov)
+
+## [3.9.0] - 2025-06-18
+
+* Docs updates
+* Add `parent_controller` configuration option for static Inertia routes
+
 ## [3.8.0] - 2025-04-12
 
 * Docs updates
