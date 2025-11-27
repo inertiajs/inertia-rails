@@ -118,7 +118,7 @@ module Inertia
           ERB
           insert_into_file application_layout.to_s, headers, after: "<%= vite_client_tag %>\n"
 
-          if framework == 'react' && !application_layout.read.include?('vite_react_refresh_tag')
+          if react? && !application_layout.read.include?('vite_react_refresh_tag')
             say 'Adding Vite React Refresh tag to the application layout'
             insert_into_file application_layout.to_s, "<%= vite_react_refresh_tag %>\n    ",
                              before: '<%= vite_client_tag %>'
@@ -130,7 +130,7 @@ module Inertia
           say_error '-  <title>...</title>'
           say_error '+  <title data-inertia>...</title>'
           say_error '+  <%= inertia_ssr_head %>'
-          say_error '+  <%= vite_react_refresh_tag %>' if framework == 'react'
+          say_error '+  <%= vite_react_refresh_tag %>' if react?
           say_error "+  <%= #{vite_tag} %>"
         end
       end
@@ -148,14 +148,30 @@ module Inertia
 
         add_dependencies(*FRAMEWORKS[framework]['packages_ts'])
 
-        say 'Copying adding scripts to package.json'
+        say 'Copying tsconfig and types'
+
+        # Copy tsconfig files
+        tsconfig_files = %w[tsconfig.json tsconfig.node.json]
+        tsconfig_files << 'tsconfig.app.json' unless svelte?
+
+        tsconfig_files.each do |file|
+          template "#{framework}/#{file}", file_path(file)
+        end
+
+        # Copy type definition files
+        types_files = %w[types/vite-env.d.ts types/globals.d.ts types/index.ts]
+        types_files.each do |file|
+          template "#{framework}/#{file}", file_path("#{js_destination_path}/#{file}")
+        end
+
+        say 'Adding TypeScript check scripts to package.json'
         if svelte?
           run 'npm pkg set scripts.check="svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"'
-        end
-        if framework == 'vue'
+        elsif react?
+          run 'npm pkg set scripts.check="tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"'
+        elsif vue?
           run 'npm pkg set scripts.check="vue-tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"'
         end
-        run 'npm pkg set scripts.check="tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"' if framework == 'react'
       end
 
       def install_example_page
@@ -325,6 +341,10 @@ module Inertia
 
       def react?
         framework.start_with? 'react'
+      end
+
+      def vue?
+        framework.start_with? 'vue'
       end
 
       def inertia_package

@@ -13,12 +13,6 @@ react:
   vite_plugin_call: "react()"
   copy_files_ts:
     "InertiaExample.tsx": "%{js_destination_path}/pages/inertia_example/index.tsx"
-    "tsconfig.json": "tsconfig.json"
-    "tsconfig.app.json": "tsconfig.app.json"
-    "tsconfig.node.json": "tsconfig.node.json"
-    "types/vite-env.d.ts": "%{js_destination_path}/types/vite-env.d.ts"
-    "types/globals.d.ts": "%{js_destination_path}/types/globals.d.ts"
-    "types/index.ts": "%{js_destination_path}/types/index.ts"
   copy_files_js:
     "InertiaExample.jsx": "%{js_destination_path}/pages/inertia_example/index.jsx"
   copy_files:
@@ -44,12 +38,6 @@ vue:
     "../assets/vite_ruby.svg": "%{js_destination_path}/assets/vite_ruby.svg"
   copy_files_ts:
     "InertiaExample.ts.vue": "%{js_destination_path}/pages/inertia_example/index.vue"
-    "tsconfig.json": "tsconfig.json"
-    "tsconfig.app.json": "tsconfig.app.json"
-    "tsconfig.node.json": "tsconfig.node.json"
-    "types/vite-env.d.ts": "%{js_destination_path}/types/vite-env.d.ts"
-    "types/globals.d.ts": "%{js_destination_path}/types/globals.d.ts"
-    "types/index.ts": "%{js_destination_path}/types/index.ts"
   copy_files_js:
     "InertiaExample.vue": "%{js_destination_path}/pages/inertia_example/index.vue"
 
@@ -68,11 +56,6 @@ svelte:
   vite_plugin_call: "svelte()"
   copy_files_ts:
     "InertiaExample.ts.svelte": "%{js_destination_path}/pages/inertia_example/index.svelte"
-    "tsconfig.json": "tsconfig.json"
-    "tsconfig.node.json": "tsconfig.node.json"
-    "types/vite-env.d.ts": "%{js_destination_path}/types/vite-env.d.ts"
-    "types/globals.d.ts": "%{js_destination_path}/types/globals.d.ts"
-    "types/index.ts": "%{js_destination_path}/types/index.ts"
   copy_files_js:
     "InertiaExample.svelte": "%{js_destination_path}/pages/inertia_example/index.svelte"
   copy_files:
