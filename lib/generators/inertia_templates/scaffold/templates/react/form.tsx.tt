@@ -28,7 +28,7 @@ export default function Form({ <%= singular_table_name %>, submitText, ...formPr
               id="password"
             />
             {errors.password && (
-              <div style={{ color: 'red' }}>{errors.password}</div>
+              <div style={{ color: 'red' }}>{errors.password.join(', ')}</div>
             )}
           </div>
 
@@ -42,7 +42,7 @@ export default function Form({ <%= singular_table_name %>, submitText, ...formPr
               id="password_confirmation"
             />
             {errors.password_confirmation && (
-              <div style={{ color: 'red' }}>{errors.password_confirmation}</div>
+              <div style={{ color: 'red' }}>{errors.password_confirmation.join(', ')}</div>
             )}
           </div>
 <% else -%>
@@ -92,7 +92,7 @@ export default function Form({ <%= singular_table_name %>, submitText, ...formPr
             />
 <% end -%>
             {errors.<%= attribute.column_name %> && (
-              <div style={{ color: 'red' }}>{errors.<%= attribute.column_name %>}</div>
+              <div style={{ color: 'red' }}>{errors.<%= attribute.column_name %>.join(', ')}</div>
             )}
           </div>
 <% end -%>

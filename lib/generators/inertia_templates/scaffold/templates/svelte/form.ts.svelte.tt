@@ -29,7 +29,7 @@
         id="password"
       />
       {#if errors.password}
-        <div class="error">{errors.password}</div>
+        <div class="error">{errors.password.join(', ')}</div>
       {/if}
     </div>
 
@@ -41,7 +41,7 @@
         id="password_confirmation"
       />
       {#if errors.password_confirmation}
-        <div class="error">{errors.password_confirmation}</div>
+        <div class="error">{errors.password_confirmation.join(', ')}</div>
       {/if}
     </div>
 <% else -%>
@@ -82,7 +82,7 @@
       />
 <% end -%>
       {#if errors.<%= attribute.column_name %>}
-        <div class="error">{errors.<%= attribute.column_name %>}</div>
+        <div class="error">{errors.<%= attribute.column_name %>.join(', ')}</div>
       {/if}
     </div>
 <% end -%>
