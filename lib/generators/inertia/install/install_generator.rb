@@ -148,14 +148,30 @@ module Inertia
 
         add_dependencies(*FRAMEWORKS[framework]['packages_ts'])
 
-        say 'Copying adding scripts to package.json'
+        say 'Copying tsconfig and types'
+
+        # Copy tsconfig files
+        tsconfig_files = %w[tsconfig.json tsconfig.node.json]
+        tsconfig_files << 'tsconfig.app.json' unless svelte?
+
+        tsconfig_files.each do |file|
+          copy_file "#{framework}/#{file}", file_path(file)
+        end
+
+        # Copy type definition files
+        types_files = %w[types/vite-env.d.ts types/globals.d.ts types/index.ts]
+        types_files.each do |file|
+          copy_file "#{framework}/#{file}", file_path("#{js_destination_path}/#{file}")
+        end
+
+        say 'Adding TypeScript check scripts to package.json'
         if svelte?
           run 'npm pkg set scripts.check="svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"'
-        end
-        if framework == 'vue'
+        elsif react?
+          run 'npm pkg set scripts.check="tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"'
+        elsif framework == 'vue'
           run 'npm pkg set scripts.check="vue-tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"'
         end
-        run 'npm pkg set scripts.check="tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"' if framework == 'react'
       end
 
       def install_example_page
