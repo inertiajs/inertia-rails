@@ -31,7 +31,7 @@
       />
       {#if errors.password}
         <div class="text-red-500 px-3 py-2 font-medium">
-          {errors.password}
+          {errors.password.join(', ')}
         </div>
       {/if}
     </div>
@@ -46,7 +46,7 @@
       />
       {#if errors.password_confirmation}
         <div class="text-red-500 px-3 py-2 font-medium">
-          {errors.password_confirmation}
+          {errors.password_confirmation.join(', ')}
         </div>
       {/if}
     </div>
@@ -95,7 +95,7 @@
 <% end -%>
       {#if errors.<%= attribute.column_name %>}
         <div class="text-red-500 px-3 py-2 font-medium">
-          {errors.<%= attribute.column_name %>}
+          {errors.<%= attribute.column_name %>.join(', ')}
         </div>
       {/if}
     </div>

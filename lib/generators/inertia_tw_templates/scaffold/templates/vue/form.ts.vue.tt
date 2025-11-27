@@ -19,7 +19,7 @@
         v-if="errors.password"
         class="text-red-500 px-3 py-2 font-medium"
       >
-        {{ errors.password }}
+        {{ errors.password.join(', ') }}
       </div>
     </div>
 
@@ -35,7 +35,7 @@
         v-if="errors.password_confirmation"
         class="text-red-500 px-3 py-2 font-medium"
       >
-        {{ errors.password_confirmation }}
+        {{ errors.password_confirmation.join(', ') }}
       </div>
     </div>
 <% else -%>
@@ -82,7 +82,7 @@
       />
 <% end -%>
       <div v-if="errors.<%= attribute.column_name %>" class="text-red-500 px-3 py-2 font-medium">
-        {{ errors.<%= attribute.column_name %> }}
+        {{ errors.<%= attribute.column_name %>.join(', ') }}
       </div>
     </div>
 <% end -%>
