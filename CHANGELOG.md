@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.14.0] - 2025-11-27
+
+Lots of quality of life improvements!
+
+* OG Pilot in Awesome page (@raulpopadineti)
+* Expose InertiaRails version (@capripot)
+* Svelte improvements to install generators (@alec-c4)
+* Add start kits to docs (@skryukov)
+* Fix types in React install templates (@skryukov)
+* Update docs with new inertia branding (@skryukov)
+* Add protocol diagram (@skryukov)
+* Fix forceIndicesArrayFormatInFormData in install generator (@skryukov)
+* Add Kickstart templates to awesome page (@alec-c4)
+* Improve generators for TypeScript users (@Andy9822)
+* Update example pages to mimic Rails styling and appear at root path by default (@capripot)
+* Update error types in install templates (@skryukov)
+
 ## [3.13.0] - 2025-11-19
 
 * Update installers (@skryukov)
