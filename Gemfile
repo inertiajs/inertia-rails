@@ -8,7 +8,6 @@ gemspec
 version = ENV.fetch('RAILS_VERSION', '8.1')
 gem 'rails', "~> #{version}.0"
 
-gem 'bundler', '~> 2.0'
 gem 'debug'
 gem 'generator_spec', '~> 0.10'
 gem 'rails-controller-testing'
