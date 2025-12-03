@@ -34,6 +34,12 @@ module InertiaRails
 
       # Whether to include empty `errors` hash to the props when no errors are present.
       always_include_errors_hash: nil,
+
+      # Whether to use `<script>` element for initial page rendering instead of the `data-page` attribute.
+      use_script_element_for_initial_page: false,
+
+      # DOM id to use for the root Inertia.js element.
+      root_dom_id: 'app',
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze

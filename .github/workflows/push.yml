@@ -19,11 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Linter
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.3"
+          ruby-version: "3.4"
           bundler: latest
           bundler-cache: true
       - name: Run RuboCop
@@ -53,13 +53,13 @@ jobs:
     name: Test against Ruby ${{ matrix.ruby }} / Rails ${{ matrix.rails }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup System
         run: sudo apt-get install libsqlite3-dev
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22.x
 
@@ -67,7 +67,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-          rubygems: latest
+          rubygems: 'latest'
           bundler-cache: true
         env:
           RAILS_VERSION:  ${{ matrix.rails }}

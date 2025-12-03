@@ -292,3 +292,6 @@ createInertiaApp({
   // ...
 })
 ```
+
+> [!NOTE]
+> Make sure the [`root_dom_id`](/guide/configuration#root_dom_id) configuration option matches the `id` property in your client-side setup.
