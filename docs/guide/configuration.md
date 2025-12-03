@@ -151,3 +151,59 @@ The default value will be changed to `true` in the next major version.
 Specifies the base controller class for the internal `StaticController` used to render [Shorthand routes](/guide/routing#shorthand-routes).
 
 By default, Inertia Rails creates a `StaticController` that inherits from `ApplicationController`. You can use this option to specify a different base controller (for example, to include custom authentication, layout, or before actions).
+
+### `root_dom_id`
+
+**Default**: `'app'`
+**ENV**: `INERTIA_ROOT_DOM_ID`
+
+@available_since rails=master
+
+Specifies the DOM element ID used for the root Inertia.js element.
+
+```ruby
+InertiaRails.configure do |config|
+  config.root_dom_id = 'inertia-app'
+end
+```
+
+> [!NOTE]
+> Make sure your client-side Inertia setup uses the same ID when calling `createInertiaApp`.
+
+### `use_script_element_for_initial_page`
+
+**Default**: `false`
+**ENV**: `INERTIA_USE_SCRIPT_ELEMENT_FOR_INITIAL_PAGE`
+
+@available_since rails=master core=master
+
+When enabled the initial page data is rendered in a `<script type="application/json">` element instead of the `data-page` attribute on the root `<div>`.
+This provides two main benefits:
+
+1. **Smaller page size**: JSON data doesn't require HTML entity encoding, reducing the overall HTML payload size.
+2. **Faster parsing**: The browser can parse raw JSON directly from the script element, which is more efficient than parsing HTML-encoded JSON from an attribute.
+
+```ruby
+InertiaRails.configure do |config|
+  config.use_script_element_for_initial_page = true
+end
+```
+
+When disabled (default), the HTML output looks like:
+
+```html
+<div id="app" data-page='{"component":"Users/Index",...}'></div>
+```
+
+When enabled, the HTML output looks like:
+
+```html
+<script data-page="app" type="application/json">
+  {"component":"Users/Index",...}
+</script>
+<div id="app"></div>
+```
+
+> [!NOTE]
+> When using this option make sure your client-side Inertia setup is configured to read the page data from the `<script>` element.
+> See the [protocol documentation](/guide/the-protocol#html-responses) for more details.

@@ -29,6 +29,33 @@ Content-Type: text/html; charset=utf-8
 </html>
 ```
 
+### Script element alternative
+
+As an alternative the page data can be rendered in a `<script type="application/json">` element instead of the `data-page` attribute.
+This approach provides smaller page sizes (no HTML entity encoding required) and faster JSON parsing by the browser.
+
+```html
+<script data-page="app" type="application/json">
+  {
+    "component": "Event",
+    "props": {
+      "errors": {},
+      "event": {
+        "id": 80,
+        "title": "Birthday party",
+        "start_date": "2019-06-02",
+        "description": "Come out and celebrate Jonathan's 36th birthday party!"
+      }
+    },
+    "url": "/events/80",
+    "version": "c32b8e4965f418ad16eaebba1d4e960f"
+  }
+</script>
+<div id="app"></div>
+```
+
+See the [`use_script_element_for_initial_page`](/guide/configuration#use_script_element_for_initial_page) configuration option to enable this behavior.
+
 While the initial response is HTML, Inertia does not server-side render the JavaScript page components. For information on server-side rendering, see the [SSR documentation](/guide/server-side-rendering).
 
 ## Inertia responses

@@ -797,6 +797,89 @@ RSpec.describe 'rendering inertia views', type: :request do
       end
     end
   end
+
+  context 'view configuration options' do
+    after do
+      InertiaRails.configure do |config|
+        config.use_script_element_for_initial_page = false
+        config.root_dom_id = 'app'
+      end
+    end
+
+    describe 'root_dom_id' do
+      let(:page) { InertiaRails::Renderer.new('TestComponent', controller, request, response, '').send(:page) }
+
+      context 'with default root_dom_id' do
+        before { get component_path }
+
+        it 'renders div with id="app"' do
+          expect(response.body).to include('<div id="app" data-page=')
+        end
+      end
+
+      context 'with custom root_dom_id' do
+        before do
+          InertiaRails.configure { |c| c.root_dom_id = 'custom-root' }
+          get component_path
+        end
+
+        it 'renders div with custom id' do
+          expect(response.body).to include('<div id="custom-root" data-page=')
+        end
+      end
+    end
+
+    describe 'use_script_element_for_initial_page' do
+      let(:page) { InertiaRails::Renderer.new('TestComponent', controller, request, response, '').send(:page) }
+
+      context 'when false (default)' do
+        before { get component_path }
+
+        it 'renders div with data-page attribute' do
+          expect(response.body).to include('<div id="app" data-page=')
+        end
+
+        it 'does not render script element for page data' do
+          expect(response.body).not_to include('<script data-page=')
+        end
+      end
+
+      context 'when true' do
+        before do
+          InertiaRails.configure { |c| c.use_script_element_for_initial_page = true }
+          get component_path
+        end
+
+        it 'renders script element with page data' do
+          expect(response.body).to include('<script data-page="app" type="application/json">')
+          expect(response.body).to include(page.to_json)
+          expect(response.body).to include('</script>')
+        end
+
+        it 'renders div without data-page attribute' do
+          expect(response.body).to include('<div id="app"></div>')
+        end
+      end
+
+      context 'when true with custom root_dom_id' do
+        before do
+          InertiaRails.configure do |c|
+            c.use_script_element_for_initial_page = true
+            c.root_dom_id = 'inertia-app'
+          end
+          get component_path
+        end
+
+        it 'renders script element with custom data-page attribute' do
+          expect(response.body).to include('<script data-page="inertia-app" type="application/json">')
+        end
+
+        it 'renders div with custom id' do
+          expect(response.body).to include('<div id="inertia-app"></div>')
+        end
+      end
+    end
+  end
 end
 
 def inertia_div(page)
