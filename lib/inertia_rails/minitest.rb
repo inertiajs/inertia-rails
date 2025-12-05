@@ -134,14 +134,14 @@ module InertiaRails
               # Intercept InertiaRails::Renderer.new to wrap the render method
               @_original_renderer_new = InertiaRails::Renderer.method(:new)
 
-              InertiaRails::Renderer.define_singleton_method(:new) do |component, controller, request, response, render, named_args|
+              InertiaRails::Renderer.define_singleton_method(:new) do |component, controller, request, response, render, **named_args|
                 @_original_renderer_new.call(
                   component,
                   controller,
                   request,
                   response,
                   controller.inertia_wrap_render(render),
-                  **(named_args || {})
+                  **named_args
                 )
               end
             end
