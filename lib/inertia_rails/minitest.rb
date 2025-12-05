@@ -134,13 +134,16 @@ module InertiaRails
               # Intercept InertiaRails::Renderer.new to wrap the render method
               @_original_renderer_new = InertiaRails::Renderer.method(:new)
 
+              # Capture self (the test instance) so we can call inertia_wrap_render on it
+              test_instance = self
+
               InertiaRails::Renderer.define_singleton_method(:new) do |component, controller, request, response, render, **named_args|
                 @_original_renderer_new.call(
                   component,
                   controller,
                   request,
                   response,
-                  controller.inertia_wrap_render(render),
+                  test_instance.inertia_wrap_render(render),
                   **named_args
                 )
               end
