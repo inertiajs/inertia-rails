@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'minitest'
+require 'active_support/core_ext/hash/indifferent_access'
 
 module InertiaRails
   module Minitest
@@ -27,14 +28,15 @@ module InertiaRails
 
       def assign_locals(params)
         if params[:locals].present?
-          @view_data = params[:locals].except(:page)
-          @props = params[:locals][:page][:props]
+          # First load (HTML response) - convert to indifferent access
+          @view_data = params[:locals].except(:page).with_indifferent_access
+          @props = params[:locals][:page][:props].with_indifferent_access
           @component = params[:locals][:page][:component]
         else
-          # Sequential Inertia request
-          @view_data = {}
+          # Sequential Inertia request (JSON response) - convert to indifferent access
+          @view_data = {}.with_indifferent_access
           json = JSON.parse(params[:json])
-          @props = json['props']
+          @props = json['props'].with_indifferent_access
           @component = json['component']
         end
       end
@@ -82,9 +84,13 @@ module InertiaRails
 
       # Assertion: Asserts that props match exactly (no extra or missing keys)
       def assert_inertia_exact_props(expected_props, message = nil)
+        # Convert expected to HashWithIndifferentAccess for consistent comparison
+        expected = expected_props.with_indifferent_access
+        actual = inertia&.props
+
         message ||= "Expected inertia props to receive #{expected_props.inspect}, " \
-                    "instead received #{inertia&.props.inspect || 'nothing'}"
-        assert_equal expected_props, inertia&.props, message
+                    "instead received #{actual.inspect || 'nothing'}"
+        assert_equal expected, actual, message
       end
 
       # Assertion: Asserts that props include the specified keys/values (allows extra keys)
@@ -94,9 +100,11 @@ module InertiaRails
                     "instead received #{actual_props.inspect}"
 
         expected_props.each do |key, value|
-          assert_includes actual_props.keys, key,
-                         "Expected props to include key #{key.inspect}, but it was not present. " \
-                         "Available keys: #{actual_props.keys.inspect}"
+          # Use string version of key for comparison (HashWithIndifferentAccess uses strings internally)
+          key_str = key.to_s
+          assert actual_props.key?(key_str),
+                 "Expected props to include key #{key.inspect}, but it was not present. " \
+                 "Available keys: #{actual_props.keys.inspect}"
           assert_equal value, actual_props[key],
                       "Expected props[#{key.inspect}] to be #{value.inspect}, " \
                       "but got #{actual_props[key].inspect}"
@@ -105,9 +113,13 @@ module InertiaRails
 
       # Assertion: Asserts that view data matches exactly
       def assert_inertia_exact_view_data(expected_view_data, message = nil)
+        # Convert expected to HashWithIndifferentAccess for consistent comparison
+        expected = expected_view_data.with_indifferent_access
+        actual = inertia&.view_data
+
         message ||= "Expected inertia view data to receive #{expected_view_data.inspect}, " \
-                    "instead received #{inertia&.view_data.inspect || 'nothing'}"
-        assert_equal expected_view_data, inertia&.view_data, message
+                    "instead received #{actual.inspect || 'nothing'}"
+        assert_equal expected, actual, message
       end
 
       # Assertion: Asserts that view data includes the specified keys/values
@@ -117,9 +129,11 @@ module InertiaRails
                     "instead received #{actual_view_data.inspect}"
 
         expected_view_data.each do |key, value|
-          assert_includes actual_view_data.keys, key,
-                         "Expected view data to include key #{key.inspect}, but it was not present. " \
-                         "Available keys: #{actual_view_data.keys.inspect}"
+          # Use string version of key for comparison (HashWithIndifferentAccess uses strings internally)
+          key_str = key.to_s
+          assert actual_view_data.key?(key_str),
+                 "Expected view data to include key #{key.inspect}, but it was not present. " \
+                 "Available keys: #{actual_view_data.keys.inspect}"
           assert_equal value, actual_view_data[key],
                       "Expected view_data[#{key.inspect}] to be #{value.inspect}, " \
                       "but got #{actual_view_data[key].inspect}"

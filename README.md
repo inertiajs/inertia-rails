@@ -385,19 +385,25 @@ class EventsControllerTest < ActionDispatch::IntegrationTest
 end
 ```
 
-#### Note on First Load vs Sequential Requests
+#### Indifferent Key Access
 
-When testing, be aware that first-load (HTML) responses use **symbol keys** for props, while sequential (JSON) requests use **string keys**:
+Props and view data use `HashWithIndifferentAccess`, so you can use **either symbol or string keys** in your tests regardless of request type:
 
 ```ruby
-# First load - symbol keys
-get events_path
-assert_inertia_exact_props(name: 'Brandon')
+test "works with both symbol and string keys" do
+  get events_path
 
-# Sequential request - string keys
-get events_path, headers: { 'X-Inertia': true }
-assert_inertia_exact_props('name' => 'Brandon')
+  # Both work! Use whichever you prefer
+  assert_equal 'Brandon', inertia.props[:name]
+  assert_equal 'Brandon', inertia.props['name']
+
+  # Assertions also accept either format
+  assert_inertia_exact_props(name: 'Brandon')  # symbols
+  assert_inertia_exact_props('name' => 'Brandon')  # strings
+end
 ```
+
+This eliminates the need to remember whether first-load (HTML) or sequential (JSON) requests use different key types.
 
 #### Configuration
 

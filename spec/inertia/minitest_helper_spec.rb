@@ -41,9 +41,31 @@ RSpec.describe InertiaRails::Minitest, type: :request do
 
       wrapper.call(params)
 
-      expect(wrapper.props).to eq({ name: 'Brandon', sport: 'hockey' })
+      # HashWithIndifferentAccess allows both access styles
+      expect(wrapper.props[:name]).to eq 'Brandon'
+      expect(wrapper.props['name']).to eq 'Brandon'
       expect(wrapper.component).to eq 'TestComponent'
-      expect(wrapper.view_data).to eq({ meta: 'test data' })
+      expect(wrapper.view_data[:meta]).to eq 'test data'
+      expect(wrapper.view_data['meta']).to eq 'test data'
+    end
+
+    it 'allows both symbol and string key access for HTML response' do
+      params = {
+        locals: {
+          page: {
+            props: { name: 'Brandon', sport: 'hockey' },
+            component: 'TestComponent'
+          }
+        }
+      }
+
+      wrapper.call(params)
+
+      # Both should work thanks to HashWithIndifferentAccess
+      expect(wrapper.props[:name]).to eq 'Brandon'
+      expect(wrapper.props['name']).to eq 'Brandon'
+      expect(wrapper.props[:sport]).to eq 'hockey'
+      expect(wrapper.props['sport']).to eq 'hockey'
     end
 
     it 'extracts data from JSON response params' do
@@ -55,9 +77,27 @@ RSpec.describe InertiaRails::Minitest, type: :request do
 
       wrapper.call(params)
 
-      expect(wrapper.props).to eq({ 'name' => 'Brandon', 'sport' => 'hockey' })
+      # HashWithIndifferentAccess allows both access styles
+      expect(wrapper.props[:name]).to eq 'Brandon'
+      expect(wrapper.props['name']).to eq 'Brandon'
       expect(wrapper.component).to eq 'TestComponent'
       expect(wrapper.view_data).to eq({})
+    end
+
+    it 'allows both symbol and string key access for JSON response' do
+      json_data = {
+        'props' => { 'name' => 'Brandon', 'sport' => 'hockey' },
+        'component' => 'TestComponent'
+      }
+      params = { json: json_data.to_json }
+
+      wrapper.call(params)
+
+      # Both should work thanks to HashWithIndifferentAccess
+      expect(wrapper.props[:name]).to eq 'Brandon'
+      expect(wrapper.props['name']).to eq 'Brandon'
+      expect(wrapper.props[:sport]).to eq 'hockey'
+      expect(wrapper.props['sport']).to eq 'hockey'
     end
 
     it 'wraps a render method' do
