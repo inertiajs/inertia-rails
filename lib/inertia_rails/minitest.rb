@@ -132,13 +132,15 @@ module InertiaRails
           base.class_eval do
             setup do
               # Intercept InertiaRails::Renderer.new to wrap the render method
+              # Store in instance variable for teardown
               @_original_renderer_new = InertiaRails::Renderer.method(:new)
 
-              # Capture self (the test instance) so we can call inertia_wrap_render on it
+              # Capture as local variables for the closure
+              original_renderer_new = @_original_renderer_new
               test_instance = self
 
               InertiaRails::Renderer.define_singleton_method(:new) do |component, controller, request, response, render, **named_args|
-                @_original_renderer_new.call(
+                original_renderer_new.call(
                   component,
                   controller,
                   request,
