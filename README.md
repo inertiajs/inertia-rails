@@ -293,15 +293,17 @@ end
 
 ## Testing
 
-If you're using Rspec, Inertia Rails comes with some nice test helpers to make things simple. 
+Inertia Rails provides test helpers for both RSpec and Minitest to make testing Inertia responses simple.
 
-To use these helpers, just add the following require statement to your `spec/rails_helper.rb`
+### RSpec
+
+If you're using RSpec, add the following require statement to your `spec/rails_helper.rb`:
 
 ```ruby
 require 'inertia_rails/rspec'
 ```
 
-And in any test you want to use the inertia helpers, add the inertia flag to the describe block
+Then add the `inertia: true` flag to any describe block where you want to use the inertia helpers:
 
 ```ruby
 RSpec.describe EventController, type: :request do
@@ -311,35 +313,107 @@ RSpec.describe EventController, type: :request do
 end
 ```
 
-### Assertions
+#### RSpec Assertions
 
 ```ruby
 RSpec.describe EventController, type: :request do
   describe '#index', inertia: true do
-    
+
     # check the component
     expect_inertia.to render_component 'Event/Index'
-    
+
     # access the component name
     expect(inertia.component).to eq 'TestComponent'
-    
+
     # props (including shared props)
     expect_inertia.to have_exact_props({name: 'Brandon', sport: 'hockey'})
     expect_inertia.to include_props({sport: 'hockey'})
-    
+
     # access props
     expect(inertia.props[:name]).to eq 'Brandon'
-    
+
     # view data
     expect_inertia.to have_exact_view_data({name: 'Brian', sport: 'basketball'})
     expect_inertia.to include_view_data({sport: 'basketball'})
-    
-    # access view data 
+
+    # access view data
     expect(inertia.view_data[:name]).to eq 'Brian'
-    
+
   end
 end
+```
 
+### Minitest
+
+If you're using Minitest, add the following to your `test/test_helper.rb`:
+
+```ruby
+require 'inertia_rails/minitest'
+
+class ActionDispatch::IntegrationTest
+  include InertiaRails::Minitest::Helpers
+end
+```
+
+#### Minitest Assertions
+
+```ruby
+class EventsControllerTest < ActionDispatch::IntegrationTest
+  test "renders the index component" do
+    get events_path
+
+    # check the component
+    assert_inertia_component 'Event/Index'
+
+    # access the component name
+    assert_equal 'Event/Index', inertia.component
+
+    # props (including shared props)
+    assert_inertia_exact_props(name: 'Brandon', sport: 'hockey')
+    assert_inertia_includes_props(sport: 'hockey')
+
+    # access props
+    assert_equal 'Brandon', inertia.props[:name]
+
+    # view data
+    assert_inertia_exact_view_data(name: 'Brian', sport: 'basketball')
+    assert_inertia_includes_view_data(sport: 'basketball')
+
+    # access view data
+    assert_equal 'Brian', inertia.view_data[:name]
+  end
+end
+```
+
+#### Note on First Load vs Sequential Requests
+
+When testing, be aware that first-load (HTML) responses use **symbol keys** for props, while sequential (JSON) requests use **string keys**:
+
+```ruby
+# First load - symbol keys
+get events_path
+assert_inertia_exact_props(name: 'Brandon')
+
+# Sequential request - string keys
+get events_path, headers: { 'X-Inertia': true }
+assert_inertia_exact_props('name' => 'Brandon')
+```
+
+#### Configuration
+
+You can configure Minitest test helpers globally:
+
+```ruby
+# test/test_helper.rb
+InertiaRails::Minitest.config.skip_missing_renderer_warnings = true
+```
+
+Or using a configure block:
+
+```ruby
+InertiaRails::Minitest.configure do |config|
+  config.skip_missing_renderer_warnings = true
+end
 ```
 
 *Maintained and sponsored by the team at [bellaWatt](https://bellawatt.com/)*
