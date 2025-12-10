@@ -295,3 +295,23 @@ createInertiaApp({
 
 > [!NOTE]
 > Make sure the [`root_dom_id`](/guide/configuration#root_dom_id) configuration option matches the `id` property in your client-side setup.
+
+## Script Element for Page Data
+
+By default, Inertia stores the initial page data in a `data-page` attribute on the root element. You may configure Inertia to use a `<script type="application/json">` element instead, which is slightly faster and easier to inspect in your browser's dev tools.
+
+```js
+createInertiaApp({
+  // ...
+  defaults: {
+    future: {
+      useScriptElementForInitialPage: true,
+    },
+  },
+})
+```
+
+You should also set the [`use_script_element_for_initial_page`](/guide/configuration#use_script_element_for_initial_page) config option to `true`.
+
+> [!NOTE]
+> Be sure to also update your [SSR entry point](/guide/server-side-rendering#add-server-entry-point) if you're using server-side rendering.

@@ -175,7 +175,7 @@ end
 **Default**: `false`
 **ENV**: `INERTIA_USE_SCRIPT_ELEMENT_FOR_INITIAL_PAGE`
 
-@available_since rails=master core=master
+@available_since rails=master core=2.2.20
 
 When enabled the initial page data is rendered in a `<script type="application/json">` element instead of the `data-page` attribute on the root `<div>`.
 This provides two main benefits:
@@ -206,4 +206,4 @@ When enabled, the HTML output looks like:
 
 > [!NOTE]
 > When using this option make sure your client-side Inertia setup is configured to read the page data from the `<script>` element.
-> See the [protocol documentation](/guide/the-protocol#html-responses) for more details.
+> See the [client side setup](/guide/client-side-setup#script-element-for-page-data) for more details.
