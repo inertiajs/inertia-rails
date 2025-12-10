@@ -83,6 +83,20 @@ end
 > [!NOTE]
 > Page props and shared data are merged together, so be sure to namespace your shared data appropriately to avoid collisions.
 
+## Sharing Once Props
+
+@available_since rails=master core=2.2.20
+
+You may share data that is resolved only once and remembered by the client across subsequent navigations using [once props](/guide/once-props).
+
+```ruby
+class ApplicationController < ActionController::Base
+  inertia_share countries: InertiaRails.once { Country.all }
+end
+```
+
+For more information on once props, see the [once props](/guide/once-props) documentation.
+
 ## Accessing shared data
 
 Once you have shared the data server-side, you will be able to access it within any of your pages or components. Here's an example of how to access shared data in a layout component.

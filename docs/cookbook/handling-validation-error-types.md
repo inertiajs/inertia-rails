@@ -26,8 +26,10 @@ import type { InertiaFormProps as OriginalProps } from '@inertiajs/vue3'
 type FormDataType = Record<string, FormDataConvertible>
 
 declare module '@inertiajs/vue3' {
-  interface InertiaFormProps<TForm extends FormDataType>
-    extends Omit<OriginalProps<TForm>, 'errors' | 'setError'> {
+  interface InertiaFormProps<TForm extends FormDataType> extends Omit<
+    OriginalProps<TForm>,
+    'errors' | 'setError'
+  > {
     errors: Partial<Record<FormDataKeys<TForm>, string[]>>
 
     setError(field: FormDataKeys<TForm>, value: string[]): this
@@ -60,8 +62,10 @@ import type { InertiaFormProps as OriginalProps } from '@inertiajs/react'
 type FormDataType = Record<string, FormDataConvertible>
 
 declare module '@inertiajs/react' {
-  interface InertiaFormProps<TForm extends FormDataType>
-    extends Omit<OriginalProps<TForm>, 'errors' | 'setError'> {
+  interface InertiaFormProps<TForm extends FormDataType> extends Omit<
+    OriginalProps<TForm>,
+    'errors' | 'setError'
+  > {
     errors: Partial<Record<FormDataKeys<TForm>, string[]>>
 
     setError(field: FormDataKeys<TForm>, value: string[]): void
@@ -92,8 +96,10 @@ import type { Writable } from 'svelte/store'
 type FormDataType = Record<string, FormDataConvertible>
 
 declare module '@inertiajs/svelte' {
-  interface InertiaFormProps<TForm extends FormDataType>
-    extends Omit<OriginalProps<TForm>, 'errors' | 'setError'> {
+  interface InertiaFormProps<TForm extends FormDataType> extends Omit<
+    OriginalProps<TForm>,
+    'errors' | 'setError'
+  > {
     errors: Partial<Record<FormDataKeys<TForm>, string[]>>
 
     setError(field: FormDataKeys<TForm>, value: string[]): this

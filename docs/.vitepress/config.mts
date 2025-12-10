@@ -136,6 +136,7 @@ export default defineConfig({
             { text: 'Prefetching', link: '/guide/prefetching' },
             { text: 'Load when visible', link: '/guide/load-when-visible' },
             { text: 'Merging props', link: '/guide/merging-props' },
+            { text: 'Once props', link: '/guide/once-props' },
             { text: 'Infinite scroll', link: '/guide/infinite-scroll' },
             { text: 'Remembering state', link: '/guide/remembering-state' },
           ],
