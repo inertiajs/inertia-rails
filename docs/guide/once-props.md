@@ -69,7 +69,7 @@ router.reload({ only: ['plans'] })
 
 ## Expiration
 
-You may set an expiration time using the `expires_in` parameter. This parameter accepts a `Time`, `DateTime`, `ActiveSupport::Duration`, or an integer (seconds). The prop will be refreshed on a subsequent visit after the expiration time has passed.
+You may set an expiration time using the `expires_in` parameter. This parameter accepts an `ActiveSupport::Duration` or an integer (seconds). The prop will be refreshed on a subsequent visit after the expiration time has passed.
 
 ```ruby
 class DashboardController < ApplicationController
@@ -121,7 +121,7 @@ Prefetched pages containing an expired once prop will be invalidated from the ca
 
 ## Combining with Other Prop Types
 
-The `once()` modifier may be chained onto [deferred](/guide/deferred-props), [merge](/guide/merging-props), and [optional](/guide/partial-reloads#lazy-data-evaluation) props.
+The `once` option can be passed to [deferred](/guide/deferred-props), [merge](/guide/merging-props), and [optional](/guide/partial-reloads#lazy-data-evaluation) props.
 
 ```ruby
 class DashboardController < ApplicationController

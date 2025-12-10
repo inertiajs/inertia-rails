@@ -904,7 +904,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       it 'includes expiresAt in onceProps' do
         once_props = response.parsed_body['onceProps']
         expect(once_props['cached_data']['expiresAt']).to be_a(Integer)
-        expect(once_props['cached_data']['expiresAt']).to be > (Time.now.to_f * 1000).to_i
+        expect(once_props['cached_data']['expiresAt']).to be > (Time.current.to_f * 1000).to_i
       end
     end
 

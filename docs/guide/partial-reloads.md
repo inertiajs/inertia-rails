@@ -266,7 +266,7 @@ You may pass the `once: true` argument to a deferred prop to ensure the data is 
 class UsersController < ApplicationController
   def index
     render inertia: {
-      users: InertiaRails.optional(once: true) { Users.all },
+      users: InertiaRails.optional(once: true) { User.all },
     }
   end
 end
