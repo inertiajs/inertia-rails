@@ -121,6 +121,8 @@ export default () => (
 
 :::
 
+## Multiple Deferred Props
+
 If you need to wait for multiple deferred props to become available, you can specify an array to the `data` prop.
 
 :::tabs key:frameworks
@@ -189,3 +191,21 @@ export default () => (
 ```
 
 :::
+
+## Combining with Once Props
+
+@available_since rails=master core=2.2.20
+
+You may pass the `once: true` argument to a deferred prop to ensure the data is resolved only once and remembered by the client across subsequent navigations.
+
+```ruby
+class DashboardController < ApplicationController
+  def index
+    render inertia: {
+      stats: InertiaRails.defer(once: true) { Stats.generate },
+    }
+  end
+end
+```
+
+For more information on once props, see the [once props](/guide/once-props) documentation.

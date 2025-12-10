@@ -124,6 +124,7 @@ The following headers are automatically sent by Inertia when making requests. Yo
 10. `Cache-Control`: Set to `no-cache` for reload requests to prevent serving stale content.
 11. `X-Inertia-Error-Bag`: Specifies which error bag to use for [validation errors](/guide/validation).
 12. `X-Inertia-Infinite-Scroll-Merge-Intent`: Indicates whether the requested data should be appended or prepended when using [Infinite scroll](/guide/infinite-scroll).
+13. `X-Inertia-Except-Once-Props`: Comma-separated list of non-expired [once prop](/guide/once-props) keys already loaded on the client. The server will skip resolving these props unless explicitly requested via a partial reload or force refreshed server-side.
 
 ## Response headers
 
@@ -149,6 +150,7 @@ Inertia shares data between the server and client via a page object. This object
 - `matchPropsOn`: Array of prop keys to use for [matching when merging props](/guide/merging-props#matching-items).
 - `scrollProps`: Configuration for [infinite scroll](/guide/infinite-scroll) prop merging behavior.
 - `deferredProps`: Configuration for client-side [lazy loading of props](/guide/deferred-props).
+- `onceProps`: Configuration for [once props](/guide/once-props) that should only be resolved once and reused on subsequent pages. Each entry maps a key to an object containing the `prop` name and optional `expiresAt` timestamp (in milliseconds).
 
 On standard full page visits, the page object is JSON encoded into the `data-page` attribute in the root `<div>`. On Inertia visits (as indicated by the presence of the `X-Inertia` header), the page object is returned as the JSON payload.
 
@@ -278,6 +280,78 @@ When using [Infinite scroll](/guide/infinite-scroll), the page object includes a
   }
 }
 ```
+
+### Page Object with Once Props
+
+When using [once props](/guide/once-props), the page object includes an `onceProps` configuration. Each entry maps a key to the prop name and an optional expiration timestamp.
+
+```json
+{
+  "component": "Billing/Plans",
+  "props": {
+    "errors": {},
+    "plans": [
+      {
+        "id": 1,
+        "name": "Basic"
+      },
+      {
+        "id": 2,
+        "name": "Pro"
+      }
+    ]
+  },
+  "url": "/billing/plans",
+  "version": "6b16b94d7c51cbe5b1fa42aac98241d5",
+  "clearHistory": false,
+  "encryptHistory": false,
+  "onceProps": {
+    "plans": {
+      "prop": "plans",
+      "expiresAt": null
+    }
+  }
+}
+```
+
+When navigating to a subsequent page that includes the same once prop, the client sends the loaded keys in the `X-Inertia-Except-Once-Props` header. The server skips resolving these props and excludes them from the response. The client reuses the previously loaded values.
+
+```http
+REQUEST
+GET: https://example.com/billing/upgrade
+Accept: text/html, application/xhtml+xml
+X-Requested-With: XMLHttpRequest
+X-Inertia: true
+X-Inertia-Version: 6b16b94d7c51cbe5b1fa42aac98241d5
+X-Inertia-Except-Once-Props: plans
+
+RESPONSE
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+    "component": "Billing/Upgrade",
+    "props": {
+        "errors": {},
+        "currentPlan": {
+            "id": 1,
+            "name": "Basic"
+        }
+    },
+    "url": "/billing/upgrade",
+    "version": "6b16b94d7c51cbe5b1fa42aac98241d5",
+    "clearHistory": false,
+    "encryptHistory": false,
+    "onceProps": {
+        "plans": {
+            "prop": "plans",
+            "expiresAt": null
+        }
+    }
+}
+```
+
+Note that `plans` is included in `onceProps` but not in `props` since it was already loaded on the client. The `onceProps` key identifies the once prop across pages, while `prop` specifies the actual prop name. These may differ when using [custom keys](/guide/once-props#custom-keys).
 
 ## Asset versioning
 

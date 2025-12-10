@@ -130,7 +130,7 @@ You can also merge props directly on the client side without making a server req
 
 ## Combining with deferred props
 
-You can also combine [deferred props](/guide/deferred-props) with mergeable props to defer the loading of the prop and ultimately mark it as mergeable once it's loaded.
+You may combine [deferred props](/guide/deferred-props) with mergeable props to defer the loading of the prop and ultimately mark it as mergeable once it's loaded.
 
 ```ruby
 class UsersController < ApplicationController
@@ -145,6 +145,24 @@ class UsersController < ApplicationController
   end
 end
 ```
+
+## Combining with Once Props
+
+@available_since rails=master core=2.2.20
+
+You may pass the `once: true` argument to a deferred prop to ensure the data is resolved only once and remembered by the client across subsequent navigations.
+
+```ruby
+class UsersController < ApplicationController
+  def index
+    render inertia: {
+      activity: InertiaRails.merge(once: true) { @user.recent_activity },
+    }
+  end
+end
+```
+
+For more information on once props, see the [once props](/guide/once-props) documentation.
 
 ## Resetting props
 
