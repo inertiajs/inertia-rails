@@ -189,4 +189,80 @@ class InertiaRenderTestController < ApplicationController
       regular_prop: 'regular value',
     }
   end
+
+  def once_props
+    render inertia: 'TestComponent', props: {
+      cached_data: InertiaRails.once { 'expensive data' },
+      regular: 'regular prop',
+    }
+  end
+
+  def once_props_with_expires_in
+    render inertia: 'TestComponent', props: {
+      cached_data: InertiaRails.once(expires_in: 1.hour) { 'expensive data with expiration' },
+    }
+  end
+
+  def once_props_with_custom_key
+    render inertia: 'TestComponent', props: {
+      cached_data: InertiaRails.once(key: 'my_custom_key') { 'expensive data with custom key' },
+    }
+  end
+
+  def deferred_once_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      deferred_cached: InertiaRails.defer(once: true) { 'deferred and cached' },
+    }
+  end
+
+  inertia_share only: [:shared_once_props] do
+    {
+      shared_cached: InertiaRails.once { 'shared once data' },
+    }
+  end
+
+  def shared_once_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+    }
+  end
+
+  def nested_once_props
+    render inertia: 'TestComponent', props: {
+      nested: {
+        cached: InertiaRails.once { 'nested cached data' },
+      },
+      regular: 'regular prop',
+    }
+  end
+
+  def multiple_once_props
+    render inertia: 'TestComponent', props: {
+      cached_one: InertiaRails.once { 'first cached' },
+      cached_two: InertiaRails.once { 'second cached' },
+      regular: 'regular prop',
+    }
+  end
+
+  def once_props_not_fresh
+    render inertia: 'TestComponent', props: {
+      cached_data: InertiaRails::OnceProp.new { 'cached data' },
+      regular: 'regular prop',
+    }
+  end
+
+  def once_props_fresh
+    render inertia: 'TestComponent', props: {
+      cached_data: InertiaRails::OnceProp.new(fresh: true) { 'fresh data' },
+      regular: 'regular prop',
+    }
+  end
+
+  def once_props_fresh_and_non_fresh
+    render inertia: 'TestComponent', props: {
+      foo: InertiaRails::OnceProp.new(fresh: true) { 'bar' },
+      baz: InertiaRails::OnceProp.new { 'qux' },
+    }
+  end
 end
