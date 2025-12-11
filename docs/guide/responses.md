@@ -87,19 +87,85 @@ Please note that if you manually provide a props hash in your render call, the i
 
 ## Root template data
 
-There are situations where you may want to access your prop data in your ERB template. For example, you may want to add a meta description tag, Twitter card meta tags, or Facebook Open Graph meta tags. You can access this data via the `page` method.
+There are situations where you may want to access your prop data in your ERB template. For example, you may want to add a meta description tag, Twitter card meta tags, or Facebook Open Graph meta tags.
+
+Inertia Rails provides several view helpers for working with Inertia data in your templates:
+
+### `inertia_page`
+
+Returns the [page object](/guide/the-protocol#the-page-object) hash containing `component`, `props`, `url`, and other Inertia data. Use this to access page data in your root template.
 
 ```erb
 # app/views/inertia.html.erb
 
 <% content_for(:head) do %>
-<meta name="twitter:title" content="<%= page["props"]["event"].title %>">
+<meta name="twitter:title" content="<%= inertia_page[:props][:event][:title] %>">
 <% end %>
 
-<div id="app" data-page="<%= page.to_json %>"></div>
+<%= inertia_root %>
 ```
 
-Sometimes you may even want to provide data to the root template that will not be sent to your JavaScript page / component. This can be accomplished by passing the `view_data` option.
+### `inertia_rendering?`
+
+Returns `true` when the current request is rendering an Inertia response. This is useful for conditionally rendering content in shared layouts.
+
+```erb
+# app/views/layouts/application.html.erb
+
+<% if inertia_rendering? %>
+  <%= yield %>
+<% else %>
+  <div class="traditional-layout">
+    <%= yield %>
+  </div>
+<% end %>
+```
+
+### `inertia_root`
+
+Renders the root element for the Inertia app. This helper automatically respects the [`root_dom_id`](/guide/configuration#root_dom_id) and [`use_script_element_for_initial_page`](/guide/configuration#use_script_element_for_initial_page) configuration options.
+
+```erb
+<%= inertia_root %>
+```
+
+You can also pass a custom `id` or `page` object if needed:
+
+```erb
+<%= inertia_root(id: 'my-app', page: custom_page_object) %>
+```
+
+### `inertia_ssr_head`
+
+Returns the SSR head content when [server-side rendering](/guide/server-side-rendering) is enabled. This should be included in your layout's `<head>` section to inject SSR-generated meta tags and other head elements.
+
+```erb
+# app/views/layouts/inertia.html.erb
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <%= inertia_ssr_head %>
+  </head>
+  <body>
+    <%= yield %>
+  </body>
+</html>
+```
+
+### `inertia_meta_tags`
+
+Renders meta tags that were defined server-side using the `inertia_meta` configuration. This is useful for SEO when you want to manage meta tags from your Rails controllers. See the [Server-managed meta tags cookbook](/cookbook/server-managed-meta-tags) for a complete guide.
+
+```erb
+<head>
+  <%= inertia_meta_tags %>
+</head>
+```
+
+### Passing additional data to the view
+
+Sometimes you may want to provide data to the root template that will not be sent to your JavaScript page / component. This can be accomplished by passing the `view_data` option.
 
 ```ruby
 def show
@@ -120,7 +186,7 @@ You can then access this variable like a regular local variable.
   content="<%= local_assigns.fetch(:meta, "Default description") %>">
 <% end %>
 
-<div id="app" data-page="<%= page.to_json %>"></div>
+<%= inertia_root %>
 ```
 
 ## Rails generators

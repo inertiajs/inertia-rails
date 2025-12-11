@@ -2,6 +2,7 @@
 
 module InertiaRails
   class DeferProp < IgnoreOnFirstLoadProp
+    prepend PropOnceable
     prepend PropMergeable
 
     DEFAULT_GROUP = 'default'

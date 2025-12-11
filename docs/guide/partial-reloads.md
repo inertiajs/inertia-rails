@@ -249,29 +249,24 @@ end
 
 Here's a summary of each approach:
 
+| Approach                                                                      | Standard Visits | Partial Reloads | Evaluated        |
+| :---------------------------------------------------------------------------- | :-------------- | :-------------- | :--------------- |
+| <span style="white-space: nowrap">`User.all`</span>                           | Always          | Optionally      | Always           |
+| <span style="white-space: nowrap">`-> { User.all }`</span>                    | Always          | Optionally      | Only when needed |
+| <span style="white-space: nowrap">`InertiaRails.optional { User.all }`</span> | Never           | Optionally      | Only when needed |
+| <span style="white-space: nowrap">`InertiaRails.always { User.all }`</span>   | Always          | Always          | Always           |
+
+## Combining with Once Props
+
+@available_since rails=master core=2.2.20
+
+You may pass the `once: true` argument to a deferred prop to ensure the data is resolved only once and remembered by the client across subsequent navigations.
+
 ```ruby
 class UsersController < ApplicationController
   def index
     render inertia: {
-      # ALWAYS included on standard visits
-      # OPTIONALLY included on partial reloads
-      # ALWAYS evaluated
-      users: User.all,
-
-      # ALWAYS included on standard visits
-      # OPTIONALLY included on partial reloads
-      # ONLY evaluated when needed
-      users: -> { User.all },
-
-      # NEVER included on standard visits
-      # OPTIONALLY included on partial reloads
-      # ONLY evaluated when needed
-      users: InertiaRails.optional { User.all },
-
-      # ALWAYS included on standard visits
-      # ALWAYS included on partial reloads
-      # ALWAYS evaluated
-      users: InertiaRails.always { User.all },
+      users: InertiaRails.optional(once: true) { User.all },
     }
   end
 end

@@ -32,5 +32,19 @@ module InertiaRails
 
       safe_join(meta_tags, "\n")
     end
+
+    def inertia_root(id: nil, page: inertia_page)
+      config = controller.send(:inertia_configuration)
+      id ||= config.root_dom_id
+
+      if config.use_script_element_for_initial_page
+        safe_join([
+                    tag.script(page.to_json.html_safe, 'data-page': id, type: 'application/json'),
+                    tag.div(id: id)
+                  ], "\n")
+      else
+        tag.div(id: id, 'data-page': page.to_json)
+      end
+    end
   end
 end

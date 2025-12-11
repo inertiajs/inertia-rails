@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
 module InertiaRails
-  class MergeProp < BaseProp
+  class OnceProp < BaseProp
     prepend PropOnceable
-    prepend PropMergeable
 
-    def initialize(**_props, &block)
+    def initialize(**, &block)
+      @once = true
       super(&block)
-      @merge = true
     end
   end
 end

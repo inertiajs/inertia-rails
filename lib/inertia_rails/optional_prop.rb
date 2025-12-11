@@ -2,5 +2,6 @@
 
 module InertiaRails
   class OptionalProp < IgnoreOnFirstLoadProp
+    prepend PropOnceable
   end
 end

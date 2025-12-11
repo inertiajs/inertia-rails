@@ -3,7 +3,7 @@
 module InertiaRails
   # Base class for all props.
   class BaseProp
-    def initialize(&block)
+    def initialize(**, &block)
       @block = block
     end
 

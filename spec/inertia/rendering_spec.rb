@@ -797,6 +797,373 @@ RSpec.describe 'rendering inertia views', type: :request do
       end
     end
   end
+
+  context 'view configuration options' do
+    after do
+      InertiaRails.configure do |config|
+        config.use_script_element_for_initial_page = false
+        config.root_dom_id = 'app'
+      end
+    end
+
+    describe 'root_dom_id' do
+      let(:page) { InertiaRails::Renderer.new('TestComponent', controller, request, response, '').send(:page) }
+
+      context 'with default root_dom_id' do
+        before { get component_path }
+
+        it 'renders div with id="app"' do
+          expect(response.body).to include('<div id="app" data-page=')
+        end
+      end
+
+      context 'with custom root_dom_id' do
+        before do
+          InertiaRails.configure { |c| c.root_dom_id = 'custom-root' }
+          get component_path
+        end
+
+        it 'renders div with custom id' do
+          expect(response.body).to include('<div id="custom-root" data-page=')
+        end
+      end
+    end
+
+    describe 'use_script_element_for_initial_page' do
+      let(:page) { InertiaRails::Renderer.new('TestComponent', controller, request, response, '').send(:page) }
+
+      context 'when false (default)' do
+        before { get component_path }
+
+        it 'renders div with data-page attribute' do
+          expect(response.body).to include('<div id="app" data-page=')
+        end
+
+        it 'does not render script element for page data' do
+          expect(response.body).not_to include('<script data-page=')
+        end
+      end
+
+      context 'when true' do
+        before do
+          InertiaRails.configure { |c| c.use_script_element_for_initial_page = true }
+          get component_path
+        end
+
+        it 'renders script element with page data' do
+          expect(response.body).to include('<script data-page="app" type="application/json">')
+          expect(response.body).to include(page.to_json)
+          expect(response.body).to include('</script>')
+        end
+
+        it 'renders div without data-page attribute' do
+          expect(response.body).to include('<div id="app"></div>')
+        end
+      end
+
+      context 'when true with custom root_dom_id' do
+        before do
+          InertiaRails.configure do |c|
+            c.use_script_element_for_initial_page = true
+            c.root_dom_id = 'inertia-app'
+          end
+          get component_path
+        end
+
+        it 'renders script element with custom data-page attribute' do
+          expect(response.body).to include('<script data-page="inertia-app" type="application/json">')
+        end
+
+        it 'renders div with custom id' do
+          expect(response.body).to include('<div id="inertia-app"></div>')
+        end
+      end
+    end
+  end
+
+  context 'once prop rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    context 'on first load' do
+      before { get once_props_path, headers: headers }
+
+      it 'returns props on first load' do
+        expect(response.parsed_body['props']).to include('cached_data' => 'expensive data', 'regular' => 'regular prop')
+      end
+
+      it 'returns onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_data' => { 'prop' => 'cached_data' }
+        )
+      end
+    end
+
+    context 'with expires_in' do
+      before { get once_props_with_expires_in_path, headers: headers }
+
+      it 'includes expiresAt in onceProps' do
+        once_props = response.parsed_body['onceProps']
+        expect(once_props['cached_data']['expiresAt']).to be_a(Integer)
+        expect(once_props['cached_data']['expiresAt']).to be > (Time.current.to_f * 1000).to_i
+      end
+    end
+
+    context 'with custom key' do
+      before { get once_props_with_custom_key_path, headers: headers }
+
+      it 'uses custom key in onceProps' do
+        expect(response.parsed_body['onceProps']).to have_key('my_custom_key')
+        expect(response.parsed_body['onceProps']['my_custom_key']['prop']).to eq('cached_data')
+      end
+    end
+
+    context 'with X-Inertia-Except-Once-Props header' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Except-Once-Props' => 'cached_data',
+        }
+      end
+
+      before { get once_props_path, headers: headers }
+
+      it 'excludes cached once props from props' do
+        expect(response.parsed_body['props']).not_to have_key('cached_data')
+        expect(response.parsed_body['props']).to include('regular' => 'regular prop')
+      end
+
+      it 'still includes once props in onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_data' => { 'prop' => 'cached_data' }
+        )
+      end
+    end
+
+    context 'with custom key and X-Inertia-Except-Once-Props header' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Except-Once-Props' => 'my_custom_key',
+        }
+      end
+
+      before { get once_props_with_custom_key_path, headers: headers }
+
+      it 'excludes prop by custom key' do
+        expect(response.parsed_body['props']).not_to have_key('cached_data')
+      end
+    end
+
+    context 'when refreshing once prop via partial reload' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'cached_data',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+          'X-Inertia-Except-Once-Props' => 'cached_data',
+        }
+      end
+
+      before { get once_props_path, headers: headers }
+
+      it 'returns the once prop when explicitly requested' do
+        expect(response.parsed_body['props']).to include('cached_data' => 'expensive data')
+      end
+
+      it 'includes prop in onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_data' => { 'prop' => 'cached_data' }
+        )
+      end
+    end
+
+    context 'with deferred once props' do
+      before { get deferred_once_props_path, headers: headers }
+
+      it 'returns deferredProps on first load' do
+        expect(response.parsed_body['deferredProps']).to eq('default' => ['deferred_cached'])
+      end
+
+      it 'returns onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'deferred_cached' => { 'prop' => 'deferred_cached' }
+        )
+      end
+
+      context 'with a partial reload' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'deferred_cached',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        it 'returns the deferred prop value' do
+          expect(response.parsed_body['props']).to include('deferred_cached' => 'deferred and cached')
+        end
+      end
+
+      context 'with a partial reload and prop already cached' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'deferred_cached',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+            'X-Inertia-Except-Once-Props' => 'deferred_cached',
+          }
+        end
+
+        it 'returns the prop when explicitly requested (bypasses cache)' do
+          expect(response.parsed_body['props']).to include('deferred_cached' => 'deferred and cached')
+        end
+      end
+    end
+
+    context 'with shared once props' do
+      before { get shared_once_props_path, headers: headers }
+
+      it 'returns shared once props' do
+        expect(response.parsed_body['props']).to include('shared_cached' => 'shared once data')
+      end
+
+      it 'returns onceProps metadata for shared props' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'shared_cached' => { 'prop' => 'shared_cached' }
+        )
+      end
+    end
+
+    context 'with partial reload requesting only specific props' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'cached_one',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      before { get multiple_once_props_path, headers: headers }
+
+      it 'only includes requested props in props' do
+        expect(response.parsed_body['props']).to eq('cached_one' => 'first cached')
+      end
+
+      it 'only includes requested once props in onceProps' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_one' => { 'prop' => 'cached_one' }
+        )
+      end
+    end
+
+    context 'with partial reload excluding specific props' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Except' => 'cached_two',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      before { get multiple_once_props_path, headers: headers }
+
+      it 'excludes specified props from props' do
+        expect(response.parsed_body['props']).to eq(
+          'cached_one' => 'first cached',
+          'regular' => 'regular prop'
+        )
+      end
+
+      it 'excludes specified once props from onceProps' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_one' => { 'prop' => 'cached_one' }
+        )
+      end
+    end
+
+    context 'with fresh: false (default behavior)' do
+      before { get once_props_not_fresh_path, headers: headers }
+
+      it 'returns the prop value on first load' do
+        expect(response.parsed_body['props']).to include('cached_data' => 'cached data')
+      end
+
+      it 'includes prop in onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_data' => { 'prop' => 'cached_data' }
+        )
+      end
+
+      context 'when client has prop cached' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Except-Once-Props' => 'cached_data',
+          }
+        end
+
+        it 'excludes the prop from response' do
+          expect(response.parsed_body['props']).not_to have_key('cached_data')
+        end
+      end
+    end
+
+    context 'with fresh: true (force refresh)' do
+      before { get once_props_fresh_path, headers: headers }
+
+      it 'returns the prop value' do
+        expect(response.parsed_body['props']).to include('cached_data' => 'fresh data')
+      end
+
+      it 'includes prop in onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_data' => { 'prop' => 'cached_data' }
+        )
+      end
+
+      context 'when client has prop cached' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Except-Once-Props' => 'cached_data',
+          }
+        end
+
+        it 'still includes the prop (bypasses cache)' do
+          expect(response.parsed_body['props']).to include('cached_data' => 'fresh data')
+        end
+
+        it 'includes prop in onceProps so client updates cache' do
+          expect(response.parsed_body['onceProps']).to eq(
+            'cached_data' => { 'prop' => 'cached_data' }
+          )
+        end
+      end
+    end
+
+    context 'with mixed fresh and non-fresh once props' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Except-Once-Props' => 'foo,baz',
+        }
+      end
+
+      before { get once_props_fresh_and_non_fresh_path, headers: headers }
+
+      it 'includes fresh prop but excludes non-fresh prop from props' do
+        expect(response.parsed_body['props']).to include('foo' => 'bar')
+        expect(response.parsed_body['props']).not_to have_key('baz')
+      end
+
+      it 'includes both props in onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'foo' => { 'prop' => 'foo' },
+          'baz' => { 'prop' => 'baz' }
+        )
+      end
+    end
+  end
 end
 
 def inertia_div(page)
