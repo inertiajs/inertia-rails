@@ -1,6 +1,6 @@
 # Once Props
 
-@available_since rails=master core=2.2.20
+@available_since rails=3.15.0 core=2.2.20
 
 Some data rarely changes, is expensive to compute, or is simply large. Rather than including this data in every response, you may use _once props_. These props are remembered by the client and reused on subsequent pages that include the same prop. This makes them ideal for [shared data](/guide/shared-data).
 

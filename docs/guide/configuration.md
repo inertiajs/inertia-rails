@@ -157,7 +157,7 @@ By default, Inertia Rails creates a `StaticController` that inherits from `Appli
 **Default**: `'app'`
 **ENV**: `INERTIA_ROOT_DOM_ID`
 
-@available_since rails=master
+@available_since rails=3.15.0
 
 Specifies the DOM element ID used for the root Inertia.js element.
 
@@ -175,7 +175,7 @@ end
 **Default**: `false`
 **ENV**: `INERTIA_USE_SCRIPT_ELEMENT_FOR_INITIAL_PAGE`
 
-@available_since rails=master core=2.2.20
+@available_since rails=3.15.0 core=2.2.20
 
 When enabled the initial page data is rendered in a `<script type="application/json">` element instead of the `data-page` attribute on the root `<div>`.
 This provides two main benefits:
