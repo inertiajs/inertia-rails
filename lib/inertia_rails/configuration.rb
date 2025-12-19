@@ -40,6 +40,10 @@ module InertiaRails
 
       # DOM id to use for the root Inertia.js element.
       root_dom_id: 'app',
+
+      # Flash keys from Rails flash to expose to frontend.
+      # Set to nil to disable Rails flash integration (use only flash.inertia).
+      flash_keys: %i[notice alert error warning info success].freeze,
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze

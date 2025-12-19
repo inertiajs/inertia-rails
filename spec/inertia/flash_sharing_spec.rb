@@ -8,10 +8,10 @@ RSpec.describe 'flash data shared via redirect', type: :request do
   after { InertiaRails.configure { |c| c.version = nil } }
 
   context 'rendering flash across redirects' do
-    it 'stores flash in session on redirect' do
+    it 'stores flash for next request on redirect' do
       post redirect_with_inertia_flash_path, headers: headers
       expect(response.headers['Location']).to eq(empty_test_url)
-      expect(session[:inertia_flash_data]).to include({ toast: 'Hello!' })
+      expect(flash[:inertia]).to eq({ toast: 'Hello!' })
     end
 
     it 'includes flash in response after redirect' do
@@ -22,17 +22,14 @@ RSpec.describe 'flash data shared via redirect', type: :request do
       expect(parsed['flash']).to eq({ 'toast' => 'Hello!' })
     end
 
-    it 'clears flash from session after rendering' do
+    it 'clears flash after rendering' do
       post redirect_with_inertia_flash_path, headers: headers
       get response.headers['Location'], headers: headers
+      # Flash was consumed during render, verify it doesn't appear in next response
+      get empty_test_path, headers: headers
 
-      expect(session[:inertia_flash_data]).to be_nil
-    end
-
-    it 'raises an error for non-hash flash value' do
-      expect do
-        post redirect_with_non_hash_inertia_flash_path, headers: headers
-      end.to raise_error(ArgumentError, /must be a Hash/)
+      parsed = JSON.parse(response.body)
+      expect(parsed).not_to have_key('flash')
     end
 
     it 'does not include flash key when no flash data present' do
@@ -41,12 +38,34 @@ RSpec.describe 'flash data shared via redirect', type: :request do
       expect(parsed).not_to have_key('flash')
     end
 
-    it 'supports inertia_flash[:key] = value syntax' do
+    it 'supports flash.inertia[:key] = value syntax' do
       get render_with_inertia_flash_method_path, headers: headers
 
       parsed = JSON.parse(response.body)
       expect(parsed['flash']).to eq({ 'foo' => 'bar', 'baz' => 'qux' })
-      expect(session[:inertia_flash_data]).to be_nil
+    end
+
+    it 'supports flash.now.inertia for current request only' do
+      get render_with_inertia_flash_now_path, headers: headers
+
+      parsed = JSON.parse(response.body)
+      expect(parsed['flash']).to eq({ 'temporary' => 'current request only' })
+    end
+
+    it 'does not persist flash.now.inertia to next request' do
+      get render_with_inertia_flash_now_path, headers: headers
+      get empty_test_path, headers: headers
+
+      parsed = JSON.parse(response.body)
+      expect(parsed).not_to have_key('flash')
+    end
+
+    it 'persists flash.now.inertia when flash.keep(:inertia) is called' do
+      post redirect_with_kept_inertia_flash_now_path, headers: headers
+      get response.headers['Location'], headers: headers
+
+      parsed = JSON.parse(response.body)
+      expect(parsed['flash']).to eq({ 'kept' => 'this was .now but kept' })
     end
   end
 
@@ -62,37 +81,30 @@ RSpec.describe 'flash data shared via redirect', type: :request do
   end
 
   context 'flash persistence across multiple redirects' do
-    it 'accumulates flash data across redirects' do
+    it 'preserves flash from last redirect only (standard Rails behavior)' do
       post double_redirect_with_flash_path, headers: headers
-      expect(session[:inertia_flash_data]).to include({ first: 'first flash' })
+      expect(flash[:inertia]).to eq({ 'first' => 'first flash' })
 
-      # Follow first redirect
+      # Follow first redirect - first flash is consumed, second flash is set
       get response.headers['Location'], headers: headers
       expect(response).to have_http_status(:redirect)
-      expect(session[:inertia_flash_data].stringify_keys).to include('first' => 'first flash', 'toast' => 'Hello!')
 
-      # Follow second redirect
+      # Follow second redirect - only the last flash survives (Rails discards after read)
       get response.headers['Location'], headers: headers
       parsed = JSON.parse(response.body)
-      expect(parsed['flash']).to include('first' => 'first flash', 'toast' => 'Hello!')
-      expect(session[:inertia_flash_data]).to be_nil
+      expect(parsed['flash']).to eq({ 'toast' => 'Hello!' })
     end
   end
 
   context 'flash with stale version request' do
-    it 'keeps flash data when version is stale' do
+    it 'returns 409 with X-Inertia-Location when version is stale' do
       post redirect_with_inertia_flash_path, headers: headers
-      expect(session[:inertia_flash_data]).to include({ toast: 'Hello!' })
+      expect(flash[:inertia]).to eq({ toast: 'Hello!' })
 
-      # Simulate stale version request
+      # Simulate stale version request - returns 409 with location header
       get empty_test_path, headers: headers.merge({ 'X-Inertia-Version' => 'stale' })
       expect(response.status).to eq(409)
-      expect(session[:inertia_flash_data]).to include({ 'toast' => 'Hello!' })
-
-      # Simulate page refresh after 409
-      get empty_test_path
-      expect(response.body).to include(CGI.escape_html('"flash":{"toast":"Hello!"}'))
-      expect(session[:inertia_flash_data]).to be_nil
+      expect(response.headers['X-Inertia-Location']).to eq("http://www.example.com#{empty_test_path}")
     end
   end
 
@@ -120,12 +132,81 @@ RSpec.describe 'flash data shared via redirect', type: :request do
     it 'keeps flash when partial inertia request redirects' do
       post redirect_with_inertia_flash_path, headers: headers
       expect(response.headers['Location']).to eq(empty_test_url)
-      expect(session[:inertia_flash_data]).to include({ toast: 'Hello!' })
+      expect(flash[:inertia]).to eq({ toast: 'Hello!' })
 
       get response.headers['Location'], headers: headers
       parsed = JSON.parse(response.body)
       expect(parsed['flash']).to eq({ 'toast' => 'Hello!' })
-      expect(session[:inertia_flash_data]).to be_nil
+    end
+  end
+
+  context 'Rails flash integration' do
+    it 'supports flash: { inertia: {...} } pattern' do
+      post redirect_with_flash_inertia_hash_path, headers: headers
+      get response.headers['Location'], headers: headers
+
+      parsed = JSON.parse(response.body)
+      expect(parsed['flash']).to eq({ 'toast' => 'Rails style!' })
+    end
+
+    it 'includes notice from Rails flash' do
+      post redirect_with_rails_notice_path, headers: headers
+      get response.headers['Location'], headers: headers
+
+      parsed = JSON.parse(response.body)
+      expect(parsed['flash']).to eq({ 'notice' => 'Created!' })
+    end
+
+    it 'includes alert from Rails flash' do
+      post redirect_with_rails_alert_path, headers: headers
+      get response.headers['Location'], headers: headers
+
+      parsed = JSON.parse(response.body)
+      expect(parsed['flash']).to eq({ 'alert' => 'Something went wrong' })
+    end
+
+    it 'merges Rails flash with inertia namespace' do
+      post redirect_with_mixed_flash_path, headers: headers
+      get response.headers['Location'], headers: headers
+
+      parsed = JSON.parse(response.body)
+      expect(parsed['flash']).to eq({
+                                      'notice' => 'Notice!',
+                                      'custom' => 'custom value',
+                                    })
+    end
+
+    it 'excludes non-allowlisted keys' do
+      post redirect_with_non_allowlisted_key_path, headers: headers
+      get response.headers['Location'], headers: headers
+
+      parsed = JSON.parse(response.body)
+      expect(parsed['flash']).to eq({ 'notice' => 'Safe notice' })
+      expect(parsed['flash']).not_to have_key('secret_token')
+    end
+  end
+
+  context 'flash_keys configuration' do
+    after { InertiaRails.configure { |c| c.flash_keys = %i[notice alert error warning info success] } }
+
+    it 'respects custom flash_keys configuration' do
+      InertiaRails.configure { |c| c.flash_keys = %i[notice secret_token] }
+
+      post redirect_with_non_allowlisted_key_path, headers: headers
+      get response.headers['Location'], headers: headers
+
+      parsed = JSON.parse(response.body)
+      expect(parsed['flash']).to eq({ 'notice' => 'Safe notice', 'secret_token' => 'super_secret' })
+    end
+
+    it 'disables Rails flash when flash_keys is nil' do
+      InertiaRails.configure { |c| c.flash_keys = nil }
+
+      post redirect_with_rails_notice_path, headers: headers
+      get response.headers['Location'], headers: headers
+
+      parsed = JSON.parse(response.body)
+      expect(parsed).not_to have_key('flash')
     end
   end
 end

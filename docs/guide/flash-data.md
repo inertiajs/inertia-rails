@@ -6,7 +6,7 @@ Sometimes you may wish to send one-time data to your frontend that shouldn't rea
 
 ## Flashing Data
 
-You may flash data using the `inertia_flash` controller method.
+Inertia automatically integrates with Rails' standard flash mechanism. Common flash keys like `notice` and `alert` are included in page-level flash data by default.
 
 ```ruby
 class UsersController < ApplicationController
@@ -14,7 +14,36 @@ class UsersController < ApplicationController
     user = User.new(user_params)
 
     if user.save
-      inertia_flash[:message] = 'User created successfully!'
+      redirect_to users_url, notice: 'User created successfully!'
+    else
+      redirect_to new_user_url, inertia: { errors: user.errors }
+    end
+  end
+end
+```
+
+This works with any Rails flash pattern:
+
+```ruby
+flash[:notice] = 'Success!'
+flash[:alert] = 'Something went wrong'
+redirect_to users_url
+```
+
+By default, the following keys are exposed to the frontend: `notice`, `alert`, `error`, `warning`, `info`, and `success`.
+
+## Custom Flash Data
+
+For custom data beyond the default allowlisted keys, use `flash.inertia`:
+
+```ruby
+class UsersController < ApplicationController
+  def create
+    user = User.new(user_params)
+
+    if user.save
+      flash.inertia[:new_user_id] = user.id
+      flash.inertia[:toast] = { message: 'Created!', type: 'success' }
 
       redirect_to users_url
     else
@@ -24,13 +53,43 @@ class UsersController < ApplicationController
 end
 ```
 
-Passing props to `redirect_to` is also supported.
+This follows standard Rails flash patterns - `flash.inertia` is a scoped namespace within flash.
+
+You can also pass flash data inline with `redirect_to`:
 
 ```ruby
-redirect_to users_url, inertia: { flash: { new_user_id: user.id } }
+redirect_to users_url, flash: { inertia: { new_user_id: user.id } }
 ```
 
-Flash data is scoped to the current request. The middleware automatically persists it to the session when redirecting. After the flash data is sent to the client, it is cleared and will not appear in subsequent requests.
+For current-request-only flash (not persisted across redirects), use `.now`:
+
+```ruby
+flash.now.inertia[:temporary] = 'This request only'
+render inertia: 'MyComponent'
+```
+
+Flash data is scoped to the current request. Rails automatically persists it when redirecting. After the flash data is sent to the client, it is cleared and will not appear in subsequent requests.
+
+## Configuring Allowed Flash Keys
+
+You may customize which Rails flash keys are exposed to the frontend:
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  # Default: Only safe keys
+  config.flash_keys = %i[notice alert error warning info success]
+
+  # Add your custom keys
+  config.flash_keys = %i[notice alert toast message]
+
+  # Disable Rails flash integration (use only flash.inertia)
+  config.flash_keys = nil
+end
+```
+
+> [!WARNING]
+> Flash keys configured via `flash_keys` are exposed to the frontend. Never store sensitive information like tokens or internal system data in these flash keys. For sensitive operations, use `flash.inertia` so data exposure is intentional and obvious.
 
 ## Accessing Flash Data
 

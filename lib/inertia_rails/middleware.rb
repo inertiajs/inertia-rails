@@ -25,7 +25,6 @@ module InertiaRails
         unless keep_inertia_session_options?(status)
           request.session.delete(:inertia_errors)
           request.session.delete(:inertia_clear_history)
-          request.session.delete(:inertia_flash_data)
         end
 
         status = 303 if inertia_non_post_redirect?(status)

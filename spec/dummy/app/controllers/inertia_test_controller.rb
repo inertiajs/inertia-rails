@@ -91,24 +91,56 @@ class InertiaTestController < ApplicationController
   end
 
   def redirect_with_inertia_flash
-    redirect_to empty_test_path, inertia: { flash: { toast: 'Hello!' } }
-  end
-
-  def redirect_with_non_hash_inertia_flash
-    redirect_to empty_test_path, inertia: { flash: 'hello flash' }
+    redirect_to empty_test_path, flash: { inertia: { toast: 'Hello!' } }
   end
 
   def redirect_with_inertia_flash_and_errors
-    redirect_to empty_test_path, inertia: { flash: { toast: 'Saved!' }, errors: { name: 'is required' } }
+    redirect_to empty_test_path, flash: { inertia: { toast: 'Saved!' } }, inertia: { errors: { name: 'is required' } }
   end
 
   def double_redirect_with_flash
-    redirect_to redirect_with_inertia_flash_path, inertia: { flash: { first: 'first flash' } }
+    flash.inertia[:first] = 'first flash'
+    redirect_to redirect_with_inertia_flash_path
   end
 
   def render_with_inertia_flash_method
-    inertia_flash[:foo] = 'bar'
-    inertia_flash[:baz] = 'qux'
+    flash.inertia[:foo] = 'bar'
+    flash.inertia[:baz] = 'qux'
     render inertia: 'EmptyTestComponent'
+  end
+
+  def render_with_inertia_flash_now
+    flash.now.inertia[:temporary] = 'current request only'
+    render inertia: 'EmptyTestComponent'
+  end
+
+  def redirect_with_kept_inertia_flash_now
+    flash.now.inertia[:kept] = 'this was .now but kept'
+    flash.keep(:inertia)
+    redirect_to empty_test_path
+  end
+
+  def redirect_with_rails_notice
+    redirect_to empty_test_path, notice: 'Created!'
+  end
+
+  def redirect_with_rails_alert
+    redirect_to empty_test_path, alert: 'Something went wrong'
+  end
+
+  def redirect_with_mixed_flash
+    flash[:notice] = 'Notice!'
+    flash.inertia[:custom] = 'custom value'
+    redirect_to empty_test_path
+  end
+
+  def redirect_with_non_allowlisted_key
+    flash[:secret_token] = 'super_secret'
+    flash[:notice] = 'Safe notice'
+    redirect_to empty_test_path
+  end
+
+  def redirect_with_flash_inertia_hash
+    redirect_to empty_test_path, flash: { inertia: { toast: 'Rails style!' } }
   end
 end

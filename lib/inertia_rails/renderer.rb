@@ -125,7 +125,7 @@ module InertiaRails
         clearHistory: @clear_history,
       }
 
-      flash_data = @controller.__send__(:inertia_flash)
+      flash_data = @controller.__send__(:inertia_collect_flash_data)
       @page[:flash] = flash_data if flash_data.present?
 
       deferred_props = deferred_props_keys

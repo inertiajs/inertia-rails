@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'inertia_rails'
+require_relative 'flash_extension'
 require_relative 'helper'
 require_relative 'action_filter'
 require_relative 'meta_tag_builder'
@@ -180,8 +181,16 @@ module InertiaRails
       head :conflict
     end
 
-    def inertia_flash
-      session[:inertia_flash_data] ||= {}
+    def inertia_collect_flash_data
+      allowed_keys = inertia_configuration.flash_keys
+      return {} if allowed_keys.nil?
+
+      flash_data = flash.to_hash
+      result = flash_data.slice(*allowed_keys.map(&:to_s))
+
+      result.merge!(flash_data['inertia'].transform_keys(&:to_s)) if flash_data['inertia'].is_a?(Hash)
+
+      result.symbolize_keys
     end
 
     def capture_inertia_session_options(options)
@@ -196,12 +205,6 @@ module InertiaRails
           )
           session[:inertia_errors] = inertia_errors
         end
-      end
-
-      if (inertia_flash_data = inertia[:flash])
-        raise ArgumentError, 'Inertia flash data must be a Hash' unless inertia_flash_data.respond_to?(:to_hash)
-
-        inertia_flash.merge!(inertia_flash_data.to_hash)
       end
 
       session[:inertia_clear_history] = inertia[:clear_history] if inertia[:clear_history]
