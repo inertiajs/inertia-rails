@@ -89,4 +89,26 @@ class InertiaTestController < ApplicationController
   def redirect_to_share_test
     redirect_to share_path
   end
+
+  def redirect_with_inertia_flash
+    redirect_to empty_test_path, inertia: { flash: { toast: 'Hello!' } }
+  end
+
+  def redirect_with_non_hash_inertia_flash
+    redirect_to empty_test_path, inertia: { flash: 'hello flash' }
+  end
+
+  def redirect_with_inertia_flash_and_errors
+    redirect_to empty_test_path, inertia: { flash: { toast: 'Saved!' }, errors: { name: 'is required' } }
+  end
+
+  def double_redirect_with_flash
+    redirect_to redirect_with_inertia_flash_path, inertia: { flash: { first: 'first flash' } }
+  end
+
+  def render_with_inertia_flash_method
+    inertia_flash[:foo] = 'bar'
+    inertia_flash[:baz] = 'qux'
+    render inertia: 'EmptyTestComponent'
+  end
 end

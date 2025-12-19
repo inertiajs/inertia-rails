@@ -71,6 +71,13 @@ Rails.application.routes.draw do
 
   post 'redirect_to_share_test' => 'inertia_test#redirect_to_share_test'
 
+  post 'redirect_with_inertia_flash' => 'inertia_test#redirect_with_inertia_flash'
+  get 'redirect_with_inertia_flash' => 'inertia_test#redirect_with_inertia_flash'
+  post 'redirect_with_non_hash_inertia_flash' => 'inertia_test#redirect_with_non_hash_inertia_flash'
+  post 'redirect_with_inertia_flash_and_errors' => 'inertia_test#redirect_with_inertia_flash_and_errors'
+  post 'double_redirect_with_flash' => 'inertia_test#double_redirect_with_flash'
+  get 'render_with_inertia_flash_method' => 'inertia_test#render_with_inertia_flash_method'
+
   inertia 'inertia_route' => 'TestComponent'
   inertia :inertia_route_with_default_component
   scope :scoped, as: 'scoped' do

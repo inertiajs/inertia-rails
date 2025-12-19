@@ -180,6 +180,10 @@ module InertiaRails
       head :conflict
     end
 
+    def inertia_flash
+      session[:inertia_flash_data] ||= {}
+    end
+
     def capture_inertia_session_options(options)
       return unless (inertia = options[:inertia])
 
@@ -192,7 +196,12 @@ module InertiaRails
           )
           session[:inertia_errors] = inertia_errors
         end
+      end
 
+      if (inertia_flash_data = inertia[:flash])
+        raise ArgumentError, 'Inertia flash data must be a Hash' unless inertia_flash_data.respond_to?(:to_hash)
+
+        inertia_flash.merge!(inertia_flash_data.to_hash)
       end
 
       session[:inertia_clear_history] = inertia[:clear_history] if inertia[:clear_history]
