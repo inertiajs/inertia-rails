@@ -30,7 +30,7 @@ flash[:alert] = 'Something went wrong'
 redirect_to users_url
 ```
 
-By default, the following keys are exposed to the frontend: `notice`, `alert`, `error`, `warning`, `info`, and `success`.
+By default, the following keys are exposed to the frontend: `notice`, `alert`.
 
 ## Custom Flash Data
 
@@ -78,18 +78,9 @@ You may customize which Rails flash keys are exposed to the frontend:
 # config/initializers/inertia_rails.rb
 InertiaRails.configure do |config|
   # Default: Only safe keys
-  config.flash_keys = %i[notice alert error warning info success]
-
-  # Add your custom keys
-  config.flash_keys = %i[notice alert toast message]
-
-  # Disable Rails flash integration (use only flash.inertia)
-  config.flash_keys = nil
+  config.flash_keys = %i[notice alert]
 end
 ```
-
-> [!WARNING]
-> Flash keys configured via `flash_keys` are exposed to the frontend. Never store sensitive information like tokens or internal system data in these flash keys. For sensitive operations, use `flash.inertia` so data exposure is intentional and obvious.
 
 ## Accessing Flash Data
 

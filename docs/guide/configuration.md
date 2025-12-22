@@ -145,16 +145,16 @@ The default value will be changed to `true` in the next major version.
 
 ### `flash_keys`
 
-**Default**: `%i[notice alert error warning info success]`
+**Default**: `%i[notice alert]`
 
 @available_since rails=master core=2.3.3
 
-Specifies which Rails flash keys are exposed to the frontend. By default, only known-safe keys (`notice`, `alert`, `error`, `warning`, `info`, `success`) are included.
+Specifies which Rails flash keys are exposed to the frontend. By default, only known-safe keys (`notice`, `alert`) are included.
 
 ```ruby
 InertiaRails.configure do |config|
   # Default: safe keys only
-  config.flash_keys = %i[notice alert error warning info success]
+  config.flash_keys = %i[notice alert]
 
   # Add your custom keys
   config.flash_keys = %i[notice alert toast message]
@@ -163,9 +163,6 @@ InertiaRails.configure do |config|
   config.flash_keys = nil
 end
 ```
-
-> [!WARNING]
-> Flash keys configured via `flash_keys` are exposed to the frontend. Never store sensitive information like tokens or internal system data in these flash keys. For sensitive operations, use `flash.inertia` so data exposure is intentional.
 
 See the [flash data documentation](/guide/flash-data) for more details on using flash with Inertia.
 

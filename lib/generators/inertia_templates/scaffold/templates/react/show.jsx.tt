@@ -1,7 +1,9 @@
-import { Head, Link } from '@inertiajs/react'
+import { Head, Link, usePage } from '@inertiajs/react'
 import <%= inertia_component_name %> from './<%= singular_name %>'
 
-export default function Show({ <%= singular_table_name %>, flash }) {
+export default function Show({ <%= singular_table_name %> }) {
+  const { flash } = usePage()
+
   return (
     <>
       <Head title={`<%= human_name %> #${<%= singular_table_name %>.id}`} />

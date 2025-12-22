@@ -182,11 +182,10 @@ module InertiaRails
     end
 
     def inertia_collect_flash_data
-      allowed_keys = inertia_configuration.flash_keys
-      return {} if allowed_keys.nil?
-
       flash_data = flash.to_hash
-      result = flash_data.slice(*allowed_keys.map(&:to_s))
+
+      allowed_keys = inertia_configuration.flash_keys
+      result = allowed_keys ? flash_data.slice(*allowed_keys.map(&:to_s)) : {}
 
       result.merge!(flash_data['inertia'].transform_keys(&:to_s)) if flash_data['inertia'].is_a?(Hash)
 

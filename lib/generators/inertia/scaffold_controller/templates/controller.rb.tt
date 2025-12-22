@@ -6,10 +6,6 @@ class <%= controller_class_name %>Controller < <%= parent_controller %>
   wrap_parameters :<%= singular_table_name %>
 
 <% end -%>
-<% if parent_controller != 'InertiaController' -%>
-  inertia_share flash: -> { flash.to_hash }
-
-<% end -%>
   # GET <%= route_url %>
   def index
     @<%= plural_table_name %> = <%= orm_class.all(class_name) %>

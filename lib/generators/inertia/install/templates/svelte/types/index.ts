@@ -1,8 +1,6 @@
-export type Flash = {
+export type FlashData = {
   notice?: string
   alert?: string
 }
 
-export type SharedProps = {
-  flash: Flash
-}
+export type SharedProps = {}

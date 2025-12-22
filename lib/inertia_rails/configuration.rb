@@ -43,7 +43,7 @@ module InertiaRails
 
       # Flash keys from Rails flash to expose to frontend.
       # Set to nil to disable Rails flash integration (use only flash.inertia).
-      flash_keys: %i[notice alert error warning info success].freeze,
+      flash_keys: %i[notice alert].freeze,
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze

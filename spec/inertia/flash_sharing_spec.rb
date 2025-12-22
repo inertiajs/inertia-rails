@@ -187,7 +187,7 @@ RSpec.describe 'flash data shared via redirect', type: :request do
   end
 
   context 'flash_keys configuration' do
-    after { InertiaRails.configure { |c| c.flash_keys = %i[notice alert error warning info success] } }
+    after { InertiaRails.configure { |c| c.flash_keys = %i[notice alert] } }
 
     it 'respects custom flash_keys configuration' do
       InertiaRails.configure { |c| c.flash_keys = %i[notice secret_token] }
@@ -207,6 +207,16 @@ RSpec.describe 'flash data shared via redirect', type: :request do
 
       parsed = JSON.parse(response.body)
       expect(parsed).not_to have_key('flash')
+    end
+
+    it 'still includes flash.inertia when flash_keys is nil' do
+      InertiaRails.configure { |c| c.flash_keys = nil }
+
+      post redirect_with_inertia_flash_path, headers: headers
+      get response.headers['Location'], headers: headers
+
+      parsed = JSON.parse(response.body)
+      expect(parsed['flash']).to eq({ 'toast' => 'Hello!' })
     end
   end
 end

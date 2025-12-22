@@ -24,14 +24,14 @@
 </template>
 
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, usePage } from '@inertiajs/vue3'
 import <%= inertia_component_name %> from './<%= singular_name %>.vue'
 import { <%= inertia_model_type %> } from './types'
 
-const { <%= singular_table_name %>, flash } = defineProps<{
+defineProps<{
   <%= singular_table_name %>: <%= inertia_model_type %>
-  flash: { notice?: string }
 }>()
+const { flash } = usePage()
 </script>
 
 <style scoped>
