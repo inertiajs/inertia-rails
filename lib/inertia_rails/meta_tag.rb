@@ -36,8 +36,9 @@ module InertiaRails
       end
     end
 
-    def to_tag(tag_helper)
-      data = @tag_data.merge(type: @tag_type, inertia: @head_key)
+    def to_tag(tag_helper, use_data_inertia_head_attribute: false)
+      inertia_attribute_name = use_data_inertia_head_attribute ? :'data-inertia' : :inertia
+      data = @tag_data.merge(type: @tag_type, inertia_attribute_name => @head_key)
 
       inner_content =
         if @tag_name == :script

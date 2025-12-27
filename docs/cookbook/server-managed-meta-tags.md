@@ -28,6 +28,13 @@ Simply add the `inertia_meta_tags` helper to your layout. This will render the m
 > [!NOTE]
 > Make sure to remove the `<title>` tag in your Rails layout if you plan to manage it with Inertia Rails. Otherwise you will end up with duplicate `<title>` tags.
 
+> [!NOTE]
+> If you enable `feature.useDataInertiaHeadAttribute: true` in your Inertia.js client configuration, be sure to also pass `use_data_inertia_head_attribute: true` to the helper so that the attributes match on both the server and client sides:
+
+```erb
+<%= inertia_meta_tags(use_data_inertia_head_attribute: true) %>
+```
+
 ### Client Side
 
 Copy the following code into your application. It should be rendered **once** in your application, such as in a [layout component

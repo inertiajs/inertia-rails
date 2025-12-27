@@ -23,11 +23,11 @@ module InertiaRails
       controller.instance_variable_get('@_inertia_page')
     end
 
-    def inertia_meta_tags
+    def inertia_meta_tags(use_data_inertia_head_attribute: false)
       meta_tag_data = (inertia_page || {}).dig(:props, :_inertia_meta) || []
 
       meta_tags = meta_tag_data.map do |inertia_meta_tag|
-        inertia_meta_tag.to_tag(tag)
+        inertia_meta_tag.to_tag(tag, use_data_inertia_head_attribute: use_data_inertia_head_attribute)
       end
 
       safe_join(meta_tags, "\n")

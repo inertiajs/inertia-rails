@@ -38,6 +38,14 @@ RSpec.describe InertiaRails::Helper, type: :helper do
       it 'generates a meta tag' do
         expect(helper.inertia_meta_tags).to eq('<meta name="description" content="Inertia rules" inertia="my_key">')
       end
+
+      context 'with use_data_inertia_head_attribute: true' do
+        it 'generates a meta tag with data-inertia attribute' do
+          expect(helper.inertia_meta_tags(use_data_inertia_head_attribute: true)).to eq(
+            '<meta name="description" content="Inertia rules" data-inertia="my_key">'
+          )
+        end
+      end
     end
 
     context 'with multiple meta tags' do
@@ -69,6 +77,16 @@ RSpec.describe InertiaRails::Helper, type: :helper do
           "<meta name=\"description\" content=\"Inertia rules\" inertia=\"meta-23456789\">\n",
           '<script type="application/ld+json" inertia="meta-34567890">{"@context":"https://schema.org"}</script>'
         )
+      end
+
+      context 'with use_data_inertia_head_attribute: true' do
+        it 'generates multiple meta tags with data-inertia attribute' do
+          expect(helper.inertia_meta_tags(use_data_inertia_head_attribute: true)).to include(
+            "<title data-inertia=\"title\">Inertia Page Title</title>\n",
+            "<meta name=\"description\" content=\"Inertia rules\" data-inertia=\"meta-23456789\">\n",
+            '<script type="application/ld+json" data-inertia="meta-34567890">{"@context":"https://schema.org"}</script>'
+          )
+        end
       end
     end
   end
