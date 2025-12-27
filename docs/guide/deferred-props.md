@@ -194,7 +194,7 @@ export default () => (
 
 ## Combining with Once Props
 
-@available_since rails=master core=2.2.20
+@available_since rails=3.15.0 core=2.2.20
 
 You may pass the `once: true` argument to a deferred prop to ensure the data is resolved only once and remembered by the client across subsequent navigations.
 
