@@ -265,4 +265,18 @@ class InertiaRenderTestController < ApplicationController
       baz: InertiaRails::OnceProp.new { 'qux' },
     }
   end
+
+  def merge_once_props
+    render inertia: 'TestComponent', props: {
+      activity: InertiaRails.merge(once: true) { [{ id: 1, action: 'login' }] },
+      regular: 'regular prop',
+    }
+  end
+
+  def optional_once_props
+    render inertia: 'TestComponent', props: {
+      categories: InertiaRails.optional(once: true) { %w[category1 category2] },
+      regular: 'regular prop',
+    }
+  end
 end

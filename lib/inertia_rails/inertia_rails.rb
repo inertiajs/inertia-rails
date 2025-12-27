@@ -30,8 +30,8 @@ module InertiaRails
       LazyProp.new(value, &block)
     end
 
-    def optional(&block)
-      OptionalProp.new(&block)
+    def optional(...)
+      OptionalProp.new(...)
     end
 
     def always(&block)

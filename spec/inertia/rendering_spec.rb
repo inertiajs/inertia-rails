@@ -1163,6 +1163,124 @@ RSpec.describe 'rendering inertia views', type: :request do
         )
       end
     end
+
+    context 'with merge once props' do
+      before { get merge_once_props_path, headers: headers }
+
+      it 'returns the prop value on first load' do
+        expect(response.parsed_body['props']).to include('activity' => [{ 'id' => 1, 'action' => 'login' }])
+      end
+
+      it 'includes prop in mergeProps metadata' do
+        expect(response.parsed_body['mergeProps']).to eq(['activity'])
+      end
+
+      it 'includes prop in onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'activity' => { 'prop' => 'activity' }
+        )
+      end
+
+      context 'when client has prop cached' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Except-Once-Props' => 'activity',
+          }
+        end
+
+        it 'excludes prop from props' do
+          expect(response.parsed_body['props']).not_to have_key('activity')
+        end
+
+        it 'still includes prop in mergeProps metadata' do
+          expect(response.parsed_body['mergeProps']).to eq(['activity'])
+        end
+
+        it 'still includes prop in onceProps metadata' do
+          expect(response.parsed_body['onceProps']).to eq(
+            'activity' => { 'prop' => 'activity' }
+          )
+        end
+      end
+
+      context 'when refreshing via partial reload' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'activity',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+            'X-Inertia-Except-Once-Props' => 'activity',
+          }
+        end
+
+        it 'returns the prop when explicitly requested' do
+          expect(response.parsed_body['props']).to include('activity' => [{ 'id' => 1, 'action' => 'login' }])
+        end
+      end
+    end
+
+    context 'with optional once props' do
+      context 'on first load' do
+        before { get optional_once_props_path, headers: headers }
+
+        it 'excludes optional prop from props on first load' do
+          expect(response.parsed_body['props']).not_to have_key('categories')
+          expect(response.parsed_body['props']).to include('regular' => 'regular prop')
+        end
+
+        it 'includes onceProps metadata so client knows to cache when requested' do
+          expect(response.parsed_body['onceProps']).to eq(
+            'categories' => { 'prop' => 'categories' }
+          )
+        end
+      end
+
+      context 'with a partial reload requesting the optional prop' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'categories',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        before { get optional_once_props_path, headers: headers }
+
+        it 'returns the optional prop when explicitly requested' do
+          expect(response.parsed_body['props']).to include('categories' => %w[category1 category2])
+        end
+
+        it 'includes prop in onceProps metadata' do
+          expect(response.parsed_body['onceProps']).to eq(
+            'categories' => { 'prop' => 'categories' }
+          )
+        end
+      end
+
+      context 'when refreshing optional once prop (explicit request bypasses cache)' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'categories',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+            'X-Inertia-Except-Once-Props' => 'categories',
+          }
+        end
+
+        before { get optional_once_props_path, headers: headers }
+
+        it 'returns prop when explicitly requested even with cache header' do
+          expect(response.parsed_body['props']).to include('categories' => %w[category1 category2])
+        end
+
+        it 'includes prop in onceProps metadata' do
+          expect(response.parsed_body['onceProps']).to eq(
+            'categories' => { 'prop' => 'categories' }
+          )
+        end
+      end
+    end
   end
 end
 
