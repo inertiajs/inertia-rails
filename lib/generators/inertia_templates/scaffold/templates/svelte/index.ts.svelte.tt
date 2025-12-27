@@ -1,11 +1,10 @@
 <script lang="ts">
-  import { Link } from '@inertiajs/svelte'
+  import { Link, page } from '@inertiajs/svelte'
   import <%= inertia_component_name %> from './<%= singular_name %>.svelte'
   import type { <%= inertia_model_type %> } from './types'
 
-  let { <%= plural_table_name %>, flash } = $props<{
+  let { <%= plural_table_name %> } = $props<{
     <%= plural_table_name %>: <%= inertia_model_type %>[]
-    flash: { notice?: string }
   }>()
 </script>
 
@@ -13,8 +12,8 @@
   <title><%= human_name.pluralize %></title>
 </svelte:head>
 
-{#if flash.notice}
-  <p class="notice">{flash.notice}</p>
+{#if $page.flash.notice}
+  <p class="notice">{$page.flash.notice}</p>
 {/if}
 
 <h1><%= human_name.pluralize %></h1>

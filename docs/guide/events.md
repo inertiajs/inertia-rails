@@ -495,6 +495,53 @@ router.on('success', (event) => {
 
 The `success` event is not cancelable.
 
+## Flash
+
+@available_since rails=master core=2.3.3
+
+The `flash` event fires when [flash data](/guide/flash-data) is received from the server. This is useful for displaying toast notifications or handling temporary data in a central location.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.on('flash', (event) => {
+  if (event.detail.flash.toast) {
+    showToast(event.detail.flash.toast)
+  }
+})
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+
+router.on('flash', (event) => {
+  if (event.detail.flash.toast) {
+    showToast(event.detail.flash.toast)
+  }
+})
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.on('flash', (event) => {
+  if (event.detail.flash.toast) {
+    showToast(event.detail.flash.toast)
+  }
+})
+```
+
+:::
+
+The `flash` event is not cancelable. [Partial reloads](/guide/partial-reloads) will only trigger the event if the flash data has changed.
+
 ## Error
 
 The `error` event fires when validation errors are present on "successful" page visits.

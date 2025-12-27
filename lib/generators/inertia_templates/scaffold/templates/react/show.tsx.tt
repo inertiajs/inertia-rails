@@ -1,13 +1,14 @@
-import { Head, Link } from '@inertiajs/react'
+import { Head, Link, usePage } from '@inertiajs/react'
 import <%= inertia_component_name %> from './<%= singular_name %>'
 import { <%= inertia_model_type %> } from './types'
 
 interface ShowProps {
   <%= singular_table_name %>: <%= inertia_model_type %>
-  flash: { notice?: string }
 }
 
-export default function Show({ <%= singular_table_name %>, flash }: ShowProps) {
+export default function Show({ <%= singular_table_name %> }: ShowProps) {
+  const { flash } = usePage()
+
   return (
     <>
       <Head title={`<%= human_name %> #${<%= singular_table_name %>.id}`} />

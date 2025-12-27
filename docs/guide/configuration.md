@@ -143,6 +143,29 @@ When set to `true`, an empty `errors: {}` object will always be included in Iner
 
 The default value will be changed to `true` in the next major version.
 
+### `flash_keys`
+
+**Default**: `%i[notice alert]`
+
+@available_since rails=master core=2.3.3
+
+Specifies which Rails flash keys are exposed to the frontend. By default, only known-safe keys (`notice`, `alert`) are included.
+
+```ruby
+InertiaRails.configure do |config|
+  # Default: safe keys only
+  config.flash_keys = %i[notice alert]
+
+  # Add your custom keys
+  config.flash_keys = %i[notice alert toast message]
+
+  # Disable Rails flash integration (use only flash.inertia)
+  config.flash_keys = nil
+end
+```
+
+See the [flash data documentation](/guide/flash-data) for more details on using flash with Inertia.
+
 ### `parent_controller`
 
 **Default**: `'::ApplicationController'`

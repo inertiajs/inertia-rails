@@ -1,8 +1,10 @@
-import { Head, Link } from '@inertiajs/react'
+import { Head, Link, usePage } from '@inertiajs/react'
 import { Fragment } from 'react'
 import <%= inertia_component_name %> from './<%= singular_name %>'
 
-export default function Index({ <%= plural_table_name %>, flash }) {
+export default function Index({ <%= plural_table_name %> }) {
+  const { flash } = usePage()
+
   return (
     <>
       <Head title="<%= human_name.pluralize %>" />

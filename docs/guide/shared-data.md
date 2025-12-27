@@ -160,86 +160,11 @@ export default function Layout({ children }) {
 
 :::
 
-# Flash messages
+## Flash Data
 
-Another great use-case for shared data is flash messages. These are messages stored in the session only for the next request. For example, it's common to set a flash message after completing a task and before redirecting to a different page.
+@available_since rails=master core=2.3.3
 
-Here's a simple way to implement flash messages in your Inertia applications. First, share the flash message on each request.
-
-```ruby
-class ApplicationController < ActionController::Base
-  inertia_share flash: -> { flash.to_hash }
-end
-```
-
-Next, display the flash message in a frontend component, such as the site layout.
-
-:::tabs key:frameworks
-== Vue
-
-```vue
-<template>
-  <main>
-    <header></header>
-    <article>
-      <div v-if="$page.props.flash.alert" class="alert">
-        {{ $page.props.flash.alert }}
-      </div>
-      <div v-if="$page.props.flash.notice" class="notice">
-        {{ $page.props.flash.notice }}
-      </div>
-      <slot />
-    </article>
-    <footer></footer>
-  </main>
-</template>
-```
-
-== React
-
-```jsx
-import { usePage } from '@inertiajs/react'
-
-export default function Layout({ children }) {
-  const { flash } = usePage().props
-
-  return (
-    <main>
-      <header></header>
-      <article>
-        {flash.alert && <div className="alert">{flash.alert}</div>}
-        {flash.notice && <div className="notice">{flash.notice}</div>}
-        {children}
-      </article>
-      <footer></footer>
-    </main>
-  )
-}
-```
-
-== Svelte 4|Svelte 5
-
-```svelte
-<script>
-  import { page } from '@inertiajs/svelte'
-</script>
-
-<main>
-  <header></header>
-  <article>
-    {#if $page.props.flash.alert}
-      <div class="alert">{$page.props.flash.alert}</div>
-    {/if}
-    {#if $page.props.flash.notice}
-      <div class="notice">{$page.props.flash.notice}</div>
-    {/if}
-    <slot />
-  </article>
-  <footer></footer>
-</main>
-```
-
-:::
+For one-time notifications like toast messages or success alerts, you may use [flash data](/guide/flash-data). Unlike shared data, flash data is not persisted in the browser's history state, so it won't reappear when navigating through history.
 
 ## Deep Merging Shared Data
 

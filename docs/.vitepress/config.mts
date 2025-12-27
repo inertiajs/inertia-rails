@@ -130,6 +130,7 @@ export default defineConfig({
           text: 'Data & Props',
           items: [
             { text: 'Shared data', link: '/guide/shared-data' },
+            { text: 'Flash data', link: '/guide/flash-data' },
             { text: 'Partial reloads', link: '/guide/partial-reloads' },
             { text: 'Deferred props', link: '/guide/deferred-props' },
             { text: 'Polling', link: '/guide/polling' },

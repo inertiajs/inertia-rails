@@ -1,8 +1,8 @@
 <script>
-  import { Link } from '@inertiajs/svelte'
+  import { Link, page } from '@inertiajs/svelte'
   import <%= inertia_component_name %> from './<%= singular_name %>.svelte'
 
-  let { <%= plural_table_name %>, flash } = $props()
+  let { <%= plural_table_name %> } = $props()
 </script>
 
 <svelte:head>
@@ -10,9 +10,9 @@
 </svelte:head>
 
 <div class="mx-auto md:w-2/3 w-full px-8 pt-8">
-  {#if flash.notice}
+  {#if $page.flash.notice}
     <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-lg inline-block">
-      {flash.notice}
+      {$page.flash.notice}
     </p>
   {/if}
 

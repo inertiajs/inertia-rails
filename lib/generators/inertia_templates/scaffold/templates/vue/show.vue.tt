@@ -24,10 +24,11 @@
 </template>
 
 <script setup>
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, usePage } from '@inertiajs/vue3'
 import <%= inertia_component_name %> from './<%= singular_name %>.vue'
 
-const { <%= singular_table_name %>, flash } = defineProps(['<%= singular_table_name %>', 'flash'])
+defineProps(['<%= singular_table_name %>'])
+const { flash } = usePage()
 </script>
 
 <style scoped>
