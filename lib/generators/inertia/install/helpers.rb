@@ -37,7 +37,7 @@ module Inertia
 
         yield package_json
 
-        File.write(package_json_path, JSON.pretty_generate(package_json) + "\n")
+        File.write(package_json_path, "#{JSON.pretty_generate(package_json)}\n")
       end
 
       # Interactivity Helpers
