@@ -97,22 +97,8 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
 
   context 'with --framework=svelte' do
     let(:framework) { :svelte }
-    include_context 'assert framework structure'
 
-    context 'with --typescript' do
-      let(:inertia_version) { '1.3.0-beta.1' }
-      let(:args) { super() + %W[--typescript --inertia-version=#{inertia_version}] }
-      let(:ext) { 'ts' }
-
-      include_context 'assert framework structure'
-
-      context 'with old Inertia version' do
-        let(:inertia_version) { '1.2.0' }
-        let(:ext) { 'js' }
-
-        include_context 'assert framework structure'
-      end
-    end
+    include_context 'assert framework js and ts structures'
   end
 
   context 'with --framework=vue' do
@@ -253,6 +239,8 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
       file('bin/dev') do
         contains('overmind start -f Procfile.dev')
       end
+
+      file('bin/vite')
 
       if ext == 'ts'
         file('app/frontend/types/vite-env.d.ts') do
