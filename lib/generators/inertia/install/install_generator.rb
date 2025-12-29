@@ -49,11 +49,6 @@ module Inertia
       def install
         say "Installing Inertia's Rails adapter"
 
-        if inertia_resolved_version.version == '0'
-          say_error "Could not find the Inertia.js package version #{options[:inertia_version]}.", :red
-          exit(false)
-        end
-
         install_vite unless ruby_vite_installed?
 
         install_typescript if typescript?
@@ -137,14 +132,6 @@ module Inertia
 
       def install_typescript
         say 'Adding TypeScript support'
-        if svelte? && inertia_resolved_version.release < Gem::Version.new('1.3.0')
-          say 'WARNING: @inertiajs/svelte < 1.3.0 does not support TypeScript ' \
-              "(resolved version: #{inertia_resolved_version}).",
-              :yellow
-          say 'Skipping TypeScript support for @inertiajs/svelte', :yellow
-          @typescript = false
-          return
-        end
 
         add_dependencies(*FRAMEWORKS[framework]['packages_ts'])
 
@@ -165,12 +152,16 @@ module Inertia
         end
 
         say 'Adding TypeScript check scripts to package.json'
-        if svelte?
-          run 'npm pkg set scripts.check="svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"'
-        elsif react?
-          run 'npm pkg set scripts.check="tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"'
-        elsif vue?
-          run 'npm pkg set scripts.check="vue-tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"'
+        update_package_json do |package_json|
+          package_json['scripts'] ||= {}
+          package_json['scripts']['check'] =
+            if svelte?
+              'svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json'
+            elsif react?
+              'tsc -p tsconfig.app.json && tsc -p tsconfig.node.json'
+            elsif vue?
+              'vue-tsc -p tsconfig.app.json && tsc -p tsconfig.node.json'
+            end
         end
       end
 
@@ -324,13 +315,6 @@ module Inertia
         tag = typescript? ? 'vite_typescript_tag' : 'vite_javascript_tag'
         filename = "\"#{react? ? inertia_entrypoint : 'inertia'}\""
         "#{tag} #{filename}"
-      end
-
-      def inertia_resolved_version
-        package = "@inertiajs/core@#{options[:inertia_version]}"
-        @inertia_resolved_version ||= Gem::Version.new(
-          `npm show #{package} version --json | tail -n2 | head -n1 | tr -d '", '`.strip
-        )
       end
 
       def verbose?
