@@ -87,14 +87,6 @@ module InertiaRails
         route_url
       end
 
-      def inertia_js_version
-        @inertia_js_version ||= Gem::Version.new(
-          JSON.parse(`npm ls @inertiajs/core --json`).then do |json|
-            json['dependencies'].values.first['version']
-          end
-        )
-      end
-
       def ts_type(attribute)
         case attribute.type
         when :float, :decimal, :integer

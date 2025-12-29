@@ -225,6 +225,7 @@ module Inertia
             end
             if (capture = run('bundle exec vite install', capture: !verbose?))
               rename_application_js_to_ts if typescript?
+              run('bundle binstub vite_ruby', capture: !verbose?) if File.exist?(file_path('bin/vite'))
               say 'Vite Rails successfully installed', :green
             else
               say capture
