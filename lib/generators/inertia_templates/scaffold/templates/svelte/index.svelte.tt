@@ -1,16 +1,16 @@
 <script>
-  import { Link } from '@inertiajs/svelte'
+  import { Link, page } from '@inertiajs/svelte'
   import <%= inertia_component_name %> from './<%= singular_name %>.svelte'
 
-  let { <%= plural_table_name %>, flash } = $props()
+  let { <%= plural_table_name %> } = $props()
 </script>
 
 <svelte:head>
   <title><%= human_name.pluralize %></title>
 </svelte:head>
 
-{#if flash.notice}
-  <p class="notice">{flash.notice}</p>
+{#if $page.flash.notice}
+  <p class="notice">{$page.flash.notice}</p>
 {/if}
 
 <h1><%= human_name.pluralize %></h1>
