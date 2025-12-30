@@ -19,13 +19,13 @@ module InertiaRails
 
       if content_type == Mime[:md]
         body = template.render(template: file, layout: false, formats: [:text])
-        format = "text/markdown"
+        format = 'text/markdown'
       elsif request.xhr? && !request.headers['X-Inertia']
         body = template.render(template: file, layout: false, formats: [:text])
-        format = "text/plain"
+        format = 'text/plain'
       else
-        body = template.render(template: file, layout: "rescues/layout")
-        format = "text/html"
+        body = template.render(template: file, layout: 'rescues/layout')
+        format = 'text/html'
       end
 
       render(wrapper.status_code, body, format)
