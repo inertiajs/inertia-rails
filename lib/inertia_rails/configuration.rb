@@ -38,6 +38,9 @@ module InertiaRails
       # Whether to use `<script>` element for initial page rendering instead of the `data-page` attribute.
       use_script_element_for_initial_page: false,
 
+      # Whether to use `data-inertia` attribute instead of `inertia` for meta tags.
+      use_data_inertia_head_attribute: false,
+
       # DOM id to use for the root Inertia.js element.
       root_dom_id: 'app',
 
