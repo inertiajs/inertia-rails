@@ -69,9 +69,12 @@ module InertiaRails
           actual = inertia&.public_send(field)
           negated = "expected #{field} not to include #{expected.inspect}"
 
-          if actual.nil?
-            { passed: false, message: "expected #{field} to be present", negated_message: negated }
-          elsif expected.all? { |k, v| actual[k] == v }
+          return { passed: false, message: "expected #{field} to be present", negated_message: negated } if actual.nil?
+
+          actual_sym = actual.to_h.deep_symbolize_keys
+          expected_sym = expected.deep_symbolize_keys
+
+          if expected_sym.all? { |k, v| actual_sym[k] == v }
             { passed: true, negated_message: negated }
           else
             {

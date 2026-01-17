@@ -40,6 +40,38 @@ class InertiaMinitestTest < ActionDispatch::IntegrationTest
     refute_inertia_props_equal name: 'Brandon', sport: 'hockey', extra: 'key'
   end
 
+  test 'assert_inertia_props matches nested props with symbol keys' do
+    get share_path
+    # Tests that symbol keys in expected match string keys in actual (after deep_symbolize_keys)
+    assert_inertia_props nested: { user: { name: 'Brandon', role: 'admin' }, settings: { theme: 'dark' } }
+  end
+
+  test 'refute_inertia_props fails when nested value does not match exactly' do
+    get share_path
+    # Partial nested value should not match - assert_inertia_props compares values exactly
+    refute_inertia_props nested: { user: { name: 'Brandon', role: 'admin' } }
+  end
+
+  test 'refute_inertia_props works when nested props have wrong values' do
+    get share_path
+    refute_inertia_props nested: { user: { name: 'Wrong' } }
+  end
+
+  test 'assert_inertia_props_equal works with nested props' do
+    get share_path
+    assert_inertia_props_equal(
+      name: 'Brandon',
+      sport: 'hockey',
+      a_hash: 'also works',
+      position: 'center',
+      number: 29,
+      nested: {
+        user: { name: 'Brandon', role: 'admin' },
+        settings: { theme: 'dark' },
+      }
+    )
+  end
+
   test 'assert_inertia_view_data works with partial match' do
     get view_data_path
     assert_inertia_view_data name: 'Brian'

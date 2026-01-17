@@ -265,6 +265,44 @@ RSpec.describe InertiaRails::RSpec, type: :request do
         expect(inertia).not_to have_exact_props(name: 'Brandon')
       end
     end
+
+    describe 'nested props matching' do
+      before { get share_path }
+
+      it 'matches nested props with symbol keys using have_props' do
+        # have_props does partial match at top level, exact match at value level
+        # This tests that symbol keys in expected match string keys in actual (after deep_symbolize_keys)
+        expect(inertia).to have_props(
+          nested: {
+            user: { name: 'Brandon', role: 'admin' },
+            settings: { theme: 'dark' },
+          }
+        )
+      end
+
+      it 'fails when nested props value does not match exactly' do
+        # Partial nested value should not match - have_props compares values exactly
+        expect(inertia).not_to have_props(nested: { user: { name: 'Brandon', role: 'admin' } })
+      end
+
+      it 'fails when nested props have wrong values' do
+        expect(inertia).not_to have_props(nested: { user: { name: 'Wrong' } })
+      end
+
+      it 'matches nested props with have_exact_props' do
+        expect(inertia).to have_exact_props(
+          name: 'Brandon',
+          sport: 'hockey',
+          a_hash: 'also works',
+          position: 'center',
+          number: 29,
+          nested: {
+            user: { name: 'Brandon', role: 'admin' },
+            settings: { theme: 'dark' },
+          }
+        )
+      end
+    end
   end
 
   describe 'negative view_data matchers' do

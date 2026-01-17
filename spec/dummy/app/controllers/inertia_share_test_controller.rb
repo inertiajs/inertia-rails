@@ -8,6 +8,10 @@ class InertiaShareTestController < ApplicationController
     {
       position: 'center',
       number: number,
+      nested: {
+        user: { name: 'Brandon', role: 'admin' },
+        settings: { theme: 'dark' },
+      },
     }
   end
 
