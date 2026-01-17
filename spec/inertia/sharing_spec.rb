@@ -4,7 +4,10 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
   subject { JSON.parse(response.body)['props'].deep_symbolize_keys }
 
   context 'using inertia share' do
-    let(:props) { { name: 'Brandon', sport: 'hockey', position: 'center', number: 29, a_hash: 'also works' } }
+    let(:props) do
+      { name: 'Brandon', sport: 'hockey', position: 'center', number: 29, a_hash: 'also works',
+        nested: { user: { name: 'Brandon', role: 'admin' }, settings: { theme: 'dark' } }, }
+    end
     before { get share_path, headers: { 'X-Inertia' => true } }
 
     it { is_expected.to eq props }
@@ -20,7 +23,10 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
   end
 
   context 'using inertia share in subsequent requests' do
-    let(:props) { { name: 'Brandon', sport: 'hockey', position: 'center', number: 29, a_hash: 'also works' } }
+    let(:props) do
+      { name: 'Brandon', sport: 'hockey', position: 'center', number: 29, a_hash: 'also works',
+        nested: { user: { name: 'Brandon', role: 'admin' }, settings: { theme: 'dark' } }, }
+    end
 
     before do
       get share_path, headers: { 'X-Inertia' => true }
@@ -31,7 +37,10 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
   end
 
   context 'using inertia share with inheritance' do
-    let(:props) { { name: 'No Longer Brandon', sport: 'hockey', position: 'center', number: 29, a_hash: 'also works' } }
+    let(:props) do
+      { name: 'No Longer Brandon', sport: 'hockey', position: 'center', number: 29, a_hash: 'also works',
+        nested: { user: { name: 'Brandon', role: 'admin' }, settings: { theme: 'dark' } }, }
+    end
 
     before do
       get share_with_inherited_path, headers: { 'X-Inertia' => true }
@@ -41,7 +50,10 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
   end
 
   context 'with errors' do
-    let(:props) { { name: 'Brandon', sport: 'hockey', position: 'center', number: 29, a_hash: 'also works' } }
+    let(:props) do
+      { name: 'Brandon', sport: 'hockey', position: 'center', number: 29, a_hash: 'also works',
+        nested: { user: { name: 'Brandon', role: 'admin' }, settings: { theme: 'dark' } }, }
+    end
     let(:errors) { 'rearview mirror is present' }
     before do
       allow_any_instance_of(ActionDispatch::Request).to receive(:session) {

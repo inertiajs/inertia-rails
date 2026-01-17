@@ -104,8 +104,8 @@ class InertiaTestController < ApplicationController
   end
 
   def render_with_inertia_flash_method
-    flash.inertia[:foo] = 'bar'
-    flash.inertia[:baz] = 'qux'
+    flash.inertia[:success] = 'Item saved!'
+    flash.inertia[:notice] = 'Changes applied'
     render inertia: 'EmptyTestComponent'
   end
 
