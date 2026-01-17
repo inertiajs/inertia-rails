@@ -17,7 +17,7 @@ module InertiaRails
       template = create_template(request, wrapper)
       file = "rescues/#{wrapper.rescue_template}"
 
-      if content_type == Mime[:md]
+      if Mime[:md] && content_type == Mime[:md]
         body = template.render(template: file, layout: false, formats: [:text])
         format = 'text/markdown'
       elsif request.xhr? && !request.headers['X-Inertia']
