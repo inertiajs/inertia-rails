@@ -139,6 +139,25 @@ RSpec.describe InertiaRails::MetaTag do
       expect(tag).to eq('<meta http-equiv="X-UA-Compatible" content="IE=edge" inertia="meta-12345678">')
     end
 
+    context 'with use_data_inertia_head_attribute set to true' do
+      with_inertia_config use_data_inertia_head_attribute: true
+
+      it 'returns a string meta tag' do
+        tag = meta_tag.to_tag(tag_helper)
+        expect(tag).to be_a(String)
+        expect(tag).to eq('<meta name="description" content="Inertia rules" data-inertia="meta-12345678">')
+      end
+
+      it 'renders kebab case' do
+        meta_tag = described_class.new(tag_name: :meta, head_key: dummy_head_key, http_equiv: 'X-UA-Compatible',
+                                       content: 'IE=edge')
+
+        tag = meta_tag.to_tag(tag_helper)
+
+        expect(tag).to eq('<meta http-equiv="X-UA-Compatible" content="IE=edge" data-inertia="meta-12345678">')
+      end
+    end
+
     describe 'script tag rendering' do
       it 'renders JSON LD content correctly' do
         meta_tag = described_class.new(tag_name: :script, head_key: dummy_head_key, type: 'application/ld+json',
