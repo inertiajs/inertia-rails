@@ -21,6 +21,7 @@
 - [Clipflow](https://www.clipflow.co) — Project Management for Content Creators.
 - [Switch Kanban](https://switchkanban.com.br) — Project management tool for Software Houses.
 - [OG Pilot](https://ogpilot.com) - A dynamic Open Graph image generator tool.
+- [Calm Companies](https://calmcompanies.club) - Get weekly emails when companies with a great work culture are hiring.
 
 ## Demo applications
 
