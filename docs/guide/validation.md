@@ -175,55 +175,9 @@ So, the only work remaining is to display any validation errors using the `error
 ## Error bags
 
 > [!NOTE]
-> If you're using the [form helper](/guide/forms.md), it's not necessary to use error bags since validation errors are automatically scoped to the form object making the request.
-
-For pages that have more than one form, it's possible to encounter conflicts when displaying validation errors if two forms share the same field names. For example, imagine a "create company" form and a "create user" form that both have a `name` field. Since both forms will be displaying the `page.props.errors.name` validation error, generating a validation error for the `name` field in either form will cause the error to appear in both forms.
-
-To solve this issue, you can use "error bags". Error bags scope the validation errors returned from the server within a unique key specific to that form. Continuing with our example above, you might have a `createCompany` error bag for the first form and a `createUser` error bag for the second form.
-
-:::tabs key:frameworks
-== Vue
-
-```js
-import { router } from '@inertiajs/vue3'
-
-router.post('/companies', data, {
-  errorBag: 'createCompany',
-})
-
-router.post('/users', data, {
-  errorBag: 'createUser',
-})
-```
-
-== React
-
-```jsx
-import { router } from '@inertiajs/react'
-
-router.post('/companies', data, {
-  errorBag: 'createCompany',
-})
-
-router.post('/users', data, {
-  errorBag: 'createUser',
-})
-```
-
-== Svelte 4|Svelte 5
-
-```js
-import { router } from '@inertiajs/svelte'
-
-router.post('/companies', data, {
-  errorBag: 'createCompany',
-})
-
-router.post('/users', data, {
-  errorBag: 'createUser',
-})
-```
-
-:::
-
-Specifying an error bag will cause the validation errors to come back from the server within `page.props.errors.createCompany` and `page.props.errors.createUser`.
+> Error bags are a Laravel-specific feature that relies on Laravel's `ViewErrorBag` system. In Rails, this feature is typically unnecessary because:
+>
+> - Forms submit to separate controller actions, so only one set of errors is returned per request
+> - The [form helper](/guide/forms.md) automatically scopes validation errors to each form instance
+>
+> If you have multiple forms on a page, use the `useForm()` helper and each form will maintain its own isolated error state.

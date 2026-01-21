@@ -122,7 +122,7 @@ The following headers are automatically sent by Inertia when making requests. Yo
 8. `X-Inertia-Partial-Except`: Comma-separated list of props to exclude from partial reloads.
 9. `X-Inertia-Reset`: Comma-separated list of props to reset on navigation.
 10. `Cache-Control`: Set to `no-cache` for reload requests to prevent serving stale content.
-11. `X-Inertia-Error-Bag`: Specifies which error bag to use for [validation errors](/guide/validation).
+11. `X-Inertia-Error-Bag`: Specifies which error bag to use for [validation errors](/guide/validation). Note: This header is not used by the Rails adapter as error bags are a Laravel-specific feature.
 12. `X-Inertia-Infinite-Scroll-Merge-Intent`: Indicates whether the requested data should be appended or prepended when using [Infinite scroll](/guide/infinite-scroll).
 13. `X-Inertia-Except-Once-Props`: Comma-separated list of non-expired [once prop](/guide/once-props) keys already loaded on the client. The server will skip resolving these props unless explicitly requested via a partial reload or force refreshed server-side.
 
