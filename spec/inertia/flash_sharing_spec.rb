@@ -42,7 +42,7 @@ RSpec.describe 'flash data shared via redirect', type: :request do
       get render_with_inertia_flash_method_path, headers: headers
 
       parsed = JSON.parse(response.body)
-      expect(parsed['flash']).to eq({ 'foo' => 'bar', 'baz' => 'qux' })
+      expect(parsed['flash']).to eq({ 'success' => 'Item saved!', 'notice' => 'Changes applied' })
     end
 
     it 'supports flash.now.inertia for current request only' do
