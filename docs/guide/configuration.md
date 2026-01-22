@@ -230,3 +230,24 @@ When enabled, the HTML output looks like:
 > [!NOTE]
 > When using this option make sure your client-side Inertia setup is configured to read the page data from the `<script>` element.
 > See the [client side setup](/guide/client-side-setup#script-element-for-page-data) for more details.
+
+### `use_data_inertia_head_attribute`
+
+**Default**: `false`
+**ENV**: `INERTIA_USE_DATA_INERTIA_HEAD_ATTRIBUTE`
+
+@available_since rails=master
+
+Controls which HTML attribute is used to mark Inertia-managed `<head>` tags.
+
+When set to `false` (default), Inertia Rails uses the `inertia` attribute:
+
+```html
+<meta name="description" content="Inertia rules" inertia="meta-12345678" />
+```
+
+When set to `true`, Inertia Rails uses the [`data-*` attribute](https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes) `data-inertia` instead:
+
+```html
+<meta name="description" content="Inertia rules" data-inertia="meta-12345678" />
+```
