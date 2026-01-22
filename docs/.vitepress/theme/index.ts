@@ -13,6 +13,7 @@ import {
   Vue,
 } from './components'
 import { setupFrameworksTabs } from './frameworksTabs'
+import LandingLayout from './layouts/LandingLayout.vue'
 import './style.css'
 
 export default {
@@ -31,6 +32,7 @@ export default {
     app.component('Svelte', Svelte)
     app.component('Svelte4', Svelte4)
     app.component('Svelte5', Svelte5)
+    app.component('LandingLayout', LandingLayout)
   },
   setup() {
     setupFrameworksTabs()

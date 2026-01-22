@@ -137,6 +137,38 @@
 }
 
 /**
+ * Landing page: keep header visible on mobile (no "go to top" replacement)
+ * -------------------------------------------------------------------------- */
+
+.Layout:has(.landing-page) .VPNavBarTitle .title {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.Layout:has(.landing-page) .VPNavBarTitle .title::after {
+  display: none !important;
+}
+
+.Layout:has(.landing-page) .curtain {
+  display: none !important;
+}
+
+.Layout:has(.landing-page) .VPLocalNav {
+  display: none !important;
+}
+
+.Layout:has(.landing-page) .VPNav {
+  position: fixed !important;
+}
+
+@media (max-width: 768px) {
+  .Layout:has(.landing-page) .VPContent {
+    padding-top: var(--vp-nav-height) !important;
+  }
+}
+
+/**
  * Component: Tabs
  * -------------------------------------------------------------------------- */
 
