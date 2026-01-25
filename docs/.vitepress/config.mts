@@ -8,7 +8,8 @@ import { availableSinceMarkdownPlugin } from './availableSinceMarkdownPlugin'
 import { tabsMarkdownPlugin } from './vitepress-plugin-tabs/tabsMarkdownPlugin'
 
 const title = 'Inertia Rails'
-const description = 'Documentation for Inertia.js Rails adapter'
+const description =
+  'The official Rails adapter for Inertia.js. Build modern single-page applications using your existing Rails controllers and routes. No API required.'
 const site = 'https://inertia-rails.dev'
 
 const image = `${site}/og-image.png`
