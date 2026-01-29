@@ -14,7 +14,7 @@ Additionally, for security sensitive projects, Inertia now offers a [history enc
 
 ## Upgrade dependencies
 
-To upgrade to the Inertia.js v2.0 beta, first use npm to install the client-side adapter of your choice:
+To upgrade to Inertia.js v2.0, first use npm to install the client-side adapter of your choice:
 
 :::tabs key:frameworks
 == Vue

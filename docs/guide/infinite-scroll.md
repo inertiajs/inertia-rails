@@ -87,6 +87,12 @@ On the client side, Inertia provides the `<InfiniteScroll>` component to automat
 == Vue
 
 ```vue
+<script setup>
+import { InfiniteScroll } from '@inertiajs/vue3'
+
+defineProps({ users: Array })
+</script>
+
 <template>
   <InfiniteScroll data="users">
     <div v-for="user in users" :key="user.id">

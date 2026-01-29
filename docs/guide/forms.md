@@ -1017,6 +1017,80 @@ export default function CreateUser() {
 
 In React and Vue, refs provide access to all form methods and reactive state. In Svelte, refs expose only methods, so reactive state like isDirty and errors should be accessed via [slot props](#slot-props) instead.
 
+### Form context
+
+@available_since core=2.3.9
+
+Sometimes you may wish to access form state or methods from deeply nested child components without passing props through multiple levels. The `useFormContext` hook provides access to the parent `<Form>` component's state and methods from any child component.
+
+:::tabs key:frameworks
+== Vue
+
+```vue
+<script setup>
+import { useFormContext } from '@inertiajs/vue3'
+
+const form = useFormContext()
+</script>
+
+<template>
+  <div v-if="form">
+    <span v-if="form.isDirty">Unsaved changes</span>
+    <span v-if="form.errors.name">{{ form.errors.name }}</span>
+    <button type="button" @click="form.submit()">Submit</button>
+    <button type="button" @click="form.reset()">Reset</button>
+  </div>
+</template>
+```
+
+== React
+
+```jsx
+import { useFormContext } from '@inertiajs/react'
+
+export default function FormActions() {
+  const form = useFormContext()
+
+  if (!form) {
+    return null
+  }
+
+  return (
+    <div>
+      {form.isDirty && <span>Unsaved changes</span>}
+      {form.errors.name && <span>{form.errors.name}</span>}
+      <button type="button" onClick={() => form.submit()}>
+        Submit
+      </button>
+      <button type="button" onClick={() => form.reset()}>
+        Reset
+      </button>
+    </div>
+  )
+}
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<script>
+  import { useFormContext } from '@inertiajs/svelte'
+
+  const form = useFormContext()
+</script>
+
+{#if $form}
+  {#if $form.isDirty}<span>Unsaved changes</span>{/if}
+  {#if $form.errors.name}<span>{$form.errors.name}</span>{/if}
+  <button type="button" on:click={() => $form.submit()}>Submit</button>
+  <button type="button" on:click={() => $form.reset()}>Reset</button>
+{/if}
+```
+
+:::
+
+The context provides access to all the same properties and methods available through [slot props](#slot-props).
+
 ## Form helper
 
 In addition to the `<Form>` component, Inertia also provides a `useForm` helper for when you need programmatic control over your form's data and submission behavior.
@@ -1679,6 +1753,57 @@ const form = useForm(`EditUser:${user.id}`, data)
 ```
 
 :::
+
+#### Excluding fields
+
+@available_since core=2.3.7
+
+Sometimes you may wish to prevent certain fields from being stored in history state. For example, you may want to exclude password fields for security reasons.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { useForm } from '@inertiajs/vue3'
+
+const form = useForm('LoginForm', {
+  email: '',
+  password: '',
+}).dontRemember('password')
+```
+
+== React
+
+```js
+import { useForm } from '@inertiajs/react'
+
+const form = useForm('LoginForm', {
+  email: '',
+  password: '',
+}).dontRemember('password')
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { useForm } from '@inertiajs/svelte'
+
+const form = useForm('LoginForm', {
+  email: '',
+  password: '',
+}).dontRemember('password')
+```
+
+:::
+
+Multiple fields may be excluded by passing additional arguments.
+
+```js
+form.dontRemember('password', 'password_confirmation')
+```
+
+> [!NOTE]
+> Some browsers trigger a "save password" prompt whenever password field values are written to history state, even without form submission. Excluding password fields avoids this issue.
 
 ## Server-side responses
 
