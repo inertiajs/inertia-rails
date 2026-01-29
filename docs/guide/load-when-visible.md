@@ -353,6 +353,95 @@ export default () => (
 
 :::
 
+### Fetching state
+
+@available_since core=2.3.2
+
+The `WhenVisible` component exposes a `fetching` slot prop that you may use to display a loading indicator during subsequent requests. This is useful because the `fallback` is only shown on the initial load, while `fetching` allows you to indicate that data is being refreshed on subsequent loads.
+
+:::tabs key:frameworks
+== Vue
+
+```vue
+<script setup>
+import { WhenVisible } from '@inertiajs/vue3'
+</script>
+
+<template>
+  <WhenVisible data="permissions" always>
+    <template #default="{ fetching }">
+      <PermissionsChildComponent />
+      <div v-if="fetching">Refreshing...</div>
+    </template>
+
+    <template #fallback>
+      <div>Loading...</div>
+    </template>
+  </WhenVisible>
+</template>
+```
+
+== React
+
+```jsx
+import { WhenVisible } from '@inertiajs/react'
+
+export default () => (
+  <WhenVisible data="permissions" always fallback={() => <div>Loading...</div>}>
+    {({ fetching }) => (
+      <>
+        <PermissionsChildComponent />
+        {fetching && <div>Refreshing...</div>}
+      </>
+    )}
+  </WhenVisible>
+)
+```
+
+== Svelte 4
+
+```svelte
+<script>
+  import { WhenVisible } from '@inertiajs/svelte'
+
+  export let permissions
+</script>
+
+<WhenVisible data="permissions" always let:fetching>
+  <PermissionsChildComponent />
+  {#if fetching}
+    <div>Refreshing...</div>
+  {/if}
+
+  <svelte:fragment slot="fallback">
+    <div>Loading...</div>
+  </svelte:fragment>
+</WhenVisible>
+```
+
+== Svelte 5
+
+```svelte
+<script>
+  import { WhenVisible } from '@inertiajs/svelte'
+
+  let { permissions } = $props()
+</script>
+
+<WhenVisible data="permissions" always let:fetching>
+  <PermissionsChildComponent />
+  {#if fetching}
+    <div>Refreshing...</div>
+  {/if}
+
+  {#snippet fallback()}
+    <div>Loading...</div>
+  {/snippet}
+</WhenVisible>
+```
+
+:::
+
 ## Form submissions
 
 When submitting forms, you may want to use the `except` option to exclude the props that are being used by the `WhenVisible` component. This prevents the props from being reloaded when you get redirected back to the current page because of validation errors.

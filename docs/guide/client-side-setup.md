@@ -101,8 +101,8 @@ import { mount } from 'svelte'
 
 createInertiaApp({
   resolve: (name) => {
-    const pages = import.meta.glob('./Pages/**/*.svelte', { eager: true })
-    return pages[`./Pages/${name}.svelte`]
+    const pages = import.meta.glob('../pages/**/*.svelte', { eager: true })
+    return pages[`../pages/${name}.svelte`]
   },
   setup({ el, App, props }) {
     mount(App, { target: el, props })
@@ -154,7 +154,7 @@ particularly useful when you need to adjust settings based on user preferences o
 == Vue
 
 ```js
-import { router } from '@inertiajs/vue3'
+import { config } from '@inertiajs/vue3'
 
 // Set a single value using dot notation...
 config.set('form.recentlySuccessfulDuration', 1000)
@@ -173,7 +173,7 @@ const duration = config.get('form.recentlySuccessfulDuration')
 == React
 
 ```js
-import { router } from '@inertiajs/react'
+import { config } from '@inertiajs/react'
 
 // Set a single value using dot notation...
 config.set('form.recentlySuccessfulDuration', 1000)
@@ -192,7 +192,7 @@ const duration = config.get('form.recentlySuccessfulDuration')
 == Svelte 4|Svelte 5
 
 ```js
-import { router } from '@inertiajs/svelte'
+import { config } from '@inertiajs/svelte'
 
 // Set a single value using dot notation...
 config.set('form.recentlySuccessfulDuration', 1000)

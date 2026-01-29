@@ -822,6 +822,84 @@ router.on('navigate', (event) => {
 
 The `navigate` event is not cancelable.
 
+## Prefetching
+
+The `prefetching` event fires when the router starts prefetching a page.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.on('prefetching', (event) => {
+  console.log(`Prefetching ${event.detail.visit.url}`)
+})
+```
+
+== React
+
+```jsx
+import { router } from '@inertiajs/react'
+
+router.on('prefetching', (event) => {
+  console.log(`Prefetching ${event.detail.visit.url}`)
+})
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.on('prefetching', (event) => {
+  console.log(`Prefetching ${event.detail.visit.url}`)
+})
+```
+
+:::
+
+The `prefetching` event is not cancelable.
+
+## Prefetched
+
+The `prefetched` event fires when the router has successfully prefetched a page.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.on('prefetched', (event) => {
+  console.log(`Prefetched ${event.detail.visit.url}`)
+})
+```
+
+== React
+
+```jsx
+import { router } from '@inertiajs/react'
+
+router.on('prefetched', (event) => {
+  console.log(`Prefetched ${event.detail.visit.url}`)
+})
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.on('prefetched', (event) => {
+  console.log(`Prefetched ${event.detail.visit.url}`)
+})
+```
+
+:::
+
+The `prefetched` event is not cancelable.
+
 ## Event callbacks
 
 In addition to the global events described throughout this page, Inertia also provides a number of [event callbacks](/guide/manual-visits.md#event-callbacks) that fire when manually making Inertia visits.

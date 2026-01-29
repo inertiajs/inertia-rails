@@ -255,6 +255,9 @@ document.addEventListener('inertia:flash', (event) => {
 
 The `flash` event is not cancelable. During [partial reloads](/guide/partial-reloads), it only fires if the flash data has changed.
 
+> [!WARNING]
+> When using event listeners in non-persistent layouts or components that may be unmounted, be sure to remove the listener when the component is destroyed to prevent memory leaks. See the [events documentation](/guide/events) for more information on removing event listeners.
+
 ## Client-Side Flash
 
 You may set flash data on the client without a server request using the `router.flash()` method. Values are merged with existing flash data.

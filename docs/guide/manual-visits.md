@@ -586,6 +586,46 @@ router.replace({
 > [!NOTE]
 > Make sure that any route you push on the client side is also defined on the server side. If the user refreshes the page, the server will need to know how to render the page.
 
+> [!WARNING]
+> Some browsers limit the number of `history.pushState()` and `history.replaceState()` calls allowed within a short time period. Inertia catches this error and logs it to the console, but the state update will be lost. Avoid calling `router.push()` or `router.replace()` in rapid succession—consider debouncing or batching updates in high-frequency scenarios.
+
+@available_since core=2.3.10
+
+The `props` function also receives [once props](/guide/once-props) as a second argument. This is useful when you want to replace all regular props while still preserving once props.
+
+:::tabs key:frameworks
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.replace({
+  props: (currentProps, onceProps) => ({ ...onceProps, search: 'John' }),
+})
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+
+router.replace({
+  props: (currentProps, onceProps) => ({ ...onceProps, search: 'John' }),
+})
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.replace({
+  props: (currentProps, onceProps) => ({ ...onceProps, search: 'John' }),
+})
+```
+
+:::
+
 ### Prop helpers
 
 @available_since core=2.2.0

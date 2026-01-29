@@ -24,13 +24,13 @@ Navigating to a page without the once prop will forget the remembered value, and
 
 ## Forcing a Refresh
 
-You may force a once prop to be refreshed using the `fresh` parameter.
+You may force a once prop to be refreshed using the `fresh` parameter. This is useful when you need to invalidate cached data based on particular pages, user actions or external changes:
 
 ```ruby
 class BillingController < ApplicationController
   def index
     render inertia: {
-      plans: InertiaRails.once(fresh: true) { Plan.all },
+      plans: InertiaRails.once(fresh: params[:refresh_plans].present?) { Plan.all },
     }
   end
 end
@@ -110,6 +110,18 @@ You may share once props globally using the `inertia_share` controller method.
 ```ruby
 class ApplicationController < ActionController::Base
   inertia_share countries: InertiaRails.once { Country.all }
+end
+```
+
+You can also use `expires_in` and `key` options when sharing once props:
+
+```ruby
+class ApplicationController < ActionController::Base
+  # Refresh countries list daily
+  inertia_share countries: InertiaRails.once(expires_in: 1.day) { Country.all }
+
+  # Share roles under a custom key for cross-page sharing
+  inertia_share roles: InertiaRails.once(key: 'user_roles') { Role.all }
 end
 ```
 

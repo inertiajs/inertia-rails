@@ -166,6 +166,10 @@ export default function Layout({ children }) {
 
 For one-time notifications like toast messages or success alerts, you may use [flash data](/guide/flash-data). Unlike shared data, flash data is not persisted in the browser's history state, so it won't reappear when navigating through history.
 
+## TypeScript
+
+When using TypeScript, you can configure global types for shared props using declaration merging. See the [TypeScript documentation](/guide/typescript#shared-page-props) for more information.
+
 ## Deep Merging Shared Data
 
 By default, Inertia will shallow merge data defined in an action with the shared data. You might want a deep merge. Imagine using shared data to represent defaults you'll override sometimes.

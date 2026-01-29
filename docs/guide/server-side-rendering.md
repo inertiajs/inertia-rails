@@ -340,6 +340,24 @@ createInertiaApp({
 
 :::
 
+## Disabling SSR
+
+Sometimes you may wish to disable server-side rendering for certain controllers or pages in your application. You may do so by setting the `ssr_enabled` option to `false` using `inertia_config`.
+
+```ruby
+class AdminController < ApplicationController
+  inertia_config(ssr_enabled: false)
+end
+```
+
+You can also use a lambda for conditional SSR, which is evaluated per-request in the controller context:
+
+```ruby
+class DashboardController < ApplicationController
+  inertia_config(ssr_enabled: -> { !complex_client_only_page? })
+end
+```
+
 ## Deployment
 
 When deploying your SSR enabled app to production, you'll need to build both the client-side (`application.js`) and server-side bundles (`ssr.js`), and then run the SSR server as a background process.

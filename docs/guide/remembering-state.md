@@ -191,6 +191,10 @@ const form = useForm(`EditUser:${user.id}`, data)
 
 :::
 
+### Excluding fields
+
+Sometimes you may wish to prevent certain fields from being stored in history state. For example, you may want to exclude password fields for security reasons. See the [excluding fields](/guide/forms#excluding-fields) documentation for more information.
+
 ## Manually saving state
 
 The `useRemember` hook watches for data changes and automatically saves them to the history state. When navigating back to the page, Inertia will restore this data.
@@ -235,3 +239,6 @@ let data = router.restore('my-key')
 ```
 
 :::
+
+> [!WARNING]
+> Some browsers limit the number of `history.replaceState()` calls allowed within a short time period. Inertia catches this error and logs it to the console, but the state update will be lost. Consider debouncing state saves if you're updating remembered state frequently.
