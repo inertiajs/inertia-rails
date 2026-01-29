@@ -166,6 +166,7 @@ export default defineConfig({
               link: '/guide/server-side-rendering',
             },
             { text: 'Testing', link: '/guide/testing' },
+            { text: 'TypeScript', link: '/guide/typescript' },
           ],
         },
       ],
