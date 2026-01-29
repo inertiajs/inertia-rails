@@ -2,13 +2,11 @@
 
 require 'responders'
 
-Thing = Class.new
-
 class InertiaRespondersTestController < ApplicationController
   self.responder = ActionController::Responder
   respond_to :html
 
   def redirect_test
-    respond_with Thing.new, location: '/foo'
+    respond_with Object.new, location: '/foo'
   end
 end

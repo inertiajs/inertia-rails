@@ -82,8 +82,7 @@ Dir.chdir(app_dir) do
   system('bin/rails db:migrate', exception: true)
 
   # Run tests
-  system('bin/rails test', exception: true)
-  system('bin/rails test:system', exception: true)
+  system('bin/rails test:all', exception: true)
 
   # Lint code
   system('npm run check', exception: true) if options[:typescript]
