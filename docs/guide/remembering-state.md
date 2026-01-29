@@ -239,3 +239,6 @@ let data = router.restore('my-key')
 ```
 
 :::
+
+> [!WARNING]
+> Some browsers limit the number of `history.replaceState()` calls allowed within a short time period. Inertia catches this error and logs it to the console, but the state update will be lost. Consider debouncing state saves if you're updating remembered state frequently.
