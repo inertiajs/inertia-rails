@@ -74,6 +74,13 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
         end)
       end
 
+      it 'creates the vite binstub' do
+        expect { generator }.not_to raise_error
+        expect(destination_root).to(have_structure do
+          file('bin/vite')
+        end)
+      end
+
       include_context 'assert application.js entrypoint renaming'
 
       context 'with --typescript' do

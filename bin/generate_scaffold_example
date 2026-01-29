@@ -86,4 +86,6 @@ Dir.chdir(app_dir) do
 
   # Lint code
   system('npm run check', exception: true) if options[:typescript]
+
+  system('bin/vite build', exception: true)
 end
