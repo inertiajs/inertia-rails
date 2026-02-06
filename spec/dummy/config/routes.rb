@@ -137,4 +137,12 @@ Rails.application.routes.draw do
   get 'allowed_duplicates_meta' => 'inertia_meta#allowed_duplicates'
   get 'cleared_meta' => 'inertia_meta#cleared_meta'
   get 'meta_with_default_render' => 'inertia_meta#meta_with_default_render'
+
+  post 'precognition_basic' => 'inertia_precognition_test#basic'
+  post 'precognition_non_bang' => 'inertia_precognition_test#non_bang'
+  post 'precognition_with_before_action' => 'inertia_precognition_test#with_before_action'
+  post 'precognition_without' => 'inertia_precognition_test#without_precognition'
+  post 'precognition_with_custom_validator' => 'inertia_precognition_test#with_custom_validator'
+  post 'precognition_with_string_keyed_errors' => 'inertia_precognition_test#with_string_keyed_errors'
+  post 'precognition_with_module_level' => 'inertia_precognition_test#with_module_level'
 end
