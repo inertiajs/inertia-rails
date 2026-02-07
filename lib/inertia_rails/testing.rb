@@ -3,6 +3,7 @@
 module InertiaRails
   module Testing
     thread_mattr_accessor :current_response
+    mattr_accessor :evaluate_optional_props, default: false
 
     module RendererTestingPatch
       def new(component, controller, request, response, render, **options)
@@ -12,10 +13,23 @@ module InertiaRails
       end
     end
 
+    module RendererOptionalInTests
+      private
+
+      def keep_prop?(prop, path)
+        return true if InertiaRails::Testing.evaluate_optional_props &&
+                       prop.is_a?(IgnoreOnFirstLoadProp) &&
+                       !rendering_partial_component?
+
+        super
+      end
+    end
+
     def self.install!
       return if @installed
 
       InertiaRails::Renderer.singleton_class.prepend(RendererTestingPatch)
+      InertiaRails::Renderer.prepend(RendererOptionalInTests)
       @installed = true
     end
 
