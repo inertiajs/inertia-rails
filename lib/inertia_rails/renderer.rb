@@ -56,24 +56,74 @@ module InertiaRails
         @response.set_header('X-Inertia', 'true')
         @render_method.call json: page.to_json, status: @response.status, content_type: Mime[:json]
       else
-        begin
-          return render_ssr if @configuration.ssr_enabled
-        rescue StandardError
-          nil
+        ssr = @configuration.ssr_enabled && ssr_render
+        if ssr
+          @controller.instance_variable_set('@_inertia_ssr_head', ssr['head'].join.html_safe)
+          @render_method.call html: ssr['body'].html_safe, layout: layout, locals: @view_data.merge(page: page)
+        else
+          @controller.instance_variable_set('@_inertia_page', page)
+          @render_method.call template: 'inertia', layout: layout, locals: @view_data.merge(page: page)
         end
-        @controller.instance_variable_set('@_inertia_page', page)
-        @render_method.call template: 'inertia', layout: layout, locals: @view_data.merge(page: page)
       end
     end
 
     private
 
-    def render_ssr
-      uri = URI("#{@configuration.ssr_url}/render")
-      res = JSON.parse(Net::HTTP.post(uri, page.to_json, 'Content-Type' => 'application/json').body)
+    def ssr_render
+      return unless ssr_bundle_exists?
 
-      @controller.instance_variable_set('@_inertia_ssr_head', res['head'].join.html_safe)
-      @render_method.call html: res['body'].html_safe, layout: layout, locals: @view_data.merge(page: page)
+      ssr_request
+    rescue InertiaRails::SSRError => e
+      handle_ssr_error(e)
+    rescue StandardError => e
+      handle_ssr_error(InertiaRails::SSRError.from_exception(e))
+    end
+
+    def ssr_request
+      response = Net::HTTP.post(URI(ssr_url), page.to_json, 'Content-Type' => 'application/json')
+
+      unless response.is_a?(Net::HTTPSuccess)
+        body = begin
+          JSON.parse(response.body)
+        rescue JSON::ParserError
+          {}
+        end
+        body['error'] ||= "SSR server returned #{response.code}"
+        raise InertiaRails::SSRError.from_response(body)
+      end
+
+      JSON.parse(response.body)
+    end
+
+    def handle_ssr_error(error)
+      Rails.logger.error("[inertia-rails] SSR render failed: #{error.message}")
+      @configuration.on_ssr_error&.call(error, page)
+      raise error if @configuration.ssr_raise_on_error
+
+      nil
+    end
+
+    def ssr_url
+      if vite_dev_server_running?
+        "#{ViteRuby.config.protocol}://#{ViteRuby.config.host_with_port}/__inertia_ssr"
+      else
+        "#{@configuration.ssr_url}/render"
+      end
+    end
+
+    def vite_dev_server_running?
+      return @vite_dev_server_running if defined?(@vite_dev_server_running)
+
+      @vite_dev_server_running = defined?(ViteRuby) && ViteRuby.instance.dev_server_running?
+    end
+
+    def ssr_bundle_exists?
+      return true if vite_dev_server_running?
+
+      bundle = @configuration.ssr_bundle
+      return true if bundle.nil?
+
+      Array(bundle).any? { |path| File.exist?(path) }
     end
 
     def layout
