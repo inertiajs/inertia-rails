@@ -274,6 +274,45 @@ RSpec.describe 'Precognition', type: :request do
     end
   end
 
+  describe 'precognition_prevent_writes' do
+    before do
+      stub_const('ActiveRecord::Base', Class.new do
+        def self.while_preventing_writes(&block)
+          Thread.current[:preventing_writes] = true
+          block.call
+        ensure
+          Thread.current[:preventing_writes] = false
+        end
+      end)
+    end
+
+    with_inertia_config precognition_prevent_writes: true
+
+    it 'wraps precognition requests with while_preventing_writes' do
+      expect(ActiveRecord::Base).to receive(:while_preventing_writes).and_call_original
+
+      post precognition_basic_path, params: valid_user_params, headers: precognition_headers
+
+      expect(response).to have_http_status(:no_content)
+    end
+
+    it 'does not wrap normal requests' do
+      expect(ActiveRecord::Base).not_to receive(:while_preventing_writes)
+
+      post precognition_basic_path, params: valid_user_params
+    end
+
+    context 'when config is disabled' do
+      with_inertia_config precognition_prevent_writes: false
+
+      it 'does not wrap precognition requests' do
+        expect(ActiveRecord::Base).not_to receive(:while_preventing_writes)
+
+        post precognition_basic_path, params: valid_user_params, headers: precognition_headers
+      end
+    end
+  end
+
   describe 'request helpers' do
     it 'inertia_precognitive? returns true for precognition requests' do
       post precognition_basic_path, params: valid_user_params, headers: precognition_headers
