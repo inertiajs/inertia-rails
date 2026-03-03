@@ -204,9 +204,9 @@ class InertiaMinitestTest < ActionDispatch::IntegrationTest
 
   test 'inertia.deferred_props returns deferred props directly' do
     get deferred_props_path
-    assert_includes inertia.deferred_props[:default], :level
-    assert_includes inertia.deferred_props['default'], :grit
-    assert_includes inertia.deferred_props[:other], :sport
+    assert_includes inertia.deferred_props[:default], 'level'
+    assert_includes inertia.deferred_props['default'], 'grit'
+    assert_includes inertia.deferred_props[:other], 'sport'
   end
 
   test 'deferred props are not in regular props on first load' do

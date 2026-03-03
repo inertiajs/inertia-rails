@@ -242,7 +242,7 @@ RSpec.describe '/events' do
     # Check a specific group
     expect(inertia).to have_deferred_props(:other_data, group: :slow)
 
-    expect(inertia.deferred_props[:default]).to include(:analytics)
+    expect(inertia.deferred_props[:default]).to include('analytics')
     expect(inertia.props[:analytics]).to be_nil
   end
 end
@@ -262,7 +262,7 @@ class EventsTest < ActionDispatch::IntegrationTest
     # Check a specific group
     assert_inertia_deferred_props :other_data, group: :slow
 
-    assert_includes inertia.deferred_props[:default], :analytics
+    assert_includes inertia.deferred_props[:default], 'analytics'
     assert_nil inertia.props[:analytics]
   end
 end
