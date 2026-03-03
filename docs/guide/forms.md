@@ -1091,6 +1091,502 @@ export default function FormActions() {
 
 The context provides access to all the same properties and methods available through [slot props](#slot-props).
 
+### Precognition
+
+@available_since core=2.3.0
+
+The `<Form>` component includes built-in support for Precognition, enabling real-time form validation without duplicating your server-side validation rules on the client.
+
+> [!NOTE]
+> Precognition requires server-side support. See the [precognition section](/guide/validation.md#precognition) of the validation documentation for Rails setup instructions.
+
+Once your server is configured, call `validate()` with a field name to trigger validation for that field. The `invalid()` helper checks if a field has validation errors, while `validating` indicates when a request is in progress.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<template>
+  <Form
+    action="/users"
+    method="post"
+    #default="{ errors, invalid, validate, validating }"
+  >
+    <label for="name">Name:</label>
+    <input id="name" name="name" @change="validate('name')" />
+    <p v-if="invalid('name')">{{ errors.name }}</p>
+
+    <label for="email">Email:</label>
+    <input id="email" name="email" @change="validate('email')" />
+    <p v-if="invalid('email')">{{ errors.email }}</p>
+
+    <p v-if="validating">Validating...</p>
+
+    <button type="submit">Create User</button>
+  </Form>
+</template>
+```
+
+== React
+
+```jsx
+<Form action="/users" method="post">
+  {({ errors, invalid, validate, validating }) => (
+    <>
+      <label htmlFor="name">Name:</label>
+      <input id="name" name="name" onChange={() => validate('name')} />
+      {invalid('name') && <p>{errors.name}</p>}
+
+      <label htmlFor="email">Email:</label>
+      <input id="email" name="email" onChange={() => validate('email')} />
+      {invalid('email') && <p>{errors.email}</p>}
+
+      {validating && <p>Validating...</p>}
+
+      <button type="submit">Create User</button>
+    </>
+  )}
+</Form>
+```
+
+== Svelte 4
+
+```svelte
+<Form
+  action="/users"
+  method="post"
+  let:errors
+  let:invalid
+  let:validate
+  let:validating
+>
+  <label for="name">Name:</label>
+  <input id="name" name="name" on:change={() => validate('name')} />
+  {#if invalid('name')}
+    <p>{errors.name}</p>
+  {/if}
+
+  <label for="email">Email:</label>
+  <input id="email" name="email" on:change={() => validate('email')} />
+  {#if invalid('email')}
+    <p>{errors.email}</p>
+  {/if}
+
+  {#if validating}
+    <p>Validating...</p>
+  {/if}
+
+  <button type="submit">Create User</button>
+</Form>
+```
+
+== Svelte 5
+
+```svelte
+<Form action="/users" method="post">
+  {#snippet children({ errors, invalid, validate, validating })}
+    <label for="name">Name:</label>
+    <input id="name" name="name" onchange={() => validate('name')} />
+    {#if invalid('name')}
+      <p>{errors.name}</p>
+    {/if}
+
+    <label for="email">Email:</label>
+    <input id="email" name="email" onchange={() => validate('email')} />
+    {#if invalid('email')}
+      <p>{errors.email}</p>
+    {/if}
+
+    {#if validating}
+      <p>Validating...</p>
+    {/if}
+
+    <button type="submit">Create User</button>
+  {/snippet}
+</Form>
+```
+
+:::
+
+You may also use the `valid()` helper to check if a field has passed validation.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form
+  action="/users"
+  method="post"
+  #default="{ errors, invalid, valid, validate }"
+>
+  <input name="email" @change="validate('email')" />
+  <p v-if="valid('email')">Valid email address</p>
+  <p v-if="invalid('email')">{{ errors.email }}</p>
+</Form>
+```
+
+== React
+
+```jsx
+<Form action="/users" method="post">
+  {({ errors, invalid, valid, validate }) => (
+    <>
+      <input name="email" onChange={() => validate('email')} />
+      {valid('email') && <p>Valid email address</p>}
+      {invalid('email') && <p>{errors.email}</p>}
+    </>
+  )}
+</Form>
+```
+
+== Svelte 4
+
+```svelte
+<Form
+  action="/users"
+  method="post"
+  let:errors
+  let:invalid
+  let:valid
+  let:validate
+>
+  <input name="email" on:change={() => validate('email')} />
+  {#if valid('email')}
+    <p>Valid email address</p>
+  {/if}
+  {#if invalid('email')}
+    <p>{errors.email}</p>
+  {/if}
+</Form>
+```
+
+== Svelte 5
+
+```svelte
+<Form action="/users" method="post">
+  {#snippet children({ errors, invalid, valid, validate })}
+    <input name="email" onchange={() => validate('email')} />
+    {#if valid('email')}
+      <p>Valid email address</p>
+    {/if}
+    {#if invalid('email')}
+      <p>{errors.email}</p>
+    {/if}
+  {/snippet}
+</Form>
+```
+
+:::
+
+> [!WARNING]
+> A form input will only appear as valid or invalid once it has changed and a validation response has been received.
+
+#### Validating multiple fields
+
+You may validate multiple fields at once using the `only` option. This is particularly useful when building wizard-style forms where you want to validate all visible fields before proceeding to the next step.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form action="/users" method="post" #default="{ validate }">
+  <!-- Step 1 fields -->
+  <input name="name" />
+  <input name="email" />
+
+  <button
+    type="button"
+    @click="validate({
+      only: ['name', 'email'],
+      onSuccess: () => goToNextStep(),
+      onValidationError: () => showErrors(),
+    })"
+  >
+    Next Step
+  </button>
+</Form>
+```
+
+== React
+
+```jsx
+<Form action="/users" method="post">
+  {({ validate }) => (
+    <>
+      {/* Step 1 fields */}
+      <input name="name" />
+      <input name="email" />
+
+      <button
+        type="button"
+        onClick={() =>
+          validate({
+            only: ['name', 'email'],
+            onSuccess: () => goToNextStep(),
+            onValidationError: () => showErrors(),
+          })
+        }
+      >
+        Next Step
+      </button>
+    </>
+  )}
+</Form>
+```
+
+== Svelte 4
+
+```svelte
+<Form action="/users" method="post" let:validate>
+  <!-- Step 1 fields -->
+  <input name="name" />
+  <input name="email" />
+
+  <button
+    type="button"
+    on:click={() =>
+      validate({
+        only: ['name', 'email'],
+        onSuccess: () => goToNextStep(),
+        onValidationError: () => showErrors(),
+      })}
+  >
+    Next Step
+  </button>
+</Form>
+```
+
+== Svelte 5
+
+```svelte
+<Form action="/users" method="post">
+  {#snippet children({ validate })}
+    <!-- Step 1 fields -->
+    <input name="name" />
+    <input name="email" />
+
+    <button
+      type="button"
+      onclick={() =>
+        validate({
+          only: ['name', 'email'],
+          onSuccess: () => goToNextStep(),
+          onValidationError: () => showErrors(),
+        })}
+    >
+      Next Step
+    </button>
+  {/snippet}
+</Form>
+```
+
+:::
+
+#### Touch and validate
+
+The `touch()` method marks fields as "touched" without triggering validation. You may then validate all touched fields by calling `validate()` without arguments.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form action="/users" method="post" #default="{ validate, touch, touched }">
+  <input name="name" @blur="touch('name')" />
+  <input name="email" @blur="touch('email')" />
+  <input name="phone" @blur="touch('phone')" />
+
+  <button type="button" @click="validate()">Validate Touched Fields</button>
+
+  <p v-if="touched('name')">Name has been touched</p>
+</Form>
+```
+
+== React
+
+```jsx
+<Form action="/users" method="post">
+  {({ validate, touch, touched }) => (
+    <>
+      <input name="name" onBlur={() => touch('name')} />
+      <input name="email" onBlur={() => touch('email')} />
+      <input name="phone" onBlur={() => touch('phone')} />
+
+      <button type="button" onClick={() => validate()}>
+        Validate Touched Fields
+      </button>
+
+      {touched('name') && <p>Name has been touched</p>}
+    </>
+  )}
+</Form>
+```
+
+== Svelte 4
+
+```svelte
+<Form action="/users" method="post" let:validate let:touch let:touched>
+  <input name="name" on:blur={() => touch('name')} />
+  <input name="email" on:blur={() => touch('email')} />
+  <input name="phone" on:blur={() => touch('phone')} />
+
+  <button type="button" on:click={() => validate()}
+    >Validate Touched Fields</button
+  >
+
+  {#if touched('name')}
+    <p>Name has been touched</p>
+  {/if}
+</Form>
+```
+
+== Svelte 5
+
+```svelte
+<Form action="/users" method="post">
+  {#snippet children({ validate, touch, touched })}
+    <input name="name" onblur={() => touch('name')} />
+    <input name="email" onblur={() => touch('email')} />
+    <input name="phone" onblur={() => touch('phone')} />
+
+    <button type="button" onclick={() => validate()}
+      >Validate Touched Fields</button
+    >
+
+    {#if touched('name')}
+      <p>Name has been touched</p>
+    {/if}
+  {/snippet}
+</Form>
+```
+
+:::
+
+The `touched()` helper may also be called without arguments to check if any field has been touched. The `reset()` method clears the touched state for reset fields.
+
+#### Options
+
+The `validate()` method accepts an options object with callbacks and configuration.
+
+```js
+validate('username', {
+  onSuccess: () => {
+    // Validation passed...
+  },
+  onValidationError: (response) => {
+    // Validation failed (422 response)...
+  },
+  onBeforeValidation: (newRequest, oldRequest) => {
+    // Return false to prevent validation...
+  },
+  onFinish: () => {
+    // Always runs after validation...
+  },
+})
+```
+
+You may also call `validate()` with only an options object to validate specific fields.
+
+```js
+validate({
+  only: ['name', 'email'],
+  onSuccess: () => goToNextStep(),
+})
+```
+
+Validation requests are automatically debounced. The first request fires immediately, then subsequent changes are debounced (1500ms by default). You may customize this timeout.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form action="/users" method="post" :validation-timeout="500">
+  <!-- ... -->
+</Form>
+```
+
+== React
+
+```jsx
+<Form action="/users" method="post" validationTimeout={500}>
+  {/* ... */}
+</Form>
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<Form action="/users" method="post" validationTimeout={500}>
+  <!-- ... -->
+</Form>
+```
+
+:::
+
+By default, files are excluded from validation requests to avoid unnecessary uploads. You may enable file validation when you need to validate file inputs like size or mime type.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form action="/users" method="post" validate-files>
+  <!-- ... -->
+</Form>
+```
+
+== React
+
+```jsx
+<Form action="/users" method="post" validateFiles>
+  {/* ... */}
+</Form>
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<Form action="/users" method="post" validateFiles>
+  <!-- ... -->
+</Form>
+```
+
+:::
+
+By default, validation errors are simplified to strings (the first error message). You may keep errors as arrays to display all error messages for fields with multiple validation rules.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<Form action="/users" method="post" with-all-errors>
+  <!-- ... -->
+</Form>
+```
+
+== React
+
+```jsx
+<Form action="/users" method="post" withAllErrors>
+  {/* ... */}
+</Form>
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<Form action="/users" method="post" withAllErrors>
+  <!-- ... -->
+</Form>
+```
+
+:::
+
 ## Form helper
 
 In addition to the `<Form>` component, Inertia also provides a `useForm` helper for when you need programmatic control over your form's data and submission behavior.
@@ -1804,6 +2300,358 @@ form.dontRemember('password', 'password_confirmation')
 
 > [!NOTE]
 > Some browsers trigger a "save password" prompt whenever password field values are written to history state, even without form submission. Excluding password fields avoids this issue.
+
+### Precognition
+
+@available_since core=2.3.0
+
+Just like the `<Form>` component, the `useForm` helper supports [Precognition](#precognition) for real-time validation. You may enable it by chaining the `withPrecognition()` method with the HTTP method and endpoint for validation requests.
+
+> [!NOTE]
+> Precognition requires server-side support. See the [precognition section](/guide/validation.md#precognition) of the validation documentation for Rails setup instructions.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { useForm } from '@inertiajs/vue3'
+
+const form = useForm({
+  name: '',
+  email: '',
+}).withPrecognition('post', '/users')
+```
+
+== React
+
+```js
+import { useForm } from '@inertiajs/react'
+
+const form = useForm({
+  name: '',
+  email: '',
+}).withPrecognition('post', '/users')
+```
+
+== Svelte 4|Svelte 5
+
+```js
+import { useForm } from '@inertiajs/svelte'
+
+const form = useForm({
+  name: '',
+  email: '',
+}).withPrecognition('post', '/users')
+```
+
+:::
+
+For backwards compatibility with the `laravel-precognition` packages, you may also pass the method and URL as the first arguments to `useForm()`.
+
+```js
+const form = useForm('post', '/users', {
+  name: '',
+  email: '',
+})
+```
+
+Once Precognition is enabled, call `validate()` with a field name to trigger validation for that field. The `invalid()` helper checks if a field has validation errors, while `validating` indicates when a request is in progress.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup>
+import { useForm } from '@inertiajs/vue3'
+
+const form = useForm({
+  name: '',
+  email: '',
+}).withPrecognition('post', '/users')
+</script>
+
+<template>
+  <form @submit.prevent="form.post('/users')">
+    <input v-model="form.name" @change="form.validate('name')" />
+    <p v-if="form.invalid('name')">{{ form.errors.name }}</p>
+
+    <input v-model="form.email" @change="form.validate('email')" />
+    <p v-if="form.invalid('email')">{{ form.errors.email }}</p>
+
+    <p v-if="form.validating">Validating...</p>
+
+    <button type="submit">Create User</button>
+  </form>
+</template>
+```
+
+== React
+
+```jsx
+import { useForm } from '@inertiajs/react'
+
+const { data, setData, post, errors, validating, validate, invalid } = useForm({
+  name: '',
+  email: '',
+}).withPrecognition('post', '/users')
+
+function submit(e) {
+  e.preventDefault()
+  post('/users')
+}
+
+return (
+  <form onSubmit={submit}>
+    <input
+      value={data.name}
+      onChange={(e) => setData('name', e.target.value)}
+      onBlur={() => validate('name')}
+    />
+    {invalid('name') && <p>{errors.name}</p>}
+
+    <input
+      value={data.email}
+      onChange={(e) => setData('email', e.target.value)}
+      onBlur={() => validate('email')}
+    />
+    {invalid('email') && <p>{errors.email}</p>}
+
+    {validating && <p>Validating...</p>}
+
+    <button type="submit">Create User</button>
+  </form>
+)
+```
+
+== Svelte 4
+
+```svelte
+<script>
+  import { useForm } from '@inertiajs/svelte'
+
+  const form = useForm({
+    name: '',
+    email: '',
+  }).withPrecognition('post', '/users')
+</script>
+
+<form on:submit|preventDefault={() => $form.post('/users')}>
+  <input bind:value={$form.name} on:change={() => $form.validate('name')} />
+  {#if $form.invalid('name')}
+    <p>{$form.errors.name}</p>
+  {/if}
+
+  <input bind:value={$form.email} on:change={() => $form.validate('email')} />
+  {#if $form.invalid('email')}
+    <p>{$form.errors.email}</p>
+  {/if}
+
+  {#if $form.validating}
+    <p>Validating...</p>
+  {/if}
+
+  <button type="submit">Create User</button>
+</form>
+```
+
+== Svelte 5
+
+```svelte
+<script>
+  import { useForm } from '@inertiajs/svelte'
+
+  const form = useForm({
+    name: '',
+    email: '',
+  }).withPrecognition('post', '/users')
+</script>
+
+<form
+  onsubmit={(e) => {
+    e.preventDefault()
+    $form.post('/users')
+  }}
+>
+  <input bind:value={$form.name} onchange={() => $form.validate('name')} />
+  {#if $form.invalid('name')}
+    <p>{$form.errors.name}</p>
+  {/if}
+
+  <input bind:value={$form.email} onchange={() => $form.validate('email')} />
+  {#if $form.invalid('email')}
+    <p>{$form.errors.email}</p>
+  {/if}
+
+  {#if $form.validating}
+    <p>Validating...</p>
+  {/if}
+
+  <button type="submit">Create User</button>
+</form>
+```
+
+:::
+
+You may also use the `valid()` helper to check if a field has passed validation.
+
+#### Touch and validate
+
+The `touch()` method marks fields as "touched" without triggering validation. You may then validate all touched fields by calling `validate()` without arguments. The `touched()` helper checks if a field has been touched. The `reset()` method clears the touched state for reset fields.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<input v-model="form.name" @blur="form.touch('name')" />
+<input v-model="form.email" @blur="form.touch('email')" />
+
+<button type="button" @click="form.validate()">Validate Touched Fields</button>
+
+<p v-if="form.touched('name')">Name has been touched</p>
+```
+
+== React
+
+```jsx
+<input value={data.name} onChange={e => setData('name', e.target.value)} onBlur={() => touch('name')} />
+<input value={data.email} onChange={e => setData('email', e.target.value)} onBlur={() => touch('email')} />
+
+<button type="button" onClick={() => validate()}>Validate Touched Fields</button>
+
+{touched('name') && <p>Name has been touched</p>}
+```
+
+== Svelte 4|Svelte 5
+
+```svelte
+<input bind:value={$form.name} on:blur={() => $form.touch('name')} />
+<input bind:value={$form.email} on:blur={() => $form.touch('email')} />
+
+<button type="button" on:click={() => $form.validate()}
+  >Validate Touched Fields</button
+>
+
+{#if $form.touched('name')}
+  <p>Name has been touched</p>
+{/if}
+```
+
+:::
+
+#### Options
+
+Validation requests are automatically debounced. The first request fires immediately, then subsequent changes are debounced (1500ms by default). You may customize this timeout using `setValidationTimeout()`.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+const form = useForm({
+  name: '',
+})
+  .withPrecognition('post', '/users')
+  .setValidationTimeout(500)
+```
+
+== React
+
+```js
+const form = useForm({
+  name: '',
+}).withPrecognition('post', '/users')
+
+form.setValidationTimeout(500)
+```
+
+== Svelte 4|Svelte 5
+
+```js
+const form = useForm({
+  name: '',
+}).withPrecognition('post', '/users')
+
+$form.setValidationTimeout(500)
+```
+
+:::
+
+By default, files are excluded from validation requests to avoid unnecessary uploads. You may enable file validation using `validateFiles()`.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+const form = useForm({
+  avatar: null,
+})
+  .withPrecognition('post', '/users')
+  .validateFiles()
+```
+
+== React
+
+```js
+const form = useForm({
+  avatar: null,
+}).withPrecognition('post', '/users')
+
+form.validateFiles()
+```
+
+== Svelte 4|Svelte 5
+
+```js
+const form = useForm({
+  avatar: null,
+}).withPrecognition('post', '/users')
+
+$form.validateFiles()
+```
+
+:::
+
+By default, validation errors are simplified to strings (the first error message). You can indicate you would like all errors as arrays using `withAllErrors()`.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+const form = useForm({
+  name: '',
+})
+  .withPrecognition('post', '/users')
+  .withAllErrors()
+```
+
+== React
+
+```js
+const form = useForm({
+  name: '',
+}).withPrecognition('post', '/users')
+
+form.withAllErrors()
+```
+
+== Svelte 4|Svelte 5
+
+```js
+const form = useForm({
+  name: '',
+}).withPrecognition('post', '/users')
+
+$form.withAllErrors()
+```
+
+:::
+
+With Precognition enabled, you may call `submit()` without arguments to submit to the configured endpoint.
 
 ## Server-side responses
 
