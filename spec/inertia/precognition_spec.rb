@@ -242,6 +242,38 @@ RSpec.describe 'Precognition', type: :request do
     end
   end
 
+  describe 'double precognition call' do
+    it 'raises DoublePrecognitionError for double precognition! calls' do
+      expect do
+        post precognition_double_bang_path, params: valid_user_params
+      end.to raise_error(InertiaRails::DoublePrecognitionError)
+    end
+
+    it 'raises DoublePrecognitionError for double precognition calls' do
+      expect do
+        post precognition_double_non_bang_path, params: valid_user_params
+      end.to raise_error(InertiaRails::DoublePrecognitionError)
+    end
+
+    it 'raises DoublePrecognitionError for double InertiaRails.precognition! calls' do
+      expect do
+        post precognition_double_module_level_path, params: valid_user_params
+      end.to raise_error(InertiaRails::DoublePrecognitionError)
+    end
+
+    it 'raises DoublePrecognitionError when mixing precognition then precognition!' do
+      expect do
+        post precognition_mixed_non_bang_then_bang_path, params: valid_user_params
+      end.to raise_error(InertiaRails::DoublePrecognitionError)
+    end
+
+    it 'raises DoublePrecognitionError when mixing precognition! then InertiaRails.precognition!' do
+      expect do
+        post precognition_mixed_bang_then_module_level_path, params: valid_user_params
+      end.to raise_error(InertiaRails::DoublePrecognitionError)
+    end
+  end
+
   describe 'request helpers' do
     it 'inertia_precognitive? returns true for precognition requests' do
       post precognition_basic_path, params: valid_user_params, headers: precognition_headers

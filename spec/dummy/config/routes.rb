@@ -145,4 +145,9 @@ Rails.application.routes.draw do
   post 'precognition_with_custom_validator' => 'inertia_precognition_test#with_custom_validator'
   post 'precognition_with_string_keyed_errors' => 'inertia_precognition_test#with_string_keyed_errors'
   post 'precognition_with_module_level' => 'inertia_precognition_test#with_module_level'
+  post 'precognition_double_bang' => 'inertia_precognition_test#double_bang'
+  post 'precognition_double_non_bang' => 'inertia_precognition_test#double_non_bang'
+  post 'precognition_double_module_level' => 'inertia_precognition_test#double_module_level'
+  post 'precognition_mixed_non_bang_then_bang' => 'inertia_precognition_test#mixed_non_bang_then_bang'
+  post 'precognition_mixed_bang_then_module_level' => 'inertia_precognition_test#mixed_bang_then_module_level'
 end

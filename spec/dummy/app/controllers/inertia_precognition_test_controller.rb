@@ -76,6 +76,46 @@ class InertiaPrecognitionTestController < ApplicationController
     render json: { success: true }
   end
 
+  def double_bang
+    validator = TestValidator.new(validator_params)
+    precognition!(validator)
+    precognition!(validator)
+
+    render json: { success: true }
+  end
+
+  def double_non_bang
+    validator = TestValidator.new(validator_params)
+    precognition(validator)
+    precognition(validator)
+
+    render json: { success: true }
+  end
+
+  def double_module_level
+    validator = TestValidator.new(validator_params)
+    InertiaRails.precognition!(validator)
+    InertiaRails.precognition!(validator)
+
+    render json: { success: true }
+  end
+
+  def mixed_non_bang_then_bang
+    validator = TestValidator.new(validator_params)
+    precognition(validator)
+    precognition!(validator)
+
+    render json: { success: true }
+  end
+
+  def mixed_bang_then_module_level
+    validator = TestValidator.new(validator_params)
+    precognition!(validator)
+    InertiaRails.precognition!(validator)
+
+    render json: { success: true }
+  end
+
   private
 
   def validator_params
