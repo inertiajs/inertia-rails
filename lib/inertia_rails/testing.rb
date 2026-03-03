@@ -203,7 +203,7 @@ module InertiaRails
       def inertia_reload_only(*props)
         partial_headers = {
           'X-Inertia' => 'true',
-          'X-Inertia-Partial-Data' => props.map(&:to_s).join(','),
+          'X-Inertia-Partial-Data' => props.join(','),
           'X-Inertia-Partial-Component' => inertia.component,
         }
         get request.fullpath, headers: partial_headers
@@ -212,7 +212,7 @@ module InertiaRails
       def inertia_reload_except(*props)
         partial_headers = {
           'X-Inertia' => 'true',
-          'X-Inertia-Partial-Except' => props.map(&:to_s).join(','),
+          'X-Inertia-Partial-Except' => props.join(','),
           'X-Inertia-Partial-Component' => inertia.component,
         }
         get request.fullpath, headers: partial_headers
