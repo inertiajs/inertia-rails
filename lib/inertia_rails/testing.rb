@@ -18,7 +18,7 @@ module InertiaRails
 
       def keep_prop?(prop, path)
         return true if InertiaRails::Testing.evaluate_optional_props &&
-                       prop.is_a?(IgnoreOnFirstLoadProp) &&
+                       (prop.is_a?(IgnoreOnFirstLoadProp) || prop.try(:deferred?)) &&
                        !rendering_partial_component?
 
         super

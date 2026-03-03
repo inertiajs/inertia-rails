@@ -516,6 +516,12 @@ RSpec.describe InertiaRails::RSpec, type: :request do
         expect(inertia.props[:level]).to eq 'worse than he believes'
         expect(inertia.props[:grit]).to eq 'intense'
       end
+
+      it 'includes deferred scroll props in first load' do
+        get deferred_scroll_test_path
+        expect(inertia.props[:name]).to eq 'Brian'
+        expect(inertia.props[:users]).to eq [{ 'id' => 1, 'name' => 'User 1' }, { 'id' => 2, 'name' => 'User 2' }]
+      end
     end
 
     context 'when disabled (default)' do

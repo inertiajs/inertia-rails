@@ -314,6 +314,17 @@ class InertiaMinitestTest < ActionDispatch::IntegrationTest
     InertiaRails::Testing.evaluate_optional_props = original
   end
 
+  test 'evaluate_optional_props includes deferred scroll props on first load when enabled' do
+    original = InertiaRails::Testing.evaluate_optional_props
+    InertiaRails::Testing.evaluate_optional_props = true
+
+    get deferred_scroll_test_path
+    assert_equal 'Brian', inertia.props[:name]
+    assert_equal [{ 'id' => 1, 'name' => 'User 1' }, { 'id' => 2, 'name' => 'User 2' }], inertia.props[:users]
+  ensure
+    InertiaRails::Testing.evaluate_optional_props = original
+  end
+
   test 'evaluate_optional_props excludes optional props on first load by default' do
     get optional_props_path
     assert_equal 1, inertia.props[:regular]
