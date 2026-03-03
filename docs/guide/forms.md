@@ -1108,7 +1108,11 @@ Once your server is configured, call `validate()` with a field name to trigger v
 
 ```vue
 <template>
-  <Form action="/users" method="post" #default="{ errors, invalid, validate, validating }">
+  <Form
+    action="/users"
+    method="post"
+    #default="{ errors, invalid, validate, validating }"
+  >
     <label for="name">Name:</label>
     <input id="name" name="name" @change="validate('name')" />
     <p v-if="invalid('name')">{{ errors.name }}</p>
@@ -1212,7 +1216,11 @@ You may also use the `valid()` helper to check if a field has passed validation.
 == Vue
 
 ```vue
-<Form action="/users" method="post" #default="{ errors, invalid, valid, validate }">
+<Form
+  action="/users"
+  method="post"
+  #default="{ errors, invalid, valid, validate }"
+>
   <input name="email" @change="validate('email')" />
   <p v-if="valid('email')">Valid email address</p>
   <p v-if="invalid('email')">{{ errors.email }}</p>
@@ -1236,7 +1244,14 @@ You may also use the `valid()` helper to check if a field has passed validation.
 == Svelte 4
 
 ```svelte
-<Form action="/users" method="post" let:errors let:invalid let:valid let:validate>
+<Form
+  action="/users"
+  method="post"
+  let:errors
+  let:invalid
+  let:valid
+  let:validate
+>
   <input name="email" on:change={() => validate('email')} />
   {#if valid('email')}
     <p>Valid email address</p>
@@ -1307,11 +1322,13 @@ You may validate multiple fields at once using the `only` option. This is partic
 
       <button
         type="button"
-        onClick={() => validate({
-          only: ['name', 'email'],
-          onSuccess: () => goToNextStep(),
-          onValidationError: () => showErrors(),
-        })}
+        onClick={() =>
+          validate({
+            only: ['name', 'email'],
+            onSuccess: () => goToNextStep(),
+            onValidationError: () => showErrors(),
+          })
+        }
       >
         Next Step
       </button>
@@ -1330,11 +1347,12 @@ You may validate multiple fields at once using the `only` option. This is partic
 
   <button
     type="button"
-    on:click={() => validate({
-      only: ['name', 'email'],
-      onSuccess: () => goToNextStep(),
-      onValidationError: () => showErrors(),
-    })}
+    on:click={() =>
+      validate({
+        only: ['name', 'email'],
+        onSuccess: () => goToNextStep(),
+        onValidationError: () => showErrors(),
+      })}
   >
     Next Step
   </button>
@@ -1352,11 +1370,12 @@ You may validate multiple fields at once using the `only` option. This is partic
 
     <button
       type="button"
-      onclick={() => validate({
-        only: ['name', 'email'],
-        onSuccess: () => goToNextStep(),
-        onValidationError: () => showErrors(),
-      })}
+      onclick={() =>
+        validate({
+          only: ['name', 'email'],
+          onSuccess: () => goToNextStep(),
+          onValidationError: () => showErrors(),
+        })}
     >
       Next Step
     </button>
@@ -1396,7 +1415,9 @@ The `touch()` method marks fields as "touched" without triggering validation. Yo
       <input name="email" onBlur={() => touch('email')} />
       <input name="phone" onBlur={() => touch('phone')} />
 
-      <button type="button" onClick={() => validate()}>Validate Touched Fields</button>
+      <button type="button" onClick={() => validate()}>
+        Validate Touched Fields
+      </button>
 
       {touched('name') && <p>Name has been touched</p>}
     </>
@@ -1412,7 +1433,9 @@ The `touch()` method marks fields as "touched" without triggering validation. Yo
   <input name="email" on:blur={() => touch('email')} />
   <input name="phone" on:blur={() => touch('phone')} />
 
-  <button type="button" on:click={() => validate()}>Validate Touched Fields</button>
+  <button type="button" on:click={() => validate()}
+    >Validate Touched Fields</button
+  >
 
   {#if touched('name')}
     <p>Name has been touched</p>
@@ -1429,7 +1452,9 @@ The `touch()` method marks fields as "touched" without triggering validation. Yo
     <input name="email" onblur={() => touch('email')} />
     <input name="phone" onblur={() => touch('phone')} />
 
-    <button type="button" onclick={() => validate()}>Validate Touched Fields</button>
+    <button type="button" onclick={() => validate()}
+      >Validate Touched Fields</button
+    >
 
     {#if touched('name')}
       <p>Name has been touched</p>
@@ -2379,10 +2404,18 @@ function submit(e) {
 
 return (
   <form onSubmit={submit}>
-    <input value={data.name} onChange={e => setData('name', e.target.value)} onBlur={() => validate('name')} />
+    <input
+      value={data.name}
+      onChange={(e) => setData('name', e.target.value)}
+      onBlur={() => validate('name')}
+    />
     {invalid('name') && <p>{errors.name}</p>}
 
-    <input value={data.email} onChange={e => setData('email', e.target.value)} onBlur={() => validate('email')} />
+    <input
+      value={data.email}
+      onChange={(e) => setData('email', e.target.value)}
+      onBlur={() => validate('email')}
+    />
     {invalid('email') && <p>{errors.email}</p>}
 
     {validating && <p>Validating...</p>}
@@ -2396,12 +2429,12 @@ return (
 
 ```svelte
 <script>
-import { useForm } from '@inertiajs/svelte'
+  import { useForm } from '@inertiajs/svelte'
 
-const form = useForm({
-  name: '',
-  email: '',
-}).withPrecognition('post', '/users')
+  const form = useForm({
+    name: '',
+    email: '',
+  }).withPrecognition('post', '/users')
 </script>
 
 <form on:submit|preventDefault={() => $form.post('/users')}>
@@ -2427,15 +2460,20 @@ const form = useForm({
 
 ```svelte
 <script>
-import { useForm } from '@inertiajs/svelte'
+  import { useForm } from '@inertiajs/svelte'
 
-const form = useForm({
-  name: '',
-  email: '',
-}).withPrecognition('post', '/users')
+  const form = useForm({
+    name: '',
+    email: '',
+  }).withPrecognition('post', '/users')
 </script>
 
-<form onsubmit={(e) => { e.preventDefault(); $form.post('/users') }}>
+<form
+  onsubmit={(e) => {
+    e.preventDefault()
+    $form.post('/users')
+  }}
+>
   <input bind:value={$form.name} onchange={() => $form.validate('name')} />
   {#if $form.invalid('name')}
     <p>{$form.errors.name}</p>
@@ -2492,7 +2530,9 @@ The `touch()` method marks fields as "touched" without triggering validation. Yo
 <input bind:value={$form.name} on:blur={() => $form.touch('name')} />
 <input bind:value={$form.email} on:blur={() => $form.touch('email')} />
 
-<button type="button" on:click={() => $form.validate()}>Validate Touched Fields</button>
+<button type="button" on:click={() => $form.validate()}
+  >Validate Touched Fields</button
+>
 
 {#if $form.touched('name')}
   <p>Name has been touched</p>
@@ -2512,7 +2552,9 @@ Validation requests are automatically debounced. The first request fires immedia
 ```js
 const form = useForm({
   name: '',
-}).withPrecognition('post', '/users').setValidationTimeout(500)
+})
+  .withPrecognition('post', '/users')
+  .setValidationTimeout(500)
 ```
 
 == React
@@ -2546,7 +2588,9 @@ By default, files are excluded from validation requests to avoid unnecessary upl
 ```js
 const form = useForm({
   avatar: null,
-}).withPrecognition('post', '/users').validateFiles()
+})
+  .withPrecognition('post', '/users')
+  .validateFiles()
 ```
 
 == React
@@ -2580,7 +2624,9 @@ By default, validation errors are simplified to strings (the first error message
 ```js
 const form = useForm({
   name: '',
-}).withPrecognition('post', '/users').withAllErrors()
+})
+  .withPrecognition('post', '/users')
+  .withAllErrors()
 ```
 
 == React
