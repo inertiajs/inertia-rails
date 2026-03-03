@@ -72,7 +72,12 @@ jobs:
         env:
           RAILS_VERSION:  ${{ matrix.rails }}
 
-      - name: Run tests
+      - name: Run RSpec
         run: bundle exec rspec --tag ~type:generator
+        env:
+          RAILS_VERSION: ${{ matrix.rails }}
+
+      - name: Run Minitest
+        run: bundle exec rake test
         env:
           RAILS_VERSION: ${{ matrix.rails }}
