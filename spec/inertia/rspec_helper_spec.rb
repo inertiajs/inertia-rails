@@ -491,6 +491,56 @@ RSpec.describe InertiaRails::RSpec, type: :request do
     end
   end
 
+  describe 'evaluate_optional_props setting' do
+    context 'when enabled' do
+      before do
+        @original = InertiaRails::Testing.evaluate_optional_props
+        InertiaRails::Testing.evaluate_optional_props = true
+      end
+
+      after do
+        InertiaRails::Testing.evaluate_optional_props = @original
+      end
+
+      it 'includes optional props in first load' do
+        get optional_props_path
+        expect(inertia.props[:regular]).to eq 1
+        expect(inertia.props[:optional]).to eq 1
+        expect(inertia.props[:another_optional]).to eq 1
+      end
+
+      it 'includes deferred props in first load' do
+        get deferred_props_path
+        expect(inertia.props[:name]).to eq 'Brian'
+        expect(inertia.props[:sport]).to eq 'basketball'
+        expect(inertia.props[:level]).to eq 'worse than he believes'
+        expect(inertia.props[:grit]).to eq 'intense'
+      end
+
+      it 'includes deferred scroll props in first load' do
+        get deferred_scroll_test_path
+        expect(inertia.props[:name]).to eq 'Brian'
+        expect(inertia.props[:users]).to eq [{ 'id' => 1, 'name' => 'User 1' }, { 'id' => 2, 'name' => 'User 2' }]
+      end
+    end
+
+    context 'when disabled (default)' do
+      it 'excludes optional props on first load' do
+        get optional_props_path
+        expect(inertia.props[:regular]).to eq 1
+        expect(inertia.props[:optional]).to be_nil
+        expect(inertia.props[:another_optional]).to be_nil
+      end
+
+      it 'excludes deferred props on first load' do
+        get deferred_props_path
+        expect(inertia.props[:name]).to eq 'Brian'
+        expect(inertia.props[:sport]).to be_nil
+        expect(inertia.props[:level]).to be_nil
+      end
+    end
+  end
+
   describe 'partial reload helpers' do
     describe 'inertia_reload_only' do
       it 'reloads only specified props' do

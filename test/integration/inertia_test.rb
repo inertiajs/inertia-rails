@@ -204,9 +204,9 @@ class InertiaMinitestTest < ActionDispatch::IntegrationTest
 
   test 'inertia.deferred_props returns deferred props directly' do
     get deferred_props_path
-    assert_includes inertia.deferred_props[:default], :level
-    assert_includes inertia.deferred_props['default'], :grit
-    assert_includes inertia.deferred_props[:other], :sport
+    assert_includes inertia.deferred_props[:default], 'level'
+    assert_includes inertia.deferred_props['default'], 'grit'
+    assert_includes inertia.deferred_props[:other], 'sport'
   end
 
   test 'deferred props are not in regular props on first load' do
@@ -285,6 +285,51 @@ class InertiaMinitestTest < ActionDispatch::IntegrationTest
 
     # Props should remain unchanged
     assert_equal original_props, inertia.props
+  end
+
+  # evaluate_optional_props setting
+
+  test 'evaluate_optional_props includes optional props on first load when enabled' do
+    original = InertiaRails::Testing.evaluate_optional_props
+    InertiaRails::Testing.evaluate_optional_props = true
+
+    get optional_props_path
+    assert_equal 1, inertia.props[:regular]
+    assert_equal 1, inertia.props[:optional]
+    assert_equal 1, inertia.props[:another_optional]
+  ensure
+    InertiaRails::Testing.evaluate_optional_props = original
+  end
+
+  test 'evaluate_optional_props includes deferred props on first load when enabled' do
+    original = InertiaRails::Testing.evaluate_optional_props
+    InertiaRails::Testing.evaluate_optional_props = true
+
+    get deferred_props_path
+    assert_equal 'Brian', inertia.props[:name]
+    assert_equal 'basketball', inertia.props[:sport]
+    assert_equal 'worse than he believes', inertia.props[:level]
+    assert_equal 'intense', inertia.props[:grit]
+  ensure
+    InertiaRails::Testing.evaluate_optional_props = original
+  end
+
+  test 'evaluate_optional_props includes deferred scroll props on first load when enabled' do
+    original = InertiaRails::Testing.evaluate_optional_props
+    InertiaRails::Testing.evaluate_optional_props = true
+
+    get deferred_scroll_test_path
+    assert_equal 'Brian', inertia.props[:name]
+    assert_equal [{ 'id' => 1, 'name' => 'User 1' }, { 'id' => 2, 'name' => 'User 2' }], inertia.props[:users]
+  ensure
+    InertiaRails::Testing.evaluate_optional_props = original
+  end
+
+  test 'evaluate_optional_props excludes optional props on first load by default' do
+    get optional_props_path
+    assert_equal 1, inertia.props[:regular]
+    assert_nil inertia.props[:optional]
+    assert_nil inertia.props[:another_optional]
   end
 
   # Block-based assertions

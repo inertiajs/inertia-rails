@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-class MyError
-  def to_hash = { uh: 'oh' }
-end
-
 class InertiaTestController < ApplicationController
   layout 'conditional', only: [:with_different_layout]
+
+  class MyError
+    def to_hash = { uh: 'oh' }
+  end
 
   def empty_test
     render inertia: 'EmptyTestComponent'

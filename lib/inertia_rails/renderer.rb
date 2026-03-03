@@ -98,17 +98,17 @@ module InertiaRails
       # rubocop:disable Style/MultilineBlockChain
       @props
         .tap do |merged_props|
-          # Always keep errors in the props
-          if merged_props.key?(:errors) && !merged_props[:errors].is_a?(BaseProp)
-            errors = merged_props[:errors]
-            merged_props[:errors] = InertiaRails.always { errors }
-          end
+        # Always keep errors in the props
+        if merged_props.key?(:errors) && !merged_props[:errors].is_a?(BaseProp)
+          errors = merged_props[:errors]
+          merged_props[:errors] = InertiaRails.always { errors }
+        end
       end
         .then { |props| deep_transform_props(props) } # Internal hydration/filtering
         .then { |props| @configuration.prop_transformer(props: props) } # Apply user-defined prop transformer
         .tap do |props|
-          # Add meta tags last (never transformed)
-          props[:_inertia_meta] = meta_tags if meta_tags.present?
+        # Add meta tags last (never transformed)
+        props[:_inertia_meta] = meta_tags if meta_tags.present?
       end
       # rubocop:enable Style/MultilineBlockChain
     end

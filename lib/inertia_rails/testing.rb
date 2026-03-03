@@ -3,6 +3,7 @@
 module InertiaRails
   module Testing
     thread_mattr_accessor :current_response
+    mattr_accessor :evaluate_optional_props, default: false
 
     module RendererTestingPatch
       def new(component, controller, request, response, render, **options)
@@ -12,10 +13,23 @@ module InertiaRails
       end
     end
 
+    module RendererOptionalInTests
+      private
+
+      def keep_prop?(prop, path)
+        return true if InertiaRails::Testing.evaluate_optional_props &&
+                       (prop.is_a?(IgnoreOnFirstLoadProp) || prop.try(:deferred?)) &&
+                       !rendering_partial_component?
+
+        super
+      end
+    end
+
     def self.install!
       return if @installed
 
       InertiaRails::Renderer.singleton_class.prepend(RendererTestingPatch)
+      InertiaRails::Renderer.prepend(RendererOptionalInTests)
       @installed = true
     end
 
@@ -189,7 +203,7 @@ module InertiaRails
       def inertia_reload_only(*props)
         partial_headers = {
           'X-Inertia' => 'true',
-          'X-Inertia-Partial-Data' => props.map(&:to_s).join(','),
+          'X-Inertia-Partial-Data' => props.join(','),
           'X-Inertia-Partial-Component' => inertia.component,
         }
         get request.fullpath, headers: partial_headers
@@ -198,7 +212,7 @@ module InertiaRails
       def inertia_reload_except(*props)
         partial_headers = {
           'X-Inertia' => 'true',
-          'X-Inertia-Partial-Except' => props.map(&:to_s).join(','),
+          'X-Inertia-Partial-Except' => props.join(','),
           'X-Inertia-Partial-Component' => inertia.component,
         }
         get request.fullpath, headers: partial_headers
