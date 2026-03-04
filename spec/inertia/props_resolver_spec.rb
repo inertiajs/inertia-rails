@@ -228,7 +228,7 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props][:auth][:user][:permissions]).to eq(%w[edit-posts delete-posts])
     end
 
-    pending 'optional props inside indexed arrays are excluded from initial load' do
+    it 'optional props inside indexed arrays are excluded from initial load' do
       resolved = false
       page = resolve({
                        foos: [
@@ -245,7 +245,7 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(resolved).to be false
     end
 
-    pending 'optional props inside indexed arrays are resolved on partial request' do
+    it 'optional props inside indexed arrays are resolved on partial request' do
       page = resolve_partial(
         {
           foos: [
@@ -258,6 +258,139 @@ RSpec.describe InertiaRails::PropsResolver do
 
       expect(page[:props][:foos][0][:bar]).to eq('expensive-data-1')
       expect(page[:props][:foos][1][:bar]).to eq('expensive-data-2')
+    end
+
+    it 'deferred prop inside indexed array uses indexed path in metadata' do
+      page = resolve({
+                       foos: [
+                         { name: 'First', notifications: InertiaRails.defer { ['msg'] } }
+                       ],
+                     })
+
+      expect(page[:props][:foos][0][:name]).to eq('First')
+      expect(page[:props][:foos][0]).not_to have_key(:notifications)
+      expect(page[:deferredProps]).to eq({ 'default' => ['foos.0.notifications'] })
+    end
+
+    it 'merge prop inside indexed array uses indexed path in metadata' do
+      page = resolve({
+                       foos: [
+                         { name: 'First', posts: InertiaRails.merge { [{ id: 1 }] } }
+                       ],
+                     })
+
+      expect(page[:props][:foos][0][:posts]).to eq([{ id: 1 }])
+      expect(page[:mergeProps]).to eq(['foos.0.posts'])
+    end
+
+    it 'deferred prop inside indexed array is resolved on partial request for parent' do
+      page = resolve_partial(
+        {
+          foos: [
+            { name: 'First', notifications: InertiaRails.defer { ['msg'] } }
+          ],
+        },
+        'foos'
+      )
+
+      expect(page[:props][:foos][0][:name]).to eq('First')
+      expect(page[:props][:foos][0][:notifications]).to eq(['msg'])
+    end
+
+    it 'optional prop inside indexed array is resolved by indexed path' do
+      page = resolve_partial(
+        {
+          foos: [
+            { name: 'First', bar: InertiaRails.optional { 'expensive-1' } },
+            { name: 'Second', bar: InertiaRails.optional { 'expensive-2' } }
+          ],
+        },
+        'foos.0.bar'
+      )
+
+      expect(page[:props][:foos].length).to eq(1)
+      expect(page[:props][:foos][0][:bar]).to eq('expensive-1')
+      expect(page[:props][:foos][0]).not_to have_key(:name)
+    end
+
+    it 'non-indexed field path does not match inside indexed array' do
+      page = resolve_partial(
+        {
+          foos: [
+            { name: 'First', bar: InertiaRails.optional { 'expensive-1' } }
+          ],
+        },
+        'foos.bar'
+      )
+
+      expect(page[:props][:foos]).to eq([])
+    end
+
+    it 'closure returning array with optional prop excludes it on initial load' do
+      resolved = false
+      page = resolve({
+                       foos: lambda {
+                         [
+                           { name: 'First', bar: InertiaRails.optional do
+                             resolved = true
+                             'expensive'
+                           end, }
+                         ]
+                       },
+                     })
+
+      expect(page[:props][:foos][0][:name]).to eq('First')
+      expect(page[:props][:foos][0]).not_to have_key(:bar)
+      expect(resolved).to be false
+    end
+
+    it 'closure returning array with optional prop resolves on partial request' do
+      page = resolve_partial(
+        {
+          foos: -> { [{ name: 'First', bar: InertiaRails.optional { 'expensive' } }] },
+        },
+        'foos'
+      )
+
+      expect(page[:props][:foos][0][:name]).to eq('First')
+      expect(page[:props][:foos][0][:bar]).to eq('expensive')
+    end
+
+    it 'closure returning array with deferred prop collects indexed metadata' do
+      page = resolve({
+                       foos: lambda {
+                         [{ name: 'First', notifications: InertiaRails.defer { ['msg'] } }]
+                       },
+                     })
+
+      expect(page[:props][:foos][0][:name]).to eq('First')
+      expect(page[:props][:foos][0]).not_to have_key(:notifications)
+      expect(page[:deferredProps]).to eq({ 'default' => ['foos.0.notifications'] })
+    end
+
+    it 'dot-notation with indexed array excludes optional on initial load' do
+      page = resolve({
+                       'foos.items' => [
+                         { name: 'First', bar: InertiaRails.optional { 'expensive' } }
+                       ],
+                     })
+
+      expect(page[:props][:foos][:items][0][:name]).to eq('First')
+      expect(page[:props][:foos][:items][0]).not_to have_key(:bar)
+    end
+
+    it 'dot-notation with indexed array resolves optional on partial request' do
+      page = resolve_partial(
+        {
+          'foos.items' => [
+            { name: 'First', bar: InertiaRails.optional { 'expensive' } }
+          ],
+        },
+        'foos.items'
+      )
+
+      expect(page[:props][:foos][:items][0][:name]).to eq('First')
+      expect(page[:props][:foos][:items][0][:bar]).to eq('expensive')
     end
   end
 

@@ -80,6 +80,18 @@ module InertiaRails
           next
         end
 
+        if prop.is_a?(Array)
+          transformed_props[key] = prop.each_with_index.filter_map do |item, i|
+            if item.is_a?(Hash)
+              nested = deep_transform_props(item, "#{path}.#{i}", parent_was_resolved: parent_was_resolved)
+              nested unless nested.empty?
+            else
+              @evaluator.call(item)
+            end
+          end
+          next
+        end
+
         collect_metadata(prop, path)
         next unless keep_prop?(prop, path, parent_was_resolved: parent_was_resolved)
 
@@ -93,13 +105,26 @@ module InertiaRails
           value = @evaluator.call(value)
         end
 
-        # A closure may return a Hash containing prop types — recurse into it
-        if value.is_a?(Hash) && value.any? && prop.is_a?(Proc)
-          nested = deep_transform_props(value, path, parent_was_resolved: true)
-          transformed_props[key] = nested unless nested.empty?
-        else
-          transformed_props[key] = value
+        # A closure may return a Hash or Array containing prop types — recurse into it
+        if prop.is_a?(Proc)
+          if value.is_a?(Hash) && value.any?
+            nested = deep_transform_props(value, path, parent_was_resolved: true)
+            transformed_props[key] = nested unless nested.empty?
+            next
+          elsif value.is_a?(Array)
+            transformed_props[key] = value.each_with_index.filter_map do |item, i|
+              if item.is_a?(Hash)
+                nested = deep_transform_props(item, "#{path}.#{i}", parent_was_resolved: true)
+                nested unless nested.empty?
+              else
+                @evaluator.call(item)
+              end
+            end
+            next
+          end
         end
+
+        transformed_props[key] = value
       end
     end
 
