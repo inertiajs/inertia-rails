@@ -83,6 +83,10 @@ module InertiaRails
         end
 
         if prop.is_a?(Array)
+          unless needs_transform?(prop)
+            transformed_props[key] = prop
+            next
+          end
           transformed_props[key] = prop.each_with_index.filter_map do |item, i|
             if item.is_a?(Hash)
               nested = deep_transform_props(item, "#{path}.#{i}", parent_was_resolved: parent_was_resolved)
@@ -114,6 +118,11 @@ module InertiaRails
             transformed_props[key] = nested unless nested.empty?
             next
           elsif value.is_a?(Array)
+            # Optimization: do not map over the array if no transform needed
+            unless needs_transform?(value)
+              transformed_props[key] = value
+              next
+            end
             transformed_props[key] = value.each_with_index.filter_map do |item, i|
               if item.is_a?(Hash)
                 nested = deep_transform_props(item, "#{path}.#{i}", parent_was_resolved: true)
@@ -127,6 +136,15 @@ module InertiaRails
         end
 
         transformed_props[key] = value
+      end
+    end
+
+    def needs_transform?(value)
+      case value
+      when BaseProp, Proc then true
+      when Hash then value.any? { |_, v| needs_transform?(v) }
+      when Array then value.any? { |v| needs_transform?(v) }
+      else value.respond_to?(:to_inertia)
       end
     end
 
