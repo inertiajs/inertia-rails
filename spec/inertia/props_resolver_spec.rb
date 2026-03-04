@@ -655,25 +655,35 @@ RSpec.describe InertiaRails::PropsResolver do
   end
 
   describe 'ScrollProp' do
-    pending 'nested deferred scroll prop is excluded from initial load with metadata' do
-      page = resolve({
-                       feed: {
-                         posts: InertiaRails::ScrollProp.new(deferred: true) { [{ id: 1 }] },
-                       },
-                     })
+    let(:scroll_metadata) { { page_name: 'page', previous_page: nil, next_page: 2, current_page: 1 } }
+    let(:scroll_controller) do
+      headers = instance_double(ActionDispatch::Http::Headers)
+      allow(headers).to receive(:[]).and_return(nil)
+      request = instance_double(ActionDispatch::Request, headers: headers)
+      instance_double(ActionController::Base, request: request)
+    end
+    let(:scroll_evaluator) { InertiaRails::PropEvaluator.new(scroll_controller) }
 
-      expect(page[:props][:feed]).not_to have_key(:posts)
-      expect(page[:deferredProps]).to be_present
+    it 'nested deferred scroll prop is excluded from initial load with metadata' do
+      props = { feed: { posts: InertiaRails::ScrollProp.new(defer: true, metadata: scroll_metadata) { [{ id: 1 }] } } }
+      resolver = described_class.new(props, evaluator: scroll_evaluator)
+      resolved_props, metadata = resolver.resolve
+      page = { props: resolved_props }.merge(metadata)
+
+      expect(page[:props]).not_to have_key(:feed)
+      expect(page[:deferredProps]).to eq('default' => ['feed.posts'])
     end
 
-    pending 'nested scroll prop is included on partial request with metadata' do
-      page = resolve_partial(
-        { feed: { posts: InertiaRails::ScrollProp.new { [{ id: 1 }] } } },
-        'feed.posts'
-      )
+    it 'nested scroll prop is included on partial request with metadata' do
+      props = { feed: { posts: InertiaRails::ScrollProp.new(metadata: scroll_metadata) { [{ id: 1 }] } } }
+      resolver = described_class.new(props, evaluator: scroll_evaluator,
+                                            visit: { component: true, only: ['feed.posts'] })
+      resolved_props, metadata = resolver.resolve
+      page = { props: resolved_props }.merge(metadata)
 
       expect(page[:props][:feed][:posts]).to eq([{ id: 1 }])
-      expect(page[:scrollProps]).to be_present
+      expect(page[:scrollProps]).to eq('feed.posts' => { pageName: 'page', previousPage: nil, nextPage: 2,
+                                                         currentPage: 1, reset: false, })
     end
   end
 

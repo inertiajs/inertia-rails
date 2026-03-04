@@ -66,17 +66,13 @@ RSpec.describe InertiaRails::ScrollProp do
   end
 
   describe '#configure_merge_intent' do
-    let(:headers) { {} }
-    let(:controller) do
-      controller = double('Controller')
-      request = double('Request')
+    let(:controller) { double('Controller') }
 
-      allow(controller).to receive(:request).and_return(request)
-      allow(request).to receive(:headers).and_return(headers)
-      controller
+    before do
+      allow(controller).to receive(:instance_exec).and_return(%w[item1 item2])
     end
 
-    it 'defaults to appending when no header is present' do
+    it 'defaults to appending when no intent is given' do
       prop = described_class.new(wrapper: 'data') { %w[item1 item2] }
       prop.call(controller)
 
@@ -84,24 +80,20 @@ RSpec.describe InertiaRails::ScrollProp do
       expect(prop.prepends_at_paths).to be_empty
     end
 
-    context 'when merge intent header is "append"' do
-      let(:headers) { { 'X-Inertia-Infinite-Scroll-Merge-Intent' => 'append' } }
-
+    context 'when merge intent is "append"' do
       it 'appends' do
         prop = described_class.new(wrapper: 'data') { %w[item1 item2] }
-        prop.call(controller)
+        prop.call(controller, scroll_intent: 'append')
 
         expect(prop.appends_at_paths).to include('data')
         expect(prop.prepends_at_paths).to be_empty
       end
     end
 
-    context 'when merge intent header is "prepend"' do
-      let(:headers) { { 'X-Inertia-Infinite-Scroll-Merge-Intent' => 'prepend' } }
-
+    context 'when merge intent is "prepend"' do
       it 'prepends at root' do
         prop = described_class.new { %w[item1 item2] }
-        prop.call(controller)
+        prop.call(controller, scroll_intent: 'prepend')
 
         expect(prop.prepends_at_paths).to be_empty
         expect(prop.appends_at_paths).to be_empty
@@ -111,11 +103,9 @@ RSpec.describe InertiaRails::ScrollProp do
     end
 
     context 'with custom wrapper key' do
-      let(:headers) { { 'X-Inertia-Infinite-Scroll-Merge-Intent' => 'prepend' } }
-
       it 'prepends to the wrapper key' do
         prop = described_class.new(wrapper: 'items') { %w[item1 item2] }
-        prop.call(controller)
+        prop.call(controller, scroll_intent: 'prepend')
 
         expect(prop.prepends_at_paths).to include('items')
         expect(prop.appends_at_paths).to be_empty
@@ -241,33 +231,30 @@ RSpec.describe InertiaRails::ScrollProp do
       end
     end
 
-    context 'with malformed headers' do
-      it 'defaults to append with unexpected header value' do
-        headers = { 'X-Inertia-Infinite-Scroll-Merge-Intent' => 'invalid_value' }
-        allow(controller.request).to receive(:headers).and_return(headers)
+    context 'with malformed intent values' do
+      let(:controller) { double('Controller') }
 
+      before do
+        allow(controller).to receive(:instance_exec).and_return(%w[item1 item2])
+      end
+
+      it 'defaults to append with unexpected value' do
         prop = described_class.new(wrapper: 'data') { %w[item1 item2] }
-        prop.call(controller)
+        prop.call(controller, scroll_intent: 'invalid_value')
 
         expect(prop.appends_at_paths).to include('data')
         expect(prop.prepends_at_paths).to be_empty
       end
 
-      it 'defaults to append with empty header value' do
-        headers = { 'X-Inertia-Infinite-Scroll-Merge-Intent' => '' }
-        allow(controller.request).to receive(:headers).and_return(headers)
-
+      it 'defaults to append with empty value' do
         prop = described_class.new(wrapper: 'data') { %w[item1 item2] }
-        prop.call(controller)
+        prop.call(controller, scroll_intent: '')
 
         expect(prop.appends_at_paths).to include('data')
         expect(prop.prepends_at_paths).to be_empty
       end
 
-      it 'defaults to append with nil header value' do
-        headers = { 'X-Inertia-Infinite-Scroll-Merge-Intent' => nil }
-        allow(controller.request).to receive(:headers).and_return(headers)
-
+      it 'defaults to append with nil value' do
         prop = described_class.new(wrapper: 'data') { %w[item1 item2] }
         prop.call(controller)
 
@@ -276,22 +263,16 @@ RSpec.describe InertiaRails::ScrollProp do
       end
 
       it 'handles case sensitivity correctly' do
-        headers = { 'X-Inertia-Infinite-Scroll-Merge-Intent' => 'PREPEND' }
-        allow(controller.request).to receive(:headers).and_return(headers)
-
         prop = described_class.new(wrapper: 'data') { %w[item1 item2] }
-        prop.call(controller)
+        prop.call(controller, scroll_intent: 'PREPEND')
 
         expect(prop.appends_at_paths).to include('data')
         expect(prop.prepends_at_paths).to be_empty
       end
 
       it 'handles prepend with correct case' do
-        headers = { 'X-Inertia-Infinite-Scroll-Merge-Intent' => 'prepend' }
-        allow(controller.request).to receive(:headers).and_return(headers)
-
         prop = described_class.new(wrapper: 'data') { %w[item1 item2] }
-        prop.call(controller)
+        prop.call(controller, scroll_intent: 'prepend')
 
         expect(prop.prepends_at_paths).to include('data')
         expect(prop.appends_at_paths).to be_empty

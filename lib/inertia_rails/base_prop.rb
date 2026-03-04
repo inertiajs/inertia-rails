@@ -7,7 +7,7 @@ module InertiaRails
       @block = block
     end
 
-    def call(controller)
+    def call(controller, **)
       controller.instance_exec(&@block)
     end
   end

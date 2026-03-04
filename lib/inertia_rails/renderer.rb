@@ -102,7 +102,8 @@ module InertiaRails
 
       resolver = PropsResolver.new(
         @props,
-        evaluator: PropEvaluator.new(@controller),
+        evaluator: PropEvaluator.new(@controller,
+                                     scroll_intent: @request.headers['X-Inertia-Infinite-Scroll-Merge-Intent']),
         visit: {
           component: @request.headers['X-Inertia-Partial-Component'] == @component,
           only: parse_header('X-Inertia-Partial-Data'),
