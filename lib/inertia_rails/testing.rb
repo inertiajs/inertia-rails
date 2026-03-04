@@ -16,7 +16,7 @@ module InertiaRails
     module PropsResolverOptionalInTests
       private
 
-      def keep_prop?(prop, path)
+      def keep_prop?(prop, path, parent_was_resolved: false)
         return true if InertiaRails::Testing.evaluate_optional_props &&
                        (prop.is_a?(IgnoreOnFirstLoadProp) || prop.try(:deferred?)) &&
                        !rendering_partial_component?

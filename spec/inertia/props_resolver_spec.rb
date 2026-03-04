@@ -388,7 +388,7 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:mergeProps]).to include('feed.posts')
     end
 
-    pending 'multiple deferred props inside closure are excluded from initial load' do
+    it 'multiple deferred props inside closure are excluded from initial load' do
       notifications_resolved = false
       roles_resolved = false
       page = resolve({
@@ -414,7 +414,7 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(roles_resolved).to be false
     end
 
-    pending 'multiple deferred props inside closure are resolved on partial request' do
+    it 'multiple deferred props inside closure are resolved on partial request' do
       page = resolve_partial(
         {
           auth: lambda {
@@ -533,7 +533,7 @@ RSpec.describe InertiaRails::PropsResolver do
   end
 
   describe 'closure returning prop type' do
-    pending 'closure returning defer prop is excluded from initial load' do
+    it 'closure returning defer prop is excluded from initial load' do
       resolved = false
       page = resolve({ notifications: lambda {
         InertiaRails.defer do
@@ -547,27 +547,27 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(resolved).to be false
     end
 
-    pending 'closure returning defer prop metadata is collected' do
+    it 'closure returning defer prop metadata is collected' do
       page = resolve({ notifications: -> { InertiaRails.defer(group: 'alerts') { [] } } })
 
       expect(page[:deferredProps]).to eq({ 'alerts' => ['notifications'] })
     end
 
-    pending 'closure returning merge prop resolves with metadata' do
+    it 'closure returning merge prop resolves with metadata' do
       page = resolve({ posts: -> { InertiaRails.merge { [{ id: 1 }] } } })
 
       expect(page[:props][:posts]).to eq([{ id: 1 }])
       expect(page[:mergeProps]).to include('posts')
     end
 
-    pending 'closure returning once prop resolves with metadata' do
+    it 'closure returning once prop resolves with metadata' do
       page = resolve({ locale: -> { InertiaRails.once { 'en' } } })
 
       expect(page[:props][:locale]).to eq('en')
       expect(page[:onceProps]).to eq({ 'locale' => { prop: 'locale' } })
     end
 
-    pending 'closure returning defer + merge prop is excluded with metadata' do
+    it 'closure returning defer + merge prop is excluded with metadata' do
       page = resolve({ posts: -> { InertiaRails.defer(merge: true) { [{ id: 1 }] } } })
 
       expect(page[:props]).not_to have_key(:posts)
@@ -575,7 +575,7 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:mergeProps]).to include('posts')
     end
 
-    pending 'closure returning hash with optional prop excluded from initial load' do
+    it 'closure returning hash with optional prop excluded from initial load' do
       resolved = false
       page = resolve({
                        auth: lambda {
@@ -594,7 +594,7 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(resolved).to be false
     end
 
-    pending 'closure returning hash with deferred prop excluded from initial load' do
+    it 'closure returning hash with deferred prop excluded from initial load' do
       resolved = false
       page = resolve({
                        auth: lambda {
@@ -614,7 +614,7 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(resolved).to be false
     end
 
-    pending 'closure inside nested hash returning defer prop collects metadata' do
+    it 'closure inside nested hash returning defer prop collects metadata' do
       page = resolve({
                        auth: lambda {
                          {

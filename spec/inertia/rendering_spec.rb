@@ -297,10 +297,14 @@ RSpec.describe 'rendering inertia views', type: :request do
 
       before { get deeply_nested_props_path, headers: headers }
 
-      it 'filters out the entire evaluated prop' do
+      it 'resolves the closure and includes all children' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
           'nested' => {
+            'evaluated' => {
+              'first' => 'first evaluated nested param',
+              'second' => 'second evaluated nested param',
+            },
             'deeply_nested' => {
               'deeply_nested_always' => 'deeply nested always prop',
             },

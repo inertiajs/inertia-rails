@@ -49,18 +49,35 @@ module InertiaRails
       metadata
     end
 
-    def deep_transform_props(props, prefix = '')
+    def deep_transform_props(props, prefix = '', parent_was_resolved: false)
       props.each_with_object({}) do |(key, prop), transformed_props|
         path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"
 
         if prop.is_a?(Hash) && prop.any?
-          nested = deep_transform_props(prop, path)
+          nested = deep_transform_props(prop, path, parent_was_resolved: parent_was_resolved)
+          transformed_props[key] = nested unless nested.empty?
+          next
+        end
+
+        collect_metadata(prop, path)
+        next unless keep_prop?(prop, path, parent_was_resolved: parent_was_resolved)
+
+        value = @evaluator.call(prop)
+
+        # A closure may return a prop type — unwrap one level
+        if value.is_a?(BaseProp) && !prop.is_a?(BaseProp)
+          collect_metadata(value, path)
+          next unless keep_prop?(value, path, parent_was_resolved: parent_was_resolved)
+
+          value = @evaluator.call(value)
+        end
+
+        # A closure may return a Hash containing prop types — recurse into it
+        if value.is_a?(Hash) && value.any? && prop.is_a?(Proc)
+          nested = deep_transform_props(value, path, parent_was_resolved: true)
           transformed_props[key] = nested unless nested.empty?
         else
-          collect_metadata(prop, path)
-          if keep_prop?(prop, path)
-            transformed_props[key] = @evaluator.call(prop)
-          end
+          transformed_props[key] = value
         end
       end
     end
@@ -87,7 +104,7 @@ module InertiaRails
       resetting = reset_keys.include?(path)
 
       if prop.is_a?(ScrollProp) && (rendering_partial_component? || !prop.deferred?)
-        @_scroll[path] = prop.metadata.merge!(reset: resetting)
+        @_scroll[path] = prop.metadata.merge(reset: resetting)
       end
 
       return if resetting
@@ -118,10 +135,10 @@ module InertiaRails
       @partial_component
     end
 
-    def keep_prop?(prop, path)
+    def keep_prop?(prop, path, parent_was_resolved: false)
       return true if prop.is_a?(AlwaysProp)
       return false if excluded_by_once_cache?(prop, path)
-      return false if excluded_by_partial_request?(path)
+      return false if !parent_was_resolved && excluded_by_partial_request?(path)
 
       # Precedence: Evaluate IgnoreOnFirstLoadProp only after partial keys have been checked
       return false if (prop.is_a?(IgnoreOnFirstLoadProp) || prop.try(:deferred?)) && !rendering_partial_component?
@@ -141,7 +158,8 @@ module InertiaRails
     def explicitly_requested?(path)
       return false unless rendering_partial_component? && partial_keys.present?
 
-      partial_keys.any? { |key| key == path || key.start_with?("#{path}.") || path.start_with?("#{key}.") }
+      path_prefix = "#{path}."
+      partial_keys.any? { |key| key == path || key.start_with?(path_prefix) || path.start_with?("#{key}.") }
     end
 
     def excluded_by_partial_request?(path)
@@ -151,7 +169,10 @@ module InertiaRails
     end
 
     def excluded_by_only_partial_keys?(path)
-      partial_keys.present? && partial_keys.none? { |key| key == path || path.start_with?("#{key}.") }
+      return false unless partial_keys.present?
+
+      path_prefix = "#{path}."
+      partial_keys.none? { |key| key == path || path.start_with?("#{key}.") || key.start_with?(path_prefix) }
     end
 
     def excluded_by_except_partial_keys?(path)
