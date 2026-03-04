@@ -27,13 +27,34 @@ module InertiaRails
       @_once = {}
       @_scroll = {}
 
-      resolved = deep_transform_props(@props)
+      props = expand_dot_notation(@props)
+      resolved = deep_transform_props(props)
       [resolved, build_metadata]
     end
 
     private
 
     attr_reader :partial_keys, :partial_except_keys, :reset_keys, :except_once_keys
+
+    def expand_dot_notation(props)
+      result = {}
+      props.each do |key, value|
+        if key.is_a?(String) && key.include?('.')
+          parts = key.split('.')
+          current = result
+          parts[0..-2].each { |part| current = (current[part.to_sym] ||= {}) }
+          current[parts.last.to_sym] = value
+        else
+          key = key.to_sym
+          if value.is_a?(Hash) && result[key].is_a?(Hash)
+            result[key].merge!(value)
+          else
+            result[key] = value
+          end
+        end
+      end
+      result
+    end
 
     def build_metadata
       metadata = {}

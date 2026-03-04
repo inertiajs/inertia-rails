@@ -205,7 +205,7 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props][:app][:auth][:permissions]).to eq(['admin'])
     end
 
-    pending 'dot-notation optional prop is excluded from initial load' do
+    it 'dot-notation optional prop is excluded from initial load' do
       page = resolve({
                        'auth.user.permissions' => InertiaRails.optional { ['edit-posts'] },
                        'auth.user.name' => 'Jonathan',
@@ -216,7 +216,7 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props][:auth][:user]).not_to have_key(:permissions)
     end
 
-    pending 'dot-notation optional prop is included on partial request' do
+    it 'dot-notation optional prop is included on partial request' do
       page = resolve_partial(
         {
           'auth.user.permissions' => InertiaRails.optional { %w[edit-posts delete-posts] },
@@ -842,13 +842,13 @@ RSpec.describe InertiaRails::PropsResolver do
   end
 
   describe 'dot-notation key expansion' do
-    pending 'expands dot-notation key into nested hash' do
+    it 'expands dot-notation key into nested hash' do
       page = resolve({ 'auth.user' => 'Jonathan' })
 
       expect(page[:props][:auth][:user]).to eq('Jonathan')
     end
 
-    pending 'merges dot-notation key with existing nested hash' do
+    it 'merges dot-notation key with existing nested hash' do
       page = resolve({
                        auth: { user: 'Jonathan' },
                        'auth.admin' => true,
@@ -858,13 +858,13 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props][:auth][:admin]).to be true
     end
 
-    pending 'deeply nested dot-notation key' do
+    it 'deeply nested dot-notation key' do
       page = resolve({ 'app.auth.user.name' => 'Jonathan' })
 
       expect(page[:props][:app][:auth][:user][:name]).to eq('Jonathan')
     end
 
-    pending 'dot-notation key with prop type' do
+    it 'dot-notation key with prop type' do
       page = resolve({
                        'auth.notifications' => InertiaRails.defer { ['msg'] },
                        'auth.user' => 'Jonathan',
@@ -876,7 +876,7 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:deferredProps]).to be_present
     end
 
-    pending 'dot-notation key with closure' do
+    it 'dot-notation key with closure' do
       page = resolve({ 'auth.user' => -> { 'Jonathan' } })
 
       expect(page[:props][:auth][:user]).to eq('Jonathan')
