@@ -98,6 +98,8 @@ module InertiaRails
     def page
       return @page if defined?(@page)
 
+      wrap_errors_prop!(@props)
+
       resolver = PropsResolver.new(
         @props,
         evaluator: PropEvaluator.new(@controller),
@@ -107,7 +109,7 @@ module InertiaRails
           except: parse_header('X-Inertia-Partial-Except'),
           reset: parse_header('X-Inertia-Reset'),
           except_once: parse_header('X-Inertia-Except-Once-Props'),
-        },
+        }
       )
       resolved_props, metadata = resolver.resolve
 
@@ -143,6 +145,13 @@ module InertiaRails
 
     def meta_tags
       @controller.inertia_meta.meta_tags
+    end
+
+    def wrap_errors_prop!(props)
+      return unless props.key?(:errors) && !props[:errors].is_a?(BaseProp)
+
+      errors = props[:errors]
+      props[:errors] = InertiaRails.always { errors }
     end
 
     def parse_header(name)

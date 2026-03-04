@@ -29,14 +29,6 @@ module InertiaRails
     attr_reader :partial_keys, :partial_except_keys, :reset_keys, :except_once_keys
 
     def computed_props
-      @props.tap do |merged_props|
-        # Always keep errors in the props
-        if merged_props.key?(:errors) && !merged_props[:errors].is_a?(BaseProp)
-          errors = merged_props[:errors]
-          merged_props[:errors] = InertiaRails.always { errors }
-        end
-      end
-
       deep_transform_props(@props)
     end
 
