@@ -19,143 +19,99 @@ module InertiaRails
     # Returns [resolved_props, metadata]
     # where metadata is a hash with keys like :deferredProps, :mergeProps, etc.
     def resolve
-      resolved = computed_props
-      metadata = build_metadata
-      [resolved, metadata]
+      @_deferred = {}
+      @_merge = []
+      @_prepend = []
+      @_deep_merge = []
+      @_match_on = []
+      @_once = {}
+      @_scroll = {}
+
+      resolved = deep_transform_props(@props)
+      [resolved, build_metadata]
     end
 
     private
 
     attr_reader :partial_keys, :partial_except_keys, :reset_keys, :except_once_keys
 
-    def computed_props
-      deep_transform_props(@props)
-    end
-
     def build_metadata
       metadata = {}
 
-      deferred = deferred_props_keys
-      metadata[:deferredProps] = deferred if deferred.present?
-      metadata[:scrollProps] = scroll_props if scroll_props.present?
-      metadata.merge!(resolve_merge_props)
-
-      once = resolve_once_props
-      metadata[:onceProps] = once if once.present?
+      metadata[:deferredProps] = @_deferred unless @_deferred.empty?
+      metadata[:scrollProps] = @_scroll unless @_scroll.empty?
+      metadata[:mergeProps] = @_merge unless @_merge.empty?
+      metadata[:prependProps] = @_prepend unless @_prepend.empty?
+      metadata[:deepMergeProps] = @_deep_merge unless @_deep_merge.empty?
+      metadata[:matchPropsOn] = @_match_on unless @_match_on.empty?
+      metadata[:onceProps] = @_once unless @_once.empty?
 
       metadata
     end
 
-    def deep_transform_props(props, parent_path = [])
+    def deep_transform_props(props, prefix = '')
       props.each_with_object({}) do |(key, prop), transformed_props|
-        current_path = parent_path + [key]
+        path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"
 
         if prop.is_a?(Hash) && prop.any?
-          nested = deep_transform_props(prop, current_path)
+          nested = deep_transform_props(prop, path)
           transformed_props[key] = nested unless nested.empty?
-        elsif keep_prop?(prop, current_path)
-          transformed_props[key] = @evaluator.call(prop)
+        else
+          collect_metadata(prop, path)
+          if keep_prop?(prop, path)
+            transformed_props[key] = @evaluator.call(prop)
+          end
         end
       end
     end
 
-    def deferred_props_keys
-      return if rendering_partial_component?
+    def collect_metadata(prop, path)
+      return unless prop.is_a?(BaseProp)
 
-      @props.each_with_object({}) do |(key, prop), result|
-        (result[prop.group] ||= []) << key if prop.try(:deferred?)
-      end
+      collect_deferred_metadata(prop, path)
+      collect_merge_metadata(prop, path)
+      collect_once_metadata(prop, path)
     end
 
-    def resolve_merge_props
-      deep_merge_props, merge_props = all_merge_props.partition do |_key, prop|
-        prop.deep_merge?
-      end
+    def collect_deferred_metadata(prop, path)
+      return unless prop.try(:deferred?) && !rendering_partial_component?
+      return if excluded_by_once_cache?(prop, path)
 
-      {
-        mergeProps: append_merge_props(merge_props),
-        prependProps: prepend_merge_props(merge_props),
-        deepMergeProps: deep_merge_props.map!(&:first),
-        matchPropsOn: resolve_match_on_props,
-      }.delete_if { |_, v| v.blank? }
+      (@_deferred[prop.group] ||= []) << path
     end
 
-    def resolve_once_props
-      @props.each_with_object({}) do |(key, prop), result|
-        next unless prop.try(:once?)
-        next if excluded_by_partial_request?([key.to_s])
+    def collect_merge_metadata(prop, path)
+      return unless prop.try(:merge?)
+      return if rendering_partial_component? && excluded_by_partial_request?(path)
 
-        once_key = (prop.once_key || key).to_s
+      resetting = reset_keys.include?(path)
 
-        result[once_key] = { prop: key.to_s, expiresAt: prop.expires_at }.compact
-      end
-    end
-
-    def resolve_match_on_props
-      all_merge_props.filter_map do |key, prop|
-        prop.match_on.map! { |ms| "#{key}.#{ms}" } if prop.match_on.present?
-      end.flatten
-    end
-
-    def requested_merge_props
-      @requested_merge_props ||= @props.select do |key, prop|
-        next unless prop.try(:merge?)
-        next if rendering_partial_component? && (
-          (partial_keys.present? && partial_keys.exclude?(key.name)) ||
-            (partial_except_keys.present? && partial_except_keys.include?(key.name))
-        )
-
-        true
-      end
-    end
-
-    def append_merge_props(props)
-      return props if props.empty?
-
-      root_append_props, nested_append_props = props.partition { |_key, prop| prop.appends_at_root? }
-
-      result = Set.new(root_append_props.map!(&:first))
-
-      nested_append_props.each do |key, prop|
-        prop.appends_at_paths.each do |path|
-          result.add("#{key}.#{path}")
-        end
+      if prop.is_a?(ScrollProp) && (rendering_partial_component? || !prop.deferred?)
+        @_scroll[path] = prop.metadata.merge!(reset: resetting)
       end
 
-      result.to_a
-    end
+      return if resetting
 
-    def prepend_merge_props(props)
-      return props if props.empty?
-
-      root_prepend_props, nested_prepend_props = props.partition { |_key, prop| prop.prepends_at_root? }
-
-      result = Set.new(root_prepend_props.map!(&:first))
-
-      nested_prepend_props.each do |key, prop|
-        prop.prepends_at_paths.each do |path|
-          result.add("#{key}.#{path}")
-        end
+      if prop.deep_merge?
+        @_deep_merge << path
+      elsif prop.appends_at_root?
+        @_merge << path
+      elsif prop.prepends_at_root?
+        @_prepend << path
+      else
+        prop.appends_at_paths.each { |p| @_merge << "#{path}.#{p}" }
+        prop.prepends_at_paths.each { |p| @_prepend << "#{path}.#{p}" }
       end
 
-      result.to_a
+      prop.match_on&.each { |ms| @_match_on << "#{path}.#{ms}" }
     end
 
-    def scroll_props
-      return @scroll_props if defined?(@scroll_props)
+    def collect_once_metadata(prop, path)
+      return unless prop.try(:once?)
+      return if excluded_by_partial_request?(path)
 
-      @scroll_props = {}
-      requested_merge_props.each do |key, prop|
-        next unless prop.is_a?(ScrollProp)
-        next if prop.deferred? && !rendering_partial_component?
-
-        @scroll_props[key] = prop.metadata.merge!(reset: reset_keys.include?(key.name))
-      end
-      @scroll_props
-    end
-
-    def all_merge_props
-      @all_merge_props ||= requested_merge_props.reject { |key,| reset_keys.include?(key.name) }
+      once_key = (prop.once_key || path).to_s
+      @_once[once_key] = { prop: path, expiresAt: prop.expires_at }.compact
     end
 
     def rendering_partial_component?
@@ -178,36 +134,28 @@ module InertiaRails
       return false if prop.try(:fresh?)
       return false if explicitly_requested?(path)
 
-      once_key = (prop.once_key || path.join('.')).to_s
+      once_key = (prop.once_key || path).to_s
       except_once_keys.include?(once_key)
     end
 
     def explicitly_requested?(path)
       return false unless rendering_partial_component? && partial_keys.present?
 
-      path_with_prefixes = path_prefixes(path)
-      (path_with_prefixes & partial_keys).any?
+      partial_keys.any? { |key| key == path || key.start_with?("#{path}.") || path.start_with?("#{key}.") }
     end
 
     def excluded_by_partial_request?(path)
       return false unless rendering_partial_component? && (partial_keys.present? || partial_except_keys.present?)
 
-      path_with_prefixes = path_prefixes(path)
-      excluded_by_only_partial_keys?(path_with_prefixes) || excluded_by_except_partial_keys?(path_with_prefixes)
+      excluded_by_only_partial_keys?(path) || excluded_by_except_partial_keys?(path)
     end
 
-    def path_prefixes(parts)
-      (0...parts.length).map do |i|
-        parts[0..i].join('.')
-      end
+    def excluded_by_only_partial_keys?(path)
+      partial_keys.present? && partial_keys.none? { |key| key == path || path.start_with?("#{key}.") }
     end
 
-    def excluded_by_only_partial_keys?(path_with_prefixes)
-      partial_keys.present? && (path_with_prefixes & partial_keys).empty?
-    end
-
-    def excluded_by_except_partial_keys?(path_with_prefixes)
-      partial_except_keys.present? && (path_with_prefixes & partial_except_keys).any?
+    def excluded_by_except_partial_keys?(path)
+      partial_except_keys.present? && partial_except_keys.any? { |key| key == path || path.start_with?("#{key}.") }
     end
   end
 end
