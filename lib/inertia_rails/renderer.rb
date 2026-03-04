@@ -105,7 +105,7 @@ module InertiaRails
           component: @request.headers['X-Inertia-Partial-Component'] == @component,
           only: parse_header('X-Inertia-Partial-Data'),
           except: parse_header('X-Inertia-Partial-Except'),
-          reset: parse_header('X-Inertia-Reset').map!(&:to_sym),
+          reset: parse_header('X-Inertia-Reset'),
           except_once: parse_header('X-Inertia-Except-Once-Props'),
         },
       )

@@ -157,13 +157,13 @@ module InertiaRails
         next unless prop.is_a?(ScrollProp)
         next if prop.deferred? && !rendering_partial_component?
 
-        @scroll_props[key] = prop.metadata.merge!(reset: reset_keys.include?(key))
+        @scroll_props[key] = prop.metadata.merge!(reset: reset_keys.include?(key.name))
       end
       @scroll_props
     end
 
     def all_merge_props
-      @all_merge_props ||= requested_merge_props.reject { |key,| reset_keys.include?(key) }
+      @all_merge_props ||= requested_merge_props.reject { |key,| reset_keys.include?(key.name) }
     end
 
     def rendering_partial_component?
