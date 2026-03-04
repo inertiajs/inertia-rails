@@ -13,7 +13,7 @@ module InertiaRails
       end
     end
 
-    module RendererOptionalInTests
+    module PropsResolverOptionalInTests
       private
 
       def keep_prop?(prop, path)
@@ -29,7 +29,7 @@ module InertiaRails
       return if @installed
 
       InertiaRails::Renderer.singleton_class.prepend(RendererTestingPatch)
-      InertiaRails::Renderer.prepend(RendererOptionalInTests)
+      InertiaRails::PropsResolver.prepend(PropsResolverOptionalInTests)
       @installed = true
     end
 
