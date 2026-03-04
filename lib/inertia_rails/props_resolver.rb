@@ -1,16 +1,19 @@
 # frozen_string_literal: true
 
+require_relative 'prop_evaluator'
+
 module InertiaRails
   # Resolves props and collects metadata (deferred, merge, once, scroll)
   # for the Inertia page response.
-  #
-  # Extracted from Renderer — this is a pure extraction with no behavioral changes.
   class PropsResolver
-    def initialize(props, controller, request, component)
+    def initialize(props, evaluator:, visit: {})
       @props = props
-      @controller = controller
-      @request = request
-      @component = component
+      @evaluator = evaluator
+      @partial_component = visit[:component] || false
+      @partial_keys = visit[:only] || []
+      @partial_except_keys = visit[:except] || []
+      @reset_keys = visit[:reset] || []
+      @except_once_keys = visit[:except_once] || []
     end
 
     # Returns [resolved_props, metadata]
@@ -22,6 +25,8 @@ module InertiaRails
     end
 
     private
+
+    attr_reader :partial_keys, :partial_except_keys, :reset_keys, :except_once_keys
 
     def computed_props
       @props.tap do |merged_props|
@@ -57,15 +62,7 @@ module InertiaRails
           nested = deep_transform_props(prop, current_path)
           transformed_props[key] = nested unless nested.empty?
         elsif keep_prop?(prop, current_path)
-          transformed_props[key] =
-            case prop
-            when BaseProp
-              prop.call(@controller)
-            when Proc
-              @controller.instance_exec(&prop)
-            else
-              prop
-            end
+          transformed_props[key] = @evaluator.call(prop)
         end
       end
     end
@@ -169,24 +166,8 @@ module InertiaRails
       @all_merge_props ||= requested_merge_props.reject { |key,| reset_keys.include?(key) }
     end
 
-    def partial_keys
-      @partial_keys ||= (@request.headers['X-Inertia-Partial-Data'] || '').split(',').compact_blank!
-    end
-
-    def reset_keys
-      @reset_keys ||= (@request.headers['X-Inertia-Reset'] || '').split(',').compact_blank!.map!(&:to_sym)
-    end
-
-    def partial_except_keys
-      @partial_except_keys ||= (@request.headers['X-Inertia-Partial-Except'] || '').split(',').compact_blank!
-    end
-
-    def except_once_keys
-      @except_once_keys ||= (@request.headers['X-Inertia-Except-Once-Props'] || '').split(',').compact_blank!
-    end
-
     def rendering_partial_component?
-      @request.headers['X-Inertia-Partial-Component'] == @component
+      @partial_component
     end
 
     def keep_prop?(prop, path)

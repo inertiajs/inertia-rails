@@ -98,7 +98,17 @@ module InertiaRails
     def page
       return @page if defined?(@page)
 
-      resolver = PropsResolver.new(@props, @controller, @request, @component)
+      resolver = PropsResolver.new(
+        @props,
+        evaluator: PropEvaluator.new(@controller),
+        visit: {
+          component: @request.headers['X-Inertia-Partial-Component'] == @component,
+          only: parse_header('X-Inertia-Partial-Data'),
+          except: parse_header('X-Inertia-Partial-Except'),
+          reset: parse_header('X-Inertia-Reset').map!(&:to_sym),
+          except_once: parse_header('X-Inertia-Except-Once-Props'),
+        },
+      )
       resolved_props, metadata = resolver.resolve
 
       resolved_props = @configuration.prop_transformer(props: resolved_props)
@@ -133,6 +143,10 @@ module InertiaRails
 
     def meta_tags
       @controller.inertia_meta.meta_tags
+    end
+
+    def parse_header(name)
+      (@request.headers[name] || '').split(',').compact_blank!
     end
   end
 end
