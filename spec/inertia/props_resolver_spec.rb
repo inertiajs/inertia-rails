@@ -821,7 +821,7 @@ RSpec.describe InertiaRails::PropsResolver do
   end
 
   describe 'to_inertia protocol' do
-    pending 'resolves object responding to to_inertia' do
+    it 'resolves object responding to to_inertia' do
       serializer = Object.new
       def serializer.to_inertia = { name: 'Jonathan', email: 'jon@example.com' }
 
@@ -830,7 +830,7 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props][:user]).to eq({ name: 'Jonathan', email: 'jon@example.com' })
     end
 
-    pending 'resolves nested object responding to to_inertia' do
+    it 'resolves nested object responding to to_inertia' do
       serializer = Object.new
       def serializer.to_inertia = { name: 'Jonathan' }
 
@@ -839,7 +839,7 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props][:auth][:user]).to eq({ name: 'Jonathan' })
     end
 
-    pending 'resolves to_inertia object with prop types inside' do
+    it 'resolves to_inertia object with prop types inside' do
       serializer = Object.new
       def serializer.to_inertia
         {

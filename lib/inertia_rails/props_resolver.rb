@@ -74,6 +74,8 @@ module InertiaRails
       props.each_with_object({}) do |(key, prop), transformed_props|
         path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"
 
+        prop = prop.to_inertia if prop.respond_to?(:to_inertia)
+
         if prop.is_a?(Hash) && prop.any?
           nested = deep_transform_props(prop, path, parent_was_resolved: parent_was_resolved)
           transformed_props[key] = nested unless nested.empty?
