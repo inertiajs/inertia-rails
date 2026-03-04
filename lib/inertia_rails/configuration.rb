@@ -47,6 +47,9 @@ module InertiaRails
       # Flash keys from Rails flash to expose to frontend.
       # Set to nil to disable Rails flash integration (use only flash.inertia).
       flash_keys: %i[notice alert].freeze,
+
+      # Whether to include shared prop keys in the page response metadata.
+      expose_shared_prop_keys: true,
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze

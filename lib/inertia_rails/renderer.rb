@@ -35,7 +35,9 @@ module InertiaRails
       deep_merge = options.fetch(:deep_merge, @configuration.deep_merge_shared_data)
       passed_props = options.fetch(:props,
                                    component.is_a?(Hash) ? component : @controller.__send__(:inertia_view_assigns))
-      @props = merge_props(shared_data, passed_props, deep_merge)
+      shared = shared_data
+      @shared_keys = @configuration.expose_shared_prop_keys ? extract_shared_keys(shared) : nil
+      @props = merge_props(shared, passed_props, deep_merge)
 
       @component = resolve_component(component)
 
@@ -95,6 +97,10 @@ module InertiaRails
       end
     end
 
+    def extract_shared_keys(shared_props)
+      shared_props.keys.map { |key| key.to_s.split('.', 2).first }.uniq
+    end
+
     def page
       return @page if defined?(@page)
 
@@ -130,6 +136,8 @@ module InertiaRails
 
       flash_data = @controller.__send__(:inertia_collect_flash_data)
       @page[:flash] = flash_data if flash_data.present?
+
+      @page[:sharedProps] = @shared_keys if @shared_keys&.any?
 
       @page.merge!(metadata)
 
