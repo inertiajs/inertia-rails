@@ -797,6 +797,27 @@ RSpec.describe InertiaRails::PropsResolver do
     end
     let(:scroll_evaluator) { InertiaRails::PropEvaluator.new(scroll_controller) }
 
+    it 'nested scroll prop metadata is collected on initial load' do
+      props = { feed: { posts: InertiaRails::ScrollProp.new(metadata: scroll_metadata) { [{ id: 1 }] } } }
+      resolver = described_class.new(props, evaluator: scroll_evaluator)
+      resolved_props, metadata = resolver.resolve
+      page = { props: resolved_props }.merge(metadata)
+
+      expect(page[:props][:feed][:posts]).to eq([{ id: 1 }])
+      expect(page[:scrollProps]).to eq('feed.posts' => { pageName: 'page', previousPage: nil, nextPage: 2,
+                                                         currentPage: 1, reset: false, })
+    end
+
+    it 'nested scroll prop reset flag is set by reset header' do
+      props = { feed: { posts: InertiaRails::ScrollProp.new(metadata: scroll_metadata) { [{ id: 1 }] } } }
+      resolver = described_class.new(props, evaluator: scroll_evaluator,
+                                            visit: { component: true, only: ['feed.posts'], reset: ['feed.posts'] })
+      resolved_props, metadata = resolver.resolve
+      page = { props: resolved_props }.merge(metadata)
+
+      expect(page[:scrollProps]['feed.posts'][:reset]).to be true
+    end
+
     it 'nested deferred scroll prop is excluded from initial load with metadata' do
       props = { feed: { posts: InertiaRails::ScrollProp.new(defer: true, metadata: scroll_metadata) { [{ id: 1 }] } } }
       resolver = described_class.new(props, evaluator: scroll_evaluator)
@@ -852,6 +873,21 @@ RSpec.describe InertiaRails::PropsResolver do
 
       expect(page[:props][:auth][:user]).to eq('Jonathan')
       expect(page[:props][:auth]).not_to have_key(:permissions)
+    end
+
+    it 'resolves to_inertia object with prop types on partial request' do
+      serializer = Object.new
+      def serializer.to_inertia
+        {
+          user: 'Jonathan',
+          permissions: InertiaRails.optional { ['manage-users'] },
+        }
+      end
+
+      page = resolve_partial({ auth: serializer }, 'auth.permissions')
+
+      expect(page[:props][:auth]).not_to have_key(:user)
+      expect(page[:props][:auth][:permissions]).to eq(['manage-users'])
     end
   end
 
@@ -1013,6 +1049,24 @@ RSpec.describe InertiaRails::PropsResolver do
       page = resolve({ 'auth.user' => -> { 'Jonathan' } })
 
       expect(page[:props][:auth][:user]).to eq('Jonathan')
+    end
+
+    it 'dot-notation prop merges when parent is a closure' do
+      page = resolve({
+                       auth: lambda {
+                         {
+                           user: {
+                             name: 'Jonathan',
+                             email: 'jonathan@example.com',
+                           },
+                         }
+                       },
+                       'auth.user.permissions' => -> { %w[edit-posts delete-posts] },
+                     })
+
+      expect(page[:props][:auth][:user][:name]).to eq('Jonathan')
+      expect(page[:props][:auth][:user][:email]).to eq('jonathan@example.com')
+      expect(page[:props][:auth][:user][:permissions]).to eq(%w[edit-posts delete-posts])
     end
   end
 

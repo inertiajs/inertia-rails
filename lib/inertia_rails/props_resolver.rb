@@ -42,7 +42,7 @@ module InertiaRails
         if key.is_a?(String) && key.include?('.')
           parts = key.split('.')
           current = result
-          parts[0..-2].each { |part| current = (current[part.to_sym] ||= {}) }
+          parts[0..-2].each { |part| current = resolve_value(current, part.to_sym) }
           current[parts.last.to_sym] = value
         else
           key = key.to_sym
@@ -54,6 +54,13 @@ module InertiaRails
         end
       end
       result
+    end
+
+    def resolve_value(current, key)
+      value = current[key]
+      value = value.to_inertia if value.respond_to?(:to_inertia)
+      value = @evaluator.call(value) if value.is_a?(Proc)
+      current[key] = value || {}
     end
 
     def build_metadata
