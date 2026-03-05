@@ -207,6 +207,7 @@ module InertiaRails
       end
 
       session[:inertia_clear_history] = inertia[:clear_history] if inertia[:clear_history]
+      session[:inertia_preserve_fragment] = true if inertia[:preserve_fragment]
     end
   end
 end
