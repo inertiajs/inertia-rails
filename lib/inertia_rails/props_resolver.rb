@@ -90,18 +90,7 @@ module InertiaRails
         end
 
         if prop.is_a?(Array)
-          unless needs_transform?(prop)
-            transformed_props[key] = prop
-            next
-          end
-          transformed_props[key] = prop.each_with_index.filter_map do |item, i|
-            if item.is_a?(Hash)
-              nested = deep_transform_props(item, "#{path}.#{i}", parent_was_resolved: parent_was_resolved)
-              nested unless nested.empty?
-            else
-              @evaluator.call(item)
-            end
-          end
+          transformed_props[key] = transform_array(prop, path, parent_was_resolved: parent_was_resolved)
           next
         end
 
@@ -125,24 +114,25 @@ module InertiaRails
             transformed_props[key] = nested unless nested.empty?
             next
           elsif value.is_a?(Array)
-            # Optimization: do not map over the array if no transform needed
-            unless needs_transform?(value)
-              transformed_props[key] = value
-              next
-            end
-            transformed_props[key] = value.each_with_index.filter_map do |item, i|
-              if item.is_a?(Hash)
-                nested = deep_transform_props(item, "#{path}.#{i}", parent_was_resolved: true)
-                nested unless nested.empty?
-              else
-                @evaluator.call(item)
-              end
-            end
+            transformed_props[key] = transform_array(value, path, parent_was_resolved: true)
             next
           end
         end
 
         transformed_props[key] = value
+      end
+    end
+
+    def transform_array(array, path, parent_was_resolved:)
+      return array unless needs_transform?(array)
+
+      array.each_with_index.filter_map do |item, i|
+        if item.is_a?(Hash)
+          nested = deep_transform_props(item, "#{path}.#{i}", parent_was_resolved: parent_was_resolved)
+          nested unless nested.empty?
+        else
+          @evaluator.call(item)
+        end
       end
     end
 
