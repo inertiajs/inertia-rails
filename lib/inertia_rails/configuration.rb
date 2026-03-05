@@ -57,6 +57,11 @@ module InertiaRails
 
       # Whether to include shared prop keys in the page response metadata.
       expose_shared_prop_keys: true,
+
+      # Whether to prevent database writes during precognition requests.
+      # When enabled, any ActiveRecord write during a precognition request
+      # will raise ActiveRecord::ReadOnlyError.
+      precognition_prevent_writes: false,
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze

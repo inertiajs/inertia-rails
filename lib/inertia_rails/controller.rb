@@ -5,6 +5,7 @@ require_relative 'flash_extension'
 require_relative 'helper'
 require_relative 'action_filter'
 require_relative 'meta_tag_builder'
+require_relative 'precognition'
 
 module InertiaRails
   module Controller
@@ -13,8 +14,16 @@ module InertiaRails
     included do
       helper ::InertiaRails::Helper
 
+      before_action do
+        InertiaRails::Current.request = request
+      end
+
       after_action do
         cookies['XSRF-TOKEN'] = form_authenticity_token if protect_against_forgery?
+      end
+
+      rescue_from InertiaRails::PrecognitionResponse do |e|
+        render_precognition(e.errors)
       end
     end
 
@@ -138,6 +147,29 @@ module InertiaRails
     end
 
     private
+
+    def precognition!(model_or_errors)
+      InertiaRails.precognition!(model_or_errors)
+    end
+
+    def precognition(model_or_errors)
+      errors = InertiaRails::Precognition.validate(model_or_errors)
+      return if errors.nil?
+
+      render_precognition(errors)
+      true
+    end
+
+    def render_precognition(errors)
+      response.headers['Precognition'] = 'true'
+
+      if errors.empty?
+        response.headers['Precognition-Success'] = 'true'
+        head :no_content
+      else
+        render json: { errors: errors }, status: :unprocessable_entity
+      end
+    end
 
     def inertia_view_assigns
       return {} unless @_inertia_instance_props

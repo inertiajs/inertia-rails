@@ -231,6 +231,25 @@ When enabled, the HTML output looks like:
 > When using this option make sure your client-side Inertia setup is configured to read the page data from the `<script>` element.
 > See the [client side setup](/guide/client-side-setup#script-element-for-page-data) for more details.
 
+### `precognition_prevent_writes`
+
+**Default**: `false`
+**ENV**: `INERTIA_PRECOGNITION_PREVENT_WRITES`
+
+When enabled, any database write during a precognition request will raise `ActiveRecord::ReadOnlyError`. This helps catch accidental side effects in your controller actions during validation-only requests.
+
+```ruby
+InertiaRails.configure do |config|
+  config.precognition_prevent_writes = true
+end
+```
+
+> [!NOTE]
+> This option requires ActiveRecord. It uses `ActiveRecord::Base.while_preventing_writes` to block writes during precognition requests.
+
+> [!WARNING]
+> This only prevents database writes. If your action has other side effects (e.g., sending emails, calling third-party APIs, enqueuing jobs), you should guard those manually. Place `precognition!` before any side-effect-producing code to ensure the action halts before reaching them.
+
 ### `use_data_inertia_head_attribute`
 
 **Default**: `false`
