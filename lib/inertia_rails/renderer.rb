@@ -31,6 +31,7 @@ module InertiaRails
       @view_data = options.fetch(:view_data, {})
       @encrypt_history = options.fetch(:encrypt_history, @configuration.encrypt_history)
       @clear_history = options.fetch(:clear_history, controller.session[:inertia_clear_history] || false)
+      @preserve_fragment = options.fetch(:preserve_fragment, controller.session[:inertia_preserve_fragment] || false)
 
       deep_merge = options.fetch(:deep_merge, @configuration.deep_merge_shared_data)
       passed_props = options.fetch(:props,
@@ -138,6 +139,7 @@ module InertiaRails
       @page[:flash] = flash_data if flash_data.present?
 
       @page[:sharedProps] = @shared_keys if @shared_keys&.any?
+      @page[:preserveFragment] = @preserve_fragment if @preserve_fragment
 
       @page.merge!(metadata)
 
