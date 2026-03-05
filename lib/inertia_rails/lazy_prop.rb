@@ -13,7 +13,7 @@ module InertiaRails
       super(&block)
     end
 
-    def call(controller)
+    def call(controller, **)
       value.respond_to?(:call) ? controller.instance_exec(&value) : value
     end
 

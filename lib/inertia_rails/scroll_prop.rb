@@ -24,9 +24,9 @@ module InertiaRails
       @deferred
     end
 
-    def call(controller)
-      @value = super
-      configure_merge_intent(controller.request.headers['X-Inertia-Infinite-Scroll-Merge-Intent'])
+    def call(controller, scroll_intent: nil, **)
+      @value = super(controller)
+      configure_merge_intent(scroll_intent)
       @value
     end
 
