@@ -47,6 +47,11 @@ module InertiaRails
       # Flash keys from Rails flash to expose to frontend.
       # Set to nil to disable Rails flash integration (use only flash.inertia).
       flash_keys: %i[notice alert].freeze,
+
+      # Whether to prevent database writes during precognition requests.
+      # When enabled, any ActiveRecord write during a precognition request
+      # will raise ActiveRecord::ReadOnlyError.
+      precognition_prevent_writes: false,
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze

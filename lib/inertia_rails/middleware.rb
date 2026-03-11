@@ -18,7 +18,11 @@ module InertiaRails
 
       def response
         copy_xsrf_to_csrf!
-        status, headers, body = @app.call(@env)
+        status, headers, body = if prevent_precognition_writes?
+                                  ActiveRecord::Base.while_preventing_writes { @app.call(@env) }
+                                else
+                                  @app.call(@env)
+                                end
         request = ActionDispatch::Request.new(@env)
 
         # Inertia session data is added via redirect_to
@@ -96,7 +100,19 @@ module InertiaRails
       end
 
       def copy_xsrf_to_csrf!
-        @env['HTTP_X_CSRF_TOKEN'] = @env['HTTP_X_XSRF_TOKEN'] if @env['HTTP_X_XSRF_TOKEN'] && inertia_request?
+        return unless @env['HTTP_X_XSRF_TOKEN'] && (inertia_request? || precognition_request?)
+
+        @env['HTTP_X_CSRF_TOKEN'] = @env['HTTP_X_XSRF_TOKEN']
+      end
+
+      def precognition_request?
+        @env['HTTP_PRECOGNITION'] == 'true'
+      end
+
+      def prevent_precognition_writes?
+        precognition_request? &&
+          InertiaRails.configuration.precognition_prevent_writes &&
+          defined?(ActiveRecord::Base)
       end
     end
   end

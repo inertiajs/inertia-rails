@@ -181,3 +181,197 @@ So, the only work remaining is to display any validation errors using the `error
 > - The [form helper](/guide/forms.md) automatically scopes validation errors to each form instance
 >
 > If you have multiple forms on a page, use the `useForm()` helper and each form will maintain its own isolated error state.
+
+## Precognition
+
+Precognition enables real-time validation of form data without executing the full controller action. When using Inertia's `useForm()` helper with the `precognitive` option, validation requests are sent to your server with special headers, and the server responds with validation results immediately.
+
+### Basic usage
+
+Use `precognition!` or `precognition` in your controller to handle precognition requests:
+
+```ruby
+class UsersController < ApplicationController
+  def create
+    @user = User.new(user_params)
+    precognition!(@user)
+
+    if @user.save
+      redirect_to @user
+    else
+      redirect_back_or_to new_user_path, inertia: { errors: @user.errors }
+    end
+  end
+end
+```
+
+Two controller methods are available:
+
+- **`precognition!(model_or_errors)`** — raises an exception to halt the action on precognition requests. No `return if` needed — the action simply stops. For non-precognition requests, returns `false` and continues normally.
+- **`precognition(model_or_errors)`** — returns `true` if a precognition response was rendered, `false` otherwise. Use with `return if precognition(@user)` if you prefer the explicit return pattern.
+
+Both methods accept an ActiveModel-like object (calls `valid?` automatically) or an errors hash:
+
+- For valid data, responds with `204 No Content` with `Precognition: true` and `Precognition-Success: true` headers
+- For invalid data, responds with `422 Unprocessable Entity` with errors as JSON and a `Precognition: true` header
+
+### One call per action
+
+You can only call `precognition!` or `precognition` once per controller action. Calling it a second time raises `InertiaRails::DoublePrecognitionError`. This is intentional — precognition validates a single form submission, so there should be exactly one validation point per action.
+
+If you need to validate multiple models, use a [form object](#form-objects) that combines all validations into a single `valid?` call:
+
+```ruby
+# Bad — raises DoublePrecognitionError
+def create
+  precognition!(@user)
+  precognition!(@profile) # Error!
+end
+
+# Good — validate everything in one call
+def create
+  form = RegistrationForm.new(params)
+  precognition!(form) # Validates user + profile together
+end
+```
+
+### Module-level API
+
+`InertiaRails.precognition!` works the same way as the controller method but can be called from anywhere in the request cycle — form objects, service objects, or any Ruby code:
+
+```ruby
+InertiaRails.precognition!(@user)
+```
+
+This is useful when you want to handle precognition outside the controller.
+
+### Form objects
+
+When your form doesn't map directly to a single model, you can create a plain Ruby class with validations using `ActiveModel::API` and `ActiveModel::Attributes`. This gives you the same validation interface as a model:
+
+```ruby
+class RegistrationForm
+  include ActiveModel::API
+  include ActiveModel::Attributes
+
+  attribute :name, :string
+  attribute :email, :string
+  attribute :company_name, :string
+
+  validates :name, :email, presence: true
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :company_name, presence: true
+
+  def save
+    InertiaRails.precognition!(self)
+
+    return false unless valid?
+
+    # Create user, company, etc.
+  end
+end
+```
+
+Since `InertiaRails.precognition!` works from anywhere, form objects handle precognition themselves — no controller changes needed:
+
+```ruby
+class RegistrationsController < ApplicationController
+  def create
+    form = RegistrationForm.new(params)
+
+    if form.save
+      redirect_to form.user
+    else
+      redirect_back_or_to new_registration_path, inertia: { errors: form.errors }
+    end
+  end
+end
+```
+
+### Other validation libraries
+
+For libraries like dry-validation, pass the errors hash:
+
+```ruby
+class UsersController < ApplicationController
+  def create
+    result = UserContract.new.call(user_params.to_h)
+    precognition!(result.errors.to_h)
+
+    if result.success?
+      @user = User.create!(result.to_h)
+      redirect_to @user
+    else
+      redirect_back_or_to new_user_path, inertia: { errors: result.errors.to_h }
+    end
+  end
+end
+```
+
+### Preventing side effects
+
+Since precognition requests reuse your existing controller actions, it's important to place the `precognition!` call **before** any side-effect-producing code (saving records, sending emails, calling external APIs, enqueuing jobs). The `precognition!` method halts the action on precognition requests, so any code after it only runs during real form submissions.
+
+You can also enable [`precognition_prevent_writes`](/guide/configuration#precognition_prevent_writes) to automatically block database writes during precognition requests as an extra safety net.
+
+### Client-side setup
+
+For detailed client-side usage of precognition with the `<Form>` component and `useForm` helper, see the [forms documentation](/guide/forms.md#precognition).
+
+### Field-specific validation
+
+Inertia's client-side form helper can request validation of specific fields using the `Precognition-Validate-Only` header. The server automatically filters the errors to only include the requested fields.
+
+### Using `transform` with precognition
+
+When using the `<Form>` component with a `transform` prop that wraps data under a key (e.g., `transform={(data) => ({ user: data })}`), the field names passed to `validate()` must match the keys in the **transformed** data structure, not the input `name` attributes.
+
+This is because `validate('name')` looks up the value using the field name in the transformed data. If the transform wraps inputs under `user`, the transformed data is `{ user: { name: '...' } }`, and `validate('name')` won't find a value at the top level.
+
+To work around this, you have two options:
+
+**Option 1: Use dotted input names instead of a transform**
+
+Use `name="user.name"` (or `name="user[name]"`) input attributes. The `<Form>` component automatically converts these into a nested `{ user: { name: '...' } }` structure without needing a transform, so `validate('user.name')` will correctly find the value. Note that server error keys must match (e.g., `user.name`), so you may need to prefix errors in your precognition response.
+
+**Option 2: Use `useForm` with `withPrecognition` instead**
+
+The `useForm` helper tracks data internally, so `validate('name')` always works regardless of transforms:
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+const form = useForm({
+  name: '',
+  email: '',
+}).withPrecognition('post', '/users')
+
+// The transform only applies to the submitted data, not the validate() lookup
+form.transform((data) => ({ user: data }))
+```
+
+== React
+
+```jsx
+const form = useForm({
+  name: '',
+  email: '',
+}).withPrecognition('post', '/users')
+
+form.transform((data) => ({ user: data }))
+```
+
+== Svelte 4|Svelte 5
+
+```js
+const form = useForm({
+  name: '',
+  email: '',
+}).withPrecognition('post', '/users')
+
+$form.transform((data) => ({ user: data }))
+```
+
+:::
