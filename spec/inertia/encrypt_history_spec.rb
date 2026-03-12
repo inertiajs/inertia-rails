@@ -52,4 +52,33 @@ RSpec.describe 'Inertia encrypt history', type: :request do
       expect(response.parsed_body['clearHistory']).to eq(false)
     end
   end
+
+  context 'with preserve fragment' do
+    it 'does not include preserveFragment by default' do
+      get encrypt_history_default_config_path, headers: headers
+
+      expect(response.parsed_body).not_to have_key('preserveFragment')
+    end
+
+    it 'returns preserveFragment true' do
+      get encrypt_history_preserve_fragment_path, headers: headers
+
+      expect(response.parsed_body['preserveFragment']).to eq(true)
+    end
+  end
+
+  context 'with preserve fragment on redirect' do
+    it 'returns preserveFragment true after the redirect' do
+      post encrypt_history_preserve_fragment_after_redirect_path, headers: headers
+
+      expect(response.headers['Location']).to eq(empty_test_url)
+      expect(session[:inertia_preserve_fragment]).to eq(true)
+
+      follow_redirect!
+      expect(response.body).to include('&quot;preserveFragment&quot;:true')
+
+      get empty_test_path, headers: headers
+      expect(response.parsed_body).not_to have_key('preserveFragment')
+    end
+  end
 end
