@@ -31,6 +31,10 @@ module InertiaRails
       # Set to nil to skip bundle detection (always attempt SSR when enabled).
       # Can be a String path or an Array of paths — SSR proceeds if any file exists.
       ssr_bundle: nil,
+      # Cache SSR responses to avoid redundant renders for identical pages.
+      # Accepts true, false/nil, or a Hash of Rails.cache.fetch options.
+      # Lambdas are supported (instance_exec'd in controller context).
+      ssr_cache: nil,
 
       # Used to detect version drift between server and client.
       version: nil,

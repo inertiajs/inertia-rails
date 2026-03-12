@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'digest/md5'
 require 'net/http'
 require 'json'
 require_relative 'inertia_rails'
@@ -32,6 +33,7 @@ module InertiaRails
       @encrypt_history = options.fetch(:encrypt_history, @configuration.encrypt_history)
       @clear_history = options.fetch(:clear_history, controller.session[:inertia_clear_history] || false)
       @preserve_fragment = options.fetch(:preserve_fragment, controller.session[:inertia_preserve_fragment] || false)
+      @ssr_cache = options[:ssr_cache]
 
       deep_merge = options.fetch(:deep_merge, @configuration.deep_merge_shared_data)
       passed_props = options.fetch(:props,
@@ -72,7 +74,11 @@ module InertiaRails
     def ssr_render
       return unless ssr_bundle_exists?
 
-      ssr_request
+      if (cache_options = ssr_cache_options)
+        Rails.cache.fetch(ssr_cache_key, **cache_options) { ssr_request }
+      else
+        ssr_request
+      end
     rescue InertiaRails::SSRError => e
       handle_ssr_error(e)
     rescue StandardError => e
@@ -80,7 +86,7 @@ module InertiaRails
     end
 
     def ssr_request
-      response = Net::HTTP.post(URI(ssr_url), page.to_json, 'Content-Type' => 'application/json')
+      response = Net::HTTP.post(URI(ssr_url), page_json, 'Content-Type' => 'application/json')
 
       unless response.is_a?(Net::HTTPSuccess)
         body = begin
@@ -101,6 +107,24 @@ module InertiaRails
       raise error if @configuration.ssr_raise_on_error
 
       nil
+    end
+
+    def ssr_cache_options
+      return if vite_dev_server_url
+
+      raw = @ssr_cache.nil? ? @configuration.ssr_cache : @ssr_cache
+      case raw
+      when true then {}
+      when Hash then raw
+      end
+    end
+
+    def page_json
+      @page_json ||= page.to_json
+    end
+
+    def ssr_cache_key
+      "inertia_ssr/#{Digest::MD5.hexdigest(page_json)}"
     end
 
     def ssr_url

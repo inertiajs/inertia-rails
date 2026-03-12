@@ -449,6 +449,170 @@ RSpec.describe 'inertia ssr', type: :request do
     end
   end
 
+  context 'SSR response caching' do
+    with_inertia_config ssr_enabled: true, ssr_url: 'http://localhost:13714', version: '1.0'
+
+    let(:memory_store) { ActiveSupport::Cache::MemoryStore.new }
+
+    before do
+      allow(Rails).to receive(:cache).and_return(memory_store)
+      allow(memory_store).to receive(:fetch).and_call_original
+    end
+
+    context 'with ssr_cache: true' do
+      with_inertia_config ssr_cache: true
+
+      let(:ssr_body) { { body: '<div>Cached SSR</div>', head: ['<title>Cached</title>'] } }
+
+      before do
+        http_response = instance_double(Net::HTTPOK, body: ssr_body.to_json, code: '200')
+        allow(http_response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
+        allow(Net::HTTP).to receive(:post).and_return(http_response)
+      end
+
+      it 'caches the SSR response' do
+        get props_path
+        expect(response.body).to include('<div>Cached SSR</div>')
+
+        # Second request should use cache, not call Net::HTTP again
+        get props_path
+        expect(response.body).to include('<div>Cached SSR</div>')
+        expect(Net::HTTP).to have_received(:post).once
+      end
+
+      it 'uses a digest-based cache key' do
+        get props_path
+        expect(Rails.cache).to have_received(:fetch)
+          .with(a_string_matching(%r{\Ainertia_ssr/[a-f0-9]{32}\z}))
+      end
+    end
+
+    context 'with ssr_cache: { expires_in: }' do
+      with_inertia_config ssr_cache: { expires_in: 3600 }
+
+      before do
+        stub_ssr_response(
+          url: 'http://localhost:13714/render',
+          body: { body: '<div>Cached SSR</div>', head: ['<title>Cached</title>'] }
+        )
+      end
+
+      it 'passes options to Rails.cache.fetch' do
+        get props_path
+        expect(Rails.cache).to have_received(:fetch)
+          .with(a_string_matching(%r{\Ainertia_ssr/}), expires_in: 3600)
+      end
+    end
+
+    context 'with per-render ssr_cache: false overriding global config' do
+      with_inertia_config ssr_cache: true
+
+      before do
+        http_response = instance_double(
+          Net::HTTPOK,
+          body: { body: '<div>No Cache SSR</div>', head: ['<title>No Cache</title>'] }.to_json, code: '200'
+        )
+        allow(http_response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
+        allow(Net::HTTP).to receive(:post).and_return(http_response)
+      end
+
+      it 'skips caching when render option is false' do
+        get ssr_cache_disabled_path
+        expect(response.body).to include('<div>No Cache SSR</div>')
+        expect(Rails.cache).not_to have_received(:fetch)
+      end
+    end
+
+    context 'with global ssr_cache as lambda' do
+      with_inertia_config ssr_cache: -> { { expires_in: 7200 } }
+
+      before do
+        stub_ssr_response(
+          url: 'http://localhost:13714/render',
+          body: { body: '<div>Lambda SSR</div>', head: ['<title>Lambda</title>'] }
+        )
+      end
+
+      it 'evaluates the lambda in controller context' do
+        get props_path
+        expect(response.body).to include('<div>Lambda SSR</div>')
+        expect(Rails.cache).to have_received(:fetch)
+          .with(a_string_matching(%r{\Ainertia_ssr/}), expires_in: 7200)
+      end
+    end
+
+    context 'with ssr_cache: false (default)' do
+      with_inertia_config ssr_cache: false
+
+      before do
+        stub_ssr_response(
+          url: 'http://localhost:13714/render',
+          body: { body: '<div>Uncached</div>', head: ['<title>Uncached</title>'] }
+        )
+      end
+
+      it 'does not use cache' do
+        get props_path
+        expect(response.body).to include('<div>Uncached</div>')
+        expect(Rails.cache).not_to have_received(:fetch)
+      end
+    end
+
+    context 'when vite dev server is running' do
+      with_inertia_config ssr_cache: true
+
+      before do
+        vite_instance = double(dev_server_running?: true)
+        vite_config = double(protocol: 'http', host_with_port: 'localhost:5173')
+        stub_const('ViteRuby', double(instance: vite_instance, config: vite_config))
+
+        stub_ssr_response(
+          url: 'http://localhost:5173/__inertia_ssr',
+          body: { body: '<div>Dev SSR</div>', head: ['<title>Dev</title>'] }
+        )
+      end
+
+      it 'skips caching to preserve HMR' do
+        get props_path
+        expect(response.body).to include('<div>Dev SSR</div>')
+        expect(Rails.cache).not_to have_received(:fetch)
+      end
+    end
+
+    context 'when SSR request fails' do
+      with_inertia_config ssr_cache: true
+
+      before do
+        allow(Net::HTTP).to receive(:post).and_raise(Errno::ECONNREFUSED)
+      end
+
+      it 'does not cache the error' do
+        get props_path
+        expect(response.body).to include client_side_html
+
+        # Error should not be cached — the exception propagates out of the block
+        expect(Rails.cache.read(a_string_matching(%r{\Ainertia_ssr/}))).to be_nil
+      end
+    end
+
+    context 'with different props producing different cache keys' do
+      with_inertia_config ssr_cache: true
+
+      it 'caches separately for different page data' do
+        stub_ssr_response(
+          url: 'http://localhost:13714/render',
+          body: { body: '<div>Cached SSR</div>', head: ['<title>Cached</title>'] }
+        )
+
+        get props_path
+
+        # A different URL produces different page JSON, so different cache key
+        expect(Rails.cache).to have_received(:fetch).once
+        expect(Net::HTTP).to have_received(:post).once
+      end
+    end
+  end
+
   describe InertiaRails::SSRError do
     it 'can be constructed from a response body' do
       error = InertiaRails::SSRError.from_response(
