@@ -121,7 +121,7 @@ RSpec.describe 'Inertia::Request', type: :request do
       end
     end
 
-    describe 'copying an X-XSRF-Token header (Axios default) into the X-CSRF-Token header (Rails default)' do
+    describe 'copying an X-XSRF-Token header (Inertia default) into the X-CSRF-Token header (Rails default)' do
       subject { request.headers['X-CSRF-Token'] }
       before { get inertia_request_test_path, headers: headers }
 
@@ -132,7 +132,7 @@ RSpec.describe 'Inertia::Request', type: :request do
 
       context 'it is not an inertia call' do
         let(:headers) { { 'X-XSRF-Token' => 'foo' } }
-        it { is_expected.to be_nil }
+        it { is_expected.to eq 'foo' }
       end
     end
 

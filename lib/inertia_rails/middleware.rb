@@ -101,9 +101,7 @@ module InertiaRails
       end
 
       def copy_xsrf_to_csrf!
-        return unless @env['HTTP_X_XSRF_TOKEN'] && (inertia_request? || precognition_request?)
-
-        @env['HTTP_X_CSRF_TOKEN'] = @env['HTTP_X_XSRF_TOKEN']
+        @env['HTTP_X_CSRF_TOKEN'] = @env['HTTP_X_XSRF_TOKEN'] if @env['HTTP_X_XSRF_TOKEN']
       end
 
       def precognition_request?
