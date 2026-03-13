@@ -1,0 +1,10 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Frontend / JavaScript Issue
+    url: https://github.com/inertiajs/inertia/issues/new/choose
+    about: For issues with @inertiajs/react, @inertiajs/vue3, @inertiajs/svelte, or the core JS router — file on the main Inertia repo.
+
+  - name: Ask a Question
+    url: https://github.com/inertiajs/inertia-rails/discussions/new?category=help
+    about: Get help from the community on GitHub Discussions.

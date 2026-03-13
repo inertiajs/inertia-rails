@@ -1,0 +1,68 @@
+name: Bug Report
+description: Report a bug with the inertia-rails gem
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! This tracker is for **Rails adapter** issues only.
+
+        If your issue is with the JavaScript client (`@inertiajs/react`, `@inertiajs/vue3`, `@inertiajs/svelte`, or the core router), please [file it on the main Inertia repo](https://github.com/inertiajs/inertia/issues/new/choose).
+
+  - type: input
+    id: gem_version
+    attributes:
+      label: inertia_rails version
+      placeholder: "3.6.0"
+    validations:
+      required: true
+
+  - type: input
+    id: rails_version
+    attributes:
+      label: Rails version
+      placeholder: "8.0.2"
+    validations:
+      required: true
+
+  - type: input
+    id: ruby_version
+    attributes:
+      label: Ruby version
+      placeholder: "3.4.2"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: adapters
+    attributes:
+      label: Frontend adapter(s)
+      options:
+        - label: React
+        - label: Vue
+        - label: Svelte
+        - label: Not applicable
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Steps to reproduce the behavior. A minimal reproduction app or failing test is very helpful.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What you expected to happen.
+    validations:
+      required: true
