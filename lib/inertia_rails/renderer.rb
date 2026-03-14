@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-require 'digest/md5'
-require 'net/http'
-require 'json'
 require_relative 'inertia_rails'
 require_relative 'props_resolver'
+require_relative 'ssr_renderer'
 
 module InertiaRails
   class Renderer
@@ -72,96 +70,7 @@ module InertiaRails
     private
 
     def ssr_render
-      return unless ssr_bundle_exists?
-
-      if (cache_options = ssr_cache_options)
-        Rails.cache.fetch(ssr_cache_key, **cache_options) { ssr_request }
-      else
-        ssr_request
-      end
-    rescue InertiaRails::SSRError => e
-      handle_ssr_error(e)
-    rescue StandardError => e
-      handle_ssr_error(InertiaRails::SSRError.from_exception(e))
-    end
-
-    def ssr_request
-      response = Net::HTTP.post(URI(ssr_url), page_json, 'Content-Type' => 'application/json')
-
-      unless response.is_a?(Net::HTTPSuccess)
-        body = begin
-          JSON.parse(response.body)
-        rescue JSON::ParserError
-          {}
-        end
-        body['error'] ||= "SSR server returned #{response.code}"
-        raise InertiaRails::SSRError.from_response(body)
-      end
-
-      JSON.parse(response.body)
-    end
-
-    def handle_ssr_error(error)
-      Rails.logger.error("[inertia-rails] SSR render failed: #{error.message}")
-      @configuration.on_ssr_error&.call(error, page)
-      raise error if @configuration.ssr_raise_on_error
-
-      nil
-    end
-
-    def ssr_cache_options
-      return if vite_dev_server_url
-
-      raw = @ssr_cache.nil? ? @configuration.ssr_cache : @ssr_cache
-      case raw
-      when true then {}
-      when Hash then raw
-      end
-    end
-
-    def page_json
-      @page_json ||= page.to_json
-    end
-
-    def ssr_cache_key
-      "inertia_ssr/#{Digest::MD5.hexdigest(page_json)}"
-    end
-
-    def ssr_url
-      if (dev_url = vite_dev_server_url)
-        "#{dev_url}/__inertia_ssr"
-      else
-        "#{@configuration.ssr_url}/render"
-      end
-    end
-
-    def vite_dev_server_url
-      return @vite_dev_server_url if defined?(@vite_dev_server_url)
-
-      @vite_dev_server_url = detect_vite_dev_url
-    end
-
-    def ssr_bundle_exists?
-      return true if vite_dev_server_url
-
-      bundle = @configuration.ssr_bundle
-      return true if bundle.nil?
-
-      Array(bundle).any? { |path| File.exist?(path) }
-    end
-
-    def detect_vite_dev_url
-      # vite_rails: TCP probe, no metadata file
-      if defined?(ViteRuby) && ViteRuby.instance.dev_server_running?
-        config = ViteRuby.config
-        return "#{config.protocol}://#{config.host_with_port}"
-      end
-
-      # rails_vite + jsbundling: file-based
-      path = Rails.root.join('tmp/rails-vite.json')
-      JSON.parse(path.read)['url'] if path.exist?
-    rescue JSON::ParserError
-      nil
+      SSRRenderer.new(@configuration, page: page, cache: @ssr_cache).render
     end
 
     def layout
