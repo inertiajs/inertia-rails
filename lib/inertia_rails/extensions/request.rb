@@ -19,5 +19,3 @@ module InertiaRails
     end
   end
 end
-
-ActionDispatch::Request.include InertiaRails::InertiaRequest

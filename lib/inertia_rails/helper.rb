@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'inertia_rails'
-
 module InertiaRails
   module Helper
     def inertia_ssr_head

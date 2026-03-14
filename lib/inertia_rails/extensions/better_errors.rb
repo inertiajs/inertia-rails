@@ -15,5 +15,3 @@ module InertiaRails
     end
   end
 end
-
-BetterErrors::Middleware.include InertiaRails::InertiaBetterErrors if defined?(BetterErrors)

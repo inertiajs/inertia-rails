@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'inertia_rails'
-require_relative 'props_resolver'
-require_relative 'ssr_renderer'
-
 module InertiaRails
   class Renderer
     %i[component configuration controller props view_data encrypt_history

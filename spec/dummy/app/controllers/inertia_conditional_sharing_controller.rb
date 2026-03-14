@@ -62,7 +62,7 @@ class InertiaConditionalSharingController < ApplicationController
   protected
 
   def conditionally_share_a_prop
-    self.class.inertia_share incorrectly_conditionally_shared_prop: 1
+    inertia_share incorrectly_conditionally_shared_prop: 1
   end
 
   def not_edit?
