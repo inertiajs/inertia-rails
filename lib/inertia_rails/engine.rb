@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'middleware'
-require_relative 'controller'
-require_relative 'flash_extension'
-
 module InertiaRails
   class Engine < ::Rails::Engine
     initializer 'inertia_rails.configure_rails_initialization' do |app|
@@ -55,9 +51,7 @@ module InertiaRails
 
     initializer 'inertia_rails.better_errors' do
       require_relative 'extensions/better_errors'
-      if defined?(BetterErrors::Middleware)
-        BetterErrors::Middleware.include ::InertiaRails::InertiaBetterErrors
-      end
+      BetterErrors::Middleware.include ::InertiaRails::InertiaBetterErrors if defined?(BetterErrors::Middleware)
     end
   end
 end

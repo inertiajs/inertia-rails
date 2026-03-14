@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'scroll_metadata'
-
 module InertiaRails
   class ScrollProp < BaseProp
     prepend PropMergeable

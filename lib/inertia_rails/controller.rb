@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'inertia_rails'
-require_relative 'flash_extension'
-require_relative 'helper'
-require_relative 'meta_tag_builder'
-require_relative 'precognition'
-
 module InertiaRails
   module Controller
     extend ActiveSupport::Concern
