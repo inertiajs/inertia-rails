@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
-require 'net/http'
-require 'json'
 require_relative 'inertia_rails'
 require_relative 'props_resolver'
+require_relative 'ssr_renderer'
 
 module InertiaRails
   class Renderer
@@ -32,6 +31,7 @@ module InertiaRails
       @encrypt_history = options.fetch(:encrypt_history, @configuration.encrypt_history)
       @clear_history = options.fetch(:clear_history, controller.session[:inertia_clear_history] || false)
       @preserve_fragment = options.fetch(:preserve_fragment, controller.session[:inertia_preserve_fragment] || false)
+      @ssr_cache = options[:ssr_cache]
 
       deep_merge = options.fetch(:deep_merge, @configuration.deep_merge_shared_data)
       passed_props = options.fetch(:props,
@@ -56,24 +56,21 @@ module InertiaRails
         @response.set_header('X-Inertia', 'true')
         @render_method.call json: page.to_json, status: @response.status, content_type: Mime[:json]
       else
-        begin
-          return render_ssr if @configuration.ssr_enabled
-        rescue StandardError
-          nil
+        ssr = @configuration.ssr_enabled && ssr_render
+        if ssr
+          @controller.instance_variable_set('@_inertia_ssr_head', ssr['head'].join.html_safe)
+          @render_method.call html: ssr['body'].html_safe, layout: layout, locals: @view_data.merge(page: page)
+        else
+          @controller.instance_variable_set('@_inertia_page', page)
+          @render_method.call template: 'inertia', layout: layout, locals: @view_data.merge(page: page)
         end
-        @controller.instance_variable_set('@_inertia_page', page)
-        @render_method.call template: 'inertia', layout: layout, locals: @view_data.merge(page: page)
       end
     end
 
     private
 
-    def render_ssr
-      uri = URI("#{@configuration.ssr_url}/render")
-      res = JSON.parse(Net::HTTP.post(uri, page.to_json, 'Content-Type' => 'application/json').body)
-
-      @controller.instance_variable_set('@_inertia_ssr_head', res['head'].join.html_safe)
-      @render_method.call html: res['body'].html_safe, layout: layout, locals: @view_data.merge(page: page)
+    def ssr_render
+      SSRRenderer.new(@configuration, page: page, cache: @ssr_cache).render
     end
 
     def layout
