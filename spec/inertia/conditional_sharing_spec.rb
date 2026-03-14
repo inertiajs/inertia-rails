@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# Specs as documentation. Per-action shared data isn't explicity supported,
-# but it can be done by referencing the action name in an inertia_share block.
 RSpec.describe 'conditionally shared data in a controller', type: :request do
   context 'when there is data inside inertia_share only applicable to a single action' do
     let(:edit_only_props) do
@@ -45,13 +43,10 @@ RSpec.describe 'conditionally shared data in a controller', type: :request do
   end
 
   context 'when there is conditional data shared via before_action' do
-    it 'raises an error because it is frozen' do
-      # InertiaSharedData isn't frozen until after the first time it's accessed.
-      InertiaConditionalSharingController.send(:_inertia_shared_data)
-
-      expect do
-        get conditional_share_show_with_a_problem_path, headers: { 'X-Inertia' => true }
-      end.to raise_error(FrozenError)
+    it 'works without raising an error' do
+      get conditional_share_show_with_a_problem_path, headers: { 'X-Inertia' => true }
+      props = JSON.parse(response.body)['props'].symbolize_keys
+      expect(props).to include(incorrectly_conditionally_shared_prop: 1)
     end
   end
 end
