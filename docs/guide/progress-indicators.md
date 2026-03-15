@@ -1,4 +1,4 @@
-# Progress indicators
+# Progress Indicators
 
 Since Inertia requests are made via XHR, there would typically not be a browser loading indicator when navigating from one page to another. To solve this, Inertia displays a progress indicator at the top of the page whenever you make an Inertia visit. However, [asynchronous requests](#visit-options) do not show the progress indicator unless explicitly configured.
 
@@ -13,13 +13,10 @@ createInertiaApp({
   progress: {
     // The delay after which the progress bar will appear, in milliseconds...
     delay: 250,
-
     // The color of the progress bar...
     color: '#29d',
-
     // Whether to include the default NProgress styles...
     includeCSS: true,
-
     // Whether the NProgress spinner will be shown...
     showSpinner: false,
   },
@@ -36,7 +33,7 @@ createInertiaApp({
 })
 ```
 
-## Programmatic access
+## Programmatic Access
 
 @available_since core=2.1.11
 
@@ -56,6 +53,7 @@ progress.reset() // Reset to start
 progress.remove() // Complete and remove from DOM
 progress.hide() // Hide progress bar
 progress.reveal() // Show progress bar
+
 progress.isStarted() // Returns boolean
 progress.getStatus() // Returns current percentage or null
 ```
@@ -72,11 +70,12 @@ progress.reset() // Reset to start
 progress.remove() // Complete and remove from DOM
 progress.hide() // Hide progress bar
 progress.reveal() // Show progress bar
+
 progress.isStarted() // Returns boolean
 progress.getStatus() // Returns current percentage or null
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { progress } from '@inertiajs/svelte'
@@ -88,6 +87,7 @@ progress.reset() // Reset to start
 progress.remove() // Complete and remove from DOM
 progress.hide() // Hide progress bar
 progress.reveal() // Show progress bar
+
 progress.isStarted() // Returns boolean
 progress.getStatus() // Returns current percentage or null
 ```
@@ -113,7 +113,7 @@ progress.reveal(true)
 
 ## Custom
 
-It's also possible to setup your own custom page loading indicators using [Inertia events](/guide/events.md). Let's explore how to do this using the [NProgress](https://ricostacruz.com/nprogress/) library as an example.
+It's also possible to setup your own custom page loading indicators using Inertia [events](/guide/events). Let's explore how to do this using the [NProgress](https://ricostacruz.com/nprogress/) library as an example.
 
 First, disable Inertia's default loading indicator.
 
@@ -126,11 +126,11 @@ createInertiaApp({
 
 Next, install the NProgress library.
 
-```shell
+```bash
 npm install nprogress
 ```
 
-After installation, you'll need to add the [NProgress styles](https://github.com/rstacruz/nprogress/blob/master/nprogress.css) to your project. You can do this using a CDN hosted copy of the styles.
+After installation, you'll need to add the NProgress [styles](https://github.com/rstacruz/nprogress/blob/master/nprogress.css) to your project. You can do this using a CDN hosted copy of the styles.
 
 ```html
 <link
@@ -142,6 +142,7 @@ After installation, you'll need to add the [NProgress styles](https://github.com
 Then, import both `NProgress` and the Inertia `router` into your application.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -156,7 +157,7 @@ import NProgress from 'nprogress'
 import { router } from '@inertiajs/react'
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import NProgress from 'nprogress'
@@ -179,7 +180,7 @@ router.on('finish', () => NProgress.done())
 
 That's it! Now, as you navigate from one page to another, the progress bar will be added and removed from the page.
 
-### Handling cancelled visits
+### Handling Cancelled Visits
 
 While this custom progress implementation works great for page visits that finish properly, it would be nice to handle cancelled visits as well. First, for interrupted visits (those that get cancelled as a result of a new visit), the progress bar should simply be reset back to the start position. Second, for manually cancelled visits, the progress bar should be immediately removed from the page.
 
@@ -198,7 +199,7 @@ router.on('finish', (event) => {
 })
 ```
 
-### File upload progress
+### File Upload Progress
 
 Let's take this a step further. When files are being uploaded, it would be great to update the loading indicator to reflect the upload progress. This can be done using the `progress` event.
 
@@ -212,7 +213,7 @@ router.on('progress', (event) => {
 
 Now, instead of the progress bar "trickling" while the files are being uploaded, it will actually update it's position based on the progress of the request. We limit the progress here to 90%, since we still need to wait for a response from the server.
 
-### Loading indicator delay
+### Loading Indicator Delay
 
 The last thing we're going to implement is a loading indicator delay. It's often preferable to delay showing the loading indicator until a request has taken longer than 250-500 milliseconds. This prevents the loading indicator from appearing constantly on quick page visits, which can be visually distracting.
 
@@ -244,6 +245,7 @@ In the `finish` event listener, we need to determine if the progress bar has act
 ```js
 router.on('finish', (event) => {
   clearTimeout(timeout)
+
   if (!NProgress.isStarted()) {
     return
   }
@@ -254,21 +256,22 @@ router.on('finish', (event) => {
 And, finally, we need to do the same check in the `progress` event listener.
 
 ```js
-router.on('progress', event => {
+router.on('progress', (event) => {
   if (!NProgress.isStarted()) {
     return
   }
   // ...
-}
+})
 ```
 
 That's it, you now have a beautiful custom page loading indicator!
 
-### Complete example
+### Complete Example
 
 For convenience, here is the full source code of the final version of our custom loading indicator.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -289,9 +292,12 @@ router.on('progress', (event) => {
 
 router.on('finish', (event) => {
   clearTimeout(timeout)
+
   if (!NProgress.isStarted()) {
     return
-  } else if (event.detail.visit.completed) {
+  }
+
+  if (event.detail.visit.completed) {
     NProgress.done()
   } else if (event.detail.visit.interrupted) {
     NProgress.set(0)
@@ -322,9 +328,12 @@ router.on('progress', (event) => {
 
 router.on('finish', (event) => {
   clearTimeout(timeout)
+
   if (!NProgress.isStarted()) {
     return
-  } else if (event.detail.visit.completed) {
+  }
+
+  if (event.detail.visit.completed) {
     NProgress.done()
   } else if (event.detail.visit.interrupted) {
     NProgress.set(0)
@@ -335,7 +344,7 @@ router.on('finish', (event) => {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import NProgress from 'nprogress'
@@ -355,9 +364,12 @@ router.on('progress', (event) => {
 
 router.on('finish', (event) => {
   clearTimeout(timeout)
+
   if (!NProgress.isStarted()) {
     return
-  } else if (event.detail.visit.completed) {
+  }
+
+  if (event.detail.visit.completed) {
     NProgress.done()
   } else if (event.detail.visit.interrupted) {
     NProgress.set(0)
@@ -374,7 +386,7 @@ router.on('finish', (event) => {
 
 In addition to these configurations, Inertia.js provides two visit options to control the loading indicator on a per-request basis: `showProgress` and `async`. These options offer greater control over how Inertia.js handles asynchronous requests and manages progress indicators.
 
-### `showProgress`
+### Showprogress
 
 The `showProgress` option provides fine-grained control over the visibility of the loading indicator during requests.
 
@@ -382,7 +394,7 @@ The `showProgress` option provides fine-grained control over the visibility of t
 router.get('/settings', {}, { showProgress: false })
 ```
 
-### `async`
+### Async
 
 The `async` option allows you to perform asynchronous requests without displaying the default progress indicator. It can be used in combination with the `showProgress` option.
 

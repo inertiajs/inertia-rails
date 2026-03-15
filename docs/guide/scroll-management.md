@@ -1,16 +1,17 @@
-# Scroll management
+# Scroll Management
 
-## Scroll resetting
+## Scroll Resetting
 
 When navigating between pages, Inertia mimics default browser behavior by automatically resetting the scroll position of the document body (as well as any [scroll regions](#scroll-regions) you've defined) back to the top.
 
 In addition, Inertia keeps track of the scroll position of each page and automatically restores that scroll position as you navigate forward and back in history.
 
-## Scroll preservation
+## Scroll Preservation
 
 Sometimes it's desirable to prevent the default scroll resetting when making visits. You can disable this behavior by setting the `preserveScroll` option to `true`.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -27,7 +28,7 @@ import { router } from '@inertiajs/react'
 router.visit(url, { preserveScroll: true })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -40,6 +41,7 @@ router.visit(url, { preserveScroll: true })
 If you'd like to only preserve the scroll position if the response includes validation errors, set the `preserveScroll` option to `"errors"`.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -56,7 +58,7 @@ import { router } from '@inertiajs/react'
 router.visit(url, { preserveScroll: 'errors' })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -69,6 +71,7 @@ router.visit(url, { preserveScroll: 'errors' })
 You can also lazily evaluate the `preserveScroll` option based on the response by providing a callback.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -89,7 +92,7 @@ router.post('/users', data, {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -104,6 +107,7 @@ router.post('/users', data, {
 When using an [Inertia link](/guide/links), you can preserve the scroll position using the `preserveScroll` prop.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -128,7 +132,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -142,7 +146,7 @@ export default () => (
 
 :::
 
-## Scroll regions
+## Scroll Regions
 
 If your app doesn't use document body scrolling, but instead has scrollable elements (using the `overflow` CSS property), scroll resetting will not work.
 
@@ -154,7 +158,7 @@ In these situations, you must tell Inertia which scrollable elements to manage b
 </div>
 ```
 
-## Text fragments
+## Text Fragments
 
 [Text fragments](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments) allow you to link directly to specific text on a page using a special URL syntax like `#:~:text=term`. However, the browser removes the fragment directive before any JavaScript runs, so text fragments only work if the targeted text is present in the initial HTML response.
 

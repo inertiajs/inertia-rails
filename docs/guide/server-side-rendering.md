@@ -1,35 +1,117 @@
-# Server-side Rendering (SSR)
+# Server-Side Rendering (SSR)
 
 Server-side rendering pre-renders your JavaScript pages on the server, allowing your visitors to receive fully rendered HTML when they visit your application. Since fully rendered HTML is served by your application, it's also easier for search engines to index your site.
 
-> [!NOTE]
-> Server-side rendering uses Node.js to render your pages in a background process; therefore, Node must be available on your server for server-side rendering to function properly.
+Server-side rendering uses Node.js to render your pages in a background process; therefore, Node must be available on your server for server-side rendering to function properly.
+
+## Vite Plugin Setup
+
+@available_since core=3.0.0
+
+The recommended way to configure SSR is with the `@inertiajs/vite` plugin. This approach handles SSR configuration automatically, including development mode SSR without a separate Node.js server.
+
+### 1. Install the Vite plugin
+
+```bash
+npm install @inertiajs/vite
+```
+
+### 2. Configure Vite
+
+Add the Inertia plugin to your `vite.config.js` file. And configure entry point.
+
+```js
+// vite.config.js
+import inertia from '@inertiajs/vite'
+
+export default defineConfig({
+  plugins: [
+    // ...
+    inertia({
+      entry: 'entrypoints/inertia.js',
+    }),
+  ],
+})
+```
+
+You may also configure SSR options explicitly.
+
+```js
+// vite.config.js
+inertia({
+  ssr: {
+    entry: 'ssr/ssr.js',
+    port: 13714,
+    cluster: true,
+  },
+})
+```
+
+You may pass `false` to opt out of the plugin's automatic SSR handling, for example if you prefer to [configure SSR manually](#manual-setup) but still want to use the other features of the Vite plugin.
+
+```js
+// vite.config.js
+inertia({
+  ssr: false,
+})
+```
+
+### 3. Update your build script
+
+Update the `build` script in your `package.json` to build both bundles.
+
+```json
+{
+  "scripts": {
+      "dev": "vite",
+     "build": "vite build" // [!code --]
+     "build": "vite build && vite build --ssr" // [!code ++]
+  }
+}
+```
+
+### Development Mode
+
+The Vite plugin handles SSR automatically during development. There is no need to build your SSR bundle or start a separate Node.js server. Simply run your dev servers as usual:
+
+```bash
+bin/dev
+```
+
+The Vite plugin exposes a server endpoint that Rails uses for rendering, complete with HMR support.
 
 > [!NOTE]
-> For Vue `< 3.2.13` you will need to install `@vue/server-renderer` as a dependency, and use it instead of `vue/server-renderer`.
+> The `vite build --ssr`, `bin/vite ssr`, etc. commands are for [production](#production) only. You should not run them during development.
 
-## Add server entry-point
+### Production
 
-Next, we'll create a <Vue>`app/frontend/ssr/ssr.js`</Vue><React>`app/frontend/ssr/ssr.jsx`</React><Svelte>`app/frontend/ssr/ssr.js`</Svelte> file within the Rails project that will serve as the SSR entry point.
+For production, build both bundles and start the SSR server.
 
-This file is going to look very similar to your regular inertia initialization file, except it's not going to run in the browser, but rather in Node.js. Here's a complete example.
+```bash
+npm run build
+node public/assets-ssr/inertia.js
+```
+
+### Custom SSR Entry Point
+
+The Vite plugin reuses your `inertia.js` entry point for both browser and SSR rendering by default, so no separate file is needed. The plugin detects the `data-server-rendered` attribute to decide whether to hydrate or mount, and the `setup` and `resolve` callbacks are optional.
+
+If you need custom SSR logic (such as Vue plugins that should only run on the server), you may create a separate `entrypoints/ssr.js` file.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
-import { createInertiaApp } from '@inertiajs/vue3'
 import createServer from '@inertiajs/vue3/server'
-import { renderToString } from 'vue/server-renderer'
-import { createSSRApp, h } from 'vue'
 
 createServer((page) =>
   createInertiaApp({
     page,
     render: renderToString,
     resolve: (name) => {
-      const pages = import.meta.glob('../pages/**/*.vue', { eager: true })
-      return pages[`../pages/${name}.vue`]
+      const pages = import.meta.glob('../pages/**/*.vue')
+      return pages[`../pages/${name}.vue`]()
     },
     setup({ App, props, plugin }) {
       return createSSRApp({
@@ -42,8 +124,7 @@ createServer((page) =>
 
 == React
 
-```js
-import { createInertiaApp } from '@inertiajs/react'
+```jsx
 import createServer from '@inertiajs/react/server'
 import ReactDOMServer from 'react-dom/server'
 
@@ -52,47 +133,25 @@ createServer((page) =>
     page,
     render: ReactDOMServer.renderToString,
     resolve: (name) => {
-      const pages = import.meta.glob('../pages/**/*.jsx', { eager: true })
-      return pages[`../pages/${name}.jsx`]
+      const pages = import.meta.glob('../pages/**/*.jsx')
+      return pages[`../pages/${name}.jsx`]()
     },
     setup: ({ App, props }) => <App {...props} />,
   }),
 )
 ```
 
-== Svelte 4
+== Svelte
 
 ```js
-import { createInertiaApp } from '@inertiajs/svelte'
 import createServer from '@inertiajs/svelte/server'
 
 createServer((page) =>
   createInertiaApp({
     page,
     resolve: (name) => {
-      const pages = import.meta.glob('../pages/**/*.svelte', { eager: true })
-      return pages[`../pages/${name}.svelte`]
-    },
-    setup({ App, props }) {
-      return App.render(props)
-    },
-  }),
-)
-```
-
-== Svelte 5
-
-```js
-import { createInertiaApp } from '@inertiajs/svelte'
-import createServer from '@inertiajs/svelte/server'
-import { render } from 'svelte/server'
-
-createServer((page) =>
-  createInertiaApp({
-    page,
-    resolve: (name) => {
-      const pages = import.meta.glob('../pages/**/*.svelte', { eager: true })
-      return pages[`../pages/${name}.svelte`]
+      const pages = import.meta.glob('../pages/**/*.svelte')
+      return pages[`../pages/${name}.svelte`]()
     },
     setup({ App, props }) {
       return render(App, { props })
@@ -103,25 +162,146 @@ createServer((page) =>
 
 :::
 
-When creating this file, be sure to add anything that's missing from your regular initialization file that makes sense to run in SSR mode, such as plugins or custom mixins.
+Be sure to add anything that's missing from your `inertia.js` file that makes sense to run in SSR mode, such as plugins or custom mixins.
 
-## Clustering
+## Manual Setup
 
-> Requires `@inertiajs/core` v2.0.7 or higher.
+If you prefer not to use the Vite plugin, you may configure SSR manually.
 
-By default, the SSR server will run on a single thread. Clustering starts multiple Node servers on the same port, requests are then handled by each thread in a round-robin way.
+### 1. Create an SSR entry point
 
-You can enable clustering by passing a second argument of options to `createServer`.
+Create an SSR entry point file within your Laravel project.
 
 :::tabs key:frameworks
 == Vue
 
-```js
-import { createInertiaApp } from '@inertiajs/vue3'
-import createServer from '@inertiajs/vue3/server'
-import { renderToString } from 'vue/server-renderer'
-import { createSSRApp, h } from 'vue'
+```bash
+touch app/frontend/ssr/ssr.js
+```
 
+== React
+
+```bash
+touch app/frontend/ssr/ssr.jsx
+```
+
+== Svelte
+
+```bash
+touch app/frontend/ssr/ssr.js
+```
+
+:::
+
+This file will look similar to your app entry point, but it runs in Node.js instead of the browser. Here's a complete example.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import createServer from '@inertiajs/vue3/server'
+
+createServer((page) =>
+  createInertiaApp({
+    page,
+    render: renderToString,
+    resolve: (name) => {
+      const pages = import.meta.glob('../pges/**/*.vue')
+      return pages[`../pages/${name}.vue`]()
+    },
+    setup({ App, props, plugin }) {
+      return createSSRApp({
+        render: () => h(App, props),
+      }).use(plugin)
+    },
+  }),
+)
+```
+
+== React
+
+```jsx
+import createServer from '@inertiajs/react/server'
+import ReactDOMServer from 'react-dom/server'
+
+createServer((page) =>
+  createInertiaApp({
+    page,
+    render: ReactDOMServer.renderToString,
+    resolve: (name) => {
+      const pages = import.meta.glob('../pges/**/*.jsx')
+      return pages[`../pages/${name}.jsx`]()
+    },
+    setup: ({ App, props }) => <App {...props} />,
+  }),
+)
+```
+
+== Svelte
+
+```js
+import createServer from '@inertiajs/svelte/server'
+
+createServer((page) =>
+  createInertiaApp({
+    page,
+    resolve: (name) => {
+      const pages = import.meta.glob('../pges/**/*.svelte')
+      return pages[`../pages/${name}.svelte`]()
+    },
+    setup({ App, props }) {
+      return render(App, { props })
+    },
+  }),
+)
+```
+
+:::
+
+### 2. Configure Vite
+
+Next, we need to update our Vite configuration to build our new `ssr.js` file. We can do this by adding a `ssrBuildEnabled` property to Ruby Vite plugin configuration in the `config/vite.json` file.
+
+```json
+"production": {
+  "ssrBuildEnabled": true
+}
+```
+
+### 3. Enable SSR in the Inertia's Rails adapter
+
+Update Inertia Rails adapter cinfig to turn SSR on.
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.ssr_enabled = ViteRuby.config.ssr_build_enabled
+end
+```
+
+### Clustering
+
+By default, the SSR server runs on a single thread. You may enable clustering to start multiple Node servers on the same port, with requests handled by each thread in a round-robin fashion.
+
+```js
+// vite.config.js
+inertia({
+  ssr: {
+    cluster: true,
+  },
+})
+```
+
+When using a [custom SSR entry point](#custom-ssr-entry-point) or [manual setup](#manual-setup), you may pass the `cluster` option to `createServer` instead.
+
+@available_since core=2.0.7
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
 createServer(
   (page) =>
     createInertiaApp({
@@ -133,11 +313,7 @@ createServer(
 
 == React
 
-```js
-import { createInertiaApp } from '@inertiajs/react'
-import createServer from '@inertiajs/react/server'
-import ReactDOMServer from 'react-dom/server'
-
+```jsx
 createServer(
   (page) =>
     createInertiaApp({
@@ -147,28 +323,9 @@ createServer(
 )
 ```
 
-== Svelte 4
+== Svelte
 
 ```js
-import { createInertiaApp } from '@inertiajs/svelte'
-import createServer from '@inertiajs/svelte/server'
-
-createServer(
-  (page) =>
-    createInertiaApp({
-      // ...
-    }),
-  { cluster: true },
-)
-```
-
-== Svelte 5
-
-```js
-import { createInertiaApp } from '@inertiajs/svelte'
-import createServer from '@inertiajs/svelte/server'
-import { render } from 'svelte/server'
-
 createServer(
   (page) =>
     createInertiaApp({
@@ -180,63 +337,35 @@ createServer(
 
 :::
 
-## Setup Vite Ruby
-
-Next, we need to update our Vite configuration to build our new `ssr.js` file. We can do this by adding a `ssrBuildEnabled` property to Ruby Vite plugin configuration in the `config/vite.json` file.
-
-```json
-  "production": {
-    "ssrBuildEnabled": true // [!code ++]
-  }
-```
+## Running the SSR Server
 
 > [!NOTE]
-> For more available properties see the [Ruby Vite documentation](https://vite-ruby.netlify.app/config/#ssr-options-experimental).
+> The SSR server is only required in production. During development, the [Vite plugin](#development-mode) handles SSR automatically.
 
-## Enable SSR in the Inertia's Rails adapter
+Once you have built both your client-side and server-side bundles, you may start the SSR server using the following command.
 
-```ruby
-# config/initializers/inertia_rails.rb
-InertiaRails.configure do |config|
-  config.ssr_enabled = ViteRuby.config.ssr_build_enabled
-end
-```
-
-Now you can build your server-side bundle.
-
-```shell
-bin/vite build --ssr
-```
-
-## Running the SSR server
-
-Now that you have built both your client-side and server-side bundles, you should be able run the Node-based Inertia SSR server using the following command.
-
-```shell
+```bash
 bin/vite ssr
 ```
 
 With the server running, you should be able to access your app within the browser with server-side rendering enabled. In fact, you should be able to disable JavaScript entirely and still navigate around your application.
 
-## Client side hydration
+## Client-Side Hydration
 
-Since your website is now being server-side rendered, you can instruct your client to "hydrate" the static markup and make it interactive instead of re-rendering all the HTML that we just generated.
-
-To enable client-side hydration, update your initialization file.
+You should also update your `inertia.js` file to use hydration instead of normal rendering. This allows <Vue>Vue</Vue><React>React</React><Svelte>Svelte</Svelte> to pick up the server-rendered HTML and make it interactive without re-rendering it.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
-// frontend/entrypoints/inertia.js
 import { createApp, h } from 'vue' // [!code --]
 import { createSSRApp, h } from 'vue' // [!code ++]
-import { createInertiaApp } from '@inertiajs/vue3'
 
 createInertiaApp({
   resolve: (name) => {
-    const pages = import.meta.glob('../pages/**/*.vue', { eager: true })
-    return pages[`../pages/${name}.vue`]
+    const pages = import.meta.glob('../pages/**/*.vue')
+    return pages[`../pages/${name}.vue`]()
   },
   setup({ el, App, props, plugin }) {
     createApp({ render: () => h(App, props) }) // [!code --]
@@ -250,15 +379,13 @@ createInertiaApp({
 == React
 
 ```js
-// frontend/entrypoints/inertia.jsx
-import { createInertiaApp } from '@inertiajs/react'
 import { createRoot } from 'react-dom/client' // [!code --]
 import { hydrateRoot } from 'react-dom/client' // [!code ++]
 
 createInertiaApp({
   resolve: (name) => {
-    const pages = import.meta.glob('../pages/**/*.jsx', { eager: true })
-    return pages[`../pages/${name}.jsx`]
+    const pages = import.meta.glob('../pages/**/*.jsx')
+    return pages[`../pages/${name}.jsx`]()
   },
   setup({ el, App, props }) {
     createRoot(el).render(<App {...props} />) // [!code --]
@@ -267,78 +394,61 @@ createInertiaApp({
 })
 ```
 
-== Svelte 4
+== Svelte
 
 ```js
-// frontend/entrypoints/inertia.js
-import { createInertiaApp } from '@inertiajs/svelte'
-
-createInertiaApp({
-  resolve: (name) => {
-    const pages = import.meta.glob('../pages/**/*.svelte', { eager: true })
-    return pages[`../pages/${name}.svelte`]
-  },
-  setup({ el, App, props }) {
-    new App({ target: el, props }) // [!code --]
-    new App({ target: el, props, hydrate: true }) // [!code ++]
-  },
-})
-```
-
-You will also need to set the `hydratable` compiler option to `true` in your `vite.config.js` file.
-
-<!-- prettier-ignore -->
-```js
-// vite.config.js
-import { svelte } from '@sveltejs/vite-plugin-svelte'
-import laravel from 'laravel-vite-plugin'
-import { defineConfig } from 'vite'
-
-export default defineConfig({
-  plugins: [
-    laravel.default({
-      input: ['resources/css/app.css', 'resources/js/app.js'],
-      ssr: 'resources/js/ssr.js',
-      refresh: true,
-    }),
-    svelte(), // [!code --]
-    svelte({ // [!code ++]
-      // [!code ++]
-      compilerOptions: { // [!code ++]
-        // [!code ++]
-        hydratable: true, // [!code ++]
-      }, // [!code ++]
-    }), // [!code ++]
-  ],
-})
-```
-
-== Svelte 5
-
-<!-- prettier-ignore -->
-```js
-// frontend/entrypoints/inertia.js
-import { createInertiaApp } from '@inertiajs/svelte'
 import { mount } from 'svelte' // [!code --]
 import { hydrate, mount } from 'svelte' // [!code ++]
 
 createInertiaApp({
   resolve: (name) => {
-    const pages = import.meta.glob('./Pages/**/*.svelte', { eager: true })
-    return pages[`./Pages/${name}.svelte`]
+    const pages = import.meta.glob('../pages/**/*.svelte')
+    return pages[`../pages/${name}.svelte`]()
   },
   setup({ el, App, props }) {
     mount(App, { target: el, props }) // [!code --]
-    if (el.dataset.serverRendered === 'true') { // [!code ++]
-      hydrate(App, { target: el, props }) // [!code ++]
-    } else { // [!code ++]
-      mount(App, { target: el, props }) // [!code ++]
-    } // [!code ++]
+    if (el.dataset.serverRendered === 'true') {
+      // [!code ++:5]
+      hydrate(App, { target: el, props })
+    } else {
+      mount(App, { target: el, props })
+    }
   },
 })
 ```
 
 :::
+
+## Error Handling
+
+When SSR rendering fails, Inertia gracefully falls back to client-side rendering. The Vite plugin logs detailed error information to the console, including the component name, request URL, source location, and a tailored hint to help you resolve the issue.
+
+Common SSR errors are automatically classified. Browser API errors (such as referencing `window` or `document` in server-rendered code) include guidance on moving the code to a lifecycle hook. Component resolution errors suggest checking file paths and casing.
+
+The Rails adapter automatically logs SSR failures to `Rails.logger` at the `error` level. To customize error handling, set the `on_ssr_error` option in your `config/initializers/inertia_rails.rb` file.
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.on_ssr_error = ->(error, page) do
+    Rails.logger.warn("SSR failed for #{page[:component]}: #{error.message}")
+    Sentry.capture_exception(error) # or any error tracker
+  end
+end
+```
+
+The callback receives an `InertiaRails::SSRError` and the page hash, giving you access to the component name, props, and URL that failed.
+
+### Raising on Error
+
+For CI or E2E testing, you may prefer SSR failures to raise an exception instead of falling back silently. Set the `ssr_raise_on_error` option in your initializer.
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.ssr_raise_on_error = true
+end
+```
 
 ## Disabling SSR
 
