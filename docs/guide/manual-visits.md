@@ -1,8 +1,9 @@
-# Manual visits
+# Manual Visits
 
-In addition to [creating links](/guide/links.md), it's also possible to manually make Inertia visits / requests programmatically via JavaScript. This is accomplished via the `router.visit()` method.
+In addition to [creating links](/guide/links), it's also possible to manually make Inertia visits / requests programmatically via JavaScript. This is accomplished via the `router.visit()` method.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -26,7 +27,10 @@ router.visit(url, {
   reset: [],
   preserveUrl: false,
   prefetch: false,
+  preserveErrors: false,
   viewTransition: false,
+  component: null,
+  pageProps: null,
   onCancelToken: (cancelToken) => {},
   onCancel: () => {},
   onBefore: (visit) => {},
@@ -34,6 +38,8 @@ router.visit(url, {
   onProgress: (progress) => {},
   onSuccess: (page) => {},
   onError: (errors) => {},
+  onHttpException: (response) => {},
+  onNetworkError: (error) => {},
   onFinish: (visit) => {},
   onPrefetching: () => {},
   onPrefetched: () => {},
@@ -63,7 +69,10 @@ router.visit(url, {
   reset: [],
   preserveUrl: false,
   prefetch: false,
+  preserveErrors: false,
   viewTransition: false,
+  component: null,
+  pageProps: null,
   onCancelToken: (cancelToken) => {},
   onCancel: () => {},
   onBefore: (visit) => {},
@@ -71,13 +80,15 @@ router.visit(url, {
   onProgress: (progress) => {},
   onSuccess: (page) => {},
   onError: (errors) => {},
+  onHttpException: (response) => {},
+  onNetworkError: (error) => {},
   onFinish: (visit) => {},
   onPrefetching: () => {},
   onPrefetched: () => {},
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -100,7 +111,10 @@ router.visit(url, {
   reset: [],
   preserveUrl: false,
   prefetch: false,
+  preserveErrors: false,
   viewTransition: false,
+  component: null,
+  pageProps: null,
   onCancelToken: (cancelToken) => {},
   onCancel: () => {},
   onBefore: (visit) => {},
@@ -108,6 +122,8 @@ router.visit(url, {
   onProgress: (progress) => {},
   onSuccess: (page) => {},
   onError: (errors) => {},
+  onHttpException: (response) => {},
+  onNetworkError: (error) => {},
   onFinish: (visit) => {},
   onPrefetching: () => {},
   onPrefetched: () => {},
@@ -119,6 +135,7 @@ router.visit(url, {
 However, it's generally more convenient to use one of Inertia's shortcut request methods. These methods share all the same options as `router.visit()`.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -145,7 +162,7 @@ router.delete(url, options)
 router.reload(options) // Uses the current URL
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -167,6 +184,7 @@ The `reload()` method is a convenient, shorthand method that automatically visit
 When making manual visits, you may use the `method` option to set the request's HTTP method to `get`, `post`, `put`, `patch` or `delete`. The default method is `get`.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -183,7 +201,7 @@ import { router } from '@inertiajs/react'
 router.visit(url, { method: 'post' })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -196,11 +214,12 @@ router.visit(url, { method: 'post' })
 > [!WARNING]
 > Uploading files via `put` or `patch` is not supported in Rails. Instead, make the request via `post`, including a `_method` attribute or a `X-HTTP-METHOD-OVERRIDE` header set to `put` or `patch`. For more info see [`Rack::MethodOverride`](https://github.com/rack/rack/blob/main/lib/rack/method_override.rb).
 
-# Data
+## Data
 
 You may use the `data` option to add data to the request.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -229,7 +248,7 @@ router.visit('/users', {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -245,9 +264,10 @@ router.visit('/users', {
 
 :::
 
-For convenience, the `get()`, `post()`, `put()`, and `patch()` methods all accept data as their second argument.
+For convenience, the `get()`, `post()`, `put()`, and `patch()` methods all accept `data` as their second argument.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -270,7 +290,7 @@ router.post('/users', {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -283,11 +303,12 @@ router.post('/users', {
 
 :::
 
-## Custom headers
+## Custom Headers
 
 The `headers` option allows you to add custom headers to a request.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -312,7 +333,7 @@ router.post('/users', data, {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -326,14 +347,14 @@ router.post('/users', data, {
 
 :::
 
-> [!NOTE]
-> The headers Inertia uses internally to communicate its state to the server take priority and therefore cannot be overwritten.
+The headers Inertia uses internally to communicate its state to the server take priority and therefore cannot be overwritten.
 
-## Global visit options
+## Global Visit Options
 
 You may configure a `visitOptions` callback when [initializing your Inertia app](/guide/client-side-setup#configuring-defaults) to modify visit options globally for every request. The callback receives the target URL and the current visit options, and should return an object with any options you want to override.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -376,7 +397,7 @@ createInertiaApp({
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { createInertiaApp } from '@inertiajs/svelte'
@@ -398,11 +419,12 @@ createInertiaApp({
 
 :::
 
-## File uploads
+## File Uploads
 
 When making visits / requests that include files, Inertia will automatically convert the request data into a `FormData` object. If you would like the request to always use a `FormData` object, you may use the `forceFormData` option.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -423,7 +445,7 @@ router.post('/companies', data, {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -435,13 +457,14 @@ router.post('/companies', data, {
 
 :::
 
-For more information on uploading files, check out the dedicated [file uploads](/guide/file-uploads.md) documentation.
+For more information on uploading files, check out the dedicated [file uploads](/guide/file-uploads) documentation.
 
-## Browser history
+## Browser History
 
 When making visits, Inertia automatically adds a new entry into the browser history. However, it's also possible to replace the current history entry by setting the `replace` option to `true`.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -458,7 +481,7 @@ import { router } from '@inertiajs/react'
 router.get('/users', { search: 'John' }, { replace: true })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -468,14 +491,14 @@ router.get('/users', { search: 'John' }, { replace: true })
 
 :::
 
-> [!NOTE]
-> Visits made to the same URL automatically set `replace` to `true`.
+Visits made to the same URL automatically set `replace` to `true`.
 
-# Client side visits
+## Client Side Visits
 
 You can use the `router.push` and `router.replace` method to make client-side visits. This method is useful when you want to update the browser's history without making a server request.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -516,7 +539,7 @@ router.push({
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -540,11 +563,10 @@ router.push({
 
 All the parameters are optional. By default, all passed parameters (except `errorBag`) will be merged with the current page. This means you are responsible for overriding the current page's URL, component, and props.
 
-If you need access to the current page's props, you can pass a function to the props option. This function will receive the current page's props as an argument and should return the new props.
-
-The `errorBag` option allows you to specify which error bag to use when handling validation errors in the `onError` callback.
+If you need access to the current page's props, you may pass a function to the `props` option. This function receives the current props (including any [once props](/guide/once-props)) and should return the new props.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -569,7 +591,7 @@ router.replace({
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -582,18 +604,13 @@ router.replace({
 ```
 
 :::
-
-> [!NOTE]
-> Make sure that any route you push on the client side is also defined on the server side. If the user refreshes the page, the server will need to know how to render the page.
-
-> [!WARNING]
-> Some browsers limit the number of `history.pushState()` and `history.replaceState()` calls allowed within a short time period. Inertia catches this error and logs it to the console, but the state update will be lost. Avoid calling `router.push()` or `router.replace()` in rapid succession—consider debouncing or batching updates in high-frequency scenarios.
 
 @available_since core=2.3.10
 
-The `props` function also receives [once props](/guide/once-props) as a second argument. This is useful when you want to replace all regular props while still preserving once props.
+The function also receives [once props](/guide/once-props) as a second argument. This is useful when you want to replace all regular props while still preserving once props.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -614,7 +631,7 @@ router.replace({
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -626,7 +643,18 @@ router.replace({
 
 :::
 
-### Prop helpers
+The `errorBag` option allows you to specify which error bag to use when handling validation errors in the `onError` callback.
+
+Make sure that any route you push on the client side is also defined on the server side. If the user refreshes the page, the server will need to know how to render the page.
+
+> [!WARNING]
+> Some browsers limit the number of `history.pushState()` and
+> `history.replaceState()` calls allowed within a short time period. Inertia
+> catches this error and logs it to the console, but the state update will be
+> lost. Avoid calling `router.push()` or `router.replace()` too frequently, and
+> consider debouncing or batching updates in high-frequency scenarios.
+
+### Prop Helpers
 
 @available_since core=2.2.0
 
@@ -638,10 +666,13 @@ Inertia provides three helper methods for updating page props without making ser
 
 ```js
 import { router } from '@inertiajs/vue3'
+
 // Replace a prop value...
 router.replaceProp('user.name', 'Jane Smith')
+
 // Append to an array prop...
 router.appendToProp('messages', { id: 4, text: 'New message' })
+
 // Prepend to an array prop...
 router.prependToProp('tags', 'urgent')
 ```
@@ -650,22 +681,28 @@ router.prependToProp('tags', 'urgent')
 
 ```js
 import { router } from '@inertiajs/react'
+
 // Replace a prop value...
 router.replaceProp('user.name', 'Jane Smith')
+
 // Append to an array prop...
 router.appendToProp('messages', { id: 4, text: 'New message' })
+
 // Prepend to an array prop...
 router.prependToProp('tags', 'urgent')
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
+
 // Replace a prop value...
 router.replaceProp('user.name', 'Jane Smith')
+
 // Append to an array prop...
 router.appendToProp('messages', { id: 4, text: 'New message' })
+
 // Prepend to an array prop...
 router.prependToProp('tags', 'urgent')
 ```
@@ -685,7 +722,6 @@ router.prependToProp('notifications', (current, props) => {
   return {
     id: Date.now(),
     message: `Hello ${props.user.name}`,
-    timestamp: new Date(),
   }
 })
 ```
@@ -699,12 +735,11 @@ router.prependToProp('notifications', (current, props) => {
   return {
     id: Date.now(),
     message: `Hello ${props.user.name}`,
-    timestamp: new Date(),
   }
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -713,14 +748,13 @@ router.prependToProp('notifications', (current, props) => {
   return {
     id: Date.now(),
     message: `Hello ${props.user.name}`,
-    timestamp: new Date(),
   }
 })
 ```
 
 :::
 
-## State preservation
+## State Preservation
 
 By default, page visits to the same page create a fresh page component instance. This causes any local state, such as form inputs, scroll positions, and focus states to be lost.
 
@@ -731,6 +765,7 @@ For this reason, the `post`, `put`, `patch`, `delete`, and `reload` methods all 
 You can instruct Inertia to preserve the component's state when using the `get` method by setting the `preserveState` option to `true`.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -747,7 +782,7 @@ import { router } from '@inertiajs/react'
 router.get('/users', { search: 'John' }, { preserveState: true })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -757,11 +792,10 @@ router.get('/users', { search: 'John' }, { preserveState: true })
 
 :::
 
-You can also lazily evaluate the `preserveState` option based on the response by providing a callback to the `preserveState` option.
-
-If you'd like to only preserve state if the response includes validation errors, set the `preserveState` option to `"errors"`.
+If you'd like to only preserve state if the response includes validation errors, set the `preserveState` option to "errors".
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -778,7 +812,7 @@ import { router } from '@inertiajs/react'
 router.get('/users', { search: 'John' }, { preserveState: 'errors' })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -791,6 +825,7 @@ router.get('/users', { search: 'John' }, { preserveState: 'errors' })
 You can also lazily evaluate the `preserveState` option based on the response by providing a callback.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -811,7 +846,7 @@ router.post('/users', data, {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -823,13 +858,14 @@ router.post('/users', data, {
 
 :::
 
-## Scroll preservation
+## Scroll Preservation
 
-When navigating between pages, Inertia mimics default browser behavior by automatically resetting the scroll position of the document body (as well as any [scroll regions](/guide/scroll-management.md#scroll-regions) you've defined) back to the top of the page.
+When navigating between pages, Inertia mimics default browser behavior by automatically resetting the scroll position of the document body (as well as any [scroll regions](/guide/scroll-management#scroll-regions) you've defined) back to the top of the page.
 
 You can disable this behavior by setting the `preserveScroll` option to `true`.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -846,7 +882,7 @@ import { router } from '@inertiajs/react'
 router.visit(url, { preserveScroll: true })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -859,6 +895,7 @@ router.visit(url, { preserveScroll: true })
 If you'd like to only preserve the scroll position if the response includes validation errors, set the `preserveScroll` option to `"errors"`.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -875,7 +912,7 @@ import { router } from '@inertiajs/react'
 router.visit(url, { preserveScroll: 'errors' })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -888,6 +925,7 @@ router.visit(url, { preserveScroll: 'errors' })
 You can also lazily evaluate the `preserveScroll` option based on the response by providing a callback.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -908,7 +946,7 @@ router.post('/users', data, {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -920,13 +958,14 @@ router.post('/users', data, {
 
 :::
 
-For more information regarding this feature, check out the [scroll management](/guide/scroll-management.md) documentation.
+For more information regarding this feature, check out the [scroll management](/guide/scroll-management) documentation.
 
-## Partial reloads
+## Partial Reloads
 
 The `only` option allows you to request a subset of the props (data) from the server on subsequent visits to the same page, thus making your application more efficient since it does not need to retrieve data that the page is not interested in refreshing.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -943,7 +982,7 @@ import { router } from '@inertiajs/react'
 router.get('/users', { search: 'John' }, { only: ['users'] })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -953,15 +992,14 @@ router.get('/users', { search: 'John' }, { only: ['users'] })
 
 :::
 
-For more information on this feature, check out the [partial reloads](/guide/partial-reloads.md) documentation.
+For more information on this feature, check out the [partial reloads](/guide/partial-reloads) documentation.
 
-## View transitions
-
-@available_since core=2.2.13
+## View Transitions
 
 You may enable [View transitions](/guide/view-transitions) for a visit by setting the `viewTransition` option to `true`. This will use the browser's View Transitions API to animate the page transition.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -978,7 +1016,7 @@ import { router } from '@inertiajs/react'
 router.visit('/another-page', { viewTransition: true })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -988,11 +1026,64 @@ router.visit('/another-page', { viewTransition: true })
 
 :::
 
-## Visit cancellation
+## Visit Cancellation
 
-You can cancel a visit using a cancel token, which Inertia automatically generates and provides via the `onCancelToken()` callback prior to making the visit.
+@available_since core=3.0.0
+
+You may cancel all in-flight visits using the `router.cancelAll()` method. By default, this cancels all synchronous, asynchronous, and prefetch requests.
 
 :::tabs key:frameworks
+
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+// Cancel all in-flight requests...
+router.cancelAll()
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+
+// Cancel all in-flight requests...
+router.cancelAll()
+```
+
+== Svelte
+
+```js
+import { router } from '@inertiajs/svelte'
+
+// Cancel all in-flight requests...
+router.cancelAll()
+```
+
+:::
+
+You may selectively cancel specific request types by passing an options object.
+
+```js
+// Cancel only async requests (leaving sync and prefetch active)...
+router.cancelAll({ sync: false, prefetch: false })
+
+// Cancel only sync requests...
+router.cancelAll({ async: false, prefetch: false })
+
+// Cancel everything except prefetch requests...
+router.cancelAll({ prefetch: false })
+```
+
+### Cancel Tokens
+
+@available_since core=0.3.0
+
+For more granular control, you may cancel individual visits using a cancel token. Inertia automatically generates a cancel token and provides it via the `onCancelToken()` callback prior to making the visit.
+
+:::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -1019,7 +1110,7 @@ router.post('/users', data, {
 this.cancelToken.cancel()
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -1036,11 +1127,12 @@ this.cancelToken.cancel()
 
 The `onCancel()` and `onFinish()` event callbacks will be executed when a visit is cancelled.
 
-## Event callbacks
+## Event Callbacks
 
-In addition to Inertia's [global events](/guide/events.md), Inertia also provides a number of per-visit event callbacks.
+In addition to Inertia's [global events](/guide/events), Inertia also provides a number of per-visit event callbacks.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -1052,8 +1144,12 @@ router.post('/users', data, {
   onProgress: (progress) => {},
   onSuccess: (page) => {},
   onError: (errors) => {},
+  onHttpException: (response) => {},
+  onNetworkError: (error) => {},
   onCancel: () => {},
   onFinish: (visit) => {},
+  onPrefetching: () => {},
+  onPrefetched: () => {},
 })
 ```
 
@@ -1068,12 +1164,16 @@ router.post('/users', data, {
   onProgress: (progress) => {},
   onSuccess: (page) => {},
   onError: (errors) => {},
+  onHttpException: (response) => {},
+  onNetworkError: (error) => {},
   onCancel: () => {},
   onFinish: (visit) => {},
+  onPrefetching: () => {},
+  onPrefetched: () => {},
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -1084,16 +1184,21 @@ router.post('/users', data, {
   onProgress: (progress) => {},
   onSuccess: (page) => {},
   onError: (errors) => {},
+  onHttpException: (response) => {},
+  onNetworkError: (error) => {},
   onCancel: () => {},
   onFinish: (visit) => {},
+  onPrefetching: () => {},
+  onPrefetched: () => {},
 })
 ```
 
 :::
 
-Returning `false` from the `onBefore()` callback will cause the visit to be cancelled.
+Returning `false` from the `onBefore()` callback will cause the visit to be canceled. Returning `false` from `onHttpException()` or `onNetworkError()` will prevent the corresponding [global event](/guide/events) from being fired and its default behavior.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -1114,7 +1219,7 @@ router.delete(`/users/${user.id}`, {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -1129,6 +1234,7 @@ router.delete(`/users/${user.id}`, {
 It's also possible to return a promise from the `onSuccess()` and `onError()` callbacks. When doing so, the "finish" event will be delayed until the promise has resolved.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -1159,7 +1265,7 @@ router.post(url, {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
