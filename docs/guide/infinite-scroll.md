@@ -1,10 +1,8 @@
-# Infinite scroll
-
-@available_since rails=3.12.0 core=2.2.0
+# Infinite Scroll
 
 Inertia's infinite scroll feature loads additional pages of content as users scroll, replacing traditional pagination controls. This is great for applications like chat interfaces, social feeds, photo grids, and product listings.
 
-## Server-side
+## Server-Side
 
 To configure your paginated data for infinite scrolling, you should use the `InertiaRails.scroll` method when returning your response. This method automatically configures the proper merge behavior and normalizes pagination metadata for the frontend component.
 
@@ -79,11 +77,12 @@ end
 
 The `InertiaRails.scroll` method works with [Pagy](https://github.com/ddnexus/pagy) and [Kaminari](https://github.com/kaminari/kaminari) gems out of the box. For more details, check out the [`InertiaRails.scroll` method](#inertiarailsscroll-method) documentation.
 
-## Client-side
+## Client-Side
 
 On the client side, Inertia provides the `<InfiniteScroll>` component to automatically load additional pages of content. The component accepts a `data` prop that specifies the key of the prop containing your paginated data. The `<InfiniteScroll>` component should wrap the content that depends on the paginated data.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -118,7 +117,7 @@ export default function Users({ users }) {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -133,15 +132,16 @@ export default function Users({ users }) {
 </InfiniteScroll>
 ```
 
-::::
+:::
 
 The component uses [intersection observers](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API) to detect when users scroll near the end of the content and automatically triggers requests to load the next page. New data is merged with existing content rather than replacing it.
 
-## Loading buffer
+## Loading Buffer
 
 You can control how early content begins loading by setting a buffer distance. The buffer specifies how many pixels before the end of the content loading should begin.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -160,7 +160,7 @@ You can control how early content begins loading by setting a buffer distance. T
 </InfiniteScroll>
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <InfiniteScroll data="users" buffer={500}>
@@ -168,15 +168,16 @@ You can control how early content begins loading by setting a buffer distance. T
 </InfiniteScroll>
 ```
 
-::::
+:::
 
 In the example above, content will start loading 500 pixels before reaching the end of the current content. A larger buffer loads content earlier but potentially loads content that users may never see.
 
-## URL synchronization
+## URL Synchronization
 
 The infinite scroll component updates the browser URL's query string (`?page=...`) as users scroll through content. The URL reflects which page has the most visible items on screen, updating in both directions as users scroll up or down. This allows users to bookmark or share links to specific pages. You can disable this behavior to maintain the original page URL.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -195,7 +196,7 @@ The infinite scroll component updates the browser URL's query string (`?page=...
 </InfiniteScroll>
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <InfiniteScroll data="users" preserve-url>
@@ -203,7 +204,7 @@ The infinite scroll component updates the browser URL's query string (`?page=...
 </InfiniteScroll>
 ```
 
-::::
+:::
 
 This is useful when infinite scroll is used for secondary content that shouldn't affect the main page URL, such as comments on a blog post or related products on a product page.
 
@@ -214,6 +215,7 @@ When filters or other parameters change, you may need to reset the infinite scro
 You can reset data using the `reset` visit option.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -270,12 +272,12 @@ export default function Users({ users }) {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
   import { InfiniteScroll, router } from '@inertiajs/svelte'
-  export let users
+  let { users } = $props()
 
   const show = (role) => {
     router.visit(route('users'), {
@@ -286,8 +288,8 @@ export default function Users({ users }) {
   }
 </script>
 
-<button on:click={() => show('admin')}>Show admins</button>
-<button on:click={() => show('customer')}>Show customers</button>
+<button onclick={() => show('admin')}>Show admins</button>
+<button onclick={() => show('customer')}>Show customers</button>
 
 <InfiniteScroll data="users">
   {#each users as user (user.id)}
@@ -296,15 +298,16 @@ export default function Users({ users }) {
 </InfiniteScroll>
 ```
 
-::::
+:::
 
 For more information about the reset option, see the [Resetting props](/guide/merging-props#resetting-props) documentation.
 
-## Loading direction
+## Loading Direction
 
 The infinite scroll component loads content in both directions when you scroll near the start or end. You can control this behavior using the `only-next` and `only-previous` props.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -349,7 +352,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <!-- Only load the next page -->
@@ -368,15 +371,16 @@ export default () => (
 </InfiniteScroll>
 ```
 
-::::
+:::
 
 The default option is particularly useful when users start on a middle page and need to scroll in both directions to access all content.
 
-## Reverse mode
+## Reverse Mode
 
 For chat applications, timelines, or interfaces where content is sorted descendingly (newest items at the bottom), you can enable reverse mode. This configures the component to load older content when scrolling upward.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -395,7 +399,7 @@ For chat applications, timelines, or interfaces where content is sorted descendi
 </InfiniteScroll>
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <InfiniteScroll data="messages" reverse>
@@ -403,13 +407,14 @@ For chat applications, timelines, or interfaces where content is sorted descendi
 </InfiniteScroll>
 ```
 
-::::
+:::
 
 In reverse mode, the component flips the loading directions so that scrolling up loads the next page (older content) and scrolling down loads the previous page (newer content). The component handles the loading positioning, but you are responsible for reversing your content to display in the correct order.
 
 Reverse mode also enables automatic scrolling to the bottom on initial load, which you can disable with <Vue>`:auto-scroll="false"`</Vue><React>`autoScroll={false}`</React><Svelte>`auto-scroll={false}`</Svelte>.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -428,7 +433,7 @@ Reverse mode also enables automatic scrolling to the bottom on initial load, whi
 </InfiniteScroll>
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <InfiniteScroll data="messages" reverse auto-scroll={false}>
@@ -436,13 +441,14 @@ Reverse mode also enables automatic scrolling to the bottom on initial load, whi
 </InfiniteScroll>
 ```
 
-::::
+:::
 
-## Manual mode
+## Manual Mode
 
 Manual mode disables automatic loading when scrolling and allows you to control when content loads through the `next` and `previous` slots. For more details about available slot properties and customization options, see the [Slots](#slots) documentation.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -496,42 +502,43 @@ export default ({ users }) => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
   import { InfiniteScroll } from '@inertiajs/svelte'
-  export let users
+  let { users } = $props()
 </script>
 
 <InfiniteScroll data="users" manual>
-  <div slot="previous" let:hasMore let:fetch let:loading>
+  {#snippet previous({ hasMore, fetch, loading })}
     {#if hasMore}
-      <button on:click={fetch} disabled={loading}>
+      <button onclick={fetch} disabled={loading}>
         {loading ? 'Loading...' : 'Load previous'}
       </button>
     {/if}
-  </div>
+  {/snippet}
 
   {#each users as user (user.id)}
     <div>{user.name}</div>
   {/each}
 
-  <div slot="next" let:hasMore let:fetch let:loading>
+  {#snippet next({ hasMore, fetch, loading })}
     {#if hasMore}
-      <button on:click={fetch} disabled={loading}>
+      <button onclick={fetch} disabled={loading}>
         {loading ? 'Loading...' : 'Load more'}
       </button>
     {/if}
-  </div>
+  {/snippet}
 </InfiniteScroll>
 ```
 
-::::
+:::
 
 You can also configure the component to automatically switch to manual mode after a certain number of pages using the <Vue>`:manual-after`</Vue><React>`manualAfter`</React><Svelte>`manual-after`</Svelte> prop.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -550,7 +557,7 @@ You can also configure the component to automatically switch to manual mode afte
 </InfiniteScroll>
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <InfiniteScroll data="users" manual-after={3}>
@@ -558,17 +565,18 @@ You can also configure the component to automatically switch to manual mode afte
 </InfiniteScroll>
 ```
 
-::::
+:::
 
 ## Slots
 
 The infinite scroll component provides several slots to customize the loading experience. These slots allow you to display custom loading indicators and create manual load controls. Each slot receives properties that provide loading state information and functions to trigger content loading.
 
-### Default slot
+### Default Slot
 
 The main content area where you render your data items. This slot receives loading state information.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -592,21 +600,24 @@ The main content area where you render your data items. This slot receives loadi
 </InfiniteScroll>
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
-<InfiniteScroll data="users" let:loading let:loadingPrevious let:loadingNext>
-  <!-- Your content with access to loading states -->
+<InfiniteScroll data="users">
+  {#snippet children({ loading, loadingPrevious, loadingNext })}
+    <!-- Your content with access to loading states -->
+  {/snippet}
 </InfiniteScroll>
 ```
 
-::::
+:::
 
-### Loading slot
+### Loading Slot
 
 The loading slot is used as a fallback when loading content and no custom `before` or `after` slots are provided. This creates a default loading indicator.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -626,18 +637,21 @@ The loading slot is used as a fallback when loading content and no custom `befor
 </InfiniteScroll>
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <InfiniteScroll data="users">
   <!-- Your content -->
-  <div slot="loading">Loading more users...</div>
+
+  {#snippet loading()}
+    Loading more users...
+  {/snippet}
 </InfiniteScroll>
 ```
 
-::::
+:::
 
-### Previous and next slots
+### Previous and Next Slots
 
 The `previous` and `next` slots are rendered above and below the main content, typically used for manual load controls. These slots receive several properties including loading states, fetch functions, and mode indicators.
 
@@ -697,32 +711,32 @@ export default ({ users }) => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
   import { InfiniteScroll } from '@inertiajs/svelte'
-  export let users
+  let { users } = $props()
 </script>
 
 <InfiniteScroll data="users" manual>
-  <div slot="previous" let:hasMore let:fetch let:loading let:manualMode>
+  {#snippet previous({ hasMore, fetch, loading, manualMode })}
     {#if manualMode && hasMore}
       <button on:click={fetch} disabled={loading}>
         {loading ? 'Loading...' : 'Load previous'}
       </button>
     {/if}
-  </div>
+  {/snippet}
   {#each users as user (user.id)}
     <div>{user.name}</div>
   {/each}
-  <div slot="next" let:hasMore let:fetch let:loading let:manualMode>
+  {#snippet next({ hasMore, fetch, loading, manualMode })}
     {#if manualMode && hasMore}
       <button on:click={fetch} disabled={loading}>
         {loading ? 'Loading...' : 'Load more'}
       </button>
     {/if}
-  </div>
+  {/snippet}
 </InfiniteScroll>
 ```
 
@@ -730,21 +744,24 @@ export default ({ users }) => (
 
 The `loading`, `previous`, and `next` slots receive the following properties:
 
-- `loading` - Whether the slot is currently loading content
-- `loadingPrevious` - Whether previous content is loading
-- `loadingNext` - Whether next content is loading
-- `fetch` - Function to trigger loading for the slot
-- `hasMore` - Whether more content is available for the slot
-- `hasPrevious` - Whether more previous content is available
-- `hasNext` - Whether more next content is available
-- `manualMode` - Whether manual mode is active
-- `autoMode` - Whether automatic loading is active
+| Property          | Description                                    |
+| :---------------- | :--------------------------------------------- |
+| `loading`         | Whether the slot is currently loading content  |
+| `loadingPrevious` | Whether previous content is loading            |
+| `loadingNext`     | Whether next content is loading                |
+| `fetch`           | Function to trigger loading for the slot       |
+| `hasMore`         | Whether more content is available for the slot |
+| `hasPrevious`     | Whether more previous content is available     |
+| `hasNext`         | Whether more next content is available         |
+| `manualMode`      | Whether manual mode is active                  |
+| `autoMode`        | Whether automatic loading is active            |
 
-## Custom element
+## Custom Element
 
 The `InfiniteScroll` component renders as a `<div>` element. You may customize this to use any HTML element using the `as` prop.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -767,7 +784,7 @@ The `InfiniteScroll` component renders as a `<div>` element. You may customize t
 </InfiniteScroll>
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <InfiniteScroll data="products" as="ul">
@@ -777,13 +794,14 @@ The `InfiniteScroll` component renders as a `<div>` element. You may customize t
 </InfiniteScroll>
 ```
 
-::::
+:::
 
-## Element targeting
+## Element Targeting
 
 The infinite scroll component automatically tracks content and assigns page numbers to elements for [URL synchronization](#url-synchronization). When your data items are not direct children of the component's root element, you need to specify which element contains the actual data items using the <Vue>`items-element`</Vue><React>`itemsElement`</React><Svelte>`items-element`</Svelte> prop.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -826,7 +844,7 @@ The infinite scroll component automatically tracks content and assigns page numb
 </InfiniteScroll>
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <InfiniteScroll data="users" items-element="#table-body">
@@ -845,13 +863,14 @@ The infinite scroll component automatically tracks content and assigns page numb
 </InfiniteScroll>
 ```
 
-::::
+:::
 
 In this example, the component monitors the `#table-body` element and automatically tags each `<tr>` with a page number as new content loads. This enables proper URL updates based on which page's content is most visible in the viewport.
 
 You can also specify custom trigger elements for loading more content using CSS selectors. This prevents the default trigger elements from being rendered and uses intersection observers on your custom elements instead.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -869,7 +888,7 @@ You can also specify custom trigger elements for loading more content using CSS 
         </tr>
       </thead>
       <tbody id="table-body">
-        <tr v-for="user in users.data" :key="user.id">
+        <tr v-for="user in users" :key="user.id">
           <td>{{ user.name }}</td>
         </tr>
       </tbody>
@@ -899,7 +918,7 @@ You can also specify custom trigger elements for loading more content using CSS 
       </tr>
     </thead>
     <tbody id="table-body">
-      {users.data.map((user) => (
+      {users.map((user) => (
         <tr key={user.id}>
           <td>{user.name}</td>
         </tr>
@@ -914,7 +933,7 @@ You can also specify custom trigger elements for loading more content using CSS 
 </InfiniteScroll>
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <InfiniteScroll
@@ -928,7 +947,7 @@ You can also specify custom trigger elements for loading more content using CSS 
       <tr><th>Name</th></tr>
     </thead>
     <tbody id="table-body">
-      {#each users.data as user (user.id)}
+      {#each users as user (user.id)}
         <tr>
           <td>{user.name}</td>
         </tr>
@@ -941,11 +960,12 @@ You can also specify custom trigger elements for loading more content using CSS 
 </InfiniteScroll>
 ```
 
-::::
+:::
 
 Alternatively, you can use template refs instead of CSS selectors. This avoids adding HTML attributes and provides direct element references.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -970,7 +990,7 @@ const tableBody = ref()
         </tr>
       </thead>
       <tbody ref="tableBody">
-        <tr v-for="user in users.data" :key="user.id">
+        <tr v-for="user in users" :key="user.id">
           <td>{{ user.name }}</td>
         </tr>
       </tbody>
@@ -1008,7 +1028,7 @@ export default ({ users }) => {
           </tr>
         </thead>
         <tbody ref={tableBody}>
-          {users.data.map((user) => (
+          {users.map((user) => (
             <tr key={user.id}>
               <td>{user.name}</td>
             </tr>
@@ -1025,12 +1045,12 @@ export default ({ users }) => {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
   import { InfiniteScroll } from '@inertiajs/svelte'
-  export let users
+  let { users } = $props()
 
   let tableHeader
   let tableFooter
@@ -1048,7 +1068,7 @@ export default ({ users }) => {
       <tr><th>Name</th></tr>
     </thead>
     <tbody bind:this={tableBody}>
-      {#each users.data as user (user.id)}
+      {#each users as user (user.id)}
         <tr>
           <td>{user.name}</td>
         </tr>
@@ -1061,20 +1081,21 @@ export default ({ users }) => {
 </InfiniteScroll>
 ```
 
-::::
+:::
 
-## Scroll containers
+## Scroll Containers
 
 The infinite scroll component works within any scrollable container, not just the main document. The component automatically adapts to use the custom scroll container for trigger detection and calculations instead of the main document scroll.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
 <template>
   <div style="height: 400px; overflow-y: auto;">
     <InfiniteScroll data="users">
-      <div v-for="user in users.data" :key="user.id">
+      <div v-for="user in users" :key="user.id">
         {{ user.name }}
       </div>
     </InfiniteScroll>
@@ -1087,28 +1108,28 @@ The infinite scroll component works within any scrollable container, not just th
 ```jsx
 <div style={{ height: '400px', overflowY: 'auto' }}>
   <InfiniteScroll data="users">
-    {users.data.map((user) => (
+    {users.map((user) => (
       <div key={user.id}>{user.name}</div>
     ))}
   </InfiniteScroll>
 </div>
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <div style="height: 400px; overflow-y: auto;">
   <InfiniteScroll data="users">
-    {#each users.data as user (user.id)}
+    {#each users as user (user.id)}
       <div>{user.name}</div>
     {/each}
   </InfiniteScroll>
 </div>
 ```
 
-::::
+:::
 
-### Multiple scroll containers
+### Multiple Scroll Containers
 
 Sometimes you may need to render multiple infinite scroll components on a single page. However, if both components use the default `page` query parameter for [URL synchronization](#url-synchronization), they will conflict with each other. To resolve this, instruct each paginator to use a custom `page_name`.
 
@@ -1188,11 +1209,12 @@ end
 
 The `InertiaRails.scroll` method automatically detects the `page_name` from each paginator metadata, allowing both scroll containers to maintain independent pagination state. This results in URLs like `?users=2&orders=3` instead of conflicting `?page=` parameters.
 
-## Programmatic access
+## Programmatic Access
 
 When you need to trigger loading actions programmatically, you may use a template ref.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -1241,12 +1263,12 @@ export default ({ users }) => {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
   import { InfiniteScroll } from '@inertiajs/svelte'
-  export let users
+  let { users } = $props()
 
   let infiniteScrollRef
 
@@ -1255,16 +1277,16 @@ export default ({ users }) => {
   }
 </script>
 
-<button on:click={fetchNext}>Load More</button>
+<button onclick={fetchNext}>Load More</button>
 
 <InfiniteScroll bind:this={infiniteScrollRef} data="users" manual>
-  {#each users.data as user (user.id)}
+  {#each users as user (user.id)}
     <div>{user.name}</div>
   {/each}
 </InfiniteScroll>
 ```
 
-::::
+:::
 
 The component exposes the following methods:
 
@@ -1290,7 +1312,7 @@ InertiaRails.scroll(metadata_hash) { data.as_json(...) }
 
 If you don't use Pagy or Kaminari, or need custom pagination behavior, you may use the additional options that `scroll()` accepts.
 
-### Hash metadata
+### Hash Metadata
 
 When using custom pagination libraries or manual pagination, you can provide pagination metadata as a hash:
 
@@ -1317,7 +1339,7 @@ end
 
 The hash must include all required keys: `page_name`, `current_page`, `previous_page`, and `next_page`.
 
-### Custom pagination adapters
+### Custom Pagination Adapters
 
 If you're using a pagination library that isn't supported out of the box, you can create and register a custom adapter:
 
@@ -1343,7 +1365,7 @@ InertiaRails::ScrollMetadata.register_adapter(CustomPaginatorAdapter)
 
 Adapters are checked in reverse registration order, so custom adapters registered later will take precedence over built-in adapters.
 
-### Overriding attributes
+### Overriding Attributes
 
 You can override any of the default attributes by passing a hash of options.
 
@@ -1361,7 +1383,7 @@ class UsersController < ApplicationController
 end
 ```
 
-### Wrapper option
+### Wrapper Option
 
 The `wrapper` option allows you to specify a custom key for nested data structures. This is useful when your data is wrapped in an object with metadata:
 

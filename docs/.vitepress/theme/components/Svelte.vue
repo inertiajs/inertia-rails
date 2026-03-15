@@ -3,7 +3,7 @@ import Opt from './Opt.vue'
 </script>
 
 <template>
-  <Opt v="Svelte 4|Svelte 5">
+  <Opt v="Svelte">
     <slot></slot>
   </Opt>
 </template>

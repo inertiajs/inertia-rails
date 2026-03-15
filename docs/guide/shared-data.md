@@ -1,8 +1,8 @@
-# Shared data
+# Shared Data
 
 Sometimes you need to access specific pieces of data on numerous pages within your application. For example, you may need to display the current user in the site header. Passing this data manually in each response across your entire application is cumbersome. Thankfully, there is a better option: shared data.
 
-## Sharing data
+## Sharing Data
 
 The `inertia_share` method allows you to define data that will be available to all controller actions, automatically merging with page-specific props.
 
@@ -97,11 +97,12 @@ end
 
 For more information on once props, see the [once props](/guide/once-props) documentation.
 
-## Accessing shared data
+## Accessing Shared Data
 
 Once you have shared the data server-side, you will be able to access it within any of your pages or components. Here's an example of how to access shared data in a layout component.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -141,7 +142,7 @@ export default function Layout({ children }) {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -150,7 +151,7 @@ export default function Layout({ children }) {
 
 <main>
   <header>
-    You are logged in as: {$page.props.auth.user.name}
+    You are logged in as: {page.props.auth.user.name}
   </header>
   <article>
     <slot />
@@ -160,15 +161,15 @@ export default function Layout({ children }) {
 
 :::
 
+## TypeScript
+
+You may configure the shared props type globally using [TypeScript's declaration merging](/guide/typescript#shared-page-props).
+
 ## Flash Data
 
 @available_since rails=3.17.0 core=2.3.3
 
 For one-time notifications like toast messages or success alerts, you may use [flash data](/guide/flash-data). Unlike shared data, flash data is not persisted in the browser's history state, so it won't reappear when navigating through history.
-
-## TypeScript
-
-When using TypeScript, you can configure global types for shared props using declaration merging. See the [TypeScript documentation](/guide/typescript#shared-page-props) for more information.
 
 ## Deep Merging Shared Data
 

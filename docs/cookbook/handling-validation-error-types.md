@@ -85,7 +85,7 @@ declare module '@inertiajs/react' {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```typescript
 // frontend/app/types/inertia-rails.d.ts

@@ -122,6 +122,7 @@ export default withMermaid({
             { text: 'Links', link: '/guide/links' },
             { text: 'Manual visits', link: '/guide/manual-visits' },
             { text: 'Forms', link: '/guide/forms' },
+            { text: 'HTTP requests', link: '/guide/http-requests' },
             { text: 'File uploads', link: '/guide/file-uploads' },
             { text: 'Validation', link: '/guide/validation' },
             { text: 'View transitions', link: '/guide/view-transitions' },
