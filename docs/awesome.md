@@ -4,6 +4,7 @@ A curated list of community resources, tools, and content for Inertia Rails.
 
 ## Starter kits (alphabetical)
 
+- [GrowthX Starter Kit](https://github.com/growthxai/starter) - Rails 8 + React 19 + Inertia.js + Shadcn/UI Starter Kit from GrowthX.ai
 - [Inertia Rails Starter Kits](https://inertia-rails.dev/guide/starter-kits) — Official starter kits for React, Vue, and Svelte (TypeScript, shadcn/ui)
 - [Kaze](https://github.com/gtkvn/kaze) — Rails authentication scaffolding (Hotwire/React/Vue)
 - [Kickstart](https://github.com/alec-c4/kickstart) — Rails application starter kits, Inertia-based (React, Svelte, Vue) and classic (API, esbuild and importmaps)
