@@ -85,7 +85,7 @@ export default function Welcome({ user }) {
 
 :::
 
-Given the page above, you can render the page by returning an Inertia response from a controller or route. In this example, let's assume this page is stored at `app/frontend/pages/user/show.(jsx|vue|svelte)` within a Rails application.
+Given the page above, you can render the page by returning an Inertia response from a controller or route. In this example, let's assume this page is stored at `app/frontend/pages/users/show.(jsx|vue|svelte)` within a Rails application.
 
 ```ruby
 class UsersController < ApplicationController
