@@ -39,7 +39,7 @@ end
 # Child controller
 class UsersController < ApplicationController
   # Inherits app_name and version, adds/overrides auth
-  inertia_share auth: -> { { user: current_user.as_json(only: [:id, :name, :email]) } }
+  inertia_share auth: -> { { user: current_user&.as_json(only: [:id, :name, :email]) } }
 end
 ```
 
