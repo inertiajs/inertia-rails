@@ -16,7 +16,7 @@ class EventsController < ApplicationController
   # Dynamic sharing: Data is evaluated at render time
   inertia_share do
     {
-      user: current_user,
+      user: current_user.as_json(only: [:id, :name, :email]),
       notifications: current_user&.unread_notifications_count
     } if user_signed_in?
   end
@@ -39,7 +39,7 @@ end
 # Child controller
 class UsersController < ApplicationController
   # Inherits app_name and version, adds/overrides auth
-  inertia_share auth: -> { { user: current_user } }
+  inertia_share auth: -> { { user: current_user.as_json(only: [:id, :name, :email]) } }
 end
 ```
 
