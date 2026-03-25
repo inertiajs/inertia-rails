@@ -114,11 +114,13 @@ Requires a JavaScript server to be available at `ssr_url`. [_Example_](https://g
 
 ### `ssr_url` _(experimental)_
 
-**Default**: `"http://localhost:13714"`
+**Default**: `nil` (auto-detects from Vite dev server, falls back to `http://localhost:13714/render`)
 **ENV**: `INERTIA_SSR_URL`
 
-The URL of the JS server that will pre-render the app using the specified
-component and props.
+The URL of the SSR server. When `nil`, auto-detects from the Vite dev server.
+
+> [!NOTE]
+> Inertia SSR expects the server to respond at `/render` (production) or `/__inertia_ssr` (dev). If you set a server address, `/render` is appended automatically unless the URL already ends with `/render` or `/__inertia_ssr`.
 
 ### `version` _(recommended)_
 

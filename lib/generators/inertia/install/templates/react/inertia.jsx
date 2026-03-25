@@ -1,54 +1,17 @@
 import { createInertiaApp } from '@inertiajs/react'
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
 
 createInertiaApp({
-  // Set default page title
-  // see https://inertia-rails.dev/guide/title-and-meta
-  //
-  // title: title => title ? `${title} - App` : 'App',
+  pages: "../pages",
 
-  // Disable progress bar
-  //
-  // see https://inertia-rails.dev/guide/progress-indicators
-  // progress: false,
-
-  resolve: (name) => {
-    const pages = import.meta.glob('../pages/**/*.jsx', {
-      eager: true,
-    })
-    const page = pages[`../pages/${name}.jsx`]
-    if (!page) {
-      console.error(`Missing Inertia page component: '${name}.jsx'`)
-    }
-
-    // To use a default layout, import the Layout component
-    // and use the following lines.
-    // see https://inertia-rails.dev/guide/pages#default-layouts
-    //
-    // page.default.layout ||= (page) => (<Layout>{page}</Layout>)
-
-    return page
-  },
-
-  setup({ el, App, props }) {
-    createRoot(el).render(
-      <StrictMode>
-        <App {...props} />
-      </StrictMode>
-    )
-  },
+  strictMode: true,
 
   defaults: {
     form: {
       forceIndicesArrayFormatInFormData: false,
       withAllErrors: true,
     },
-    future: {
-      useScriptElementForInitialPage: true,
-      useDataInertiaHeadAttribute: true,
-      useDialogForErrorModal: true,
-      preserveEqualProps: true,
+    visitOptions: () => {
+      return { queryStringArrayFormat: "brackets" }
     },
   },
 }).catch((error) => {

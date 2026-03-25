@@ -29,6 +29,7 @@ module InertiaRails
         unless keep_inertia_session_options?(status)
           request.session.delete(:inertia_errors)
           request.session.delete(:inertia_clear_history)
+          request.session.delete(:inertia_preserve_fragment)
         end
 
         status = 303 if inertia_non_post_redirect?(status)
@@ -100,9 +101,7 @@ module InertiaRails
       end
 
       def copy_xsrf_to_csrf!
-        return unless @env['HTTP_X_XSRF_TOKEN'] && (inertia_request? || precognition_request?)
-
-        @env['HTTP_X_CSRF_TOKEN'] = @env['HTTP_X_XSRF_TOKEN']
+        @env['HTTP_X_CSRF_TOKEN'] = @env['HTTP_X_XSRF_TOKEN'] if @env['HTTP_X_XSRF_TOKEN']
       end
 
       def precognition_request?

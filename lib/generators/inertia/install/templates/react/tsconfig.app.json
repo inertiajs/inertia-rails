@@ -24,10 +24,9 @@
     "noFallthroughCasesInSwitch": true,
 
     /* Aliases */
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["<%= js_destination_path %>/*"],
-      "~/*": ["<%= js_destination_path %>/*"]
+      "@/*": ["./<%= js_destination_path %>/*"],
+      "~/*": ["./<%= js_destination_path %>/*"]
     }
   },
   "include": ["<%= js_destination_path %>"]

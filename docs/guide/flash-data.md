@@ -2,7 +2,7 @@
 
 @available_since rails=3.17.0 core=2.3.3
 
-Sometimes you may wish to send one-time data to your frontend that shouldn't reappear when users navigate through browser history. Unlike regular props, flash data isn't persisted in history state, making it ideal for success messages, newly created IDs, or other temporary values.
+Flash data lets you send one-time data to your frontend that won't reappear when users navigate through browser history. Unlike regular props, flash data isn't persisted in history state, making it ideal for success messages, newly created IDs, or other temporary values.
 
 ## Flashing Data
 
@@ -121,21 +121,21 @@ export default function Layout({ children }) {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
   import { page } from '@inertiajs/svelte'
 </script>
 
-{#if $page.flash.toast}
-  <div class="toast">{$page.flash.toast.message}</div>
+{#if page.flash.toast}
+  <div class="toast">{page.flash.toast.message}</div>
 {/if}
 ```
 
 :::
 
-## The onFlash Callback
+## The `onFlash` Callback
 
 You may use the `onFlash` callback to handle flash data when making requests.
 
@@ -209,7 +209,7 @@ router.on('flash', (event) => {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -223,13 +223,19 @@ router.on('flash', (event) => {
 
 :::
 
+> [!WARNING]
+> Event listeners registered inside components should be cleaned up when the
+> component unmounts to prevent them from accumulating and firing multiple
+> times. This is especially important in non-persistent layouts. See [removing
+> event listeners](/guide/events#removing-listeners) for more information.
+
 Native browser events are also supported.
 
 :::tabs key:frameworks
 
 == Vue
 
-```js Vue icon="vuejs"
+```js
 document.addEventListener('inertia:flash', (event) => {
   console.log(event.detail.flash)
 })
@@ -243,7 +249,7 @@ document.addEventListener('inertia:flash', (event) => {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 document.addEventListener('inertia:flash', (event) => {
@@ -253,10 +259,7 @@ document.addEventListener('inertia:flash', (event) => {
 
 :::
 
-The `flash` event is not cancelable. During [partial reloads](/guide/partial-reloads), it only fires if the flash data has changed.
-
-> [!WARNING]
-> When using event listeners in non-persistent layouts or components that may be unmounted, be sure to remove the listener when the component is destroyed to prevent memory leaks. See the [events documentation](/guide/events) for more information on removing event listeners.
+The `flash` event is not cancelable and fires on every response that carries flash data.
 
 ## Client-Side Flash
 
@@ -282,7 +285,7 @@ router.flash('foo', 'bar')
 router.flash({ foo: 'bar' })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -315,7 +318,7 @@ router.flash((current) => ({ ...current, bar: 'baz' }))
 router.flash(() => ({}))
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -328,20 +331,8 @@ router.flash(() => ({}))
 
 ## TypeScript
 
-You may configure the flash data type globally using TypeScript's declaration merging.
+You may configure the flash data type globally using [TypeScript's declaration merging](/guide/typescript#flash-data).
 
-```ts
-// global.d.ts
-declare module '@inertiajs/core' {
-  export interface InertiaConfig {
-    flashDataType: {
-      toast?: {
-        type: 'success' | 'error'
-        message: string
-      }
-    }
-  }
-}
-```
+## Testing
 
-With this configuration, `page.flash.toast` will be properly typed as `{ type: "success" | "error"; message: string } | undefined`.
+For information on testing flash data, see the [testing documentation](/guide/testing#testing-flash-data).

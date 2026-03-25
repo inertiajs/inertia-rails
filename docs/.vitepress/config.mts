@@ -2,8 +2,8 @@ import { buildEndGenerateOpenGraphImages } from '@nolebase/vitepress-plugin-og-i
 import fs from 'fs-extra'
 import { createRequire } from 'node:module'
 import path from 'path'
-import { defineConfig } from 'vitepress'
 import llmstxt from 'vitepress-plugin-llms'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 import { availableSinceMarkdownPlugin } from './availableSinceMarkdownPlugin'
 import { tabsMarkdownPlugin } from './vitepress-plugin-tabs/tabsMarkdownPlugin'
 
@@ -16,7 +16,7 @@ const image = `${site}/og-image.png`
 const require = createRequire(import.meta.url)
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withMermaid({
   title,
   description,
 
@@ -121,9 +121,13 @@ export default defineConfig({
             { text: 'Title & meta', link: '/guide/title-and-meta' },
             { text: 'Links', link: '/guide/links' },
             { text: 'Manual visits', link: '/guide/manual-visits' },
+            { text: 'Instant visits', link: '/guide/instant-visits' },
             { text: 'Forms', link: '/guide/forms' },
+            { text: 'HTTP requests', link: '/guide/http-requests' },
+            { text: 'Optimistic updates', link: '/guide/optimistic-updates' },
             { text: 'File uploads', link: '/guide/file-uploads' },
             { text: 'Validation', link: '/guide/validation' },
+            { text: 'Layouts', link: '/guide/layouts' },
             { text: 'View transitions', link: '/guide/view-transitions' },
           ],
         },

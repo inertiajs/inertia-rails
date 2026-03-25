@@ -93,6 +93,12 @@ module Inertia
           prepend_file vite_config_path, "#{FRAMEWORKS[framework]['vite_plugin_import']}\n"
         end
 
+        unless File.read(vite_config_path).include?('@inertiajs/vite')
+          say 'Adding Inertia Vite plugin'
+          insert_into_file vite_config_path, "\n    inertia(),", after: 'plugins: ['
+          prepend_file vite_config_path, "import inertia from '@inertiajs/vite'\n"
+        end
+
         say "Copying #{inertia_entrypoint} entrypoint"
         copy_file "#{framework}/#{inertia_entrypoint}", js_file_path("entrypoints/#{inertia_entrypoint}")
 

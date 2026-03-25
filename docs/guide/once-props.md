@@ -41,6 +41,7 @@ end
 You may refresh a once prop from the client-side using a [partial reload](/guide/partial-reloads). The server will always resolve a once prop when explicitly requested.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -57,7 +58,7 @@ import { router } from '@inertiajs/react'
 router.reload({ only: ['plans'] })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'

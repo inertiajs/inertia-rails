@@ -1,7 +1,7 @@
 <script>
   import { Form } from '@inertiajs/svelte'
 
-  let { <%= singular_table_name %>, submitText, restProps } = $props()
+  let { <%= singular_table_name %>, submitText, ...restProps } = $props()
 </script>
 
 <Form

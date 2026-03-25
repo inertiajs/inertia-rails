@@ -7,11 +7,12 @@ Inertia supports the [View Transitions API](https://developer.chrome.com/docs/we
 > [!NOTE]
 > The View Transitions API is a [relatively new browser feature](https://caniuse.com/view-transitions). Inertia gracefully falls back to standard page transitions in browsers that don't support the API.
 
-## Enabling transitions
+## Enabling Transitions
 
 You may enable view transitions for a visit by setting the `viewTransition` option to `true`. By default, this will apply a cross-fade transition between pages.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -28,7 +29,7 @@ import { router } from '@inertiajs/react'
 router.visit('/another-page', { viewTransition: true })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -38,11 +39,12 @@ router.visit('/another-page', { viewTransition: true })
 
 :::
 
-## Transition callbacks
+## Transition Callbacks
 
 You may also pass a callback to the `viewTransition` option, which will receive the standard [`ViewTransition`](https://developer.mozilla.org/en-US/docs/Web/API/ViewTransition) instance provided by the browser. This allows you to hook into the various promises provided by the API.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -71,7 +73,7 @@ router.visit('/another-page', {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -92,6 +94,7 @@ router.visit('/another-page', {
 The `viewTransition` option is also available on the `Link` component.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -116,7 +119,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -131,6 +134,7 @@ export default () => (
 You may also pass a callback to access the `ViewTransition` instance.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -167,7 +171,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -185,16 +189,16 @@ export default () => (
 
 :::
 
-## Global configuration
+## Global Configuration
 
-You may enable view transitions globally for all visits by configuring the `visitOptions` callback
-when [initializing your Inertia app](/guide/client-side-setup#configuring-defaults).
+You may enable view transitions globally for all visits by configuring the `visitOptions` callback when [initializing your Inertia app](/guide/client-side-setup#configuring-defaults).
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
-import { router } from '@inertiajs/vue3'
+import { createInertiaApp } from '@inertiajs/vue3'
 
 createInertiaApp({
   // ...
@@ -209,7 +213,7 @@ createInertiaApp({
 == React
 
 ```js
-import { router } from '@inertiajs/react'
+import { createInertiaApp } from '@inertiajs/react'
 
 createInertiaApp({
   // ...
@@ -221,10 +225,10 @@ createInertiaApp({
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
-import { router } from '@inertiajs/svelte'
+import { createInertiaApp } from '@inertiajs/svelte'
 
 createInertiaApp({
   // ...
@@ -238,7 +242,7 @@ createInertiaApp({
 
 :::
 
-## Customizing transitions
+## Customizing Transitions
 
 You may customize the transition animations using CSS. The View Transitions API uses several pseudo-elements that you can target with CSS to create custom animations. The following examples are taken from the [Chrome documentation](https://developer.chrome.com/docs/web-platform/view-transitions/same-document#customize_the_transition).
 
@@ -283,6 +287,7 @@ You may customize the transition animations using CSS. The View Transitions API 
 You may also animate individual elements between pages by assigning them a unique `view-transition-name`. For example, you may animate an avatar from a large size on a profile page to a small size on a dashboard.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -345,7 +350,7 @@ export default function Dashboard() {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <!-- Profile.svelte -->

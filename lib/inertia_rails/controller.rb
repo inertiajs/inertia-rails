@@ -1,12 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'inertia_rails'
-require_relative 'flash_extension'
-require_relative 'helper'
-require_relative 'action_filter'
-require_relative 'meta_tag_builder'
-require_relative 'precognition'
-
 module InertiaRails
   module Controller
     extend ActiveSupport::Concern
@@ -29,17 +22,13 @@ module InertiaRails
 
     module ClassMethods
       def inertia_share(hash = nil, **props, &block)
-        options = extract_inertia_share_options(props)
-        return push_to_inertia_share(**(hash || props), &block) if options.empty?
+        options = props.slice(:if, :unless, :only, :except)
+        data = hash || props.except(:if, :unless, :only, :except)
 
-        push_to_inertia_share do
-          next if options[:if] && !options[:if].all? { |filter| instance_exec(&filter) }
-          next if options[:unless]&.any? { |filter| instance_exec(&filter) }
-
-          next hash unless block
-
-          res = instance_exec(&block)
-          hash ? hash.merge(res) : res
+        before_action(**options) do
+          @_inertia_shared ||= []
+          @_inertia_shared << data.freeze if data.any?
+          @_inertia_shared << block if block
         end
       end
 
@@ -56,7 +45,7 @@ module InertiaRails
       def use_inertia_instance_props
         before_action do
           @_inertia_instance_props = true
-          @_inertia_skip_props = view_assigns.keys + ['_inertia_skip_props']
+          @_inertia_skip_props = view_assigns.keys + %w[_inertia_skip_props _inertia_shared]
         end
       end
 
@@ -66,67 +55,13 @@ module InertiaRails
           @inertia_config&.with_defaults(config) || config
         end
       end
+    end
 
-      def _inertia_shared_data
-        @_inertia_shared_data ||= begin
-          shared_data = superclass.try(:_inertia_shared_data)
-
-          if @inertia_share && shared_data.present?
-            shared_data + @inertia_share.freeze
-          else
-            @inertia_share || shared_data || []
-          end.freeze
-        end
-      end
-
-      private
-
-      def push_to_inertia_share(**attrs, &block)
-        @inertia_share ||= []
-        @inertia_share << attrs.freeze unless attrs.empty?
-        @inertia_share << block if block
-      end
-
-      def extract_inertia_share_options(props)
-        options = props.slice(:if, :unless, :only, :except)
-
-        return options if options.empty?
-
-        if props.except(:if, :unless, :only, :except).any?
-          raise ArgumentError,
-                'You must not mix shared data and [:if, :unless, :only, :except] options, ' \
-                'pass data as a hash or a block.'
-        end
-
-        transform_inertia_share_option(options, :only, :if)
-        transform_inertia_share_option(options, :except, :unless)
-
-        options.transform_values! do |filters|
-          Array(filters).map!(&method(:filter_to_proc))
-        end
-
-        options
-      end
-
-      def transform_inertia_share_option(options, from, to)
-        if (from_value = options.delete(from))
-          filter = InertiaRails::ActionFilter.new(from, from_value)
-          options[to] = Array(options[to]).unshift(filter)
-        end
-      end
-
-      def filter_to_proc(filter)
-        case filter
-        when Symbol
-          -> { send(filter) }
-        when Proc
-          filter
-        when InertiaRails::ActionFilter
-          -> { filter.match?(self) }
-        else
-          raise ArgumentError, 'You must pass a symbol or a proc as a filter.'
-        end
-      end
+    # Instance-level inertia_share for use in before_action callbacks
+    def inertia_share(**props, &block)
+      @_inertia_shared ||= []
+      @_inertia_shared << props.freeze unless props.empty?
+      @_inertia_shared << block if block
     end
 
     def default_render
@@ -199,7 +134,7 @@ module InertiaRails
           {}
         end
 
-      self.class._inertia_shared_data.filter_map do |shared_data|
+      (@_inertia_shared || []).filter_map do |shared_data|
         if shared_data.respond_to?(:call)
           instance_exec(&shared_data)
         else
@@ -239,6 +174,7 @@ module InertiaRails
       end
 
       session[:inertia_clear_history] = inertia[:clear_history] if inertia[:clear_history]
+      session[:inertia_preserve_fragment] = true if inertia[:preserve_fragment]
     end
   end
 end

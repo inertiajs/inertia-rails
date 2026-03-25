@@ -24,7 +24,17 @@ module InertiaRails
 
       # SSR options.
       ssr_enabled: false,
-      ssr_url: 'http://localhost:13714',
+      ssr_url: nil,
+      ssr_raise_on_error: false,
+      on_ssr_error: nil,
+      # Path(s) to check for SSR bundle existence before attempting SSR.
+      # Set to nil to skip bundle detection (always attempt SSR when enabled).
+      # Can be a String path or an Array of paths — SSR proceeds if any file exists.
+      ssr_bundle: nil,
+      # Cache SSR responses to avoid redundant renders for identical pages.
+      # Accepts true, false/nil, or a Hash of Rails.cache.fetch options.
+      # Lambdas are supported (instance_exec'd in controller context).
+      ssr_cache: nil,
 
       # Used to detect version drift between server and client.
       version: nil,
@@ -52,6 +62,9 @@ module InertiaRails
       # When enabled, any ActiveRecord write during a precognition request
       # will raise ActiveRecord::ReadOnlyError.
       precognition_prevent_writes: false,
+
+      # Whether to include shared prop keys in the page response metadata.
+      expose_shared_prop_keys: true,
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze
@@ -115,6 +128,11 @@ module InertiaRails
 
     def prop_transformer(props:)
       @options[:prop_transformer].call(props: props)
+    end
+
+    # Returns the callable without evaluating it — called with (error, page) by the renderer.
+    def on_ssr_error
+      @options[:on_ssr_error]
     end
 
     OPTION_NAMES.each do |option|

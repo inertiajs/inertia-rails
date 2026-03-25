@@ -26,5 +26,3 @@ module InertiaRails
     end
   end
 end
-
-ActionDispatch::Routing::Mapper.include InertiaRails::InertiaMapper

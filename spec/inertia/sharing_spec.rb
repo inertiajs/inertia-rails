@@ -68,6 +68,58 @@ RSpec.describe 'using inertia share when rendering views', type: :request do
     it { is_expected.to eq props.merge({ errors: errors }) }
   end
 
+  describe 'sharedProps metadata' do
+    let(:page) { JSON.parse(response.body) }
+    let(:headers) { { 'X-Inertia' => true } }
+
+    it 'includes top-level keys from multiple inertia_share calls' do
+      get share_path, headers: headers
+
+      expect(page['sharedProps']).to match_array(%w[name sport a_hash position number nested])
+    end
+
+    it 'includes shared lambda prop keys but not page-specific keys' do
+      get lamda_shared_props_path, headers: headers
+
+      expect(page['sharedProps']).to eq(%w[someProperty])
+      expect(page['props']).to have_key('property_c')
+    end
+
+    it 'includes shared key even when page props override it' do
+      get merge_shared_path, headers: headers
+
+      expect(page['sharedProps']).to eq(%w[nested])
+    end
+
+    it 'includes shared once prop keys' do
+      get shared_once_props_path, headers: headers
+
+      expect(page['sharedProps']).to eq(%w[shared_cached])
+    end
+
+    it 'includes shared deferred prop keys' do
+      get shared_deferred_props_path, headers: headers
+
+      expect(page['sharedProps']).to eq(%w[grit])
+    end
+
+    it 'omits sharedProps when there are no shared props' do
+      get empty_test_path, headers: headers
+
+      expect(page).not_to have_key('sharedProps')
+    end
+
+    context 'when disabled' do
+      with_inertia_config expose_shared_prop_keys: false
+
+      it 'does not include sharedProps' do
+        get share_path, headers: headers
+
+        expect(page).not_to have_key('sharedProps')
+      end
+    end
+  end
+
   describe 'deep or shallow merging shared data' do
     context 'with default settings (shallow merge)' do
       describe 'shallow merging by default' do
