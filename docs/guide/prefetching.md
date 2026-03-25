@@ -2,11 +2,12 @@
 
 Inertia supports prefetching data for pages that are likely to be visited next. This can be useful for improving the perceived performance of your app by allowing the data to be fetched in the background while the user is still interacting with the current page.
 
-## Link prefetching
+## Link Prefetching
 
 To prefetch data for a page, you can add the `prefetch` prop to the Inertia link component. By default, Inertia will prefetch the data for the page when the user hovers over the link for more than 75ms. You may customize this hover delay by setting the `prefetch.hoverDelay` option in your [application defaults](/guide/client-side-setup#configuring-defaults).
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -31,7 +32,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -46,6 +47,7 @@ export default () => (
 By default, data is cached for 30 seconds before being evicted. You may customize this default value by setting the `prefetch.cacheFor` option in your [application defaults](/guide/client-side-setup#configuring-defaults). You may also customize the cache duration on a per-link basis by passing a `cacheFor` prop to the `Link` component.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -80,7 +82,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -97,6 +99,7 @@ export default () => (
 Instead of prefetching on hover, you can also start prefetching on `mousedown` by passing the `click` value to the `prefetch` prop.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -121,7 +124,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -136,6 +139,7 @@ export default () => (
 If you're confident that the user will visit a page next, you can prefetch the data on mount as well.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -160,7 +164,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -175,6 +179,7 @@ export default () => (
 You can also combine prefetch strategies by passing an array of values to the `prefetch` prop.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -199,7 +204,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -211,7 +216,7 @@ export default () => (
 
 :::
 
-## Programmatic prefetching
+## Programmatic Prefetching
 
 You can prefetch data programmatically using `router.prefetch`. This method's signature is identical to `router.visit` with the exception of a third argument that allows you to specify prefetch options.
 
@@ -230,6 +235,7 @@ router.prefetch(
 Inertia also provides a `usePrefetch` hook that allows you to track the prefetch state for the current page. It returns information about whether the page is currently prefetching, has been prefetched, when it was last updated, and a `flush` method that flushes the cache for the current page only.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -246,7 +252,7 @@ import { usePrefetch } from '@inertiajs/react'
 const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch()
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { usePrefetch } from '@inertiajs/svelte'
@@ -280,7 +286,7 @@ const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { usePrefetch } from '@inertiajs/svelte'
@@ -292,7 +298,7 @@ const { lastUpdatedAt, isPrefetching, isPrefetched, flush } = usePrefetch({
 
 :::
 
-## Cache tags
+## Cache Tags
 
 @available_since core=2.1.2
 
@@ -322,11 +328,19 @@ import { Link } from '@inertiajs/vue3'
 ```jsx
 import { Link } from '@inertiajs/react'
 
-<Link href="/users" prefetch cacheTags="users">Users</Link>
-<Link href="/dashboard" prefetch cacheTags={['dashboard', 'stats']}>Dashboard</Link>
+export default () => (
+  <>
+    <Link href="/users" prefetch cacheTags="users">
+      Users
+    </Link>
+    <Link href="/dashboard" prefetch cacheTags={['dashboard', 'stats']}>
+      Dashboard
+    </Link>
+  </>
+)
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 import {inertia} from '@inertiajs/svelte'
@@ -348,7 +362,7 @@ router.prefetch('/users', {}, { cacheTags: 'users' })
 router.prefetch('/dashboard', {}, { cacheTags: ['dashboard', 'stats'] })
 ```
 
-## Cache invalidation
+## Cache Invalidation
 
 You can manually flush the prefetch cache by calling `router.flushAll` to remove all cached data, or `router.flush` to remove cache for a specific page.
 
@@ -376,7 +390,7 @@ router.flushByCacheTags('users')
 router.flushByCacheTags(['dashboard', 'stats'])
 ```
 
-### Automatic cache flushing
+### Automatic Cache Flushing
 
 By default, Inertia does not automatically flush the prefetch cache when you navigate to new pages. Cached data is only evicted when it expires based on the cache duration. If you want to flush all cached data on every navigation, you can set up an event listener.
 
@@ -398,7 +412,7 @@ import { router } from '@inertiajs/react'
 router.on('navigate', () => router.flushAll())
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -408,11 +422,11 @@ router.on('navigate', () => router.flushAll())
 
 :::
 
-### Invalidate on requests
+### Invalidate on Requests
 
 @available_since core=2.1.2
 
-To automatically invalidate caches when making requests, pass an `invalidateCacheTags` prop to the Form component. The specified tags will be flushed when the form submission succeeds.
+To automatically invalidate caches when making requests, pass an `invalidateCacheTags` prop to the `Form` component. The specified tags will be flushed when the form submission succeeds.
 
 :::tabs key:frameworks
 
@@ -454,7 +468,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -480,15 +494,24 @@ When using the `useForm` helper, you can include `invalidateCacheTags` in the vi
 
 == Vue
 
-```vue
-import { useForm } from '@inertiajs/vue3' const form = useForm({ name: '',
-email: '', }) const submit = () => { form.post('/users', { invalidateCacheTags:
-['users', 'dashboard'] }) }
+```js
+import { useForm } from '@inertiajs/vue3'
+
+const form = useForm({
+  name: '',
+  email: '',
+})
+
+const submit = () => {
+  form.post('/users', {
+    invalidateCacheTags: ['users', 'dashboard'],
+  })
+}
 ```
 
 == React
 
-```jsx
+```js
 import { useForm } from '@inertiajs/react'
 
 const { data, setData, post } = useForm({
@@ -504,9 +527,9 @@ function submit(e) {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
-```svelte
+```js
 import { useForm } from '@inertiajs/svelte'
 
 const form = useForm({
@@ -515,8 +538,8 @@ const form = useForm({
 })
 
 function submit() {
-  $form.post('/users', {
-    invalidateCacheTags: ['users', 'dashboard']
+  form.post('/users', {
+    invalidateCacheTags: ['users', 'dashboard'],
   })
 }
 ```
@@ -526,26 +549,23 @@ function submit() {
 You can also invalidate cache tags with programmatic visits by including `invalidateCacheTags` in the options.
 
 ```js
-router.delete(
-  `/users/${userId}`,
-  {},
-  {
-    invalidateCacheTags: ['users', 'dashboard'],
-  },
-)
+router.delete(`/users/${userId}`, {
+  invalidateCacheTags: ['users', 'dashboard'],
+})
 
 router.post('/posts', postData, {
   invalidateCacheTags: ['posts', 'recent-posts'],
 })
 ```
 
-## Stale while revalidate
+## Stale While Revalidate
 
 By default, Inertia will fetch a fresh copy of the data when the user visits the page if the cached data is older than the cache duration. You can customize this behavior by passing a tuple to the `cacheFor` prop.
 
 The first value in the array represents the number of seconds the cache is considered fresh, while the second value defines how long it can be served as stale data before fetching data from the server is necessary.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -570,7 +590,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -583,8 +603,6 @@ export default () => (
 ```
 
 :::
-
-### How it works
 
 If a request is made within the fresh period (before the first value), the cache is returned immediately without making a request to the server.
 

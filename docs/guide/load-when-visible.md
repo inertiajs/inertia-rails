@@ -1,10 +1,11 @@
-# Load when visible
+# Load When Visible
 
 Inertia supports lazy loading data on scroll using the Intersection Observer API. It provides the `WhenVisible` component as a convenient way to load data when an element becomes visible in the viewport.
 
 The `WhenVisible` component accepts a `data` prop that specifies the key of the prop to load. It also accepts a `fallback` prop that specifies a component to render while the data is loading. The `WhenVisible` component should wrap the component that depends on the data.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -17,6 +18,7 @@ import { WhenVisible } from '@inertiajs/vue3'
     <template #fallback>
       <div>Loading...</div>
     </template>
+
     <div v-for="permission in permissions">
       <!-- ... -->
     </div>
@@ -30,32 +32,13 @@ import { WhenVisible } from '@inertiajs/vue3'
 import { WhenVisible } from '@inertiajs/react'
 
 export default () => (
-  <WhenVisible data="permissions" fallback={<div>Loading...</div>}>
+  <WhenVisible data="permissions" fallback={() => <div>Loading...</div>}>
     <PermissionsChildComponent />
   </WhenVisible>
 )
 ```
 
-== Svelte 4
-
-```svelte
-<script>
-  import { WhenVisible } from '@inertiajs/svelte'
-  export let permissions
-</script>
-
-<WhenVisible data="permissions">
-  <svelte:fragment slot="fallback">
-    <div>Loading...</div>
-  </svelte:fragment>
-
-  {#each permissions as permission}
-    <!-- ... -->
-  {/each}
-</WhenVisible>
-```
-
-== Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -80,6 +63,7 @@ export default () => (
 If you'd like to load multiple props when an element becomes visible, you can provide an array to the `data` prop.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -92,6 +76,7 @@ import { WhenVisible } from '@inertiajs/vue3'
     <template #fallback>
       <div>Loading...</div>
     </template>
+
     <!-- Props are now loaded -->
   </WhenVisible>
 </template>
@@ -103,32 +88,13 @@ import { WhenVisible } from '@inertiajs/vue3'
 import { WhenVisible } from '@inertiajs/react'
 
 export default () => (
-  <WhenVisible data={['teams', 'users']} fallback={<div>Loading...</div>}>
+  <WhenVisible data={['teams', 'users']} fallback={() => <div>Loading...</div>}>
     <ChildComponent />
   </WhenVisible>
 )
 ```
 
-== Svelte 4
-
-```svelte
-<script>
-  import { WhenVisible } from '@inertiajs/svelte'
-
-  export let teams
-  export let users
-</script>
-
-<WhenVisible data={['teams', 'users']}>
-  <svelte:fragment slot="fallback">
-    <div>Loading...</div>
-  </svelte:fragment>
-
-  <!-- Props are now loaded -->
-</WhenVisible>
-```
-
-== Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -148,11 +114,12 @@ export default () => (
 
 :::
 
-## Loading before visible
+## Loading Before Visible
 
 If you'd like to start loading data before the element is visible, you can provide a value to the `buffer` prop. The buffer value is a number that represents the number of pixels before the element is visible.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -179,33 +146,17 @@ import { WhenVisible } from '@inertiajs/vue3'
 import { WhenVisible } from '@inertiajs/react'
 
 export default () => (
-  <WhenVisible data="permissions" buffer={500} fallback={<div>Loading...</div>}>
+  <WhenVisible
+    data="permissions"
+    buffer={500}
+    fallback={() => <div>Loading...</div>}
+  >
     <PermissionsChildComponent />
   </WhenVisible>
 )
 ```
 
-== Svelte 4
-
-```svelte
-<script>
-  import { WhenVisible } from '@inertiajs/svelte'
-
-  export let permissions
-</script>
-
-<WhenVisible data="permissions" buffer={500}>
-  <svelte:fragment slot="fallback">
-    <div>Loading...</div>
-  </svelte:fragment>
-
-  {#each permissions as permission}
-    <!-- ... -->
-  {/each}
-</WhenVisible>
-```
-
-== Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -232,6 +183,7 @@ In the above example, the data will start loading 500 pixels before the element 
 By default, the `WhenVisible` component wraps the fallback template in a `div` element so it can ensure the element is visible in the viewport. If you want to customize the wrapper element, you can provide the `as` prop.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -258,21 +210,7 @@ export default () => (
 )
 ```
 
-== Svelte 4
-
-```svelte
-<script>
-  import { WhenVisible } from '@inertiajs/svelte'
-
-  export let products
-</script>
-
-<WhenVisible data="products" as="span">
-  <!-- ... -->
-</WhenVisible>
-```
-
-== Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -288,7 +226,7 @@ export default () => (
 
 :::
 
-## Always trigger
+## Always Trigger
 
 By default, the `WhenVisible` component will only trigger once when the element becomes visible. If you want to always trigger the data loading when the element is visible, you can provide the `always` prop.
 
@@ -297,6 +235,7 @@ This is useful when you want to load data every time the element becomes visible
 Note that if the data loading request is already in flight, the component will wait until it is finished to start the next request if the element is still visible in the viewport.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -323,21 +262,7 @@ export default () => (
 )
 ```
 
-== Svelte 4
-
-```svelte
-<script>
-  import { WhenVisible } from '@inertiajs/svelte'
-
-  export let products
-</script>
-
-<WhenVisible data="products" always>
-  <!-- ... -->
-</WhenVisible>
-```
-
-== Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -353,13 +278,14 @@ export default () => (
 
 :::
 
-### Fetching state
+### Fetching State
 
 @available_since core=2.3.2
 
 The `WhenVisible` component exposes a `fetching` slot prop that you may use to display a loading indicator during subsequent requests. This is useful because the `fallback` is only shown on the initial load, while `fetching` allows you to indicate that data is being refreshed on subsequent loads.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -398,28 +324,7 @@ export default () => (
 )
 ```
 
-== Svelte 4
-
-```svelte
-<script>
-  import { WhenVisible } from '@inertiajs/svelte'
-
-  export let permissions
-</script>
-
-<WhenVisible data="permissions" always let:fetching>
-  <PermissionsChildComponent />
-  {#if fetching}
-    <div>Refreshing...</div>
-  {/if}
-
-  <svelte:fragment slot="fallback">
-    <div>Loading...</div>
-  </svelte:fragment>
-</WhenVisible>
-```
-
-== Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -428,11 +333,13 @@ export default () => (
   let { permissions } = $props()
 </script>
 
-<WhenVisible data="permissions" always let:fetching>
-  <PermissionsChildComponent />
-  {#if fetching}
-    <div>Refreshing...</div>
-  {/if}
+<WhenVisible data="permissions" always>
+  {#snippet children({ fetching })}
+    <PermissionsChildComponent />
+    {#if fetching}
+      <div>Refreshing...</div>
+    {/if}
+  {/snippet}
 
   {#snippet fallback()}
     <div>Loading...</div>
@@ -442,11 +349,46 @@ export default () => (
 
 :::
 
-## Form submissions
+## Preserving Errors
+
+@available_since core=3.0.0
+
+The `WhenVisible` component sets `preserveErrors: true` by default, ensuring that validation errors are not cleared when it triggers a reload. You may override this via the `params` prop.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<WhenVisible data="comments" :params="{ preserveErrors: false }">
+    <!-- ... -->
+</WhenVisible>
+```
+
+== React
+
+```jsx
+<WhenVisible data="comments" params={{ preserveErrors: false }}>
+  {/* ... */}
+</WhenVisible>
+```
+
+== Svelte
+
+```svelte
+<WhenVisible data="comments" params={{ preserveErrors: false }}>
+  <!-- ... -->
+</WhenVisible>
+```
+
+:::
+
+## Form Submissions
 
 When submitting forms, you may want to use the `except` option to exclude the props that are being used by the `WhenVisible` component. This prevents the props from being reloaded when you get redirected back to the current page because of validation errors.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -504,34 +446,7 @@ export default function CreateUser() {
 }
 ```
 
-== Svelte 4
-
-```svelte
-<script>
-  import { useForm, WhenVisible } from '@inertiajs/svelte'
-
-  const form = useForm({
-    name: '',
-    email: '',
-  })
-
-  function submit() {
-    $form.post('/users', {
-      except: ['permissions'],
-    })
-  }
-</script>
-
-<form on:submit|preventDefault={submit}>
-  <!-- ... -->
-</form>
-
-<WhenVisible data="permissions">
-  <!-- ... -->
-</WhenVisible>
-```
-
-== Svelte 5
+== Svelte
 
 ```svelte
 <script>

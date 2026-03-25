@@ -1,8 +1,10 @@
 # Responses
 
-## Creating responses
+## Creating Responses
 
-Creating an Inertia response is simple. By default, Inertia Rails follows convention over configuration: you simply pass the props (data) you wish to send to the page, and the component name is automatically inferred from the controller and action.
+Creating an Inertia response is simple. By default, Inertia Rails follows convention over configuration: you pass the props (data) you wish to send to the page, and the component name is automatically inferred from the controller and action.
+
+In the example below, we will pass a single prop (`user`) to the `users/show` page component.
 
 ```ruby
 class UsersController < ApplicationController
@@ -54,7 +56,7 @@ inertia_config(
 )
 ```
 
-### Using instance variables as props
+### Using Instance Variables as Props
 
 For convenience, Inertia can automatically pass your controller's instance variables to the page component as props. To enable this behavior, invoke the `use_inertia_instance_props` method within your controller or a base controller.
 
@@ -85,7 +87,7 @@ Please note that if you manually provide a props hash in your render call, the i
 >
 > This creates a high risk of accidentally leaking sensitive data or internal implementation details to the client. It can also negatively impact performance by serializing unnecessary heavy objects. We recommend being explicit with your props whenever possible.
 
-## Root template data
+## Root Template Data
 
 There are situations where you may want to access your prop data in your ERB template. For example, you may want to add a meta description tag, Twitter card meta tags, or Facebook Open Graph meta tags.
 
@@ -163,7 +165,7 @@ Renders meta tags that were defined server-side using the `inertia_meta` configu
 </head>
 ```
 
-### Passing additional data to the view
+### Passing Additional Data to the View
 
 Sometimes you may want to provide data to the root template that will not be sent to your JavaScript page / component. This can be accomplished by passing the `view_data` option.
 
@@ -189,11 +191,11 @@ You can then access this variable like a regular local variable.
 <%= inertia_root %>
 ```
 
-## Rails generators
+## Rails Generators
 
 Inertia Rails provides a number of generators to help you get started with Inertia in your Rails application. You can generate controllers or use scaffolds to create a new resource with Inertia responses.
 
-### Scaffold generator
+### Scaffold Generator
 
 Use the `inertia:scaffold` generator to create a resource with Inertia responses. Execute the following command in the terminal:
 
@@ -232,14 +234,14 @@ $ bin/rails generate inertia:scaffold Post title:string body:text
       invoke      test_unit
 ```
 
-#### Tailwind CSS integration
+#### Tailwind CSS Integration
 
 Inertia Rails tries to detect the presence of Tailwind CSS in the application and generate the templates accordingly. If you want to specify templates type, use the `--inertia-templates` option:
 
 - `inertia_templates` - default
 - `inertia_tw_templates` - Tailwind CSS
 
-### Controller generator
+### Controller Generator
 
 Use the `inertia:controller` generator to create a controller with an Inertia response. Execute the following command in the terminal:
 
@@ -265,7 +267,7 @@ $ bin/rails generate inertia:controller pages welcome next_steps
       create    app/frontend/pages/pages/next_steps.jsx
 ```
 
-### Customizing the generator templates
+### Customizing the Generator Templates
 
 Rails generators allow templates customization. You can create custom template files in your application to override the default templates used by the generators. For example, to customize the controller generator view template for React, create a file at the path `lib/templates/inertia_templates/controller/react/view.jsx.tt`:
 
@@ -287,7 +289,7 @@ You can find the default templates in the gem's source code:
 > [!TIP]
 > You can also replace the whole generator with your own implementation. See the [Rails documentation](https://guides.rubyonrails.org/generators.html#overriding-rails-generators) for more information.
 
-## Maximum response size
+## Maximum Response Size
 
 To enable client-side history navigation, all Inertia server responses are stored in the browser's history state. However, keep in mind that some browsers impose a size limit on how much data can be saved within the history state.
 
@@ -309,7 +311,7 @@ def some_action
 end
 ```
 
-## Inertia responses and `respond_to`
+## Inertia Responses and `respond_to`
 
 Inertia responses always operate as a `:html` response type. This means that you can use the `respond_to` method to handle JSON requests differently, while still returning Inertia responses:
 

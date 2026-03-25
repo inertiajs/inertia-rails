@@ -119,7 +119,7 @@ const MetaTags = () => {
 export default MetaTags
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <!-- MetaTags.svelte -->

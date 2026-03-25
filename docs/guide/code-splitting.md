@@ -1,58 +1,66 @@
-# Code splitting
+# Code Splitting
 
-Code splitting breaks apart the various pages of your application into smaller bundles, which are then loaded on demand when visiting new pages. This can significantly reduce the size of the initial JavaScript bundle loaded by the browser, improving the time to first render.
+By default, Inertia 3.x lazy-loads page components, splitting each page into its own bundle that is loaded on demand. This reduces the initial JavaScript bundle size but requires additional requests when visiting new pages.
 
-While code splitting is helpful for very large projects, it does require extra requests when visiting new pages. Generally speaking, if you're able to use a single bundle, your app is going to feel snappier.
+You may disable lazy loading to eagerly bundle all pages into a single file. Eager loading eliminates per-page requests but increases the initial bundle size.
 
-To enable code splitting, you will need to tweak the `resolve` callback in your `createInertiaApp()` configuration, and how you do this is different depending on which bundler you're using.
+## Vite Plugin
 
-## Using Vite
+@available_since core=3.0.0
 
-Vite enables code splitting (or lazy-loading as they call it) by default when using their `import.meta.glob()` function, so simply omit the `{ eager: true }` option, or set it to false, to disable eager loading.
+The `lazy` option in the `pages` shorthand controls how page components are loaded. It defaults to `true`.
+
+```js
+createInertiaApp({
+  pages: {
+    lazy: false, // Bundle all pages into a single file
+  },
+  // ...
+})
+```
+
+## Manual Vite
+
+You may configure code splitting manually using Vite's `import.meta.glob()` function when not using the Inertia Vite plugin. Pass `{ eager: true }` to bundle all pages, or omit it to lazy-load them.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
-// frontend/entrypoints/inertia.js
 createInertiaApp({
   resolve: (name) => {
-    const pages = import.meta.glob('../pages/**/*.vue', { eager: true }) // [!code --]
-    return pages[`../pages/${name}.vue`] // [!code --]
-    const pages = import.meta.glob('../pages/**/*.vue') // [!code ++]
-    return pages[`../pages/${name}.vue`]() // [!code ++]
+    const pages = import.meta.glob('../pages/**/*.vue') // [!code --:2]
+    return pages[`../pages/${name}.vue`]()
+    const pages = import.meta.glob('../pages/**/*.vue', { eager: true }) // [!code ++:2]
+    return pages[`../pages/${name}.vue`]
   },
-  //...
 })
 ```
 
 == React
 
 ```js
-// frontend/entrypoints/inertia.js
 createInertiaApp({
   resolve: (name) => {
-    const pages = import.meta.glob('../pages/**/*.jsx', { eager: true }) // [!code --]
-    return pages[`../pages/${name}.jsx`] // [!code --]
-    const pages = import.meta.glob('../pages/**/*.jsx') // [!code ++]
-    return pages[`../pages/${name}.jsx`]() // [!code ++]
+    const pages = import.meta.glob('../pages/**/*.jsx') // [!code --:2]
+    return pages[`../pages/${name}.jsx`]()
+    const pages = import.meta.glob('../pages/**/*.jsx', { eager: true }) // [!code ++:2]
+    return pages[`../pages/${name}.jsx`]
   },
-  //...
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
-// frontend/entrypoints/inertia.js
 createInertiaApp({
   resolve: (name) => {
-    const pages = import.meta.glob('../pages/**/*.svelte', { eager: true }) // [!code --]
-    return pages[`../pages/${name}.svelte`] // [!code --]
-    const pages = import.meta.glob('../pages/**/*.svelte') // [!code ++]
-    return pages[`../pages/${name}.svelte`]() // [!code ++]
+    const pages = import.meta.glob('../pages/**/*.svelte') // [!code --:2]
+    return pages[`../pages/${name}.svelte`]()
+    const pages = import.meta.glob('../pages/**/*.svelte', { eager: true }) // [!code ++:2]
+    return pages[`../pages/${name}.svelte`]
   },
-  //...
 })
 ```
 
@@ -60,12 +68,9 @@ createInertiaApp({
 
 ## Using Webpacker/Shakapacker
 
-> [!WARNING]
-> We recommend using [Vite Ruby](https://vite-ruby.netlify.app) for new projects.
-
 To use code splitting with Webpack, you will first need to enable [dynamic imports](https://github.com/tc39/proposal-dynamic-import) via a Babel plugin. Let's install it now.
 
-```shell
+```bash
 npm install @babel/plugin-syntax-dynamic-import
 ```
 
@@ -80,37 +85,26 @@ Next, create a `.babelrc` file in your project with the following configuration:
 Finally, update the `resolve` callback in your app's initialization code to use `import` instead of `require`.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
-// javascript/packs/inertia.js
-createInertiaApp({
-  resolve: (name) => require(`../pages/${name}`), // [!code ii]
-  resolve: (name) => import(`../pages/${name}`), // [!code ++]
-  //...
-})
+resolve: name => require(`../pages/${name}`), // [!code --]
+resolve: name => import(`../pages/${name}`), // [!code ++]
 ```
 
 == React
 
 ```js
-// javascript/packs/inertia.js
-createInertiaApp({
-  resolve: (name) => require(`../pages/${name}`), // [!code ii]
-  resolve: (name) => import(`../pages/${name}`), // [!code ++]
-  //...
-})
+resolve: name => require(`../pages/${name}`), // [!code --]
+resolve: name => import(`../pages/${name}`), // [!code ++]
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
-// javascript/packs/inertia.js
-createInertiaApp({
-  resolve: (name) => require(`../pages/${name}.svelte`), // [!code ii]
-  resolve: (name) => import(`../pages/${name}.svelte`), // [!code ++]
-  //...
-})
+resolve: name => require(`../pages/${name}.svelte`), // [!code --]
+resolve: name => import(`../pages/${name}.svelte`), // [!code ++]
 ```
 
 :::
@@ -118,12 +112,7 @@ createInertiaApp({
 You should also consider using cache busting to force browsers to load the latest version of your assets. To accomplish this, add the following configuration to your webpack configuration file.
 
 ```js
-// webpack.config.js
-module.exports = {
-  //...
-  output: {
-    //...
+output: {
     chunkFilename: 'js/[name].js?id=[chunkhash]',
-  },
 }
 ```

@@ -18,12 +18,14 @@ Alternatively, you may add `@inertiajs/core` as a direct dependency in your proj
 pnpm add @inertiajs/core
 ```
 
-## Global configuration
+## Global Configuration
 
 You may configure Inertia's types globally by augmenting the `InertiaConfig` interface in the `@inertiajs/core` module. This is typically done in a `global.d.ts` file in your project's root or `types` directory.
 
 ```ts
 // global.d.ts
+import '@inertiajs/core'
+
 declare module '@inertiajs/core' {
   export interface InertiaConfig {
     sharedPageProps: {
@@ -34,14 +36,22 @@ declare module '@inertiajs/core' {
       toast?: { type: 'success' | 'error'; message: string }
     }
     errorValueType: string[]
+    layoutProps: {
+      title: string
+      showSidebar: boolean
+    }
+    namedLayoutProps: {
+      app: { title: string; theme: 'light' | 'dark' }
+      content: { padding: string; maxWidth: string }
+    }
   }
 }
 ```
 
 > [!NOTE]
-> For module augmentation to work, your `tsconfig.json` needs to include `.d.ts` files. Make sure a pattern like `"app/frontend/**/*.d.ts"` is present in the `include` array, adjusted to match your project's directory structure.
+> The `import` statement (or `export {}`) is required to make this file a module. Without it, `declare module` replaces the module definition instead of augmenting it. Your `tsconfig.json` also needs to include `.d.ts` files, so make sure a pattern like `"@/**/*.d.ts"` is present in the `include` array.
 
-### Shared page props
+### Shared Page Props
 
 The `sharedPageProps` option defines the type of data that is [shared](/guide/shared-data) with every page in your application. With this configuration, `page.props.auth` and `page.props.appName` will be properly typed everywhere.
 
@@ -52,7 +62,7 @@ sharedPageProps: {
 }
 ```
 
-### Flash data
+### Flash Data
 
 The `flashDataType` option defines the type of [flash data](/guide/flash-data) in your application.
 
@@ -62,7 +72,7 @@ flashDataType: {
 }
 ```
 
-### Error values
+### Error Values
 
 By default, validation error values are typed as `string`. You may configure TypeScript to expect arrays instead for Rails' default (with `model.errors`) — multiple errors per field.
 
@@ -70,11 +80,42 @@ By default, validation error values are typed as `string`. You may configure Typ
 errorValueType: string[]
 ```
 
-## Page components
+### Layout Props
+
+The `layoutProps` option types the data accepted by `setLayoutProps()`. The `namedLayoutProps` option types the data accepted by `setLayoutProps('name', props)`, keyed by layout name.
+
+```ts
+layoutProps: {
+  title: string
+  showSidebar: boolean
+}
+namedLayoutProps: {
+  app: {
+    title: string
+    theme: 'light' | 'dark'
+  }
+  content: {
+    padding: string
+    maxWidth: string
+  }
+}
+```
+
+With this configuration, `setLayoutProps({ title: 'Dashboard' })` is type-checked, and `setLayoutProps('app', { theme: 'dark' })` validates both the layout name and its props.
+
+You may also pass a generic type parameter directly to `setLayoutProps` for ad-hoc typing without configuring the global `InertiaConfig` interface.
+
+```ts
+setLayoutProps<{ custom: string }>({ custom: 'value' })
+setLayoutProps<{ collapsed: boolean }>('sidebar', { collapsed: true })
+```
+
+## Page Components
 
 You may type the `import.meta.glob` result for better type safety when resolving page components.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```ts
@@ -83,10 +124,8 @@ import type { DefineComponent } from 'vue'
 
 createInertiaApp({
   resolve: (name) => {
-    const pages = import.meta.glob<DefineComponent>('../pages/**/*.vue', {
-      eager: true,
-    })
-    return pages[`../pages/${name}.vue`]
+    const pages = import.meta.glob<DefineComponent>('../pages/**/*.vue')
+    return pages[`../pages/${name}.vue`]()
   },
   // ...
 })
@@ -99,26 +138,22 @@ import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react'
 
 createInertiaApp({
   resolve: (name) => {
-    const pages = import.meta.glob<ResolvedComponent>('../pages/**/*.tsx', {
-      eager: true,
-    })
-    return pages[`../pages/${name}.tsx`]
+    const pages = import.meta.glob<ResolvedComponent>('../pages/**/*.tsx')
+    return pages[`../pages/${name}.tsx`]()
   },
   // ...
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```ts
 import { createInertiaApp, type ResolvedComponent } from '@inertiajs/svelte'
 
 createInertiaApp({
   resolve: (name) => {
-    const pages = import.meta.glob<ResolvedComponent>('../pages/**/*.svelte', {
-      eager: true,
-    })
-    return pages[`../pages/${name}.svelte`]
+    const pages = import.meta.glob<ResolvedComponent>('../pages/**/*.svelte')
+    return pages[`../pages/${name}.svelte`]()
   },
   // ...
 })
@@ -126,11 +161,12 @@ createInertiaApp({
 
 :::
 
-## Page props
+## Page Props
 
 You may type page-specific props by passing a generic to `usePage()`. These are merged with your global `sharedPageProps`, giving you autocomplete and type checking for both shared and page-specific data.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -163,7 +199,7 @@ export default function Posts() {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script lang="ts">
@@ -177,11 +213,12 @@ export default function Posts() {
 
 :::
 
-## Form helper
+## Form Helper
 
 The [form helper](/guide/forms#form-helper) accepts a generic type parameter for type-safe form data and error handling. This provides autocomplete for form fields and errors, and prevents typos in field names.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -220,7 +257,7 @@ export default function CreateUser() {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script lang="ts">
@@ -240,7 +277,7 @@ export default function CreateUser() {
 
 :::
 
-### Nested data and arrays
+### Nested Data and Arrays
 
 Form types fully support nested objects and arrays. You may access and update nested fields using dot notation, and error keys are automatically typed to match.
 
@@ -256,11 +293,179 @@ const form = useForm<{
 })
 ```
 
-## Remembering state
+## Form Component
+
+@available_since core=3.0.0
+
+The `<Form>` component accepts a generic type parameter for type-safe slot props. In React, you may pass the generic directly. In Vue and Svelte, you may use the `createForm` helper to create a typed form component.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup lang="ts">
+import { createForm } from '@inertiajs/vue3'
+
+interface UserForm {
+  name: string
+  email: string
+}
+
+const TypedForm = createForm<UserForm>()
+</script>
+
+<template>
+  <TypedForm action="/users" method="post" #default="{ errors }">
+    <input type="text" name="name" />
+    <div v-if="errors.name">{{ errors.name }}</div>
+    <button type="submit">Create User</button>
+  </TypedForm>
+</template>
+```
+
+== React
+
+```tsx
+import { Form } from '@inertiajs/react'
+
+interface UserForm {
+  name: string
+  email: string
+}
+
+export default function CreateUser() {
+  return (
+    <Form<UserForm> action="/users" method="post">
+      {({ errors }) => (
+        <>
+          <input type="text" name="name" />
+          {errors.name && <div>{errors.name}</div>}
+          <button type="submit">Create User</button>
+        </>
+      )}
+    </Form>
+  )
+}
+```
+
+== Svelte
+
+```svelte
+<script lang="ts">
+  import { createForm } from '@inertiajs/svelte'
+
+  interface UserForm {
+    name: string
+    email: string
+  }
+
+  const TypedForm = createForm<UserForm>()
+</script>
+
+<TypedForm action="/users" method="post">
+  {#snippet children({ errors })}
+    <input type="text" name="name" />
+    {#if errors.name}<div>{errors.name}</div>{/if}
+    <button type="submit">Create User</button>
+  {/snippet}
+</TypedForm>
+```
+
+:::
+
+The generic provides autocomplete and type checking for the `errors` object, `setError`, `clearErrors`, and other slot props that reference form fields.
+
+### useFormContext
+
+@available_since core=3.0.0
+
+The `useFormContext()` function also accepts a generic type parameter, providing type-safe access to the form context from child components.
+
+:::tabs key:frameworks
+
+== React
+
+```tsx
+import { useFormContext } from '@inertiajs/react'
+
+const form = useFormContext<UserForm>()
+```
+
+== Vue
+
+```vue
+<script setup lang="ts">
+import { useFormContext } from '@inertiajs/vue3'
+
+const form = useFormContext<UserForm>()
+</script>
+```
+
+== Svelte
+
+```svelte
+<script lang="ts">
+  import { useFormContext } from '@inertiajs/svelte'
+
+  const form = useFormContext<UserForm>()
+</script>
+```
+
+:::
+
+## HTTP Helper
+
+The [`useHttp`](/guide/http-requests) hook accepts two generic type parameters: the form data type and an optional default response type.
+
+```ts
+import { useHttp } from '@inertiajs/react'
+
+interface UserForm {
+  name: string
+  email: string
+}
+
+interface UserResponse {
+  id: number
+  name: string
+}
+
+const http = useHttp<UserForm, UserResponse>({ name: '', email: '' })
+```
+
+### Per-Request Response Types
+
+Each HTTP method accepts its own generic type parameter, allowing you to override the response type on a per-call basis. This is useful when different endpoints return different response shapes.
+
+```ts
+interface OrderResponse {
+  orderId: string
+  total: number
+}
+
+// Override the response type per request...
+const user: UserResponse = await http.post<UserResponse>('/api/users')
+const order: OrderResponse = await http.get<OrderResponse>('/api/orders/123')
+const submitted: UserResponse = await http.submit<UserResponse>(
+  'post',
+  '/api/users',
+)
+
+// The onSuccess callback is also typed...
+await http.post<UserResponse>('/api/users', {
+  onSuccess: (response) => {
+    console.log(response.id, response.name)
+  },
+})
+```
+
+## Remembering State
 
 The `useRemember` hook accepts a generic type parameter for type-safe local state persistence, providing autocomplete and ensuring values match the expected types.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -295,7 +500,7 @@ export default function Users() {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script lang="ts">
@@ -313,7 +518,7 @@ export default function Users() {
 
 :::
 
-## Restoring state
+## Restoring State
 
 The `router.restore()` method accepts a generic for typing state restored from [history](/guide/remembering-state#manually-saving-state).
 
@@ -333,7 +538,7 @@ if (restored) {
 }
 ```
 
-## Router requests
+## Router Requests
 
 Router methods accept a generic for typing request data, providing type checking for the data being sent.
 
@@ -351,7 +556,7 @@ router.post<CreateUserData>('/users', {
 })
 ```
 
-## Scoped flash data
+## Scoped Flash Data
 
 The `router.flash()` method accepts a generic for typing page or section-specific flash data, separate from the global `flashDataType` configuration.
 
@@ -361,7 +566,7 @@ import { router } from '@inertiajs/react'
 router.flash<{ paymentError: string }>({ paymentError: 'Card declined' })
 ```
 
-## Client-side visits
+## Client-Side Visits
 
 The `router.push()` and `router.replace()` methods accept a generic for typing [client-side visit](/guide/manual-visits#client-side-visits) props.
 

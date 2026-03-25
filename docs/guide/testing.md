@@ -1,8 +1,16 @@
 # Testing
 
-If you use end-to-end tools like [Capybara](https://github.com/teamcapybara/capybara) or client-side frameworks like [Vitest](https://vitest.dev), those work with Inertia out of the box. This page covers **endpoint tests** — testing the Inertia responses from your Rails backend.
+There are many different ways to test an Inertia application. This page provides a quick overview of the tools available.
 
-## Setup
+## End-to-end Tests
+
+One popular approach to testing your JavaScript page components is to use an end-to-end testing tool like [Cypress](https://www.cypress.io/) or [Pest](https://pestphp.com). These are browser automation tools that allow you to run real simulations of your app in the browser. These tests are known to be slower; however, since they test your application at the same layer as your end users, they can provide a lot of confidence that your app is working correctly. And, since these tests are run in the browser, your JavaScript code is actually executed and tested as well.
+
+## Client-Side Unit Tests
+
+Another approach to testing your page components is using a client-side unit testing framework, such as [Vitest](https://vitest.dev/), [Jest](https://jestjs.io/), or [Mocha](https://mochajs.org/). This approach allows you to test your JavaScript page components in isolation using Node.js.
+
+## Endpoint Tests
 
 @available_since rails=3.17.0
 
@@ -112,9 +120,9 @@ end
 
 :::
 
-## Common testing tasks
+## Common Testing Tasks
 
-### Test flash messages
+### Test Flash Messages
 
 Inertia Rails automatically shares [flash data](/guide/flash-data) with your frontend.
 
@@ -152,7 +160,7 @@ end
 
 :::
 
-### Test validation errors
+### Test Validation Errors
 
 [Validation errors](/guide/validation) are shared as props automatically when using `redirect_to` with `inertia_errors`. Assert them on the `errors` key.
 
@@ -186,7 +194,7 @@ end
 
 :::
 
-### Test redirects
+### Test Redirects
 
 After a [redirect](/guide/redirects), use `follow_redirect!` and assert the resulting Inertia response.
 
@@ -222,7 +230,7 @@ end
 
 :::
 
-### Test deferred props
+### Test Deferred Props
 
 [Deferred props](/guide/deferred-props) are excluded from the initial page load and fetched in a subsequent request.
 
@@ -270,7 +278,7 @@ end
 
 :::
 
-### Test partial reloads
+### Test Partial Reloads
 
 Use `inertia_reload_only`, `inertia_reload_except`, and `inertia_load_deferred_props` to simulate [partial reloads](/guide/partial-reloads) and deferred prop loading.
 
