@@ -214,12 +214,8 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
           contains('svelte()')
         end
         file("app/frontend/entrypoints/inertia.#{ext}") do
-          if ext == 'ts'
-            contains("import { createInertiaApp, type ResolvedComponent } from '@inertiajs/svelte'")
-          else
-            contains("from '@inertiajs/svelte'")
-          end
-          contains('mount(App, { target: el, props })')
+          contains("from '@inertiajs/svelte'")
+          contains('createInertiaApp(')
         end
       end
       file('app/views/layouts/application.html.erb') do

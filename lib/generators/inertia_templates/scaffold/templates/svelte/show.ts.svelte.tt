@@ -12,8 +12,8 @@
   <title><%= human_name %> #{<%= singular_table_name %>.id}</title>
 </svelte:head>
 
-{#if $page.flash.notice}
-  <p class="notice">{$page.flash.notice}</p>
+{#if page.flash.notice}
+  <p class="notice">{page.flash.notice}</p>
 {/if}
 
 <h1><%= human_name %> #{<%= singular_table_name %>.id}</h1>
