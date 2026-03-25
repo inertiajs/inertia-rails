@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.19.0] - 2026-03-25
+
+* Upgrades to support Inertia.js 3.x! All thanks to @skyrukov!
+* Improvements to renderer code structure
+* Improved `inertia_share` implementation, including an instance method to go alongside the class method
+* Better SSR in development
+* Docs updates
+* Support nested deferred/optional props
+* ...and more!
+
 ## [3.18.0] - 2026-03-11
 
 * New (super awesome) landing page design (seriously, go look at the animated graphic) (@skryukov)
