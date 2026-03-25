@@ -216,6 +216,8 @@ createInertiaApp({
 })
 ```
 
+:::
+
 An object may also be provided for more control over how pages are resolved.
 
 ```js

@@ -70,9 +70,9 @@ export default function Welcome({ user }) {
 Given the page above, you can render the page by returning an [Inertia
 response](/guide/responses) from a controller or route. In this
 example, let's assume this page is stored at
-<Vue>`app/frontend/pages/user/show.vue`</Vue>
-<React>`app/frontend/pages/user/show.jsx`</React>
-<Svelte>`app/frontend/pages/user/show.svelte`</Svelte> within a Rails application.
+<Vue>`app/frontend/pages/users/show.vue`</Vue>
+<React>`app/frontend/pages/users/show.jsx`</React>
+<Svelte>`app/frontend/pages/users/show.svelte`</Svelte> within a Rails application.
 
 ```ruby
 class UsersController < ApplicationController
