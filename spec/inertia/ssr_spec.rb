@@ -215,7 +215,7 @@ RSpec.describe 'inertia ssr', type: :request do
   end
 
   context 'bundle detection' do
-    with_inertia_config ssr_enabled: true, ssr_url: 'http://localhost:13714', version: '1.0'
+    with_inertia_config ssr_enabled: true, version: '1.0'
 
     context 'when ssr_bundle is configured and bundle exists' do
       with_inertia_config(
@@ -314,7 +314,7 @@ RSpec.describe 'inertia ssr', type: :request do
   end
 
   context 'ViteRuby dev server is running' do
-    with_inertia_config ssr_enabled: true, ssr_url: 'http://localhost:13714', version: '1.0'
+    with_inertia_config ssr_enabled: true, version: '1.0'
 
     let(:vite_config) { double(protocol: 'http', host_with_port: 'localhost:5173') }
 
@@ -356,7 +356,7 @@ RSpec.describe 'inertia ssr', type: :request do
   end
 
   context 'ViteRuby dev server is not running' do
-    with_inertia_config ssr_enabled: true, ssr_url: 'http://localhost:13714', version: '1.0'
+    with_inertia_config ssr_enabled: true, version: '1.0'
 
     before do
       vite_instance = double(dev_server_running?: false)
@@ -376,7 +376,7 @@ RSpec.describe 'inertia ssr', type: :request do
   end
 
   context 'rails-vite.json metadata file exists' do
-    with_inertia_config ssr_enabled: true, ssr_url: 'http://localhost:13714', version: '1.0'
+    with_inertia_config ssr_enabled: true, version: '1.0'
 
     let(:meta_path) { Rails.root.join('tmp/rails-vite.json') }
 
@@ -435,7 +435,7 @@ RSpec.describe 'inertia ssr', type: :request do
   end
 
   context 'no Vite integration' do
-    with_inertia_config ssr_enabled: true, ssr_url: 'http://localhost:13714', version: '1.0'
+    with_inertia_config ssr_enabled: true, version: '1.0'
 
     it 'uses the production SSR URL' do
       stub_ssr_response(
@@ -449,8 +449,86 @@ RSpec.describe 'inertia ssr', type: :request do
     end
   end
 
+  context 'SSR URL resolution' do
+    context 'when ssr_url ends with /render' do
+      with_inertia_config ssr_enabled: true, ssr_url: 'http://custom:3000/render', version: '1.0'
+
+      it 'uses the URL as-is' do
+        stub_ssr_response(
+          url: 'http://custom:3000/render',
+          body: { body: '<div>Full path SSR</div>', head: ['<title>Full path</title>'] }
+        )
+
+        get props_path
+        expect(response.body).to include('<div>Full path SSR</div>')
+      end
+    end
+
+    context 'when ssr_url ends with /__inertia_ssr' do
+      with_inertia_config ssr_enabled: true, ssr_url: 'http://vite:5173/__inertia_ssr', version: '1.0'
+
+      it 'uses the URL as-is' do
+        stub_ssr_response(
+          url: 'http://vite:5173/__inertia_ssr',
+          body: { body: '<div>Docker SSR</div>', head: ['<title>Docker</title>'] }
+        )
+
+        get props_path
+        expect(response.body).to include('<div>Docker SSR</div>')
+      end
+    end
+
+    context 'when ssr_url is set without a path' do
+      with_inertia_config ssr_enabled: true, ssr_url: 'http://localhost:13714', version: '1.0'
+
+      it 'appends /render' do
+        stub_ssr_response(
+          url: 'http://localhost:13714/render',
+          body: { body: '<div>Appended SSR</div>', head: ['<title>Appended</title>'] }
+        )
+
+        get props_path
+        expect(response.body).to include('<div>Appended SSR</div>')
+      end
+    end
+
+    context 'when ssr_url is nil and vite dev server is running' do
+      with_inertia_config ssr_enabled: true, ssr_url: nil, version: '1.0'
+
+      before do
+        vite_instance = double(dev_server_running?: true)
+        vite_config = double(protocol: 'http', host_with_port: 'localhost:5173')
+        stub_const('ViteRuby', double(instance: vite_instance, config: vite_config))
+      end
+
+      it 'auto-detects from vite dev server' do
+        stub_ssr_response(
+          url: 'http://localhost:5173/__inertia_ssr',
+          body: { body: '<div>Auto SSR</div>', head: ['<title>Auto</title>'] }
+        )
+
+        get props_path
+        expect(response.body).to include('<div>Auto SSR</div>')
+      end
+    end
+
+    context 'when ssr_url is nil and no vite dev server' do
+      with_inertia_config ssr_enabled: true, ssr_url: nil, version: '1.0'
+
+      it 'falls back to default URL' do
+        stub_ssr_response(
+          url: 'http://localhost:13714/render',
+          body: { body: '<div>Default SSR</div>', head: ['<title>Default</title>'] }
+        )
+
+        get props_path
+        expect(response.body).to include('<div>Default SSR</div>')
+      end
+    end
+  end
+
   context 'SSR response caching' do
-    with_inertia_config ssr_enabled: true, ssr_url: 'http://localhost:13714', version: '1.0'
+    with_inertia_config ssr_enabled: true, version: '1.0'
 
     let(:memory_store) { ActiveSupport::Cache::MemoryStore.new }
 

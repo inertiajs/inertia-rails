@@ -24,7 +24,7 @@ module InertiaRails
 
       # SSR options.
       ssr_enabled: false,
-      ssr_url: 'http://localhost:13714',
+      ssr_url: nil,
       ssr_raise_on_error: false,
       on_ssr_error: nil,
       # Path(s) to check for SSR bundle existence before attempting SSR.
