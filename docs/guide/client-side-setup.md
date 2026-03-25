@@ -86,6 +86,9 @@ For more information on configuring these plugins, consult [Vite Rails documenta
 
 Install the Inertia client-side adapter and Vite plugin.
 
+> [!NOTE]
+> The `@inertiajs/vite` plugin supports Vite 7 and Vite 8.
+
 :::tabs key:frameworks
 
 == Vue
@@ -218,7 +221,7 @@ createInertiaApp({
 
 :::
 
-An object may also be provided for more control over how pages are resolved.
+An object may also be provided for more control over how pages are resolved. You only need to include the options you wish to customize.
 
 ```js
 createInertiaApp({
@@ -238,9 +241,124 @@ createInertiaApp({
 | `lazy`      | Whether to lazy-load page components. Defaults to `true`. See [code splitting](/guide/code-splitting).               |
 | `transform` | A callback that receives the page name and page object, returning a transformed name.                                |
 
+## Customizing the App
+
+Sometimes you may wish to customize the app instance, for example to register plugins, wrap with providers, or set context values. Pass the `withApp` callback to `createInertiaApp` to hook into the app before it renders.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { createInertiaApp } from '@inertiajs/vue3'
+import { createI18n } from 'vue-i18n'
+
+const i18n = createI18n({
+  // ...
+})
+
+createInertiaApp({
+  withApp(app) {
+    app.use(i18n)
+  },
+})
+```
+
+== React
+
+```jsx
+import { createInertiaApp } from '@inertiajs/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
+
+createInertiaApp({
+  withApp(app) {
+    return <QueryClientProvider client={queryClient}>{app}</QueryClientProvider>
+  },
+})
+```
+
+== Svelte
+
+```js
+import { createInertiaApp } from '@inertiajs/svelte'
+
+createInertiaApp({
+  withApp(context) {
+    context.set('theme', 'dark')
+  },
+})
+```
+
+:::
+
+<Vue>
+The callback receives the Vue app instance, allowing you to call `app.use()`, `app.provide()`, `app.component()`, and any other app-level method.
+</Vue>
+
+<React>
+The callback receives the React element and must return a new element. This is where you may wrap your app with context providers.
+</React>
+
+<Svelte>
+The callback receives a `Map` that serves as Svelte's component context. Values set here are accessible in your components via `getContext()`.
+</Svelte>
+
+A second `{ ssr }` argument is also available, allowing you to conditionally apply logic based on the rendering environment.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+createInertiaApp({
+  withApp(app, { ssr }) {
+    app.use(i18n)
+
+    if (!ssr) {
+      app.use(browserOnlyPlugin)
+    }
+  },
+})
+```
+
+== React
+
+```jsx
+createInertiaApp({
+  withApp(app, { ssr }) {
+    if (!ssr) {
+      return <BrowserProvider>{app}</BrowserProvider>
+    }
+
+    return app
+  },
+})
+```
+
+== Svelte
+
+```js
+createInertiaApp({
+  withApp(context, { ssr }) {
+    context.set('theme', 'dark')
+
+    if (!ssr) {
+      context.set('analytics', createAnalytics())
+    }
+  },
+})
+```
+
+:::
+
 ## Manual Setup
 
 If you prefer not to use the Vite plugin, you may provide the `resolve` and `setup` callbacks manually. The `resolve` callback tells Inertia how to load a page component and receives the component name and the full [page object](/guide/the-protocol). The `setup` callback initializes the client-side framework.
+
+> [!NOTE]
+> A manual `setup` callback prevents the Vite plugin from auto-generating [SSR](/guide/server-side-rendering) handling. You should create a [separate SSR entry point](/guide/server-side-rendering#ssr-entry-point) and update your app to use [client-side hydration](/guide/server-side-rendering#client-side-hydration).
 
 :::tabs key:frameworks
 

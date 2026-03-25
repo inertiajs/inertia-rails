@@ -2,7 +2,7 @@
 
 Server-side rendering pre-renders your JavaScript pages on the server, allowing your visitors to receive fully rendered HTML when they visit your application. Since fully rendered HTML is served by your application, it's also easier for search engines to index your site.
 
-Server-side rendering uses Node.js to render your pages in a background process; therefore, Node must be available on your server for server-side rendering to function properly.
+Server-side rendering uses Node.js to render your pages in a background process; therefore, Node must be available on your server for server-side rendering to function properly. Inertia's SSR server requires Node.js 22 or higher.
 
 ## Vite Plugin Setup
 
@@ -96,7 +96,9 @@ node public/assets-ssr/inertia.js
 
 The Vite plugin reuses your `inertia.js` entry point for both browser and SSR rendering by default, so no separate file is needed. The plugin detects the `data-server-rendered` attribute to decide whether to hydrate or mount, and the `setup` and `resolve` callbacks are optional.
 
-If you need custom SSR logic (such as Vue plugins that should only run on the server), you may create a separate `entrypoints/ssr.js` file.
+Most app customizations, such as registering plugins or wrapping with providers, may be handled using the [`withApp` callback](/guide/client-side-setup#customizing-the-app) in your main entry point. A separate SSR entry point is only needed when you require completely different setup logic for the server.
+
+You may create a separate `resources/js/ssr.js` file for this purpose.
 
 :::tabs key:frameworks
 

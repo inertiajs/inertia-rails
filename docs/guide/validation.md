@@ -165,7 +165,7 @@ export default function Edit() {
 
 :::
 
-When using the Vue adapters, you may also access the errors via the `$page.props.errors` object.
+When using the Vue adapters, you may also access the errors via the `page.props.errors` object.
 
 ## Repopulating Input
 

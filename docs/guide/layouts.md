@@ -361,13 +361,11 @@ createInertiaApp({
 
 ## Layout Props
 
-@available_since core=3.0.0
-
 Persistent layouts often need dynamic data from the current page, such as a page title, the active navigation item, or a sidebar toggle. Layout props provide a way to define defaults in your layout and override them from any page.
 
 ### Defining Defaults
 
-Use the `useLayoutProps` hook in your layout component to declare which props the layout accepts and their default values.
+Layout props are defined as regular component props with default values.
 
 :::tabs key:frameworks
 
@@ -375,17 +373,18 @@ Use the `useLayoutProps` hook in your layout component to declare which props th
 
 ```vue
 <script setup>
-import { useLayoutProps } from '@inertiajs/vue3'
-
-const layout = useLayoutProps({
-  title: 'My App',
-  showSidebar: true,
+const props = withDefaults(defineProps<{
+    title?: string
+    showSidebar?: boolean
+}>(), {
+    title: 'My App',
+    showSidebar: true,
 })
 </script>
 
 <template>
-  <header>{{ layout.title }}</header>
-  <aside v-if="layout.showSidebar">Sidebar</aside>
+  <header>{{ title }}</header>
+  <aside v-if="showSidebar">Sidebar</aside>
   <main>
     <slot />
   </main>
@@ -395,14 +394,11 @@ const layout = useLayoutProps({
 == React
 
 ```jsx
-import { useLayoutProps } from '@inertiajs/react'
-
-export default function Layout({ children }) {
-  const { title, showSidebar } = useLayoutProps({
-    title: 'My App',
-    showSidebar: true,
-  })
-
+export default function Layout({
+  title = 'My App',
+  showSidebar = true,
+  children,
+}) {
   return (
     <>
       <header>{title}</header>
@@ -417,18 +413,11 @@ export default function Layout({ children }) {
 
 ```svelte
 <script>
-  import { useLayoutProps } from '@inertiajs/svelte'
-
-  const layout = useLayoutProps({
-    title: 'My App',
-    showSidebar: true,
-  })
-
-  let { children } = $props()
+  let { title = 'My App', showSidebar = true, children } = $props()
 </script>
 
-<header>{layout.title}</header>
-{#if layout.showSidebar}
+<header>{title}</header>
+{#if showSidebar}
   <aside>Sidebar</aside>
 {/if}
 <main>
@@ -438,23 +427,181 @@ export default function Layout({ children }) {
 
 :::
 
-The defaults object defines which keys the layout will respond to. Only keys declared in the defaults are included in the merged result. Any extra keys set from pages are ignored.
+### Static Props
 
-<Vue>
+You may pass static props directly in your persistent layout definition using a tuple. These props are set once when the layout is defined and don't change between page navigations.
 
-In Vue, `useLayoutProps` returns a `ComputedRef`, so access its properties directly (e.g., `layout.title`). The values update reactively when pages set new layout props.
+:::tabs key:frameworks
 
-</Vue>
+== Vue
 
-<Svelte>
+```vue
+<script setup>
+import Layout from './Layout'
 
-In Svelte, `useLayoutProps` returns a reactive object. Access its properties directly (e.g., `layout.title`). The values update reactively when pages set new layout props.
+defineProps({ user: Object })
+defineOptions({
+  layout: [Layout, { title: 'Dashboard' }],
+})
+</script>
 
-</Svelte>
+<template>
+  <h1>Dashboard</h1>
+</template>
+```
 
-### Setting Props From Pages
+== React
 
-Use the `setLayoutProps` function from any page component to update the layout's props dynamically.
+```jsx
+import Layout from './Layout'
+
+const Dashboard = ({ user }) => {
+  return <h1>Dashboard</h1>
+}
+
+Dashboard.layout = [Layout, { title: 'Dashboard' }]
+
+export default Dashboard
+```
+
+== Svelte
+
+```svelte
+<script module>
+  import Layout from './Layout.svelte'
+
+  export const layout = [Layout, { title: 'Dashboard' }]
+</script>
+
+<script>
+  let { user } = $props()
+</script>
+
+<h1>Dashboard</h1>
+```
+
+:::
+
+### Callback Props
+
+Sometimes layout props need to be derived from the current page's props. A callback function receives the page props and returns a layout definition with computed static props.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup>
+import Layout from './Layout'
+
+defineOptions({
+  layout: (props) => [Layout, { title: 'Profile: ' + props.auth.user.name }],
+})
+</script>
+
+<template>
+  <h1>Profile</h1>
+</template>
+```
+
+== React
+
+```jsx
+import Layout from './Layout'
+
+const Profile = () => {
+  return <h1>Profile</h1>
+}
+
+Profile.layout = (props) => [
+  Layout,
+  { title: 'Profile: ' + props.auth.user.name },
+]
+
+export default Profile
+```
+
+== Svelte
+
+```svelte
+<script module>
+  import Layout from './Layout.svelte'
+
+  export const layout = (props) => [
+    Layout,
+    { title: 'Profile: ' + props.auth.user.name },
+  ]
+</script>
+
+<h1>Profile</h1>
+```
+
+:::
+
+The callback receives the page's props and may return any valid layout format: a single component, a tuple with static props, an array for nested layouts, or a named layout object. TypeScript users may use the [`LayoutCallback`](/guide/typescript#layout-callbacks) type for type safety.
+
+#### Returning Props Only
+
+When a [default layout](#default-layouts) is configured in `createInertiaApp`, callbacks may return a plain props object instead of a full layout definition. Inertia will automatically use the default layout and merge the returned props onto it.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup>
+defineOptions({
+  layout: (props) => ({
+    title: 'Profile: ' + props.auth.user.name,
+    showSidebar: false,
+  }),
+})
+</script>
+
+<template>
+  <h1>Profile</h1>
+</template>
+```
+
+== React
+
+```jsx
+const Profile = () => {
+  return <h1>Profile</h1>
+}
+
+Profile.layout = (props) => ({
+  title: 'Profile: ' + props.auth.user.name,
+  showSidebar: false,
+})
+
+export default Profile
+```
+
+== Svelte
+
+```svelte
+<script module>
+  export const layout = (props) => ({
+    title: 'Profile: ' + props.auth.user.name,
+    showSidebar: false,
+  })
+</script>
+
+<h1>Profile</h1>
+```
+
+:::
+
+A static object may also be used when the props don't depend on page data.
+
+```js
+Dashboard.layout = { title: 'Dashboard', showSidebar: true }
+```
+
+### Dynamic Props
+
+You may also update layout props dynamically from any page component using the `setLayoutProps` function. TypeScript users may [type these props](/guide/typescript#layout-props) globally.
 
 :::tabs key:frameworks
 
@@ -507,11 +654,9 @@ export default function Dashboard() {
 
 :::
 
-The layout will re-render with the merged values: `{ title: 'Dashboard', showSidebar: false }`.
-
 ### Targeting Named Layouts
 
-You may also define your persistent layouts as a named object, allowing you to target specific layouts with props.
+[Nested layouts](#nested-layouts) may also be defined as a named object instead of an array, allowing you to target specific layouts with props.
 
 :::tabs key:frameworks
 
@@ -559,16 +704,16 @@ Dashboard.layout = {
 
 :::
 
-Use `setLayoutPropsFor` to set props for a specific named layout.
+You may target a specific named layout by passing the layout name as the first argument to `setLayoutProps`.
 
 :::tabs key:frameworks
 
 == Vue
 
 ```js
-import { setLayoutPropsFor } from '@inertiajs/vue3'
+import { setLayoutProps } from '@inertiajs/vue3'
 
-setLayoutPropsFor('sidebar', {
+setLayoutProps('sidebar', {
   collapsed: true,
 })
 ```
@@ -576,9 +721,9 @@ setLayoutPropsFor('sidebar', {
 == React
 
 ```js
-import { setLayoutPropsFor } from '@inertiajs/react'
+import { setLayoutProps } from '@inertiajs/react'
 
-setLayoutPropsFor('sidebar', {
+setLayoutProps('sidebar', {
   collapsed: true,
 })
 ```
@@ -586,110 +731,46 @@ setLayoutPropsFor('sidebar', {
 == Svelte
 
 ```js
-import { setLayoutPropsFor } from '@inertiajs/svelte'
+import { setLayoutProps } from '@inertiajs/svelte'
 
-setLayoutPropsFor('sidebar', {
+setLayoutProps('sidebar', {
   collapsed: true,
 })
 ```
 
 :::
 
-Named layout props are merged with shared layout props, with named props taking priority.
-
-### Static Props
-
-You may also pass static props directly in your persistent layout definition using a tuple. Static props are set once when the layout is defined and don't change between page navigations.
-
-:::tabs key:frameworks
-
-== Vue
-
-```vue
-<script>
-import Layout from './Layout'
-
-export default {
-  layout: [Layout, { title: 'Dashboard' }],
-}
-</script>
-
-<script setup>
-defineProps({ user: Object })
-</script>
-
-<template>
-  <h1>Dashboard</h1>
-</template>
-```
-
-== React
-
-```jsx
-import Layout from './Layout'
-
-const Dashboard = ({ user }) => {
-  return <h1>Dashboard</h1>
-}
-
-Dashboard.layout = [Layout, { title: 'Dashboard' }]
-
-export default Dashboard
-```
-
-== Svelte
-
-```svelte
-<script module>
-  import Layout from './Layout.svelte'
-
-  export const layout = [Layout, { title: 'Dashboard' }]
-</script>
-
-<script>
-  let { user } = $props()
-</script>
-
-<h1>Dashboard</h1>
-```
-
-:::
-
-Named layouts may also include static props using the same tuple syntax.
+[Nested layouts](#nested-layouts) and named layouts may also include static props using the tuple syntax.
 
 ```js
+// Nested layouts with static props
+Dashboard.layout = [
+  [AppLayout, { title: 'Dashboard' }],
+  [ContentLayout, { padding: 'sm' }],
+]
+
+// Named layouts with static props
 Dashboard.layout = {
   app: [AppLayout, { theme: 'dark' }],
   content: [ContentLayout, { padding: 'sm' }],
 }
 ```
 
-For unnamed nested layouts with static props, use an array of tuples.
-
-```js
-Dashboard.layout = [
-  [AppLayout, { title: 'Dashboard' }],
-  [ContentLayout, { padding: 'sm' }],
-]
-```
-
 ### Merge Priority
 
-Layout props are resolved from three sources with the following priority (highest to lowest):
+Layout props are resolved from multiple sources with the following priority (highest to lowest):
 
-1. **Dynamic props** - set via `setLayoutProps()` or `setLayoutPropsFor()`
-2. **Static props** - defined in the persistent layout definition
-3. **Defaults** - declared in `useLayoutProps()`
-
-Only keys present in the defaults are included in the final result.
+1. **Dynamic props** - set via `setLayoutProps()`
+2. **Static props** - defined in the persistent layout definition (including [callback props](#callback-props))
+3. **Defaults** - declared as default values on the layout component's props
 
 ### Auto-Reset on Navigation
 
-Dynamic layout props are automatically reset to their defaults when navigating to a new page (unless `preserveState` is enabled). This ensures each page starts with a clean slate and only the layout props explicitly set by that page are applied.
+Dynamic layout props are automatically reset when navigating to a new page (unless `preserveState` is enabled). This ensures each page starts with a clean slate and only the layout props explicitly set by that page are applied.
 
 ### Resetting Props
 
-You may also manually reset all dynamic layout props back to their defaults using `resetLayoutProps`.
+You may also manually reset all dynamic layout props using `resetLayoutProps`.
 
 :::tabs key:frameworks
 

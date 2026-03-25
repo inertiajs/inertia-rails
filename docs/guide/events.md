@@ -671,7 +671,7 @@ router.on('httpException', (event) => {
 
 ## Network Error
 
-The `networkError` event (`exception` in `@inertiajs/core` < 3.0) fires on unexpected XHR errors such as network interruptions. In addition, this event fires for errors generated when resolving page components.
+The `networkError` event (`error` in `@inertiajs/core` < 3.0) fires on unexpected XHR errors such as network interruptions. In addition, this event fires for errors generated when resolving page components.
 
 :::tabs key:frameworks
 
@@ -682,7 +682,7 @@ import { router } from '@inertiajs/vue3'
 
 router.on('networkError', (event) => {
   console.log(`An unexpected error occurred during an Inertia visit.`)
-  console.log(event.detail.exception)
+  console.log(event.detail.error)
 })
 ```
 
@@ -693,7 +693,7 @@ import { router } from '@inertiajs/react'
 
 router.on('networkError', (event) => {
   console.log(`An unexpected error occurred during an Inertia visit.`)
-  console.log(event.detail.exception)
+  console.log(event.detail.error)
 })
 ```
 
@@ -704,7 +704,7 @@ import { router } from '@inertiajs/svelte'
 
 router.on('networkError', (event) => {
   console.log(`An unexpected error occurred during an Inertia visit.`)
-  console.log(event.detail.exception)
+  console.log(event.detail.error)
 })
 ```
 

@@ -24,6 +24,8 @@ You may configure Inertia's types globally by augmenting the `InertiaConfig` int
 
 ```ts
 // global.d.ts
+import '@inertiajs/core'
+
 declare module '@inertiajs/core' {
   export interface InertiaConfig {
     sharedPageProps: {
@@ -34,14 +36,20 @@ declare module '@inertiajs/core' {
       toast?: { type: 'success' | 'error'; message: string }
     }
     errorValueType: string[]
+    layoutProps: {
+      title: string
+      showSidebar: boolean
+    }
+    namedLayoutProps: {
+      app: { title: string; theme: 'light' | 'dark' }
+      content: { padding: string; maxWidth: string }
+    }
   }
 }
 ```
 
 > [!NOTE]
-> For module augmentation to work, your `tsconfig.json` needs to include `.d.ts`
-> files. Make sure a pattern like `"app/frontend/**/*.d.ts"` is present in the
-> `include` array, adjusted to match your project's directory structure.
+> The `import` statement (or `export {}`) is required to make this file a module. Without it, `declare module` replaces the module definition instead of augmenting it. Your `tsconfig.json` also needs to include `.d.ts` files, so make sure a pattern like `"@/**/*.d.ts"` is present in the `include` array.
 
 ### Shared Page Props
 
@@ -70,6 +78,36 @@ By default, validation error values are typed as `string`. You may configure Typ
 
 ```ts
 errorValueType: string[]
+```
+
+### Layout Props
+
+The `layoutProps` option types the data accepted by `setLayoutProps()`. The `namedLayoutProps` option types the data accepted by `setLayoutProps('name', props)`, keyed by layout name.
+
+```ts
+layoutProps: {
+  title: string
+  showSidebar: boolean
+}
+namedLayoutProps: {
+  app: {
+    title: string
+    theme: 'light' | 'dark'
+  }
+  content: {
+    padding: string
+    maxWidth: string
+  }
+}
+```
+
+With this configuration, `setLayoutProps({ title: 'Dashboard' })` is type-checked, and `setLayoutProps('app', { theme: 'dark' })` validates both the layout name and its props.
+
+You may also pass a generic type parameter directly to `setLayoutProps` for ad-hoc typing without configuring the global `InertiaConfig` interface.
+
+```ts
+setLayoutProps<{ custom: string }>({ custom: 'value' })
+setLayoutProps<{ collapsed: boolean }>('sidebar', { collapsed: true })
 ```
 
 ## Page Components
@@ -375,6 +413,52 @@ const form = useFormContext<UserForm>()
 ```
 
 :::
+
+## HTTP Helper
+
+The [`useHttp`](/guide/http-requests) hook accepts two generic type parameters: the form data type and an optional default response type.
+
+```ts
+import { useHttp } from '@inertiajs/react'
+
+interface UserForm {
+  name: string
+  email: string
+}
+
+interface UserResponse {
+  id: number
+  name: string
+}
+
+const http = useHttp<UserForm, UserResponse>({ name: '', email: '' })
+```
+
+### Per-Request Response Types
+
+Each HTTP method accepts its own generic type parameter, allowing you to override the response type on a per-call basis. This is useful when different endpoints return different response shapes.
+
+```ts
+interface OrderResponse {
+  orderId: string
+  total: number
+}
+
+// Override the response type per request...
+const user: UserResponse = await http.post<UserResponse>('/api/users')
+const order: OrderResponse = await http.get<OrderResponse>('/api/orders/123')
+const submitted: UserResponse = await http.submit<UserResponse>(
+  'post',
+  '/api/users',
+)
+
+// The onSuccess callback is also typed...
+await http.post<UserResponse>('/api/users', {
+  onSuccess: (response) => {
+    console.log(response.id, response.name)
+  },
+})
+```
 
 ## Remembering State
 

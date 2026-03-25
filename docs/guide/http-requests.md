@@ -144,7 +144,7 @@ http.submit(method, url, options)
 
 :::
 
-Each method returns a `Promise` that resolves with the parsed JSON response data.
+Each method returns a `Promise` that resolves with the parsed JSON response data. TypeScript users may [type the request data and response](/guide/typescript#http-helper) at the hook level or on a per-request basis.
 
 :::tabs key:frameworks
 
@@ -176,6 +176,35 @@ const response = await http.post('/api/comments', {
     console.log(errors)
   },
 })
+```
+
+:::
+
+## Multiple Requests
+
+Each `useHttp` instance tracks its own `processing`, `errors`, and other reactive state. When making independent requests, you may create a separate instance for each one so their states don't collide.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+const search = useHttp({ query: '' })
+const upload = useHttp({ file: null })
+```
+
+== React
+
+```js
+const search = useHttp({ query: '' })
+const upload = useHttp({ file: null })
+```
+
+== Svelte
+
+```js
+const search = useHttp({ query: '' })
+const upload = useHttp({ file: null })
 ```
 
 :::

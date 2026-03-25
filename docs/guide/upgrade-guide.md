@@ -117,6 +117,14 @@ your application imports it.
 npm install qs
 ```
 
+### `lodash-es` Dependency Removed
+
+The `lodash-es` package has been replaced with `es-toolkit` and is no longer included as a dependency of `@inertiajs/core`. You should install `lodash-es` directly if your application imports it.
+
+```bash
+npm install lodash-es
+```
+
 ### Event Renames
 
 Two global events have been renamed for clarity:
@@ -155,16 +163,17 @@ router.post('/users', data, {
 
 ### `router.cancel()` Replaced
 
-The `router.cancel()` method has been replaced by `router.cancelAll()`, which provides granular control over which
-request types to cancel:
+The `router.cancel()` method has been replaced by `router.cancelAll()`. In v2, `cancel()` only cancelled synchronous requests. The new `cancelAll()` method cancels all synchronous, asynchronous, and prefetch requests by default. You may pass options to limit which request types are cancelled.
 
 ```js
-// Before (v2)
+// Before (v2) — only cancelled sync requests
 router.cancel()
 
-// After (v3)
+// After (v3) — cancels all request types
 router.cancelAll()
-router.cancelAll({ async: false, prefetch: false }) // Cancel only sync requests
+
+// To match v2 behavior (sync only)...
+router.cancelAll({ async: false, prefetch: false })
 ```
 
 See the [visit cancellation](/guide/manual-visits#visit-cancellation) documentation for more details.
@@ -278,6 +287,10 @@ dot-notation for targeting nested props.
 ```js
 router.reload({ only: ['auth.notifications'] })
 ```
+
+### ES2022 Build Target
+
+Inertia packages now target ES2022, up from ES2020 in v2. You may use the [`@vitejs/plugin-legacy`](https://www.npmjs.com/package/@vitejs/plugin-legacy) Vite plugin if your application needs to support older browsers.
 
 ### ESM-Only Packages
 

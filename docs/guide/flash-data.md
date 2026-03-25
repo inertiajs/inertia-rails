@@ -259,7 +259,7 @@ document.addEventListener('inertia:flash', (event) => {
 
 :::
 
-The `flash` event is not cancelable. During [partial reloads](/guide/partial-reloads), it only fires if the flash data has changed.
+The `flash` event is not cancelable and fires on every response that carries flash data.
 
 ## Client-Side Flash
 

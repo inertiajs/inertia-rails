@@ -29,14 +29,14 @@ Inertia isn't a framework, nor is it a replacement for your existing server-side
 > [!NOTE]
 > The `inertia_rails` gem has been on 3.x for years — long before Inertia.js itself reached 3.x. When Inertia.js 4.x arrives, we'll bump the gem to 4.x to align major version numbers and this policy going forward.
 
-Inertia.js follows the same support policy as [Laravel](https://laravel.com/docs/releases#support-policy). When a new major version is released, the previous version receives bug fixes for 6 months and security fixes for 12 months.
+Inertia.js follows the same support policy as [Laravel](https://laravel.com/docs/releases#support-policy). When a new major version is released, the previous version receives bug fixes for 6 months and security fixes for 12 months. Inertia.js v3 was released on March 26, 2026.
 
-| Version | Bug Fixes Until           | Security Fixes Until       |
-| ------- | ------------------------- | -------------------------- |
-| 0.x     | End of life               | End of life                |
-| 1.x     | End of life               | End of life                |
-| 2.x     | 6 months after v3 release | 12 months after v3 release |
-| 3.x     | TBD                       | TBD                        |
+| Version | Bug Fixes Until    | Security Fixes Until |
+| ------- | ------------------ | -------------------- |
+| 0.x     | End of life        | End of life          |
+| 1.x     | End of life        | End of life          |
+| 2.x     | September 26, 2026 | March 26, 2027       |
+| 3.x     | TBD                | TBD                  |
 
 ## Next Steps
 
