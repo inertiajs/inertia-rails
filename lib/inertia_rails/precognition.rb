@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'current'
-require_relative 'errors'
-
 module InertiaRails
   class PrecognitionResponse < StandardError
     attr_reader :errors

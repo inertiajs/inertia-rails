@@ -32,7 +32,3 @@ module InertiaRails
     end
   end
 end
-
-if defined?(ActionDispatch::DebugExceptions)
-  ActionDispatch::DebugExceptions.prepend InertiaRails::InertiaDebugExceptions
-end

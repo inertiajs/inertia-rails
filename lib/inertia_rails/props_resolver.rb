@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'prop_evaluator'
-
 module InertiaRails
   # Resolves props and collects metadata (deferred, merge, once, scroll)
   # for the Inertia page response.
