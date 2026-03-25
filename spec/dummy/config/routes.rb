@@ -5,6 +5,7 @@ Rails.application.routes.draw do
 
   get 'configuration' => 'inertia_config_test#configuration'
   get 'props' => 'inertia_render_test#props'
+  get 'ssr_cache_disabled' => 'inertia_render_test#ssr_cache_disabled'
   get 'view_data' => 'inertia_render_test#view_data'
   get 'component' => 'inertia_render_test#component'
   get 'vary_header' => 'inertia_render_test#vary_header'

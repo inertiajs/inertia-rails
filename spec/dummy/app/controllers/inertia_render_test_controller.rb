@@ -8,6 +8,13 @@ class InertiaRenderTestController < ApplicationController
     }
   end
 
+  def ssr_cache_disabled
+    render inertia: 'TestComponent', props: {
+      name: 'Brandon',
+      sport: -> { 'hockey' },
+    }, ssr_cache: false
+  end
+
   def except_props
     render inertia: 'TestComponent', props: {
       flat: 'flat param',
