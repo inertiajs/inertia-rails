@@ -32,7 +32,7 @@ If you're using one of our official server-side adapters, all redirects will aut
 
 ## Preserving Fragments
 
-@available_since rails=master core=3.0.0
+@available_since rails=3.19.0 core=3.0.0
 
 Sometimes a user may visit a URL with a fragment, such as `/article/old-slug#section`, and the server needs to redirect to a different URL. The fragment from the original request is normally lost during the redirect.
 

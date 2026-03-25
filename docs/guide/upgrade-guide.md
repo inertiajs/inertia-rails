@@ -44,19 +44,19 @@ To upgrade to Inertia.js v3.0, first use npm to install the client-side adapter 
 == Vue
 
 ```bash
-npm install @inertiajs/vue3@beta
+npm install @inertiajs/vue3@^3.0
 ```
 
 == React
 
 ```bash
-npm install @inertiajs/react@beta
+npm install @inertiajs/react@^3.0
 ```
 
 == Svelte
 
 ```bash
-npm install @inertiajs/svelte@beta
+npm install @inertiajs/svelte@^3.0
 ```
 
 :::
@@ -65,13 +65,25 @@ You may also install the new optional Vite plugin, which provides a simplified S
 component resolution:
 
 ```bash
-npm install @inertiajs/vite@beta
+npm install @inertiajs/vite@^3.0
 ```
 
 Next, upgrade the `inertia_rails` gem:
 
-```bash
- bundle install inertia_rails, github: 'inertiajs/inertia-rails', branch: 'v3-beta'
+```ruby
+gem 'inertia_rails', '~> 3.19'
+```
+
+Make sure you are using configuration options that are compatible with Inertia.js v3.0.
+
+```ruby
+# config/initializers/inertia.rb
+InertiaRails.configure do |config|
+  config.use_script_element_for_initial_page = true
+  config.use_data_inertia_head_attribute = true
+  config.always_include_errors_hash = true
+  # ...
+end
 ```
 
 ## Breaking Changes

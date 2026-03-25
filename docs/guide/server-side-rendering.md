@@ -6,7 +6,7 @@ Server-side rendering uses Node.js to render your pages in a background process;
 
 ## Vite Plugin Setup
 
-@available_since core=3.0.0
+@available_since rails=3.19.0 core=3.0.0
 
 The recommended way to configure SSR is with the `@inertiajs/vite` plugin. This approach handles SSR configuration automatically, including development mode SSR without a separate Node.js server.
 
