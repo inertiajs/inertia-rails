@@ -28,7 +28,6 @@ This release also includes several additional improvements:
 - [Disable SSR per-route](/guide/server-side-rendering#disabling-ssr) via middleware or facade
 - [Improved SSR error messages](/guide/server-side-rendering#error-handling) with component names, URLs, and actionable
   hints
-- [Enum support](/guide/responses) in `Inertia::render()` responses
 - [Page object in resolve callback](/guide/client-side-setup#manual-setup) for context-aware component resolution
 - [Built-in HTTP interceptors](/guide/client-side-setup#interceptors) without Axios
 - [Default layout](/guide/layouts#default-layouts) option in `createInertiaApp`
@@ -290,8 +289,6 @@ update any `require()` calls to use `import` statements instead.
 The `clearHistory` and `encryptHistory` properties in the [page object](/guide/the-protocol#the-page-object) are now
 optional and only included in the response when `true`. Previously, every response included `"clearHistory": false` and
 `"encryptHistory": false` even when history wasn't being cleared or encrypted.
-
----
 
 ## Upgrade guide for v2.0
 
