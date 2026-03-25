@@ -1,16 +1,16 @@
+import { type FormComponentProps } from '@inertiajs/core'
 import { Form as InertiaForm } from '@inertiajs/react'
-import { type ComponentProps } from 'react'
 
-import { <%= inertia_model_type %> } from './types'
+import type { <%= inertia_model_type %>, <%= inertia_model_form_type %> } from './types'
 
-type FormProps = Omit<ComponentProps<typeof InertiaForm>, 'children'> & {
+type FormProps = FormComponentProps<<%= inertia_model_form_type %>> & {
   <%= singular_table_name %>: <%= inertia_model_type %>
   submitText: string
 }
 
 export default function Form({ <%= singular_table_name %>, submitText, ...formProps }: FormProps) {
   return (
-    <InertiaForm
+    <InertiaForm<<%= inertia_model_form_type %>>
       transform={data => ({ <%= singular_table_name %>: data })}
       className="contents"
       {...formProps}

@@ -10,9 +10,9 @@
 </svelte:head>
 
 <div class="mx-auto md:w-2/3 w-full px-8 pt-8">
-  {#if $page.flash.notice}
+  {#if page.flash.notice}
     <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-lg inline-block">
-      {$page.flash.notice}
+      {page.flash.notice}
     </p>
   {/if}
 

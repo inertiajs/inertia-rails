@@ -8,7 +8,7 @@
   let { <%= singular_table_name %>, submitText, ...restProps } = $props<{
     <%= singular_table_name %>: <%= inertia_model_type %>
     submitText: string
-  } & ComponentProps<Form>>()
+  } & ComponentProps<typeof Form>>()
 </script>
 
 <Form

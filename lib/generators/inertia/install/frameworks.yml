@@ -1,6 +1,7 @@
 react:
   inertia_package: "@inertiajs/react"
   packages:
+    - "@inertiajs/vite"
     - "@vitejs/plugin-react"
     - "react"
     - "react-dom"
@@ -25,11 +26,12 @@ react:
 vue:
   inertia_package: "@inertiajs/vue3"
   packages:
+    - "@inertiajs/vite"
     - "vue"
     - "@vitejs/plugin-vue"
     - "vite@latest"
   packages_ts:
-    - "typescript@~5.6.2"
+    - "typescript"
     - "vue-tsc"
   vite_plugin_import: "import vue from '@vitejs/plugin-vue'"
   vite_plugin_call: "vue()"
@@ -46,6 +48,7 @@ vue:
 svelte:
   inertia_package: "@inertiajs/svelte"
   packages:
+    - "@inertiajs/vite"
     - "svelte@5"
     - "@sveltejs/vite-plugin-svelte"
     - "vite@latest"
