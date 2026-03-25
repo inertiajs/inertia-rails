@@ -67,10 +67,14 @@ module InertiaRails
     end
 
     def url
-      if (dev_url = vite_dev_server_url)
+      if @configuration.ssr_url&.end_with?('/render', '/__inertia_ssr')
+        @configuration.ssr_url
+      elsif @configuration.ssr_url
+        "#{@configuration.ssr_url}/render"
+      elsif (dev_url = vite_dev_server_url)
         "#{dev_url}/__inertia_ssr"
       else
-        "#{@configuration.ssr_url}/render"
+        'http://localhost:13714/render'
       end
     end
 
