@@ -210,6 +210,18 @@ createInertiaApp({
 Initial page data is now always passed via a `<script type="application/json">` element. The legacy `data-page`
 attribute approach is no longer supported.
 
+### Head Element Attributes
+
+The `inertia` attribute used on elements in your root ERB template's `<head>` section has been renamed to `data-inertia`. You should update any head elements that use this attribute:
+
+```html
+<!-- Before (v2) -->
+<title inertia>My Website</title>
+
+<!-- After (v3) -->
+<title data-inertia>My Website</title>
+```
+
 ### Progress Indicator Exports Removed
 
 The named exports `hideProgress()` and `revealProgress()` have been removed. If needed, use the `progress` object
