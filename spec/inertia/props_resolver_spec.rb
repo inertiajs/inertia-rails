@@ -902,6 +902,16 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props]).not_to have_key(:email)
     end
 
+    it 'excludes nested props containing arrays when parent is not requested' do
+      page = resolve_partial(
+        { name: 'Jonathan', user: { name: 'Jonathon', tags: %w[ruby rails] } },
+        'name'
+      )
+
+      expect(page[:props][:name]).to eq('Jonathan')
+      expect(page[:props]).not_to have_key(:user)
+    end
+
     it 'excludes props via except header' do
       page = resolve(
         { auth: { user: 'Jonathan', token: 'secret' } },

@@ -88,6 +88,8 @@ module InertiaRails
         end
 
         if prop.is_a?(Array)
+          next if !parent_was_resolved && excluded_by_partial_request?(path)
+
           transformed_props[key] = transform_array(prop, path, parent_was_resolved: parent_was_resolved)
           next
         end
