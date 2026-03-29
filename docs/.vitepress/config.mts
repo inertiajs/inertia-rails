@@ -203,6 +203,12 @@ export default withMermaid({
                 },
               ],
             },
+            {
+              text: 'Deployment',
+              items: [
+                { text: 'Deploy with Kamal', link: '/cookbook/deploy-with-kamal' },
+              ],
+            },
           ],
         },
       ],
