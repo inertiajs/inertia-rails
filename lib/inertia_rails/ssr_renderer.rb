@@ -74,14 +74,14 @@ module InertiaRails
       elsif (dev_url = vite_dev_server_url)
         "#{dev_url}/__inertia_ssr"
       else
-        'http://localhost:13714/render'
+        "#{InertiaRails::Configuration::DEFAULT_SSR_URL}/render"
       end
     end
 
     def vite_dev_server_url
       return @vite_dev_server_url if defined?(@vite_dev_server_url)
 
-      @vite_dev_server_url = detect_vite_dev_url
+      @vite_dev_server_url = InertiaRails::SSR.vite_dev_server_url
     end
 
     def bundle_exists?
@@ -91,20 +91,6 @@ module InertiaRails
       return true if bundle.nil?
 
       Array(bundle).any? { |path| File.exist?(path) }
-    end
-
-    def detect_vite_dev_url
-      # vite_rails: TCP probe, no metadata file
-      if defined?(ViteRuby) && ViteRuby.instance.dev_server_running?
-        config = ViteRuby.config
-        return "#{config.protocol}://#{config.host_with_port}"
-      end
-
-      # rails_vite + jsbundling: file-based
-      path = Rails.root.join('tmp/rails-vite.json')
-      JSON.parse(path.read)['url'] if path.exist?
-    rescue JSON::ParserError
-      nil
     end
   end
 end

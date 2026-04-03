@@ -27,6 +27,9 @@ require_relative 'inertia_rails/scroll_prop'
 require_relative 'inertia_rails/prop_evaluator'
 require_relative 'inertia_rails/props_resolver'
 
+# ssr
+require_relative 'inertia_rails/ssr'
+
 # rendering
 require_relative 'inertia_rails/meta_tag'
 require_relative 'inertia_rails/meta_tag_builder'
