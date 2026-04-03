@@ -29,7 +29,10 @@ module InertiaRails
     end
 
     def request
-      response = Net::HTTP.post(URI(url), page_json, 'Content-Type' => 'application/json')
+      uri = URI.parse(url)
+      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') do |http|
+        http.post(uri.request_uri, page_json, 'Content-Type' => 'application/json')
+      end
 
       unless response.is_a?(Net::HTTPSuccess)
         body = begin
