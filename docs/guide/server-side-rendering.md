@@ -344,7 +344,33 @@ createServer(
 > [!NOTE]
 > The SSR server is only required in production. During development, the [Vite plugin](#development-mode) handles SSR automatically.
 
-Once you have built both your client-side and server-side bundles, you may start the SSR server using the following command.
+### Puma Plugin
+
+@available_since rails=master
+
+The recommended way to run the SSR server in production is with the built-in Puma plugin. Add the plugin to your Puma configuration:
+
+```ruby
+# config/puma.rb
+plugin :inertia_ssr
+```
+
+The plugin automatically starts and stops the SSR Node.js process alongside Puma. It handles health checks, automatic restarts on crashes, and graceful shutdown. No separate process management (systemd, Procfile, etc.) is needed.
+
+The plugin is a no-op when `ssr_enabled` is `false` or the SSR bundle is not found, so it is safe to add unconditionally.
+
+The JavaScript runtime is auto-detected from your lockfile (`bun.lockb` → Bun, `deno.lock` → Deno, otherwise Node.js). To override:
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.ssr_runtime = "bun"
+end
+```
+
+### Manual
+
+If you are not using Puma, or prefer to manage the SSR process yourself, start the SSR server manually:
 
 ```bash
 bin/vite ssr
@@ -472,4 +498,7 @@ end
 
 ## Deployment
 
-When deploying your SSR enabled app to production, you'll need to build both the client-side (`application.js`) and server-side bundles (`ssr.js`), and then run the SSR server as a background process.
+When deploying your SSR enabled app to production, build both the client-side (`application.js`) and server-side bundles (`ssr.js`), and then run the SSR server as a background process — either via the [Puma plugin](#puma-plugin) or manually.
+
+> [!NOTE]
+> The Puma plugin expects Node.js (or your configured runtime) to be available in the same environment as Puma. For containerized deployments where the SSR server runs in a separate container, skip the plugin and point `ssr_url` to the SSR container instead.

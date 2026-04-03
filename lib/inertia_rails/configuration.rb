@@ -2,6 +2,8 @@
 
 module InertiaRails
   class Configuration
+    DEFAULT_SSR_URL = 'http://localhost:13714'
+
     DEFAULTS = {
       # Whether to combine hashes with the same keys instead of replacing them.
       deep_merge_shared_data: false,
@@ -24,6 +26,7 @@ module InertiaRails
 
       # SSR options.
       ssr_enabled: false,
+      # URL of the SSR server. When nil, defaults to DEFAULT_SSR_URL.
       ssr_url: nil,
       ssr_raise_on_error: false,
       on_ssr_error: nil,
@@ -35,6 +38,9 @@ module InertiaRails
       # Accepts true, false/nil, or a Hash of Rails.cache.fetch options.
       # Lambdas are supported (instance_exec'd in controller context).
       ssr_cache: nil,
+      # JavaScript runtime used to run the SSR bundle (e.g. "node", "bun", "deno").
+      # When nil, auto-detects from lockfiles or falls back to "node".
+      ssr_runtime: nil,
 
       # Used to detect version drift between server and client.
       version: nil,

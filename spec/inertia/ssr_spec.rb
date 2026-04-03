@@ -23,9 +23,15 @@ RSpec.describe 'inertia ssr', type: :request do
     allow(http_response).to receive(:is_a?) do |klass|
       status.between?(200, 299) ? [Net::HTTPSuccess, Net::HTTPOK].include?(klass) : false
     end
-    allow(Net::HTTP).to receive(:post)
-      .with(URI(url), page_json, 'Content-Type' => 'application/json')
+
+    uri = URI.parse(url)
+    http_double = instance_double(Net::HTTP)
+    allow(http_double).to receive(:post)
+      .with(uri.request_uri, page_json, 'Content-Type' => 'application/json')
       .and_return(http_response)
+    allow(Net::HTTP).to receive(:start)
+      .with(uri.hostname, uri.port, use_ssl: uri.scheme == 'https')
+      .and_yield(http_double)
   end
 
   context 'ssr is enabled' do
@@ -57,7 +63,7 @@ RSpec.describe 'inertia ssr', type: :request do
 
     context 'the ssr server fails with a connection error' do
       before do
-        allow(Net::HTTP).to receive(:post).and_raise(Errno::ECONNREFUSED)
+        allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
       end
 
       it 'falls back to client-side rendering' do
@@ -121,7 +127,9 @@ RSpec.describe 'inertia ssr', type: :request do
       before do
         http_response = instance_double(Net::HTTPOK, body: 'not json', code: '500')
         allow(http_response).to receive(:is_a?).and_return(false)
-        allow(Net::HTTP).to receive(:post).and_return(http_response)
+        http_double = instance_double(Net::HTTP)
+        allow(http_double).to receive(:post).and_return(http_response)
+        allow(Net::HTTP).to receive(:start).and_yield(http_double)
       end
 
       it 'falls back to client-side rendering' do
@@ -139,7 +147,7 @@ RSpec.describe 'inertia ssr', type: :request do
 
       before do
         ssr_errors.clear
-        allow(Net::HTTP).to receive(:post).and_raise(Errno::ECONNREFUSED)
+        allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
       end
 
       it 'calls the callback with the error and page data' do
@@ -185,7 +193,7 @@ RSpec.describe 'inertia ssr', type: :request do
 
       context 'when ssr server has a connection error' do
         before do
-          allow(Net::HTTP).to receive(:post).and_raise(Errno::ECONNREFUSED)
+          allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
         end
 
         it 'raises SSRError with connection type' do
@@ -244,7 +252,7 @@ RSpec.describe 'inertia ssr', type: :request do
       end
 
       it 'does not make an HTTP request to the SSR server' do
-        expect(Net::HTTP).not_to receive(:post)
+        expect(Net::HTTP).not_to receive(:start)
         get props_path
       end
     end
@@ -545,7 +553,9 @@ RSpec.describe 'inertia ssr', type: :request do
       before do
         http_response = instance_double(Net::HTTPOK, body: ssr_body.to_json, code: '200')
         allow(http_response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
-        allow(Net::HTTP).to receive(:post).and_return(http_response)
+        http_double = instance_double(Net::HTTP)
+        allow(http_double).to receive(:post).and_return(http_response)
+        allow(Net::HTTP).to receive(:start).and_yield(http_double)
       end
 
       it 'caches the SSR response' do
@@ -555,7 +565,7 @@ RSpec.describe 'inertia ssr', type: :request do
         # Second request should use cache, not call Net::HTTP again
         get props_path
         expect(response.body).to include('<div>Cached SSR</div>')
-        expect(Net::HTTP).to have_received(:post).once
+        expect(Net::HTTP).to have_received(:start).once
       end
 
       it 'uses a digest-based cache key' do
@@ -591,7 +601,9 @@ RSpec.describe 'inertia ssr', type: :request do
           body: { body: '<div>No Cache SSR</div>', head: ['<title>No Cache</title>'] }.to_json, code: '200'
         )
         allow(http_response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
-        allow(Net::HTTP).to receive(:post).and_return(http_response)
+        http_double = instance_double(Net::HTTP)
+        allow(http_double).to receive(:post).and_return(http_response)
+        allow(Net::HTTP).to receive(:start).and_yield(http_double)
       end
 
       it 'skips caching when render option is false' do
@@ -661,7 +673,7 @@ RSpec.describe 'inertia ssr', type: :request do
       with_inertia_config ssr_cache: true
 
       before do
-        allow(Net::HTTP).to receive(:post).and_raise(Errno::ECONNREFUSED)
+        allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
       end
 
       it 'does not cache the error' do
@@ -686,7 +698,7 @@ RSpec.describe 'inertia ssr', type: :request do
 
         # A different URL produces different page JSON, so different cache key
         expect(Rails.cache).to have_received(:fetch).once
-        expect(Net::HTTP).to have_received(:post).once
+        expect(Net::HTTP).to have_received(:start).once
       end
     end
   end
