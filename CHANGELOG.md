@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.20.0] - 2026-04-04
+
+* Fix partial reload filtering with arrays
+* Docs update for the v3.0 upgrade
+* Add plugin for Puma so that SSR Just Works in production for apps using Puma
+
 ## [3.19.0] - 2026-03-25
 
 * Upgrades to support Inertia.js 3.x! All thanks to @skyrukov!
