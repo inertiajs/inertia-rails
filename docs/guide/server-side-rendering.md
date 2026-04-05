@@ -28,7 +28,9 @@ export default defineConfig({
   plugins: [
     // ...
     inertia({
-      entry: 'entrypoints/inertia.js',
+      ssr: {
+        entry: 'entrypoints/inertia.js',
+      },
     }),
   ],
 })
