@@ -87,16 +87,19 @@ module Inertia
         say 'Installing Inertia npm packages'
         add_dependencies(inertia_package, *FRAMEWORKS[framework]['packages'])
 
-        unless File.read(vite_config_path).include?(FRAMEWORKS[framework]['vite_plugin_import'])
-          say "Adding Vite plugin for #{framework}"
-          insert_into_file vite_config_path, "\n    #{FRAMEWORKS[framework]['vite_plugin_call']},", after: 'plugins: ['
-          prepend_file vite_config_path, "#{FRAMEWORKS[framework]['vite_plugin_import']}\n"
-        end
-
         unless File.read(vite_config_path).include?('@inertiajs/vite')
           say 'Adding Inertia Vite plugin'
-          insert_into_file vite_config_path, "\n    inertia(),", after: 'plugins: ['
+          # Append to the end of the plugins array.
+          gsub_file vite_config_path, /(plugins: \[.*?)(\n\s*\])/m, "\\1\n    inertia(),\\2"
           prepend_file vite_config_path, "import inertia from '@inertiajs/vite'\n"
+        end
+
+        unless File.read(vite_config_path).include?(FRAMEWORKS[framework]['vite_plugin_import'])
+          say "Adding Vite plugin for #{framework}"
+          # Append to the end of the plugins array.
+          gsub_file vite_config_path, /(plugins: \[.*?)(\n\s*\])/m,
+                    "\\1\n    #{FRAMEWORKS[framework]['vite_plugin_call']},\\2"
+          prepend_file vite_config_path, "#{FRAMEWORKS[framework]['vite_plugin_import']}\n"
         end
 
         say "Copying #{inertia_entrypoint} entrypoint"
