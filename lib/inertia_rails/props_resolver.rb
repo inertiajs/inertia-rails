@@ -82,6 +82,8 @@ module InertiaRails
         prop = prop.to_inertia if prop.respond_to?(:to_inertia)
 
         if prop.is_a?(Hash) && prop.any?
+          next if !parent_was_resolved && excluded_by_partial_request?(path)
+
           nested = deep_transform_props(prop, path, parent_was_resolved: parent_was_resolved)
           transformed_props[key] = nested unless nested.empty?
           next
