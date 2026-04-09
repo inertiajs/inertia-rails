@@ -274,14 +274,9 @@ RSpec.describe 'rendering inertia views', type: :request do
 
       before { get deeply_nested_props_path, headers: headers }
 
-      it 'excludes everything but Always props' do
+      it 'excludes everything but top-level Always props' do
         expect(response.parsed_body['props']).to eq(
-          'always' => 'always prop',
-          'nested' => {
-            'deeply_nested' => {
-              'deeply_nested_always' => 'deeply nested always prop',
-            },
-          }
+          'always' => 'always prop'
         )
       end
     end
@@ -304,9 +299,6 @@ RSpec.describe 'rendering inertia views', type: :request do
             'evaluated' => {
               'first' => 'first evaluated nested param',
               'second' => 'second evaluated nested param',
-            },
-            'deeply_nested' => {
-              'deeply_nested_always' => 'deeply nested always prop',
             },
           }
         )
