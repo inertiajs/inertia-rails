@@ -138,14 +138,17 @@ Puma::Plugin.create do
 
     return Array(config.ssr_bundle).find { |path| File.exist?(path) } if config.ssr_bundle
 
-    if defined?(ViteRuby)
-      ssr_dir = ViteRuby.config.ssr_output_dir
-      candidates = Dir.glob(File.join(ssr_dir, 'inertia.*')) if ssr_dir
-      return candidates.first if candidates&.any?
+    patterns = %w[ssr/*.js public/assets-ssr/*.js]
+    if defined?(ViteRuby) && (ssr_dir = ViteRuby.config.ssr_output_dir)
+      patterns.prepend(File.join(ssr_dir, '*.js'))
     end
 
-    path = 'public/assets-ssr/inertia.js'
-    path if File.exist?(path)
+    patterns.each do |pattern|
+      candidates = Dir.glob(pattern)
+      return candidates.first if candidates.any?
+    end
+
+    nil
   end
 
   def resolve_base_url

@@ -361,6 +361,19 @@ The plugin automatically starts and stops the SSR Node.js process alongside Puma
 
 The plugin is a no-op when `ssr_enabled` is `false` or the SSR bundle is not found, so it is safe to add unconditionally.
 
+#### Bundle Resolution
+
+The plugin locates the SSR bundle using the following rules, in order:
+
+1. **Explicit config** — `config.ssr_bundle` (a path or an array of paths; the first existing file wins).
+2. **ViteRuby output** — if ViteRuby is loaded, it globs `<ssr_output_dir>/*.js`.
+3. **`ssr/` directory** — globs `ssr/*.js` in the project root (matches the `@inertiajs/vite` plugin's default SSR build output).
+4. **Legacy fallback** — checks `public/assets-ssr/*.js`.
+
+If none of the above finds a file, the plugin logs nothing and stays idle.
+
+#### Runtime Detection
+
 The JavaScript runtime is auto-detected from your lockfile (`bun.lockb` → Bun, `deno.lock` → Deno, otherwise Node.js). To override:
 
 ```ruby
