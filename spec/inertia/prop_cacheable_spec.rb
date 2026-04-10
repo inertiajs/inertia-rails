@@ -90,12 +90,12 @@ RSpec.describe InertiaRails::PropCacheable do
 
     context 'with cache: hash (extended format)' do
       it 'extracts key and passes options to cache store' do
-        prop = prop_class.new(cache: { key: 'test_key', expires_in: 0.1 }) { 'value' }
+        prop = prop_class.new(cache: { key: 'test_key', expires_in: 1.second }) { 'value' }
         prop.call(controller)
 
         expect(cache_store.read('inertia_rails/test_key')).to eq('"value"')
 
-        travel 1.second
+        travel 2.seconds
         expect(cache_store.read('inertia_rails/test_key')).to be_nil
       end
     end

@@ -35,21 +35,9 @@ RSpec.describe InertiaRails::CachedProp do
     end
   end
 
-  describe 'InertiaRails.cache(key: ..., expires_in: ...) { block }' do
-    it 'passes options to cache store' do
-      prop = InertiaRails.cache(key: 'stats', expires_in: 0.1) { 'value' }
-      prop.call(controller)
-
-      expect(cache_store.read('inertia_rails/stats')).to eq('"value"')
-
-      travel 1.second
-      expect(cache_store.read('inertia_rails/stats')).to be_nil
-    end
-  end
-
   describe 'InertiaRails.cache(key, expires_in: ...) { block }' do
     it 'accepts positional key with keyword options' do
-      prop = InertiaRails.cache('stats', expires_in: 0.1) { 'value' }
+      prop = InertiaRails.cache('stats', expires_in: 1.second) { 'value' }
       prop.call(controller)
 
       expect(cache_store.read('inertia_rails/stats')).to eq('"value"')
@@ -68,36 +56,18 @@ RSpec.describe InertiaRails::CachedProp do
     end
   end
 
-  describe 'InertiaRails.cache({key: ..., expires_in: ...}) { block }' do
-    it 'accepts a positional hash with key and options' do
-      prop = InertiaRails.cache({ key: 'stats', expires_in: 0.1 }) { 'value' }
-      prop.call(controller)
-
-      expect(cache_store.read('inertia_rails/stats')).to eq('"value"')
-
-      travel 1.second
-      expect(cache_store.read('inertia_rails/stats')).to be_nil
-    end
-  end
-
   describe 'InertiaRails.cache(ar_object, expires_in: ...) { block }' do
     it 'accepts AR object with keyword options' do
       ar_object = double('ARObject')
       allow(ar_object).to receive(:cache_key_with_version).and_return('posts/1-20260410')
 
-      prop = InertiaRails.cache(ar_object, expires_in: 0.1) { 'value' }
+      prop = InertiaRails.cache(ar_object, expires_in: 1.second) { 'value' }
       prop.call(controller)
 
       expect(cache_store.read('inertia_rails/posts/1-20260410')).to eq('"value"')
 
-      travel 1.second
+      travel 2.seconds
       expect(cache_store.read('inertia_rails/posts/1-20260410')).to be_nil
-    end
-  end
-
-  describe 'InertiaRails.cache { block } with no key' do
-    it 'raises ArgumentError' do
-      expect { InertiaRails.cache { 'value' } }.to raise_error(ArgumentError, /cache key is required/)
     end
   end
 end

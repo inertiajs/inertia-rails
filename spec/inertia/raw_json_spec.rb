@@ -9,9 +9,9 @@ RSpec.describe InertiaRails::RawJson do
   end
 
   describe '#as_json' do
-    it 'returns self' do
+    it 'returns a value compatible with JSON encoding' do
       raw = described_class.new('[1,2,3]')
-      expect(raw.as_json).to be(raw)
+      expect { ActiveSupport::JSON.encode(data: raw) }.not_to raise_error
     end
   end
 

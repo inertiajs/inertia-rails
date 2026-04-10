@@ -4,6 +4,9 @@
 
 Cached props use your server-side cache store to avoid recomputing expensive data on every request. When the cache is warm, the block is never evaluated — Inertia serves the pre-serialized JSON directly.
 
+> [!NOTE]
+> To understand when to use cached props vs once props vs HTTP caching, see the [Caching](/guide/caching) guide.
+
 ## Creating Cached Props
 
 To create a cached prop, use the `InertiaRails.cache` method. This method requires a cache key and a block that returns the prop data.
@@ -60,12 +63,6 @@ InertiaRails.cache('stats', expires_in: 1.hour) { Stats.compute }
 InertiaRails.cache('stats', expires_in: 1.hour, race_condition_ttl: 10.seconds) { Stats.compute }
 ```
 
-Alternatively, pass a hash with a `key` and options:
-
-```ruby
-InertiaRails.cache(key: 'stats', expires_in: 1.hour) { Stats.compute }
-```
-
 ## Combining with Other Prop Types
 
 The `cache` option can be passed to [deferred](/guide/deferred-props) and [optional](/guide/partial-reloads#lazy-data-evaluation) props:
@@ -90,19 +87,6 @@ The `cache` option accepts the same key formats as `InertiaRails.cache`: strings
 InertiaRails.defer(cache: { key: 'feed', expires_in: 5.minutes }) { current_user.feed }
 ```
 
-## Cache Store Configuration
+## Cache Store
 
-By default, Inertia uses `Rails.cache` as the cache store. You can configure a different store:
-
-```ruby
-# config/initializers/inertia.rb
-
-InertiaRails.configure do |config|
-  config.cache_store = ActiveSupport::Cache::MemoryStore.new
-end
-```
-
-All cached prop keys are automatically prefixed with `inertia_rails/` to avoid collisions with other cached data.
-
-> [!TIP]
-> For HTTP-level response caching with ETags, see the [Caching](/guide/caching) guide.
+By default, Inertia uses `Rails.cache`. You can configure a different store via the [`cache_store`](/guide/configuration#cache_store) option. All cached prop keys are automatically prefixed with `inertia_rails/` to avoid collisions.
