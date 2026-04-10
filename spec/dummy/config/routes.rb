@@ -59,6 +59,9 @@ Rails.application.routes.draw do
   get 'once_props_fresh_and_non_fresh' => 'inertia_render_test#once_props_fresh_and_non_fresh'
   get 'merge_once_props' => 'inertia_render_test#merge_once_props'
   get 'optional_once_props' => 'inertia_render_test#optional_once_props'
+  get 'optional_cached_props' => 'inertia_render_test#optional_cached_props'
+  get 'cached_props' => 'inertia_render_test#cached_props'
+  get 'cached_deferred_props' => 'inertia_render_test#cached_deferred_props'
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
   get 'deeply_nested_props' => 'inertia_render_test#deeply_nested_props'
 

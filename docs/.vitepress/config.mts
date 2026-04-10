@@ -143,6 +143,7 @@ export default withMermaid({
             { text: 'Load when visible', link: '/guide/load-when-visible' },
             { text: 'Merging props', link: '/guide/merging-props' },
             { text: 'Once props', link: '/guide/once-props' },
+            { text: 'Cached props', link: '/guide/cached-props' },
             { text: 'Infinite scroll', link: '/guide/infinite-scroll' },
             { text: 'Remembering state', link: '/guide/remembering-state' },
           ],
@@ -159,6 +160,7 @@ export default withMermaid({
         {
           text: 'Advanced',
           items: [
+            { text: 'Caching', link: '/guide/caching' },
             { text: 'Asset versioning', link: '/guide/asset-versioning' },
             { text: 'Code splitting', link: '/guide/code-splitting' },
             { text: 'Configuration', link: '/guide/configuration' },

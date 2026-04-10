@@ -348,7 +348,7 @@ createServer(
 
 ### Puma Plugin
 
-@available_since rails=master
+@available_since rails=3.20.0
 
 The recommended way to run the SSR server in production is with the built-in Puma plugin. Add the plugin to your Puma configuration:
 
@@ -492,6 +492,67 @@ InertiaRails.configure do |config|
   config.ssr_raise_on_error = true
 end
 ```
+
+## SSR Response Caching
+
+@available_since rails=3.19.0
+
+SSR rendering sends a request to the Node.js server for every page load. You can cache these responses to avoid redundant renders when the same page data is served repeatedly.
+
+### Enabling SSR Caching
+
+Set `ssr_cache` in your initializer:
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.ssr_cache = true
+end
+```
+
+When enabled, the SSR response is cached using an MD5 digest of the page JSON as the cache key. Identical page data produces the same key, so the Node.js server is only called once per unique page.
+
+### Cache Options
+
+Pass a hash to control cache behavior:
+
+```ruby
+InertiaRails.configure do |config|
+  config.ssr_cache = { expires_in: 1.hour }
+end
+```
+
+### Dynamic Configuration
+
+Use a lambda for per-request control. The lambda is evaluated in the controller context:
+
+```ruby
+InertiaRails.configure do |config|
+  config.ssr_cache = -> { { expires_in: action_name == 'index' ? 1.hour : 5.minutes } }
+end
+```
+
+### Per-Render Override
+
+Override the global setting on individual render calls:
+
+```ruby
+class PostsController < ApplicationController
+  def show
+    render inertia: 'Posts/Show',
+      props: { post: @post.as_json },
+      ssr_cache: false  # skip caching for this render
+  end
+end
+```
+
+### Development Mode
+
+SSR caching is automatically disabled when the Vite dev server is running, since dev responses change frequently and should not be cached.
+
+### Cache Store
+
+SSR caching uses the same [`cache_store`](/guide/configuration#cache_store) as [cached props](/guide/cached-props). SSR cache keys are prefixed with `inertia_ssr/`.
 
 ## Disabling SSR
 

@@ -859,6 +859,147 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'cached prop rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+    let(:cache_store) { ActiveSupport::Cache::MemoryStore.new }
+
+    before do
+      allow(InertiaRails).to receive(:cache_store).and_return(cache_store)
+    end
+
+    context 'InertiaRails.cache in props' do
+      before { get cached_props_path, headers: headers }
+
+      it 'includes cached prop value in response' do
+        expect(response.parsed_body['props']).to eq(
+          'name' => 'Brian',
+          'stats' => { 'count' => 42 }
+        )
+      end
+
+      it 'writes to cache store' do
+        expect(cache_store.read('inertia_rails/stats_key')).to eq({ count: 42 }.to_json)
+      end
+
+      it 'returns RawJson on second request' do
+        get cached_props_path, headers: headers
+        expect(response.parsed_body['props']['stats']).to eq({ 'count' => 42 })
+      end
+    end
+
+    context 'cached deferred prop' do
+      context 'on first load' do
+        before { get cached_deferred_props_path, headers: headers }
+
+        it 'excludes deferred prop from props' do
+          expect(response.parsed_body['props']).to eq({ 'name' => 'Brian' })
+        end
+
+        it 'includes deferredProps metadata' do
+          expect(response.parsed_body['deferredProps']).to eq(
+            'feed' => ['feed']
+          )
+        end
+
+        it 'does not write to cache on first load' do
+          expect(cache_store.read('inertia_rails/feed_key')).to be_nil
+        end
+      end
+
+      context 'on partial reload (cache miss)' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'feed',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        before { get cached_deferred_props_path, headers: headers }
+
+        it 'evaluates block and returns fresh data' do
+          expect(response.parsed_body['props']['feed']).to eq(%w[fresh_item])
+        end
+
+        it 'writes result to cache' do
+          expect(cache_store.read('inertia_rails/feed_key')).to eq(%w[fresh_item].to_json)
+        end
+      end
+
+      context 'on partial reload (cache hit)' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'feed',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        before do
+          cache_store.write('inertia_rails/feed_key', '["cached_item"]')
+          get cached_deferred_props_path, headers: headers
+        end
+
+        it 'returns cached data without evaluating block' do
+          expect(response.parsed_body['props']['feed']).to eq(%w[cached_item])
+        end
+      end
+    end
+
+    context 'cached optional prop' do
+      context 'on first load' do
+        before { get optional_cached_props_path, headers: headers }
+
+        it 'excludes optional prop from props' do
+          expect(response.parsed_body['props']).to eq({ 'regular' => 'regular prop' })
+        end
+
+        it 'does not write to cache on first load' do
+          expect(cache_store.read('inertia_rails/categories_key')).to be_nil
+        end
+      end
+
+      context 'on partial reload (cache miss)' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'categories',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        before { get optional_cached_props_path, headers: headers }
+
+        it 'evaluates block and returns data' do
+          expect(response.parsed_body['props']['categories']).to eq(%w[category1 category2])
+        end
+
+        it 'writes result to cache' do
+          expect(cache_store.read('inertia_rails/categories_key')).to eq(%w[category1 category2].to_json)
+        end
+      end
+
+      context 'on partial reload (cache hit)' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'categories',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        before do
+          cache_store.write('inertia_rails/categories_key', '["cached_cat"]')
+          get optional_cached_props_path, headers: headers
+        end
+
+        it 'returns cached data without evaluating block' do
+          expect(response.parsed_body['props']['categories']).to eq(%w[cached_cat])
+        end
+      end
+    end
+  end
+
   context 'view configuration options' do
     after do
       InertiaRails.configure do |config|

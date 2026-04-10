@@ -71,6 +71,18 @@ def underscore_params
 end
 ```
 
+### `cache_store`
+
+**Default**: `nil` (falls back to `Rails.cache`)
+
+The cache store used for [cached props](/guide/cached-props) and [SSR response caching](/guide/server-side-rendering). Accepts any `ActiveSupport::Cache::Store` instance.
+
+```ruby
+InertiaRails.configure do |config|
+  config.cache_store = ActiveSupport::Cache::MemoryStore.new
+end
+```
+
 ### `deep_merge_shared_data`
 
 **Default**: `false`
@@ -111,6 +123,16 @@ allowing your visitors to receive fully rendered HTML when they first visit
 your application.
 
 Requires a JavaScript server to be available at `ssr_url`. [_Example_](https://github.com/ElMassimo/inertia-rails-ssr-template)
+
+### `ssr_cache`
+
+**Default**: `nil` (disabled)
+
+@available_since rails=master
+
+Cache SSR responses to avoid redundant Node.js render requests for identical page data. Accepts `true`, `false`/`nil`, or a Hash of `Rails.cache.fetch` options (e.g. `{ expires_in: 1.hour }`). Lambdas are supported and evaluated in the controller context. Can be overridden per render call.
+
+See [SSR response caching](/guide/server-side-rendering#ssr-response-caching) for usage examples.
 
 ### `ssr_url` _(experimental)_
 

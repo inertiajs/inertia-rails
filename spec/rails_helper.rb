@@ -55,6 +55,7 @@ RSpec.configure do |config|
   # config.filter_gems_from_backtrace("gem name")
 
   config.include HelperModule
+  config.include ActiveSupport::Testing::TimeHelpers
 end
 
 require 'rails-controller-testing'

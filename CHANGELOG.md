@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+* Skip excluded hash props on partial reloads (@erickreutz)
+* Fix Vite plugin insertion order in install generator (@onk)
+* Fix typo in `inertia()` plugin configuration example in docs (@onk)
+* Better SSR Puma plugin lookup defaults (@skryukov)
+* Add prop-level caching and caching documentation (@skryukov)
+
 ## [3.20.0] - 2026-04-04
 
 * Fix partial reload filtering with arrays

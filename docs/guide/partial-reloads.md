@@ -266,3 +266,21 @@ end
 ```
 
 For more information on once props, see the [once props](/guide/once-props) documentation.
+
+## Combining with Caching
+
+@available_since rails=master
+
+You may pass the `cache` option to an optional prop to cache the resolved value on the server side. On cache hits, the block is not evaluated.
+
+```ruby
+class UsersController < ApplicationController
+  def index
+    render inertia: {
+      users: InertiaRails.optional(cache: 'all_users') { User.all },
+    }
+  end
+end
+```
+
+For more information on cache keys and options, see the [cached props](/guide/cached-props) documentation.

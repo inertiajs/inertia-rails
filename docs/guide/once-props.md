@@ -4,6 +4,9 @@
 
 Some data rarely changes, is expensive to compute, or is simply large. Rather than including this data in every response, you may use _once props_. These props are remembered by the client and reused on subsequent pages that include the same prop. This makes them ideal for [shared data](/guide/shared-data).
 
+> [!NOTE]
+> To understand when to use once props vs cached props vs HTTP caching, see the [Caching](/guide/caching) guide.
+
 ## Creating Once Props
 
 To create a once prop, use the `InertiaRails.once` method when returning your response. This method receives a block that returns the prop data.
