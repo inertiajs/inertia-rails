@@ -314,4 +314,18 @@ class InertiaRenderTestController < ApplicationController
       regular: 'regular prop',
     }
   end
+
+  def cached_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      stats: InertiaRails.cache('stats_key') { { count: 42 } },
+    }
+  end
+
+  def cached_deferred_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      feed: InertiaRails.defer(cache: 'feed_key', group: 'feed') { %w[fresh_item] },
+    }
+  end
 end

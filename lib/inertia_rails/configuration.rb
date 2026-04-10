@@ -71,6 +71,10 @@ module InertiaRails
 
       # Whether to include shared prop keys in the page response metadata.
       expose_shared_prop_keys: true,
+
+      # Cache store for prop-level caching and SSR response caching.
+      # Defaults to Rails.cache when nil.
+      cache_store: nil,
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze
@@ -139,6 +143,10 @@ module InertiaRails
     # Returns the callable without evaluating it — called with (error, page) by the renderer.
     def on_ssr_error
       @options[:on_ssr_error]
+    end
+
+    def cache_store
+      @options[:cache_store] || Rails.cache
     end
 
     OPTION_NAMES.each do |option|

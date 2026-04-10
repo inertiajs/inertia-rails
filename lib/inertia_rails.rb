@@ -12,6 +12,8 @@ require_relative 'inertia_rails/current'
 require_relative 'inertia_rails/errors'
 
 # props
+require_relative 'inertia_rails/raw_json'
+require_relative 'inertia_rails/prop_cacheable'
 require_relative 'inertia_rails/prop_onceable'
 require_relative 'inertia_rails/prop_mergeable'
 require_relative 'inertia_rails/base_prop'
@@ -19,6 +21,7 @@ require_relative 'inertia_rails/ignore_on_first_load_prop'
 require_relative 'inertia_rails/always_prop'
 require_relative 'inertia_rails/lazy_prop'
 require_relative 'inertia_rails/optional_prop'
+require_relative 'inertia_rails/cached_prop'
 require_relative 'inertia_rails/defer_prop'
 require_relative 'inertia_rails/merge_prop'
 require_relative 'inertia_rails/once_prop'
@@ -54,6 +57,10 @@ module InertiaRails
       @configuration ||= Configuration.default
     end
 
+    def cache_store
+      configuration.cache_store
+    end
+
     def deprecator # :nodoc:
       @deprecator ||= ActiveSupport::Deprecation.new
     end
@@ -80,6 +87,10 @@ module InertiaRails
 
     def deep_merge(match_on: nil, &block)
       MergeProp.new(deep_merge: true, match_on: match_on, &block)
+    end
+
+    def cache(...)
+      CachedProp.new(...)
     end
 
     def defer(...)

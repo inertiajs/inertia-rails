@@ -12,7 +12,7 @@ module InertiaRails
       return unless bundle_exists?
 
       if (cache_options = cache_options_hash)
-        Rails.cache.fetch(cache_key, **cache_options) { request }
+        InertiaRails.cache_store.fetch(cache_key, **cache_options) { request }
       else
         request
       end

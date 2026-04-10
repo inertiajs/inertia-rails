@@ -252,3 +252,21 @@ end
 ```
 
 For more information on once props, see the [once props](/guide/once-props) documentation.
+
+## Combining with Caching
+
+@available_since rails=master
+
+You may pass the `cache` option to a deferred prop to cache the resolved value on the server side. On cache hits, the block is not evaluated.
+
+```ruby
+class DashboardController < ApplicationController
+  def index
+    render inertia: {
+      feed: InertiaRails.defer(cache: 'user_feed', group: 'feed') { current_user.feed },
+    }
+  end
+end
+```
+
+For more information on cache keys and options, see the [cached props](/guide/cached-props) documentation.

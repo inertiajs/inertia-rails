@@ -3,5 +3,6 @@
 module InertiaRails
   class OptionalProp < IgnoreOnFirstLoadProp
     prepend PropOnceable
+    prepend PropCacheable
   end
 end

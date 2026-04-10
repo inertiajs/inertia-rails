@@ -348,7 +348,7 @@ createServer(
 
 ### Puma Plugin
 
-@available_since rails=master
+@available_since rails=3.20.0
 
 The recommended way to run the SSR server in production is with the built-in Puma plugin. Add the plugin to your Puma configuration:
 

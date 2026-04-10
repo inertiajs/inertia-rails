@@ -71,6 +71,18 @@ def underscore_params
 end
 ```
 
+### `cache_store`
+
+**Default**: `nil` (falls back to `Rails.cache`)
+
+The cache store used for [cached props](/guide/cached-props) and [SSR response caching](/guide/server-side-rendering). Accepts any `ActiveSupport::Cache::Store` instance.
+
+```ruby
+InertiaRails.configure do |config|
+  config.cache_store = ActiveSupport::Cache::MemoryStore.new
+end
+```
+
 ### `deep_merge_shared_data`
 
 **Default**: `false`
