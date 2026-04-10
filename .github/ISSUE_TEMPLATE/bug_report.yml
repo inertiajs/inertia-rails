@@ -1,0 +1,49 @@
+name: Bug Report
+description: Report a bug in the inertia_rails gem (server-side only).
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug!
+
+        **Important:** This repository is for the **Rails server-side adapter** only.
+        If your issue is with the frontend (React, Vue, or Svelte), please open it at [inertiajs/inertia](https://github.com/inertiajs/inertia/issues).
+
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: A clear description of what the bug is and what you expected to happen instead.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: Provide minimal steps to reproduce the issue. Include code snippets if applicable.
+      placeholder: |
+        1. Configure inertia_rails with...
+        2. Create a controller that...
+        3. Visit the page and...
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Environment
+      description: Please provide version info.
+      value: |
+        - inertia_rails version:
+        - Rails version:
+        - Ruby version:
+        - Frontend adapter and version (e.g. @inertiajs/react 3.0):
+        - Build tool (e.g. Vite Ruby, RailsVite, etc):
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: Logs, screenshots, or anything else that might help.
+    validations:
+      required: false

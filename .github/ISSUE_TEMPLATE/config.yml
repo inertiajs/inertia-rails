@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feature Request
+    url: https://github.com/inertiajs/inertia-rails/discussions/new?category=ideas
+    about: For ideas or feature requests, start a new discussion.
+  - name: Support Questions & Other
+    url: https://github.com/inertiajs/inertia-rails/discussions/new?category=q-a
+    about: If you have a question or need help, start a discussion.
+  - name: Frontend issue (React, Vue, Svelte)
+    url: https://github.com/inertiajs/inertia/issues/new/choose
+    about: For issues with the frontend adapters or client-side behavior, open an issue in the main Inertia.js repository.
+  - name: Documentation
+    url: https://inertia-rails.dev
+    about: Check the documentation site before opening an issue.
