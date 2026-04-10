@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (X.Y.Z, without the v prefix)'
+        description: "Version to release (X.Y.Z, without the v prefix)"
         required: true
         type: string
 
@@ -45,7 +45,8 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@e65c17d16e57e481586a6a5a0282698790062f92 # v1.300.0
         with:
-          ruby-version: "3.4"
+          ruby-version: "4.0"
+          bundler: latest
           bundler-cache: true
 
       - name: Configure git identity
