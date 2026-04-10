@@ -33,14 +33,13 @@ jobs:
         uses: ruby/setup-ruby@d5126b9b3579e429dd52e51e68624dda2e05be25 # v1.267.0
         with:
           bundler-cache: true
-          ruby-version: ruby
+          ruby-version: '4.0'
 
       - name: Publish to RubyGems
         uses: rubygems/release-gem@1c162a739e8b4cb21a676e97b087e8268d8fc40b # v1.1.2
 
       - name: Create GitHub release
         run: |
-          tag_name="$(git describe --tags --abbrev=0)"
-          gh release create "${tag_name}" --verify-tag --generate-notes
+          gh release create "${{ github.ref_name }}" --verify-tag --generate-notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
