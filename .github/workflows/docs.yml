@@ -1,9 +1,9 @@
-name: Documentation Checks
+name: Documentation
 
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'docs/**'
       - '.github/workflows/docs.yml'
@@ -12,13 +12,18 @@ on:
       - 'docs/**'
       - '.github/workflows/docs.yml'
 
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
 jobs:
   check_formatting:
     runs-on: ubuntu-latest
     name: Check Documentation Formatting
 
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.workflow }}-format-${{ github.ref }}
       cancel-in-progress: true
 
     steps:
@@ -39,3 +44,40 @@ jobs:
       - name: Check formatting
         working-directory: ./docs
         run: npm run format:check
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Cloudflare Pages
+
+    concurrency:
+      group: ${{ github.workflow }}-deploy-${{ github.ref }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: './docs/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ./docs
+        run: npm ci
+
+      - name: Build docs
+        working-directory: ./docs
+        run: npm run docs:build
+
+      - name: Publish to Cloudflare Pages
+        uses: AdrianGonz97/refined-cf-pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          projectName: inertia-rails
+          directory: docs/.vitepress/dist
+          deploymentName: ${{ github.event_name == 'pull_request' && 'Preview' || 'Production' }}
