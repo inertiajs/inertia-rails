@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+#
+# Prepare a new inertia_rails release.
+#
+# Usage:
+#   bin/prepare_publish [--dry-run] X.Y.Z
+#
+# This script:
+#   1. Validates the version and git state
+#   2. Bumps VERSION in lib/inertia_rails/version.rb
+#   3. Refreshes Gemfile.lock
+#   4. Replaces `rails=master` with `rails=X.Y.Z` in docs @available_since markers
+#   5. Stamps today's date on the CHANGELOG header (or inserts a new one)
+#   6. Runs tests and the linter
+#   7. Creates a release commit and a vX.Y.Z tag
+#
+# With --dry-run: runs steps 1-6, shows the diff that would be committed, then
+# stops without creating a commit or tag. Files are left modified so you can
+# inspect them — reset with:
+#   git checkout -- lib/inertia_rails/version.rb Gemfile.lock CHANGELOG.md docs && bundle install
+#
+# Pushing the tag triggers .github/workflows/push_gem.yml, which publishes to
+# rubygems.org via trusted publishing and creates a GitHub release.
+
+set -euo pipefail
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
+info()  { printf "${GREEN}==>${NC} %s\n" "$1"; }
+warn()  { printf "${YELLOW}==>${NC} %s\n" "$1"; }
+error() { printf "${RED}==> ERROR:${NC} %s\n" "$1" >&2; exit 1; }
+
+usage() {
+  echo "Usage: bin/prepare_publish [--dry-run] X.Y.Z" >&2
+  exit 1
+}
+
+# -- 1. Parse arguments -------------------------------------------------------
+DRY_RUN=false
+VERSION=""
+
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    -h|--help) usage ;;
+    -*)        error "Unknown flag: $arg" ;;
+    *)
+      [[ -n "$VERSION" ]] && error "Unexpected argument: $arg"
+      VERSION="$arg"
+      ;;
+  esac
+done
+
+[[ -z "$VERSION" ]] && usage
+
+if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  error "Invalid version format: $VERSION (expected X.Y.Z)"
+fi
+
+if [[ "$DRY_RUN" == "true" ]]; then
+  warn "Dry run — no commit, tag, or push will be created"
+fi
+
+TAG="v${VERSION}"
+TODAY=$(date +%Y-%m-%d)
+
+# -- 2. Git state checks ------------------------------------------------------
+info "Checking git state..."
+
+if [[ -n "$(git status --porcelain)" ]]; then
+  error "Working tree is not clean. Commit or stash changes first."
+fi
+
+CURRENT_BRANCH=$(git branch --show-current)
+if [[ "$CURRENT_BRANCH" != "master" ]]; then
+  error "Must be on master branch (currently on $CURRENT_BRANCH)"
+fi
+
+if git rev-parse "$TAG" >/dev/null 2>&1; then
+  error "Tag $TAG already exists"
+fi
+
+# -- 3. Bump VERSION constant -------------------------------------------------
+info "Bumping VERSION to $VERSION..."
+# `ruby -i -pe` keeps behavior identical on macOS and Linux (sed -i differs).
+ruby -i -pe "gsub(/VERSION = '[^']*'/, \"VERSION = '${VERSION}'\")" lib/inertia_rails/version.rb
+
+# -- 4. Refresh Gemfile.lock --------------------------------------------------
+info "Updating Gemfile.lock..."
+bundle install --quiet
+
+# -- 5. Update docs @available_since markers ---------------------------------
+info "Replacing rails=master in docs..."
+# Only touch files that actually reference rails=master to keep mtimes sane.
+MATCHING_DOCS=$(grep -rl --include='*.md' 'rails=master' docs || true)
+if [[ -n "$MATCHING_DOCS" ]]; then
+  echo "$MATCHING_DOCS" | while IFS= read -r file; do
+    ruby -i -pe "gsub('rails=master', 'rails=${VERSION}')" "$file"
+    echo "  updated $file"
+  done
+else
+  warn "No 'rails=master' markers found in docs (already released?)"
+fi
+
+# -- 6. Update CHANGELOG ------------------------------------------------------
+info "Updating CHANGELOG.md..."
+VERSION="$VERSION" TODAY="$TODAY" ruby -i -e '
+  content = ARGF.read
+  version = ENV.fetch("VERSION")
+  header = "## [#{version}] - #{ENV.fetch("TODAY")}"
+  existing = /^## \[#{Regexp.escape(version)}\][^\n]*$/
+  new_section = "#{header}\n\n* TODO: fill in changelog\n\n## ["
+
+  if content.sub!(existing, header) || content.sub!(/^## \[/, new_section)
+    File.write("CHANGELOG.md", content)
+  else
+    abort "CHANGELOG.md: could not find a release header to anchor the new section"
+  end
+' CHANGELOG.md
+
+# -- 7. Run tests and linter --------------------------------------------------
+info "Running RSpec..."
+# Skip spec/generators — those require a full Rails/Node setup and are
+# covered by .github/workflows/generators.yml separately.
+bundle exec rspec spec/inertia
+
+info "Running Minitest..."
+bundle exec rake test
+
+info "Running RuboCop..."
+bundle exec rubocop
+
+# -- 8. Commit and tag (or stop, if dry run) ----------------------------------
+if [[ "$DRY_RUN" == "true" ]]; then
+  info "Dry run complete — showing pending changes:"
+  echo
+  git --no-pager diff --stat
+  echo
+  warn "No commit or tag was created."
+  echo "To inspect the changes in detail: git diff"
+  echo "To reset the working tree:        git checkout -- lib/inertia_rails/version.rb Gemfile.lock CHANGELOG.md docs && bundle install"
+  exit 0
+fi
+
+info "Creating release commit and tag..."
+git add lib/inertia_rails/version.rb Gemfile.lock CHANGELOG.md docs
+git commit -m "Bump to $VERSION"
+git tag "$TAG"
+
+# -- 9. Done ------------------------------------------------------------------
+info "Release $TAG prepared!"
+echo
+echo "Review the changes:"
+echo "  git show $TAG"
+echo
+echo "To publish, push the commit and the tag:"
+echo "  git push origin master && git push origin $TAG"
+echo
+echo "The push_gem.yml workflow will publish to rubygems.org automatically."
