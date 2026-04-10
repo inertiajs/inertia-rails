@@ -263,7 +263,7 @@ You may pass the `cache` option to a deferred prop to cache the resolved value o
 class DashboardController < ApplicationController
   def index
     render inertia: {
-      feed: InertiaRails.defer(cache: 'user_feed', group: 'feed') { current_user.feed },
+      feed: InertiaRails.defer(cache: { key: 'feed', expires_in: 5.minutes }, group: 'feed') { current_user.feed },
     }
   end
 end

@@ -315,6 +315,13 @@ class InertiaRenderTestController < ApplicationController
     }
   end
 
+  def optional_cached_props
+    render inertia: 'TestComponent', props: {
+      categories: InertiaRails.optional(cache: 'categories_key') { %w[category1 category2] },
+      regular: 'regular prop',
+    }
+  end
+
   def cached_props
     render inertia: 'TestComponent', props: {
       name: 'Brian',

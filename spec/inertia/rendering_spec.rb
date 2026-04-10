@@ -945,6 +945,59 @@ RSpec.describe 'rendering inertia views', type: :request do
         end
       end
     end
+
+    context 'cached optional prop' do
+      context 'on first load' do
+        before { get optional_cached_props_path, headers: headers }
+
+        it 'excludes optional prop from props' do
+          expect(response.parsed_body['props']).to eq({ 'regular' => 'regular prop' })
+        end
+
+        it 'does not write to cache on first load' do
+          expect(cache_store.read('inertia_rails/categories_key')).to be_nil
+        end
+      end
+
+      context 'on partial reload (cache miss)' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'categories',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        before { get optional_cached_props_path, headers: headers }
+
+        it 'evaluates block and returns data' do
+          expect(response.parsed_body['props']['categories']).to eq(%w[category1 category2])
+        end
+
+        it 'writes result to cache' do
+          expect(cache_store.read('inertia_rails/categories_key')).to eq(%w[category1 category2].to_json)
+        end
+      end
+
+      context 'on partial reload (cache hit)' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'categories',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        before do
+          cache_store.write('inertia_rails/categories_key', '["cached_cat"]')
+          get optional_cached_props_path, headers: headers
+        end
+
+        it 'returns cached data without evaluating block' do
+          expect(response.parsed_body['props']['categories']).to eq(%w[cached_cat])
+        end
+      end
+    end
   end
 
   context 'view configuration options' do

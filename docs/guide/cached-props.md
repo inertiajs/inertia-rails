@@ -15,7 +15,7 @@ To create a cached prop, use the `InertiaRails.cache` method. This method requir
 class DashboardController < ApplicationController
   def index
     render inertia: {
-      stats: InertiaRails.cache('dashboard_stats') { Stats.compute },
+      stats: InertiaRails.cache('dashboard_stats', expires_in: 1.hour) { Stats.compute },
     }
   end
 end
@@ -72,7 +72,7 @@ class DashboardController < ApplicationController
   def index
     render inertia: {
       # Deferred prop with caching
-      feed: InertiaRails.defer(cache: 'user_feed', group: 'feed') { current_user.feed },
+      feed: InertiaRails.defer(cache: { key: 'feed', expires_in: 5.minutes }, group: 'feed') { current_user.feed },
 
       # Optional prop with caching
       categories: InertiaRails.optional(cache: @team) { @team.categories },
@@ -90,3 +90,5 @@ InertiaRails.defer(cache: { key: 'feed', expires_in: 5.minutes }) { current_user
 ## Cache Store
 
 By default, Inertia uses `Rails.cache`. You can configure a different store via the [`cache_store`](/guide/configuration#cache_store) option. All cached prop keys are automatically prefixed with `inertia_rails/` to avoid collisions.
+
+For more information on configuring cache stores, cache key strategies, and expiration policies, see the [Rails low-level caching guide](https://guides.rubyonrails.org/caching_with_rails.html#low-level-caching-using-rails-cache).

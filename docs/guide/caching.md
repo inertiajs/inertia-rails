@@ -1,6 +1,6 @@
 # Caching
 
-Inertia Rails offers several complementary strategies for avoiding redundant work. Each solves a different problem, and you can combine them.
+Inertia Rails offers several complementary strategies for avoiding redundant work. Each solves a different problem, and you can combine them. If you're new to caching in Rails, start with the [Rails caching guide](https://guides.rubyonrails.org/caching_with_rails.html).
 
 ## Choosing a Strategy
 
@@ -83,7 +83,7 @@ class DashboardController < ApplicationController
   def index
     render inertia: {
       stats: InertiaRails.cache('dashboard_stats', expires_in: 1.hour) { Stats.compute },
-      feed: InertiaRails.defer(cache: 'user_feed') { current_user.feed },
+      feed: InertiaRails.defer(cache: { key: 'feed', expires_in: 5.minutes }) { current_user.feed },
     }
   end
 end
