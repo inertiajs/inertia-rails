@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+#
+# Resolve the version to release from a bump type and/or an override.
+#
+# Usage:
+#   bin/resolve_version <bump> [version_override]
+#
+#   bump             - One of: patch, minor, major, none
+#   version_override - Exact version (X.Y.Z). Requires bump to be "none".
+#
+# Examples:
+#   bin/resolve_version patch            # → e.g. 3.2.1
+#   bin/resolve_version none 4.0.0       # → 4.0.0
+#
+# Prints the resolved version to stdout.
+# When $GITHUB_OUTPUT is set (GitHub Actions), also writes version=X.Y.Z to it.
+
+set -euo pipefail
+
+RED='\033[0;31m'
+NC='\033[0m'
+
+error() {
+  if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    echo "::error::$1"
+  else
+    printf "${RED}==> ERROR:${NC} %s\n" "$1" >&2
+  fi
+  exit 1
+}
+
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+  echo "Usage: bin/resolve_version <bump> [version_override]" >&2
+  exit 1
+fi
+
+BUMP="$1"
+OVERRIDE="${2:-}"
+
+if [[ -n "$OVERRIDE" && "$BUMP" != "none" ]]; then
+  error "Specify either a bump type OR a version override, not both. Set bump to 'none' when using version_override."
+fi
+
+if [[ -z "$OVERRIDE" && "$BUMP" == "none" ]]; then
+  error "Specify either a bump type or a version override."
+fi
+
+if [[ -n "$OVERRIDE" ]]; then
+  VERSION="$OVERRIDE"
+else
+  LATEST_TAG=$(git describe --tags --abbrev=0)
+  CURRENT="${LATEST_TAG#v}"
+  IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+  case "$BUMP" in
+    major) VERSION="$((MAJOR + 1)).0.0" ;;
+    minor) VERSION="${MAJOR}.$((MINOR + 1)).0" ;;
+    patch) VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+    *)     error "Unknown bump type: $BUMP (expected patch, minor, major, or none)" ;;
+  esac
+fi
+
+if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  error "Invalid version format: $VERSION (expected X.Y.Z)"
+fi
+
+echo "$VERSION"
+
+if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+fi
