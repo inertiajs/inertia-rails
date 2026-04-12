@@ -1,6 +1,6 @@
 # Cached Props
 
-@available_since rails=master
+@available_since rails=3.21.0
 
 Cached props use your server-side cache store to avoid recomputing expensive data on every request. When the cache is warm, the block is never evaluated — Inertia serves the pre-serialized JSON directly.
 

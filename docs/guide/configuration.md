@@ -128,7 +128,7 @@ Requires a JavaScript server to be available at `ssr_url`. [_Example_](https://g
 
 **Default**: `nil` (disabled)
 
-@available_since rails=master
+@available_since rails=3.21.0
 
 Cache SSR responses to avoid redundant Node.js render requests for identical page data. Accepts `true`, `false`/`nil`, or a Hash of `Rails.cache.fetch` options (e.g. `{ expires_in: 1.hour }`). Lambdas are supported and evaluated in the controller context. Can be overridden per render call.
 
