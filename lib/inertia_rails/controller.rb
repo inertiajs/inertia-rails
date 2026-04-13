@@ -116,9 +116,7 @@ module InertiaRails
     # making an explicit `layout: false` indistinguishable from "not provided".
     # Stash the original value so the renderer can tell the two apart.
     def _normalize_options(options)
-      if options.key?(:inertia) && options.key?(:layout)
-        options[:_inertia_layout] = options[:layout]
-      end
+      options[:_inertia_layout] = options[:layout] if options.key?(:inertia) && options.key?(:layout)
       super
     end
 
