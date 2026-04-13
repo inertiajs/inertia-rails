@@ -255,7 +255,7 @@ For more information on once props, see the [once props](/guide/once-props) docu
 
 ## Combining with Caching
 
-@available_since rails=3.21.0
+@available_since rails=master
 
 You may pass the `cache` option to a deferred prop to cache the resolved value on the server side. On cache hits, the block is not evaluated.
 
