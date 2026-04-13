@@ -30,6 +30,27 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
     end
   end
 
+  context 'session loading guard' do
+    it 'does not load the session when the request never accesses it' do
+      get non_inertiafied_path
+
+      # The middleware must not call session.delete (which triggers load_for_write!)
+      # on requests that never touched the session — e.g. token-authenticated API endpoints.
+      expect(request.session.loaded?).to be(false)
+    end
+
+    it 'still cleans up inertia session keys when the session was loaded during the request' do
+      post redirect_with_inertia_errors_path
+      expect(session[:inertia_errors]).to be_present
+
+      # The follow-up GET causes Inertia to read inertia_errors from the session (loading it).
+      # The middleware should then find session.loaded? == true and clean up the keys.
+      get empty_test_path
+      expect(request.session.loaded?).to be(true)
+      expect(session[:inertia_errors]).to be_nil
+    end
+  end
+
   context 'a redirect status was passed with an http method that preserves itself on 302 redirect' do
     subject { response.status }
 
