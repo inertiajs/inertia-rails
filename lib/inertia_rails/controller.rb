@@ -112,6 +112,16 @@ module InertiaRails
       view_assigns.except(*@_inertia_skip_props)
     end
 
+    # Rails < 8: _normalize_options overwrites :layout with a resolved default,
+    # making an explicit `layout: false` indistinguishable from "not provided".
+    # Stash the original value so the renderer can tell the two apart.
+    def _normalize_options(options)
+      if options.key?(:inertia) && options.key?(:layout)
+        options[:_inertia_layout] = options[:layout]
+      end
+      super
+    end
+
     def inertia_configuration
       self.class._inertia_configuration.bind_controller(self)
     end

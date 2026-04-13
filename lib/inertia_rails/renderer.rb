@@ -27,6 +27,7 @@ module InertiaRails
       @encrypt_history = options.fetch(:encrypt_history, @configuration.encrypt_history)
       @clear_history = options.fetch(:clear_history, controller.session[:inertia_clear_history] || false)
       @preserve_fragment = options.fetch(:preserve_fragment, controller.session[:inertia_preserve_fragment] || false)
+      @layout_override = options.fetch(:layout) { @configuration.layout }
       @ssr_cache = options[:ssr_cache]
 
       deep_merge = options.fetch(:deep_merge, @configuration.deep_merge_shared_data)
@@ -70,7 +71,7 @@ module InertiaRails
     end
 
     def layout
-      layout = @configuration.layout
+      layout = @layout_override
       layout.nil? || layout
     end
 

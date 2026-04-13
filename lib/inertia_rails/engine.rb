@@ -15,6 +15,14 @@ module InertiaRails
     initializer 'inertia_rails.renderer' do
       ActiveSupport.on_load(:action_controller) do
         ActionController::Renderers.add :inertia do |component, options|
+          # See Controller#_normalize_options — restore the user's original
+          # :layout or discard the Rails-injected default.
+          if options.key?(:_inertia_layout)
+            options[:layout] = options.delete(:_inertia_layout)
+          else
+            options.delete(:layout)
+          end
+
           InertiaRails::Renderer.new(
             component,
             self,
