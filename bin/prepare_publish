@@ -97,7 +97,7 @@ if [[ -n "$MATCHING_DOCS" ]]; then
     echo "  updated $file"
   done
 else
-  warn "No 'rails=master' markers found in docs (already released?)"
+  echo "No 'rails=master' markers found in docs"
 fi
 
 # -- 5. Update CHANGELOG ------------------------------------------------------
@@ -106,13 +106,13 @@ VERSION="$VERSION" TODAY="$TODAY" ruby -i -e '
   content = ARGF.read
   version = ENV.fetch("VERSION")
   header = "## [#{version}] - #{ENV.fetch("TODAY")}"
-  existing = /^## \[#{Regexp.escape(version)}\][^\n]*$/
-  new_section = "#{header}\n\n* TODO: fill in changelog\n\n## ["
+  unreleased = /^## \[Unreleased\]\s*$/
 
-  if content.sub!(existing, header) || content.sub!(/^## \[/, new_section)
+  if content.match?(unreleased)
+    content.sub!(unreleased, "## [Unreleased]\n\n#{header}\n")
     File.write("CHANGELOG.md", content)
   else
-    abort "CHANGELOG.md: could not find a release header to anchor the new section"
+    abort "CHANGELOG.md: could not find ## [Unreleased] header"
   end
 ' CHANGELOG.md
 
