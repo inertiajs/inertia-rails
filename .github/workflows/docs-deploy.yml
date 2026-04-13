@@ -1,0 +1,41 @@
+name: Deploy Documentation
+
+on:
+  workflow_run:
+    workflows: ["Documentation"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Cloudflare Pages
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    concurrency:
+      group: docs-deploy-${{ github.event.workflow_run.head_branch }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v6
+        with:
+          name: docs-build
+          path: dist
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to Cloudflare Pages
+        uses: AdrianGonz97/refined-cf-pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          projectName: inertia-rails
+          directory: dist
+          deploymentName: ${{ github.event.workflow_run.event == 'pull_request' && 'Preview' || 'Production' }}

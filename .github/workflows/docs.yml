@@ -14,8 +14,6 @@ on:
 
 permissions:
   contents: read
-  deployments: write
-  pull-requests: write
 
 jobs:
   check_formatting:
@@ -45,13 +43,13 @@ jobs:
         working-directory: ./docs
         run: npm run format:check
 
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    name: Deploy to Cloudflare Pages
+    name: Build Documentation
 
     concurrency:
-      group: ${{ github.workflow }}-deploy-${{ github.ref }}
-      cancel-in-progress: false
+      group: ${{ github.workflow }}-build-${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
       - name: Checkout repository
@@ -72,12 +70,8 @@ jobs:
         working-directory: ./docs
         run: npm run docs:build
 
-      - name: Publish to Cloudflare Pages
-        uses: AdrianGonz97/refined-cf-pages-action@v1
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
-          projectName: inertia-rails
-          directory: docs/.vitepress/dist
-          deploymentName: ${{ github.event_name == 'pull_request' && 'Preview' || 'Production' }}
+          name: docs-build
+          path: docs/.vitepress/dist
