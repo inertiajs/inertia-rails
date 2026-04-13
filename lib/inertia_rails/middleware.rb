@@ -26,7 +26,11 @@ module InertiaRails
         request = ActionDispatch::Request.new(@env)
 
         # Inertia session data is added via redirect_to
-        unless keep_inertia_session_options?(status)
+        # Guard with session.loaded? to avoid forcing session I/O (and unnecessary
+        # database writes) on requests that never accessed the session, e.g. sessionless
+        # controllers. If the session was never loaded the Inertia keys cannot have been
+        # set, so the cleanup would be a no-op anyway.
+        unless keep_inertia_session_options?(status) || !request.session.loaded?
           request.session.delete(:inertia_errors)
           request.session.delete(:inertia_clear_history)
           request.session.delete(:inertia_preserve_fragment)

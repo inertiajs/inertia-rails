@@ -69,6 +69,30 @@ createInertiaApp({
 })
 ```
 
+## Sessionless Controllers in Hybrid Applications
+
+When Inertia coexists with sessionless controllers in the same Rails application — such as token-authenticated API endpoints, webhook receivers, or any controller that does not rely on the session — it's important to configure CSRF protection correctly on those controllers.
+
+A common pattern is to reach for `skip_forgery_protection`:
+
+```ruby
+class SessionlessController < ApplicationController
+  skip_forgery_protection
+end
+```
+
+However, `skip_forgery_protection` only removes the `verify_authenticity_token` before-action — it does not disable the CSRF infrastructure. Rails' `protect_against_forgery?` still returns `true`, so InertiaRails' after-action fires and calls `form_authenticity_token`, which reads and writes `session[:_csrf_token]`. This causes a session record to be loaded (and created, if one doesn't exist) for every request, even though the controller has explicitly opted out of CSRF.
+
+The correct approach is to set `allow_forgery_protection` to `false` on the controller class:
+
+```ruby
+class SessionlessController < ApplicationController
+  self.allow_forgery_protection = false
+end
+```
+
+`allow_forgery_protection` is a per-class setting — it does not affect other controllers in the application. Setting it to `false` makes `protect_against_forgery?` return `false`, so InertiaRails' after-action is unconditionally skipped — no XSRF cookie is set, `form_authenticity_token` is never called, and no session I/O occurs.
+
 ## Handling Mismatches
 
 When a CSRF token mismatch occurs, Rails raises the `ActionController::InvalidAuthenticityToken` error which results in a `419` error page. Since that isn't a valid Inertia response, the error is shown in a modal.
