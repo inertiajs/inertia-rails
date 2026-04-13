@@ -69,6 +69,34 @@ createInertiaApp({
 })
 ```
 
+## Stateless Controllers in Hybrid Applications
+
+When Inertia coexists with sessionless controllers in the same Rails application — such as token-authenticated API endpoints, webhook receivers, or any controller that does not rely on the session — it's important to configure CSRF protection correctly on those controllers.
+
+A common pattern is to reach for `skip_forgery_protection`:
+
+```ruby
+class StatelessController < ApplicationController
+  skip_forgery_protection
+end
+```
+
+However, `skip_forgery_protection` only removes the `verify_authenticity_token` before-action — it does not disable the CSRF infrastructure. Rails' `protect_against_forgery?` still returns `true`, so InertiaRails' after-action fires and calls `form_authenticity_token`, which reads and writes `session[:_csrf_token]`. This causes a session record to be loaded (and created, if one doesn't exist) for every request, even though the controller has explicitly opted out of CSRF.
+
+The correct approach is to use the `:null_session` strategy instead:
+
+```ruby
+class StatelessController < ApplicationController
+  protect_from_forgery with: :null_session
+end
+```
+
+With `:null_session`, Rails runs `verify_authenticity_token` but handles the expected absence of a CSRF token by substituting a `NullSessionHash` for the real session. This causes `protect_against_forgery?` to return `false` for the remainder of that request — InertiaRails' after-action is correctly skipped, and no session I/O occurs.
+
+This is also what the [Rails source recommends](https://github.com/rails/rails/blob/main/actionpack/lib/action_controller/metal/request_forgery_protection.rb) for sessionless endpoints within an otherwise session-based application:
+
+> "APIs may want to disable this behavior since they are typically designed to be state-less [...] One way to achieve this is to use the `:null_session` strategy instead, which allows unverified requests to be handled, but with an empty session."
+
 ## Handling Mismatches
 
 When a CSRF token mismatch occurs, Rails raises the `ActionController::InvalidAuthenticityToken` error which results in a `419` error page. Since that isn't a valid Inertia response, the error is shown in a modal.
