@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fix typo in `inertia()` plugin configuration example in docs (@onk)
 * Better SSR Puma plugin lookup defaults (@skryukov)
 * Add prop-level caching and caching documentation (@skryukov)
+* Skip session cleanup in middleware when session was never loaded (@khamusa)
+* Support `layout` option in `render inertia:` calls (@skryukov)
 
 ## [3.20.0] - 2026-04-04
 

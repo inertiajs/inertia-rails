@@ -15,6 +15,14 @@ class InertiaTestController < ApplicationController
     render inertia: 'EmptyTestComponent'
   end
 
+  def with_inline_layout
+    render inertia: 'EmptyTestComponent', layout: 'testing'
+  end
+
+  def without_layout
+    render inertia: 'EmptyTestComponent', layout: false
+  end
+
   def redirect_test
     redirect_to :empty_test
   end

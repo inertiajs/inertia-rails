@@ -172,6 +172,22 @@ RSpec.describe 'Inertia configuration', type: :request do
         it { is_expected.not_to render_template 'application' }
       end
 
+      context 'with an inline layout option' do
+        before { get with_inline_layout_path }
+
+        it { is_expected.to render_template 'inertia' }
+        it { is_expected.to render_template 'testing' }
+        it { is_expected.not_to render_template 'application' }
+      end
+
+      context 'with layout: false' do
+        before { get without_layout_path }
+
+        it { is_expected.to render_template 'inertia' }
+        it { is_expected.not_to render_template 'testing' }
+        it { is_expected.not_to render_template 'application' }
+      end
+
       context 'opting out of a different layout for Inertia' do
         before do
           InertiaRails.configure { |c| c.layout = true }
