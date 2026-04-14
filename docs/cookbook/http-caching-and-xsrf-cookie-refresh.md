@@ -14,7 +14,7 @@ This often shows up first on authenticated pages with `fresh_when` or `stale?`.
 
 ## Why It Happens
 
-The Rails adapter currently writes the `XSRF-TOKEN` cookie on every request:
+The Rails adapter currently writes the `XSRF-TOKEN` cookie on every protected request:
 
 ```ruby
 after_action do
