@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.21.0] - 2026-04-14
+
 * Skip excluded hash props on partial reloads (@erickreutz)
 * Fix Vite plugin insertion order in install generator (@onk)
 * Fix typo in `inertia()` plugin configuration example in docs (@onk)
