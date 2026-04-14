@@ -53,7 +53,17 @@ You can even use Inertia's [shared data](/guide/shared-data) functionality to au
 
 A better approach is to use Inertia's built-in XSRF token handling. Inertia's HTTP client automatically checks for the existence of an `XSRF-TOKEN` cookie and, when present, includes the token in an `X-XSRF-TOKEN` header for every request it makes.
 
-The easiest way to implement this is using server-side middleware. Simply include the `XSRF-TOKEN` cookie on each response, and then verify the token using the `X-XSRF-TOKEN` header sent in the requests from Inertia.
+By default, the Rails adapter refreshes the `XSRF-TOKEN` cookie on every protected request so Inertia can send it back as `X-XSRF-TOKEN`.
+
+If your app uses HTTP conditional caching (`ETag` / `304`) on Inertia pages, you may prefer a less aggressive policy:
+
+```ruby
+InertiaRails.configure do |config|
+  config.xsrf_cookie_refresh = :when_needed
+end
+```
+
+That keeps the default behavior for non-safe requests while avoiding unnecessary XSRF cookie rewrites on steady-state `GET` / `HEAD` requests once the cookie already exists. See the cookbook note on [HTTP caching and XSRF cookie refresh](/cookbook/http-caching-and-xsrf-cookie-refresh) for more details and caveats.
 
 You may customize the cookie and header names via the `http` option in `createInertiaApp`.
 

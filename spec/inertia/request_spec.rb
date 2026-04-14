@@ -121,6 +121,52 @@ RSpec.describe 'Inertia::Request', type: :request do
       end
     end
 
+    describe 'xsrf_cookie_refresh configuration' do
+      it 'continues setting the XSRF-TOKEN cookie on repeated safe requests by default' do
+        with_forgery_protection do
+          get inertia_request_test_path
+          expect(response.headers['Set-Cookie'].join("\n")).to include('XSRF-TOKEN')
+
+          get inertia_request_test_path
+          expect(response.headers['Set-Cookie'].join("\n")).to include('XSRF-TOKEN')
+        end
+      end
+
+      context 'when xsrf_cookie_refresh is :when_needed' do
+        with_inertia_config xsrf_cookie_refresh: :when_needed
+
+        it 'still sets the XSRF-TOKEN cookie on the first safe request' do
+          with_forgery_protection do
+            get inertia_request_test_path
+
+            expect(response.headers['Set-Cookie'].join("\n")).to include('XSRF-TOKEN')
+          end
+        end
+
+        it 'does not rewrite the XSRF-TOKEN cookie on repeated safe requests when it already exists' do
+          with_forgery_protection do
+            get inertia_request_test_path
+            expect(response.headers['Set-Cookie'].join("\n")).to include('XSRF-TOKEN')
+
+            get inertia_request_test_path
+            expect(response.headers['Set-Cookie'].to_s).not_to include('XSRF-TOKEN')
+          end
+        end
+
+        it 'still refreshes the XSRF-TOKEN cookie on non-safe requests' do
+          with_forgery_protection do
+            get initialize_session_path
+            initial_xsrf_token_cookie = response.cookies['XSRF-TOKEN']
+
+            post submit_form_to_test_csrf_path,
+                 headers: { 'X-Inertia' => true, 'X-XSRF-Token' => initial_xsrf_token_cookie }
+
+            expect(response.headers['Set-Cookie'].join("\n")).to include('XSRF-TOKEN')
+          end
+        end
+      end
+    end
+
     describe 'copying an X-XSRF-Token header (Inertia default) into the X-CSRF-Token header (Rails default)' do
       subject { request.headers['X-CSRF-Token'] }
       before { get inertia_request_test_path, headers: headers }

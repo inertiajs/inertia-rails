@@ -12,7 +12,10 @@ module InertiaRails
       end
 
       after_action do
-        cookies['XSRF-TOKEN'] = form_authenticity_token if protect_against_forgery?
+        next unless protect_against_forgery?
+        next if skip_xsrf_cookie_refresh?
+
+        cookies['XSRF-TOKEN'] = form_authenticity_token
       end
 
       rescue_from InertiaRails::PrecognitionResponse do |e|
@@ -122,6 +125,12 @@ module InertiaRails
 
     def inertia_configuration
       self.class._inertia_configuration.bind_controller(self)
+    end
+
+    def skip_xsrf_cookie_refresh?
+      inertia_configuration.xsrf_cookie_refresh == :when_needed &&
+        (request.get? || request.head?) &&
+        request.cookies['XSRF-TOKEN'].present?
     end
 
     def inertia_shared_data

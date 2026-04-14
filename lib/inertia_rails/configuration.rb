@@ -3,6 +3,7 @@
 module InertiaRails
   class Configuration
     DEFAULT_SSR_URL = 'http://localhost:13714'
+    XSRF_COOKIE_REFRESH_OPTIONS = %i[always when_needed].freeze
 
     DEFAULTS = {
       # Whether to combine hashes with the same keys instead of replacing them.
@@ -50,6 +51,9 @@ module InertiaRails
 
       # Whether to include empty `errors` hash to the props when no errors are present.
       always_include_errors_hash: nil,
+
+      # When to refresh the XSRF token cookie on protected requests.
+      xsrf_cookie_refresh: :always,
 
       # Whether to use `<script>` element for initial page rendering instead of the `data-page` attribute.
       use_script_element_for_initial_page: false,
@@ -149,12 +153,22 @@ module InertiaRails
       @options[:cache_store] || Rails.cache
     end
 
+    def xsrf_cookie_refresh
+      normalize_xsrf_cookie_refresh(evaluate_option(options[:xsrf_cookie_refresh]))
+    end
+
+    def xsrf_cookie_refresh=(value)
+      @options[:xsrf_cookie_refresh] = value.respond_to?(:call) ? value : normalize_xsrf_cookie_refresh(value)
+    end
+
     OPTION_NAMES.each do |option|
       unless method_defined?(option)
         define_method(option) do
           evaluate_option options[option]
         end
       end
+      next if method_defined?("#{option}=")
+
       define_method("#{option}=") do |value|
         @options[option] = value
       end
@@ -167,6 +181,15 @@ module InertiaRails
       return value.call unless controller
 
       controller.instance_exec(&value)
+    end
+
+    def normalize_xsrf_cookie_refresh(value)
+      normalized = value.respond_to?(:to_sym) ? value.to_sym : value
+      return normalized if XSRF_COOKIE_REFRESH_OPTIONS.include?(normalized)
+
+      raise ArgumentError,
+            "Invalid xsrf_cookie_refresh: #{value.inspect}. " \
+            "Expected one of: #{XSRF_COOKIE_REFRESH_OPTIONS.map(&:inspect).join(', ')}"
     end
   end
 end
