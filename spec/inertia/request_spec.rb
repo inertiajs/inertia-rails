@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 RSpec.describe 'Inertia::Request', type: :request do
+  def set_cookie_header
+    Array(response.headers['Set-Cookie']).join("\n")
+  end
+
   describe 'it tests whether a call is an inertia call' do
     subject { response.status }
     before { get inertia_request_test_path, headers: headers }
@@ -125,10 +129,10 @@ RSpec.describe 'Inertia::Request', type: :request do
       it 'continues setting the XSRF-TOKEN cookie on repeated safe requests by default' do
         with_forgery_protection do
           get inertia_request_test_path
-          expect(response.headers['Set-Cookie'].join("\n")).to include('XSRF-TOKEN')
+          expect(set_cookie_header).to include('XSRF-TOKEN')
 
           get inertia_request_test_path
-          expect(response.headers['Set-Cookie'].join("\n")).to include('XSRF-TOKEN')
+          expect(set_cookie_header).to include('XSRF-TOKEN')
         end
       end
 
@@ -139,27 +143,27 @@ RSpec.describe 'Inertia::Request', type: :request do
           with_forgery_protection do
             get inertia_request_test_path
 
-            expect(response.headers['Set-Cookie'].join("\n")).to include('XSRF-TOKEN')
+            expect(set_cookie_header).to include('XSRF-TOKEN')
           end
         end
 
         it 'does not rewrite cookies on repeated safe requests when the XSRF-TOKEN cookie is valid' do
           with_forgery_protection do
             get inertia_request_test_path
-            expect(response.headers['Set-Cookie'].join("\n")).to include('XSRF-TOKEN')
+            expect(set_cookie_header).to include('XSRF-TOKEN')
 
             get inertia_request_test_path
-            expect(response.headers['Set-Cookie'].to_s).to be_empty
+            expect(set_cookie_header).to be_empty
           end
         end
 
         it 'does not rewrite the XSRF-TOKEN cookie on safe requests when the existing cookie can be validated' do
           with_forgery_protection do
             get session_loaded_request_test_path
-            expect(response.headers['Set-Cookie'].to_s).to include('XSRF-TOKEN')
+            expect(set_cookie_header).to include('XSRF-TOKEN')
 
             get session_loaded_request_test_path
-            expect(response.headers['Set-Cookie'].to_s).not_to include('XSRF-TOKEN')
+            expect(set_cookie_header).not_to include('XSRF-TOKEN')
           end
         end
 
@@ -169,7 +173,7 @@ RSpec.describe 'Inertia::Request', type: :request do
 
             get session_loaded_request_test_path
 
-            expect(response.headers['Set-Cookie'].to_s).to include('XSRF-TOKEN')
+            expect(set_cookie_header).to include('XSRF-TOKEN')
           end
         end
 
@@ -181,7 +185,7 @@ RSpec.describe 'Inertia::Request', type: :request do
             post submit_form_to_test_csrf_path,
                  headers: { 'X-Inertia' => true, 'X-XSRF-Token' => initial_xsrf_token_cookie }
 
-            expect(response.headers['Set-Cookie'].join("\n")).to include('XSRF-TOKEN')
+            expect(set_cookie_header).to include('XSRF-TOKEN')
           end
         end
       end

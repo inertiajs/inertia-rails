@@ -140,7 +140,8 @@ module InertiaRails
     end
 
     def xsrf_cookie_can_be_validated_without_loading_session?
-      request.env.key?(csrf_token_env_key) || request.session.loaded?
+      request.env.key?(csrf_token_env_key) ||
+        (request.session.respond_to?(:loaded?) && request.session.loaded?)
     end
 
     def xsrf_cookie_valid_for_session?(xsrf_token_cookie)
@@ -152,7 +153,12 @@ module InertiaRails
     end
 
     def csrf_token_env_key
-      ActionController::RequestForgeryProtection.const_get(:CSRF_TOKEN)
+      request_forgery_protection = ActionController::RequestForgeryProtection
+      if request_forgery_protection.const_defined?(:CSRF_TOKEN, false)
+        return request_forgery_protection.const_get(:CSRF_TOKEN)
+      end
+
+      'action_controller.csrf_token'
     end
 
     def inertia_shared_data
