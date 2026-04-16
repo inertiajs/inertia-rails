@@ -55,15 +55,15 @@ A better approach is to use Inertia's built-in XSRF token handling. Inertia's HT
 
 By default, the Rails adapter refreshes the `XSRF-TOKEN` cookie on every protected request so Inertia can send it back as `X-XSRF-TOKEN`.
 
-If your app uses HTTP conditional caching (`ETag` / `304`) on Inertia pages, you may prefer a less aggressive policy:
+If your app uses browser HTTP conditional caching (`ETag` / `304`) on Inertia pages, you may prefer a less aggressive policy:
 
 ```ruby
 InertiaRails.configure do |config|
-  config.xsrf_cookie_refresh = :when_needed
+  config.xsrf_cookie_refresh = :lazy
 end
 ```
 
-That keeps the default behavior for non-safe requests while avoiding unnecessary XSRF cookie rewrites on steady-state `GET` / `HEAD` requests once the cookie already exists. See the cookbook note on [HTTP caching and XSRF cookie refresh](/cookbook/http-caching-and-xsrf-cookie-refresh) for more details and caveats.
+That keeps the default behavior for non-safe requests while avoiding unnecessary XSRF cookie rewrites on steady-state `GET` / `HEAD` requests once the cookie already exists. See the cookbook note on [HTTP caching and XSRF cookie refresh](/cookbook/http-caching-and-xsrf-cookie-refresh) for validation details and caveats.
 
 You may customize the cookie and header names via the `http` option in `createInertiaApp`.
 

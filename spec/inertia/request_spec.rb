@@ -132,8 +132,8 @@ RSpec.describe 'Inertia::Request', type: :request do
         end
       end
 
-      context 'when xsrf_cookie_refresh is :when_needed' do
-        with_inertia_config xsrf_cookie_refresh: :when_needed
+      context 'when xsrf_cookie_refresh is :lazy' do
+        with_inertia_config xsrf_cookie_refresh: :lazy
 
         it 'still sets the XSRF-TOKEN cookie on the first safe request' do
           with_forgery_protection do
@@ -143,13 +143,33 @@ RSpec.describe 'Inertia::Request', type: :request do
           end
         end
 
-        it 'does not rewrite the XSRF-TOKEN cookie on repeated safe requests when it already exists' do
+        it 'does not rewrite cookies on repeated safe requests when the XSRF-TOKEN cookie is valid' do
           with_forgery_protection do
             get inertia_request_test_path
             expect(response.headers['Set-Cookie'].join("\n")).to include('XSRF-TOKEN')
 
             get inertia_request_test_path
+            expect(response.headers['Set-Cookie'].to_s).to be_empty
+          end
+        end
+
+        it 'does not rewrite the XSRF-TOKEN cookie on safe requests when the existing cookie can be validated' do
+          with_forgery_protection do
+            get session_loaded_request_test_path
+            expect(response.headers['Set-Cookie'].to_s).to include('XSRF-TOKEN')
+
+            get session_loaded_request_test_path
             expect(response.headers['Set-Cookie'].to_s).not_to include('XSRF-TOKEN')
+          end
+        end
+
+        it 'refreshes the XSRF-TOKEN cookie on safe requests when an invalid cookie can be validated' do
+          with_forgery_protection do
+            cookies['XSRF-TOKEN'] = 'stale-token'
+
+            get session_loaded_request_test_path
+
+            expect(response.headers['Set-Cookie'].to_s).to include('XSRF-TOKEN')
           end
         end
 

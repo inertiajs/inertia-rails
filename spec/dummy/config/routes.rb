@@ -17,6 +17,7 @@ Rails.application.routes.draw do
   get 'without_layout' => 'inertia_test#without_layout'
   get 'redirect_test' => 'inertia_test#redirect_test'
   get 'inertia_request_test' => 'inertia_test#inertia_request_test'
+  get 'session_loaded_request_test' => 'inertia_test#session_loaded_request_test'
   get 'inertia_partial_request_test' => 'inertia_test#inertia_partial_request_test'
   post 'redirect_with_responders' => 'inertia_responders_test#redirect_test'
   post 'redirect_test' => 'inertia_test#redirect_test'

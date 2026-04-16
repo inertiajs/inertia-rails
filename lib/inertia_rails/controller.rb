@@ -128,9 +128,31 @@ module InertiaRails
     end
 
     def skip_xsrf_cookie_refresh?
-      inertia_configuration.xsrf_cookie_refresh == :when_needed &&
-        (request.get? || request.head?) &&
-        request.cookies['XSRF-TOKEN'].present?
+      return false unless inertia_configuration.xsrf_cookie_refresh == :lazy
+      return false unless request.get? || request.head?
+
+      xsrf_token_cookie = request.cookies['XSRF-TOKEN']
+      return false unless xsrf_token_cookie.present?
+
+      return true unless xsrf_cookie_can_be_validated_without_loading_session?
+
+      xsrf_cookie_valid_for_session?(xsrf_token_cookie)
+    end
+
+    def xsrf_cookie_can_be_validated_without_loading_session?
+      request.env.key?(csrf_token_env_key) || request.session.loaded?
+    end
+
+    def xsrf_cookie_valid_for_session?(xsrf_token_cookie)
+      csrf_token_loaded = request.env.key?(csrf_token_env_key)
+      valid_authenticity_token?(session, xsrf_token_cookie)
+    ensure
+      # Avoid making validation itself create a CSRF token that Rails later commits.
+      request.env.delete(csrf_token_env_key) unless csrf_token_loaded
+    end
+
+    def csrf_token_env_key
+      ActionController::RequestForgeryProtection.const_get(:CSRF_TOKEN)
     end
 
     def inertia_shared_data

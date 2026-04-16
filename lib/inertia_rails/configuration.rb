@@ -3,7 +3,7 @@
 module InertiaRails
   class Configuration
     DEFAULT_SSR_URL = 'http://localhost:13714'
-    XSRF_COOKIE_REFRESH_OPTIONS = %i[always when_needed].freeze
+    XSRF_COOKIE_REFRESH_OPTIONS = %i[always lazy].freeze
 
     DEFAULTS = {
       # Whether to combine hashes with the same keys instead of replacing them.
