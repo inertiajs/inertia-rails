@@ -140,25 +140,29 @@ module InertiaRails
     end
 
     def xsrf_cookie_can_be_validated_without_loading_session?
-      request.env.key?(csrf_token_env_key) ||
+      csrf_token_loaded_in_env? ||
         (request.session.respond_to?(:loaded?) && request.session.loaded?)
     end
 
     def xsrf_cookie_valid_for_session?(xsrf_token_cookie)
-      csrf_token_loaded = request.env.key?(csrf_token_env_key)
+      csrf_token_env_key = self.csrf_token_env_key
+      csrf_token_loaded = csrf_token_env_key && request.env.key?(csrf_token_env_key)
       valid_authenticity_token?(session, xsrf_token_cookie)
     ensure
       # Avoid making validation itself create a CSRF token that Rails later commits.
-      request.env.delete(csrf_token_env_key) unless csrf_token_loaded
+      request.env.delete(csrf_token_env_key) if csrf_token_env_key && !csrf_token_loaded
+    end
+
+    def csrf_token_loaded_in_env?
+      csrf_token_env_key = self.csrf_token_env_key
+      csrf_token_env_key && request.env.key?(csrf_token_env_key)
     end
 
     def csrf_token_env_key
       request_forgery_protection = ActionController::RequestForgeryProtection
-      if request_forgery_protection.const_defined?(:CSRF_TOKEN, false)
-        return request_forgery_protection.const_get(:CSRF_TOKEN)
-      end
+      return unless request_forgery_protection.const_defined?(:CSRF_TOKEN, false)
 
-      'action_controller.csrf_token'
+      request_forgery_protection.const_get(:CSRF_TOKEN)
     end
 
     def inertia_shared_data
