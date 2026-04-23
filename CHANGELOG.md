@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Use `params.expect` instead of `params.require(...).permit(...)` in scaffold generator and docs
+
 ## [3.21.0] - 2026-04-14
 
 * Skip excluded hash props on partial reloads (@erickreutz)
