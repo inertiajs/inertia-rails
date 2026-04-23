@@ -75,7 +75,7 @@ class <%= controller_class_name %>Controller < <%= parent_controller %>
       <%- if attributes_names.empty? -%>
       params.fetch(:<%= singular_table_name %>, {})
       <%- else -%>
-      params.require(:<%= singular_table_name %>).permit(<%= permitted_params %>)
+      params.expect(<%= singular_table_name %>: [<%= permitted_params %>])
       <%- end -%>
     end
 
