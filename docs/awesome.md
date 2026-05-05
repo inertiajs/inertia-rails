@@ -74,6 +74,7 @@ A curated list of community resources, tools, and content for Inertia Rails.
 - [Hardcover](https://hardcover.app) — A social network for book lovers
 - [OG Pilot](https://ogpilot.com) — A dynamic Open Graph image generator tool
 - [Switch Kanban](https://switchkanban.com.br) — Project management tool for software houses
+- [railsfullstack.com](https://railsfullstack.com) - Ruby on Rails back-end & full-stack job board
 
 ## Other (alphabetical)
 
