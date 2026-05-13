@@ -167,6 +167,34 @@ When set to `true`, an empty `errors: {}` object will always be included in Iner
 
 The default value will be changed to `true` in the next major version.
 
+### `xsrf_cookie_refresh`
+
+**Default**: `:always`
+**ENV**: `INERTIA_XSRF_COOKIE_REFRESH`
+
+Controls when the Rails adapter refreshes the `XSRF-TOKEN` cookie on protected requests.
+
+Supported values:
+
+- `:always` refreshes the cookie on every protected request. This is the default behavior.
+- `:lazy` avoids refreshing the cookie on `GET` / `HEAD` when the cookie already exists. Non-safe requests continue refreshing it on every protected request.
+
+```ruby
+InertiaRails.configure do |config|
+  config.xsrf_cookie_refresh = :lazy
+end
+```
+
+You may also override this per controller:
+
+```ruby
+class CachedPagesController < ApplicationController
+  inertia_config xsrf_cookie_refresh: :lazy
+end
+```
+
+This can be useful for applications that rely on browser HTTP conditional caching (`ETag` / `304`) on Inertia pages and want to reduce unnecessary `Set-Cookie` churn on steady-state safe requests, particularly for Safari/WebKit. See the [HTTP caching and XSRF cookie refresh cookbook note](/cookbook/http-caching-and-xsrf-cookie-refresh) for validation details and caveats.
+
 ### `flash_keys`
 
 **Default**: `%i[notice alert]`

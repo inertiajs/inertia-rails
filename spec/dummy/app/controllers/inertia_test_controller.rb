@@ -35,6 +35,12 @@ class InertiaTestController < ApplicationController
     end
   end
 
+  def session_loaded_request_test
+    session[:xsrf_cookie_refresh_test] = true
+
+    head 200
+  end
+
   def inertia_partial_request_test
     if request.inertia_partial?
       head 202
