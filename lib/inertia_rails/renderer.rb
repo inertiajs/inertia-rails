@@ -56,10 +56,20 @@ module InertiaRails
         ssr = @configuration.ssr_enabled && ssr_render
         if ssr
           @controller.instance_variable_set('@_inertia_ssr_head', ssr['head'].join.html_safe)
-          @render_method.call html: ssr['body'].html_safe, layout: layout, locals: @view_data.merge(page: page)
+          @render_method.call(
+            html: ssr['body'].html_safe,
+            layout: layout,
+            locals: @view_data.merge(page: page),
+            formats: :html
+          )
         else
           @controller.instance_variable_set('@_inertia_page', page)
-          @render_method.call template: 'inertia', layout: layout, locals: @view_data.merge(page: page)
+          @render_method.call(
+            template: 'inertia',
+            layout: layout,
+            locals: @view_data.merge(page: page),
+            formats: :html
+          )
         end
       end
     end
