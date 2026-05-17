@@ -3,7 +3,7 @@
 module InertiaRails
   class Engine < ::Rails::Engine
     initializer 'inertia_rails.configure_rails_initialization' do |app|
-      app.middleware.use ::InertiaRails::Middleware
+      app.config.app_middleware.use ::InertiaRails::Middleware
     end
 
     initializer 'inertia_rails.action_controller' do
