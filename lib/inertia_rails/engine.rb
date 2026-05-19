@@ -2,7 +2,7 @@
 
 module InertiaRails
   class Engine < ::Rails::Engine
-    initializer 'inertia_rails.configure_rails_initialization' do |app|
+    initializer 'inertia_rails.configure_rails_initialization', before: :build_middleware_stack do |app|
       app.middleware.use ::InertiaRails::Middleware
     end
 
