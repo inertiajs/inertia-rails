@@ -223,7 +223,8 @@ module Inertia
               say_error 'Failed to install Vite Rails gem', :red
               exit(false)
             end
-            if (capture = run('bundle exec vite install', capture: !verbose?))
+            vite_ruby_install_options = package_manager.present? ? "--package-manager=#{package_manager.name}" : ''
+            if (capture = run("bundle exec vite install #{vite_ruby_install_options}", capture: !verbose?))
               rename_application_js_to_ts if typescript?
               run('bundle binstub vite_ruby', capture: !verbose?) unless File.exist?(file_path('bin/vite'))
               say 'Vite Rails successfully installed', :green
