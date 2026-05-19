@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.21.1] - 2026-05-19
+
 * Specify initializer run order for middleware insertion to avoid frozen middleware stack errors on Rails 8.1+ (@julik)
 * Set an explicit `formats: :html` when rendering Inertia responses (@agrobbin)
 * Use `params.expect` instead of `params.require(...).permit(...)` in scaffold generator and docs (@tyrro)
