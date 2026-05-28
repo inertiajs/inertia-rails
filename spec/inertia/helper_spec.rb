@@ -19,6 +19,53 @@ RSpec.describe InertiaRails::Helper, type: :helper do
     end
   end
 
+  describe '#inertia_root' do
+    let(:page) do
+      {
+        component: 'TestComponent',
+        props: { message: 'Hello' },
+        url: '/test',
+        version: nil,
+      }
+    end
+
+    def stub_content_security_policy_nonce(value)
+      helper.singleton_class.define_method(:content_security_policy_nonce) { value }
+    end
+
+    context 'when using a script element for the initial page' do
+      with_inertia_config use_script_element_for_initial_page: true
+
+      it 'renders the script tag with the Rails CSP nonce' do
+        stub_content_security_policy_nonce('test-nonce')
+
+        expect(helper.inertia_root(page: page)).to include(
+          '<script data-page="app" type="application/json" nonce="test-nonce">'
+        )
+      end
+
+      it 'does not render a nonce attribute when Rails does not provide a nonce' do
+        stub_content_security_policy_nonce(nil)
+
+        expect(helper.inertia_root(page: page)).not_to include(' nonce=')
+      end
+    end
+
+    context 'when using a data-page attribute for the initial page' do
+      with_inertia_config use_script_element_for_initial_page: false
+
+      it 'preserves the existing non-script rendering' do
+        stub_content_security_policy_nonce('test-nonce')
+
+        result = helper.inertia_root(page: page)
+
+        expect(result).to include('<div id="app" data-page=')
+        expect(result).not_to include('<script')
+        expect(result).not_to include(' nonce=')
+      end
+    end
+  end
+
   describe '#inertia_meta_tags' do
     context 'basic rendering' do
       before do
