@@ -142,7 +142,7 @@ module Inertia
       def install_typescript
         say 'Adding TypeScript support'
 
-        add_dependencies(*FRAMEWORKS[framework]['packages_ts'])
+        add_dependencies(*FRAMEWORKS[framework]['packages_ts'], dev: true)
 
         say 'Copying tsconfig and types'
 
@@ -283,8 +283,8 @@ module Inertia
         @package_manager ||= JSPackageManager.new(self)
       end
 
-      def add_dependencies(*packages)
-        package_manager.add_dependencies(*packages)
+      def add_dependencies(*packages, dev: false)
+        package_manager.add_dependencies(*packages, dev: dev)
       end
 
       def vite_config_path
