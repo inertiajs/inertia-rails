@@ -305,7 +305,7 @@ The callback receives the React element and must return a new element. This is w
 The callback receives a `Map` that serves as Svelte's component context. Values set here are accessible in your components via `getContext()`.
 </Svelte>
 
-A second `{ ssr }` argument is also available, allowing you to conditionally apply logic based on the rendering environment.
+A second argument provides the current rendering environment via `ssr`, allowing you to conditionally apply logic based on where the app is running.
 
 :::tabs key:frameworks
 
@@ -348,6 +348,46 @@ createInertiaApp({
       context.set('analytics', createAnalytics())
     }
   },
+})
+```
+
+:::
+
+The second argument also includes the current `page` object, giving you access to the component name, URL, version, and shared props before the app renders. Useful for configuring plugins or providers with server-driven state like the user's locale.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+createInertiaApp({
+    withApp(app, { page }) {
+        const i18n = createI18n({ locale: page.props.locale })
+
+        app.use(i18n)
+    },
+})
+```
+
+== React
+
+```jsx
+createInertiaApp({
+    withApp(app, { page }) {
+        const i18n = createI18n({ locale: page.props.locale })
+
+        return <I18nProvider i18n={i18n}>{app}</I18nProvider>
+    },
+})
+```
+
+== Svelte
+
+```js
+createInertiaApp({
+    withApp(context, { page }) {
+        context.set('locale', page.props.locale)
+    },
 })
 ```
 
@@ -526,6 +566,19 @@ createInertiaApp({
 ```
 
 If you change the `id` of the root element, be sure to update it [server-side](/guide/server-side-setup#root-template) as well.
+
+## Content Security Policy
+
+@available_since core=3.1.0
+
+For applications using a [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) that restricts inline styles, you may pass a `nonce` to `createInertiaApp()`. The nonce is applied to the inline styles Inertia injects for the [progress bar](/guide/progress-indicators) and the [error modal](/guide/error-handling), allowing them through your CSP.
+
+```js
+createInertiaApp({
+  nonce: "your-csp-nonce",
+  // ...
+});
+```
 
 ## HTTP Client
 

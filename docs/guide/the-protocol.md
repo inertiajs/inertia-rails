@@ -144,6 +144,7 @@ Inertia shares data between the server and client via a page object. This object
 - `matchPropsOn`: Array of prop keys to use for [matching when merging props](/guide/merging-props#matching-items).
 - `scrollProps`: Configuration for [infinite scroll](/guide/infinite-scroll) prop merging behavior.
 - `deferredProps`: Configuration for client-side [lazy loading of props](/guide/deferred-props).
+- `rescuedProps`: Array of [deferred prop](/guide/deferred-props#error-handling) keys that failed to resolve and were rescued server-side. Used by the client to render the `rescue` slot on the `<Deferred>` component.
 - `sharedProps`: Array of top-level prop keys registered via `Inertia::share()`. Used by the client to carry shared props over during [instant visits](/guide/instant-visits).
 - `onceProps`: Configuration for [once props](/guide/once-props) that should only be resolved once and reused on subsequent pages. Each entry maps a key to an object containing the `prop` name and optional `expiresAt` timestamp (in milliseconds).
 
@@ -186,6 +187,22 @@ When using deferred props, the page object includes a `deferredProps` configurat
     "default": ["comments", "analytics"],
     "sidebar": ["relatedPosts"]
   }
+}
+```
+
+### Page Object with Rescued Deferred Props
+
+When a [deferred prop](/guide/deferred-props#error-handling) is resolved with `rescue: true` and throws an exception, the prop is omitted from `props` and its key is included in `rescuedProps`. The client uses this list to render the `rescue` slot on the `<Deferred>` component.
+
+```json
+{
+  "component": "Users/Index",
+  "props": {
+    "errors": {}
+  },
+  "url": "/users",
+  "version": "6b16b94d7c51cbe5b1fa42aac98241d5",
+  "rescuedProps": ["permissions"]
 }
 ```
 

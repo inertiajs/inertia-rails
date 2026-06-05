@@ -49,7 +49,7 @@ inertia({
 })
 ```
 
-You may pass `false` to opt out of the plugin's automatic SSR handling, for example if you prefer to [configure SSR manually](#manual-setup) but still want to use the other features of the Vite plugin.
+You may pass `false` to opt out of the plugin's automatic SSR handling, for example if you prefer to [configure SSR manually](#manual-setup) or [disable SSR entirely](#disabling-ssr).
 
 ```js
 // vite.config.js
@@ -167,6 +167,21 @@ createServer((page) =>
 :::
 
 Be sure to add anything that's missing from your `inertia.js` file that makes sense to run in SSR mode, such as plugins or custom mixins.
+
+### Host
+
+@available_since core=3.1.0
+
+By default, the SSR server binds to `0.0.0.0`, making it accessible on all network interfaces. You may restrict it to a specific interface using the `host` option.
+
+```js
+// vite.config.js
+inertia({
+    ssr: {
+        host: '127.0.0.1',
+    },
+})
+```
 
 ## Manual Setup
 
@@ -336,6 +351,50 @@ createServer(
       // ...
     }),
   { cluster: true },
+)
+```
+
+:::
+
+
+### Host
+
+@available_since core=3.1.0
+
+By default, the SSR server binds to `0.0.0.0`, making it accessible on all network interfaces. You may pass the `host` option to `createServer` to restrict it to a specific interface.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+createServer(page =>
+    createInertiaApp({
+        // ...
+    }),
+    { host: '127.0.0.1' },
+)
+```
+
+== React
+
+```jsx
+createServer(page =>
+    createInertiaApp({
+        // ...
+    }),
+    { host: '127.0.0.1' },
+)
+```
+
+== Svelte
+
+```js
+createServer(page =>
+    createInertiaApp({
+        // ...
+    }),
+    { host: '127.0.0.1' },
 )
 ```
 
@@ -556,7 +615,25 @@ SSR caching uses the same [`cache_store`](/guide/configuration#cache_store) as [
 
 ## Disabling SSR
 
-Sometimes you may wish to disable server-side rendering for certain controllers or pages in your application. You may do so by setting the `ssr_enabled` option to `false` using `inertia_config`.
+SSR has two layers: the **Vite plugin** serves SSR during development and builds the SSR bundle for production, while the **Rails adapter** dispatches rendering requests to the SSR server. To fully disable SSR, you should disable both.
+
+```js
+// vite.config.js
+inertia({
+    ssr: false,
+})
+```
+
+```ruby
+# config/initializers/inertia.rb
+InertiaRails.configure do |config|
+  config.ssr_enabled = false
+end
+```
+
+## Excluding Controllers from SSR
+
+Sometimes you may wish to skip server-side rendering for certain controllers while keeping SSR enabled for the rest of your application.
 
 ```ruby
 class AdminController < ApplicationController

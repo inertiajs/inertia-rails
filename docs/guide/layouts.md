@@ -167,7 +167,7 @@ const Welcome = ({ user }) => {
   )
 }
 
-Welcome.layout = Layout
+Welcome.layout = (page) => <Layout>{page}</Layout>
 
 export default Welcome
 ```
@@ -200,6 +200,18 @@ defineOptions({ layout: Layout })
 ```
 
 </Vue>
+
+<React>
+
+Arrow function components should be wrapped in an array. Without the array, Inertia cannot distinguish them from render functions at runtime:
+
+```jsx
+const ArrowLayout = ({ children }) => <main>{children}</main>
+
+Welcome.layout = [ArrowLayout]
+```
+
+</React>
 
 ### Nested Layouts
 
@@ -328,14 +340,14 @@ createInertiaApp({
 
 == React
 
-```js
+```jsx
 import Layout from './Layout'
 
 createInertiaApp({
   resolve: (name) => {
     const pages = import.meta.glob('../pages/**/*.jsx', { eager: true })
     let page = pages[`../pages/${name}.jsx`]
-    page.default.layout = page.default.layout || Layout
+    page.default.layout = page.default.layout || ((page) => <Layout>{page}</Layout>)
     return page
   },
   // ...

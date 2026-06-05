@@ -144,7 +144,11 @@ http.submit(method, url, options)
 
 :::
 
-Each method returns a `Promise` that resolves with the parsed JSON response data. TypeScript users may [type the request data and response](/guide/typescript#http-helper) at the hook level or on a per-request basis.
+Each method returns a `Promise` that resolves with the parsed JSON response data. TypeScript users may [type the request data and response](/v3/advanced/typescript#http-helper).
+
+### Pre-binding the Endpoint
+
+You may pass the HTTP method and URL as the first two arguments to `useHttp()`, then call `submit()` without arguments to dispatch the request. This also unlocks real-time validation. See [Precognition](#precognition) for details.
 
 :::tabs key:frameworks
 
@@ -528,12 +532,14 @@ http.post('/api/users', {
   onProgress: (progress) => {
     /*...*/
   },
-  onSuccess: (response) => {
+  onSuccess: (data, response) => {
     /*...*/
   },
   onError: (errors) => {
     /*...*/
   },
+  onHttpException: (response) => { /*...*/ },
+  onNetworkError: (error) => { /*...*/ },
   onCancel: () => {
     /*...*/
   },
@@ -544,6 +550,50 @@ http.post('/api/users', {
 ```
 
 You may return `false` from `onBefore` to cancel the request.
+
+
+### Accessing the HTTP response
+
+@available_since core=3.0.3
+
+The `onSuccess` callback receives the parsed response data as its first argument and the HTTP response object as its second argument. The response object contains `status`, `data`, and `headers` properties, which is useful when you need to inspect the status code or response headers.
+
+```js
+http.post('/api/users', {
+    onSuccess: (data, response) => {
+        console.log(response.status) // 200, 201, etc.
+    },
+})
+```
+
+### HTTP exceptions
+
+@available_since core=3.0.3
+
+The `onHttpException` callback fires when the server returns a non-422 HTTP error, such as a `500` or `403`. The callback receives the HTTP response object, giving you access to the status code, response body, and headers.
+
+```js
+http.post('/api/users', {
+    onHttpException: (response) => {
+        console.log(response.status) // 500, 403, etc.
+        console.log(response.data)   // Response body
+    },
+})
+```
+
+### Network errors
+
+@available_since core=3.0.3
+
+The `onNetworkError` callback fires when the request fails due to a network issue, such as when the user loses their internet connection. The callback receives the `Error` object.
+
+```js
+http.post('/api/users', {
+    onNetworkError: (error) => {
+        console.log(error.message)
+    },
+})
+```
 
 ## Precognition
 

@@ -261,6 +261,22 @@ InertiaRails.configure do |config|
 end
 ```
 
+### React Arrow Function Layout Components
+
+The new layout implementation in v3 no longer supports arrow function components assigned directly to `.layout`. Inertia cannot reliably distinguish them from render functions at runtime. Wrapping the component in an array resolves this:
+
+```jsx
+const Layout = ({ children }) => <main>{children}</main>
+
+// ❌ does not work — arrow function component assigned directly
+Dashboard.layout = Layout
+
+// ✅ wrap in an array instead
+Dashboard.layout = [Layout]
+```
+
+Function declaration components continue to work without any changes.
+
 ## Other Changes
 
 ---

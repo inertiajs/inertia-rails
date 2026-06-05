@@ -24,7 +24,9 @@ createInertiaApp({
 })
 ```
 
-You can disable Inertia's default loading indicator by setting the `progress` property to `false`.
+For applications using a [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) that restricts inline styles, you may pass a `nonce` to `createInertiaApp()` to permit the styles Inertia injects for the progress bar. See [Content Security Policy](/guide/client-side-setup#content-security-policy) for details.
+
+You may disable Inertia's default loading indicator by setting the `progress` property to `false`.
 
 ```js
 createInertiaApp({
