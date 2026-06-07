@@ -2254,14 +2254,11 @@ const form = useForm('post', '/users', {
 ```jsx
 import { useForm } from '@inertiajs/react'
 
-const { data, setData, submit, errors, validating, validate, invalid } = useForm(
-  'post',
-  '/users',
-  {
+const { data, setData, submit, errors, validating, validate, invalid } =
+  useForm('post', '/users', {
     name: '',
     email: '',
-  },
-)
+  })
 
 function handleSubmit(e) {
   e.preventDefault()
@@ -2303,7 +2300,12 @@ return (
   })
 </script>
 
-<form onsubmit={(e) => { e.preventDefault(); form.submit() }}>
+<form
+  onsubmit={(e) => {
+    e.preventDefault()
+    form.submit()
+  }}
+>
   <input bind:value={form.name} onchange={() => form.validate('name')} />
   {#if form.invalid('name')}
     <p>{form.errors.name}</p>

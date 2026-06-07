@@ -177,9 +177,9 @@ By default, the SSR server binds to `0.0.0.0`, making it accessible on all netwo
 ```js
 // vite.config.js
 inertia({
-    ssr: {
-        host: '127.0.0.1',
-    },
+  ssr: {
+    host: '127.0.0.1',
+  },
 })
 ```
 
@@ -356,7 +356,6 @@ createServer(
 
 :::
 
-
 ### Host
 
 @available_since core=3.1.0
@@ -368,33 +367,36 @@ By default, the SSR server binds to `0.0.0.0`, making it accessible on all netwo
 == Vue
 
 ```js
-createServer(page =>
+createServer(
+  (page) =>
     createInertiaApp({
-        // ...
+      // ...
     }),
-    { host: '127.0.0.1' },
+  { host: '127.0.0.1' },
 )
 ```
 
 == React
 
 ```jsx
-createServer(page =>
+createServer(
+  (page) =>
     createInertiaApp({
-        // ...
+      // ...
     }),
-    { host: '127.0.0.1' },
+  { host: '127.0.0.1' },
 )
 ```
 
 == Svelte
 
 ```js
-createServer(page =>
+createServer(
+  (page) =>
     createInertiaApp({
-        // ...
+      // ...
     }),
-    { host: '127.0.0.1' },
+  { host: '127.0.0.1' },
 )
 ```
 
@@ -620,7 +622,7 @@ SSR has two layers: the **Vite plugin** serves SSR during development and builds
 ```js
 // vite.config.js
 inertia({
-    ssr: false,
+  ssr: false,
 })
 ```
 

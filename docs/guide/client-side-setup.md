@@ -361,11 +361,11 @@ The second argument also includes the current `page` object, giving you access t
 
 ```js
 createInertiaApp({
-    withApp(app, { page }) {
-        const i18n = createI18n({ locale: page.props.locale })
+  withApp(app, { page }) {
+    const i18n = createI18n({ locale: page.props.locale })
 
-        app.use(i18n)
-    },
+    app.use(i18n)
+  },
 })
 ```
 
@@ -373,11 +373,11 @@ createInertiaApp({
 
 ```jsx
 createInertiaApp({
-    withApp(app, { page }) {
-        const i18n = createI18n({ locale: page.props.locale })
+  withApp(app, { page }) {
+    const i18n = createI18n({ locale: page.props.locale })
 
-        return <I18nProvider i18n={i18n}>{app}</I18nProvider>
-    },
+    return <I18nProvider i18n={i18n}>{app}</I18nProvider>
+  },
 })
 ```
 
@@ -385,9 +385,9 @@ createInertiaApp({
 
 ```js
 createInertiaApp({
-    withApp(context, { page }) {
-        context.set('locale', page.props.locale)
-    },
+  withApp(context, { page }) {
+    context.set('locale', page.props.locale)
+  },
 })
 ```
 
@@ -575,9 +575,9 @@ For applications using a [Content Security Policy](https://developer.mozilla.org
 
 ```js
 createInertiaApp({
-  nonce: "your-csp-nonce",
+  nonce: 'your-csp-nonce',
   // ...
-});
+})
 ```
 
 ## HTTP Client

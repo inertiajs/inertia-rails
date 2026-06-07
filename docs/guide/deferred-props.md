@@ -264,7 +264,7 @@ On the client side, you may provide a `rescue` slot to the `Deferred` component 
 
 ```vue
 <script setup>
-import { Deferred, router } from "@inertiajs/vue3";
+import { Deferred, router } from '@inertiajs/vue3'
 </script>
 <template>
   <Deferred data="permissions">
@@ -274,7 +274,12 @@ import { Deferred, router } from "@inertiajs/vue3";
     <template #rescue="{ reloading }">
       <div>
         <p>Failed to load permissions.</p>
-        <button :disabled="reloading" @click="router.reload({ only: ['permissions'] })">Retry</button>
+        <button
+          :disabled="reloading"
+          @click="router.reload({ only: ['permissions'] })"
+        >
+          Retry
+        </button>
       </div>
     </template>
     <div v-for="permission in permissions">
@@ -287,7 +292,7 @@ import { Deferred, router } from "@inertiajs/vue3";
 == React
 
 ```jsx
-import { Deferred, router } from "@inertiajs/react";
+import { Deferred, router } from '@inertiajs/react'
 
 export default () => (
   <Deferred
@@ -296,35 +301,44 @@ export default () => (
     rescue={({ reloading }) => (
       <div>
         <p>Failed to load permissions.</p>
-        <button disabled={reloading} onClick={() => router.reload({ only: ["permissions"] })}>Retry</button>
+        <button
+          disabled={reloading}
+          onClick={() => router.reload({ only: ['permissions'] })}
+        >
+          Retry
+        </button>
       </div>
     )}
   >
     <PermissionsChildComponent />
   </Deferred>
-);
+)
 ```
 
 == Svelte
 
 ```svelte
 <script>
-    import { Deferred, router } from '@inertiajs/svelte'
-    let { permissions } = $props()
+  import { Deferred, router } from '@inertiajs/svelte'
+  let { permissions } = $props()
 </script>
+
 <Deferred data="permissions">
-    {#snippet fallback()}
-        <div>Loading...</div>
-    {/snippet}
-    {#snippet rescue({ reloading })}
-        <div>
-            <p>Failed to load permissions.</p>
-            <button disabled={reloading} onclick={() => router.reload({ only: ['permissions'] })}>Retry</button>
-        </div>
-    {/snippet}
-    {#each permissions as permission}
-        <!-- ... -->
-    {/each}
+  {#snippet fallback()}
+    <div>Loading...</div>
+  {/snippet}
+  {#snippet rescue({ reloading })}
+    <div>
+      <p>Failed to load permissions.</p>
+      <button
+        disabled={reloading}
+        onclick={() => router.reload({ only: ['permissions'] })}>Retry</button
+      >
+    </div>
+  {/snippet}
+  {#each permissions as permission}
+    <!-- ... -->
+  {/each}
 </Deferred>
 ```
 

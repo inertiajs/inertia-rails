@@ -98,8 +98,8 @@ You may also pass a function that returns the request options. The function is e
 import { usePoll } from '@inertiajs/vue3'
 const props = defineProps({ counter: Number })
 usePoll(2000, () => ({
-    data: { counter_seen: props.counter },
-    only: ['last_received'],
+  data: { counter_seen: props.counter },
+  only: ['last_received'],
 }))
 </script>
 ```
@@ -110,10 +110,10 @@ usePoll(2000, () => ({
 import { usePoll } from '@inertiajs/react'
 
 export default ({ counter }) => {
-    usePoll(2000, () => ({
-        data: { counter_seen: counter },
-        only: ['last_received'],
-    }))
+  usePoll(2000, () => ({
+    data: { counter_seen: counter },
+    only: ['last_received'],
+  }))
 }
 ```
 
@@ -125,8 +125,8 @@ import { usePoll } from '@inertiajs/svelte'
 let { counter } = $props()
 
 usePoll(2000, () => ({
-    data: { counter_seen: counter },
-    only: ['last_received'],
+  data: { counter_seen: counter },
+  only: ['last_received'],
 }))
 ```
 
@@ -216,9 +216,13 @@ The default `overlap` mode allows requests to run in parallel. The `cancel` mode
 ```js
 import { usePoll } from '@inertiajs/vue3'
 
-usePoll(2000, {}, {
+usePoll(
+  2000,
+  {},
+  {
     mode: 'rest',
-})
+  },
+)
 ```
 
 == React
@@ -226,9 +230,13 @@ usePoll(2000, {}, {
 ```jsx
 import { usePoll } from '@inertiajs/react'
 
-usePoll(2000, {}, {
+usePoll(
+  2000,
+  {},
+  {
     mode: 'rest',
-})
+  },
+)
 ```
 
 == Svelte
@@ -236,9 +244,13 @@ usePoll(2000, {}, {
 ```js
 import { usePoll } from '@inertiajs/svelte'
 
-usePoll(2000, {}, {
+usePoll(
+  2000,
+  {},
+  {
     mode: 'rest',
-})
+  },
+)
 ```
 
 :::

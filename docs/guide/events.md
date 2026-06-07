@@ -220,7 +220,6 @@ document.removeEventListener('inertia:start', startEventListener)
 
 :::
 
-
 ## One-time Listeners
 
 @available_since core=3.2.0
@@ -232,31 +231,31 @@ You may register a listener that fires only once using the `router.once()` metho
 == Vue
 
 ```js
-import { router } from "@inertiajs/vue3";
+import { router } from '@inertiajs/vue3'
 
-router.once("start", (event) => {
-  console.log(`Starting a visit to ${event.detail.visit.url}`);
-});
+router.once('start', (event) => {
+  console.log(`Starting a visit to ${event.detail.visit.url}`)
+})
 ```
 
 == React
 
 ```jsx
-import { router } from "@inertiajs/react";
+import { router } from '@inertiajs/react'
 
-router.once("start", (event) => {
-  console.log(`Starting a visit to ${event.detail.visit.url}`);
-});
+router.once('start', (event) => {
+  console.log(`Starting a visit to ${event.detail.visit.url}`)
+})
 ```
 
 == Svelte
 
 ```js
-import { router } from "@inertiajs/svelte";
+import { router } from '@inertiajs/svelte'
 
-router.once("start", (event) => {
-  console.log(`Starting a visit to ${event.detail.visit.url}`);
-});
+router.once('start', (event) => {
+  console.log(`Starting a visit to ${event.detail.visit.url}`)
+})
 ```
 
 :::
@@ -268,40 +267,40 @@ Like `router.on()`, this method returns a callback you may invoke to remove the 
 == Vue
 
 ```js
-import { router } from "@inertiajs/vue3";
+import { router } from '@inertiajs/vue3'
 
-let removeStartEventListener = router.once("start", (event) => {
-  console.log(`Starting a visit to ${event.detail.visit.url}`);
-});
+let removeStartEventListener = router.once('start', (event) => {
+  console.log(`Starting a visit to ${event.detail.visit.url}`)
+})
 
 // Remove the listener before it fires...
-removeStartEventListener();
+removeStartEventListener()
 ```
 
 == React
 
 ```jsx
-import { router } from "@inertiajs/react";
+import { router } from '@inertiajs/react'
 
-let removeStartEventListener = router.once("start", (event) => {
-  console.log(`Starting a visit to ${event.detail.visit.url}`);
-});
+let removeStartEventListener = router.once('start', (event) => {
+  console.log(`Starting a visit to ${event.detail.visit.url}`)
+})
 
 // Remove the listener before it fires...
-removeStartEventListener();
+removeStartEventListener()
 ```
 
 == Svelte
 
 ```js
-import { router } from "@inertiajs/svelte";
+import { router } from '@inertiajs/svelte'
 
-let removeStartEventListener = router.once("start", (event) => {
-  console.log(`Starting a visit to ${event.detail.visit.url}`);
-});
+let removeStartEventListener = router.once('start', (event) => {
+  console.log(`Starting a visit to ${event.detail.visit.url}`)
+})
 
 // Remove the listener before it fires...
-removeStartEventListener();
+removeStartEventListener()
 ```
 
 :::

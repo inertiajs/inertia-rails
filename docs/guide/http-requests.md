@@ -144,7 +144,7 @@ http.submit(method, url, options)
 
 :::
 
-Each method returns a `Promise` that resolves with the parsed JSON response data. TypeScript users may [type the request data and response](/v3/advanced/typescript#http-helper).
+Each method returns a `Promise` that resolves with the parsed JSON response data. TypeScript users may [type the request data and response](/guide/typescript#http-helper).
 
 ### Pre-binding the Endpoint
 
@@ -538,8 +538,12 @@ http.post('/api/users', {
   onError: (errors) => {
     /*...*/
   },
-  onHttpException: (response) => { /*...*/ },
-  onNetworkError: (error) => { /*...*/ },
+  onHttpException: (response) => {
+    /*...*/
+  },
+  onNetworkError: (error) => {
+    /*...*/
+  },
   onCancel: () => {
     /*...*/
   },
@@ -551,7 +555,6 @@ http.post('/api/users', {
 
 You may return `false` from `onBefore` to cancel the request.
 
-
 ### Accessing the HTTP response
 
 @available_since core=3.0.3
@@ -560,9 +563,9 @@ The `onSuccess` callback receives the parsed response data as its first argument
 
 ```js
 http.post('/api/users', {
-    onSuccess: (data, response) => {
-        console.log(response.status) // 200, 201, etc.
-    },
+  onSuccess: (data, response) => {
+    console.log(response.status) // 200, 201, etc.
+  },
 })
 ```
 
@@ -574,10 +577,10 @@ The `onHttpException` callback fires when the server returns a non-422 HTTP erro
 
 ```js
 http.post('/api/users', {
-    onHttpException: (response) => {
-        console.log(response.status) // 500, 403, etc.
-        console.log(response.data)   // Response body
-    },
+  onHttpException: (response) => {
+    console.log(response.status) // 500, 403, etc.
+    console.log(response.data) // Response body
+  },
 })
 ```
 
@@ -589,9 +592,9 @@ The `onNetworkError` callback fires when the request fails due to a network issu
 
 ```js
 http.post('/api/users', {
-    onNetworkError: (error) => {
-        console.log(error.message)
-    },
+  onNetworkError: (error) => {
+    console.log(error.message)
+  },
 })
 ```
 
