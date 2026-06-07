@@ -24,6 +24,7 @@ module InertiaRails
       @_match_on = []
       @_once = {}
       @_scroll = {}
+      @_rescued = []
 
       props = expand_dot_notation(@props)
       resolved = deep_transform_props(props)
@@ -71,6 +72,7 @@ module InertiaRails
       metadata[:deepMergeProps] = @_deep_merge unless @_deep_merge.empty?
       metadata[:matchPropsOn] = @_match_on unless @_match_on.empty?
       metadata[:onceProps] = @_once unless @_once.empty?
+      metadata[:rescuedProps] = @_rescued unless @_rescued.empty?
 
       metadata
     end
@@ -99,29 +101,39 @@ module InertiaRails
         collect_metadata(prop, path)
         next unless keep_prop?(prop, path, parent_was_resolved: parent_was_resolved)
 
-        value = @evaluator.call(prop)
+        rescue_enabled = prop.try(:rescue?)
 
-        # A closure may return a prop type — unwrap one level
-        if value.is_a?(BaseProp) && !prop.is_a?(BaseProp)
-          collect_metadata(value, path)
-          next unless keep_prop?(value, path, parent_was_resolved: parent_was_resolved)
+        begin
+          value = @evaluator.call(prop)
 
-          value = @evaluator.call(value)
-        end
+          # A closure may return a prop type — unwrap one level
+          if value.is_a?(BaseProp) && !prop.is_a?(BaseProp)
+            collect_metadata(value, path)
+            next unless keep_prop?(value, path, parent_was_resolved: parent_was_resolved)
 
-        # A closure may return a Hash or Array containing prop types — recurse into it
-        if prop.is_a?(Proc)
-          if value.is_a?(Hash) && value.any?
-            nested = deep_transform_props(value, path, parent_was_resolved: true)
-            transformed_props[key] = nested unless nested.empty?
-            next
-          elsif value.is_a?(Array)
-            transformed_props[key] = transform_array(value, path, parent_was_resolved: true)
-            next
+            value = @evaluator.call(value)
           end
-        end
 
-        transformed_props[key] = value
+          # A closure may return a Hash or Array containing prop types — recurse into it
+          if prop.is_a?(Proc)
+            if value.is_a?(Hash) && value.any?
+              nested = deep_transform_props(value, path, parent_was_resolved: true)
+              transformed_props[key] = nested unless nested.empty?
+              next
+            elsif value.is_a?(Array)
+              transformed_props[key] = transform_array(value, path, parent_was_resolved: true)
+              next
+            end
+          end
+
+          transformed_props[key] = rescue_enabled ? value.as_json : value
+        rescue StandardError => e
+          raise unless rescue_enabled
+
+          report_rescued_error(e)
+          @_rescued << path
+          next
+        end
       end
     end
 
@@ -144,6 +156,16 @@ module InertiaRails
       when Hash then value.any? { |_, v| needs_transform?(v) }
       when Array then value.any? { |v| needs_transform?(v) }
       else value.respond_to?(:to_inertia)
+      end
+    end
+
+    def report_rescued_error(error)
+      # `Rails.error` (the Error Reporter) was introduced in Rails 7.0. Fall back
+      # to the logger on older versions so rescued errors are never silently lost.
+      if Rails.respond_to?(:error)
+        Rails.error.report(error, handled: true)
+      else
+        Rails.logger&.error("[inertia-rails] Rescued deferred prop error: #{error.class}: #{error.message}")
       end
     end
 

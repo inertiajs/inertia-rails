@@ -245,13 +245,16 @@ By default, exceptions thrown while resolving a deferred prop result in an error
 class UsersController < ApplicationController
   def index
     render inertia: {
-      permissions: InertiaRails.defer(rescue: true) { Permission.all },
+      permissions: InertiaRails.defer(rescue: true) { current_user.permissions },
     }
   end
 end
 ```
 
 When a deferred prop is rescued, it is omitted from the response and the exception is reported via Rails's [Error Reporter](https://guides.rubyonrails.org/error_reporting.html#using-the-error-reporter).
+
+> [!NOTE]
+> To catch errors reliably, Inertia serializes the rescued prop (by calling `as_json` on its value) within the rescued scope. This means lazy values such as `ActiveRecord::Relation`s have their queries executed, and serialization errors are caught too — not just exceptions raised directly within the block.
 
 On the client side, you may provide a `rescue` slot to the `Deferred` component to render a fallback UI when a prop fails to load.
 

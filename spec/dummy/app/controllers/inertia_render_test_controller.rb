@@ -136,6 +136,13 @@ class InertiaRenderTestController < ApplicationController
     }
   end
 
+  def rescued_deferred_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      permissions: InertiaRails.defer(rescue: true) { raise 'boom' },
+    }
+  end
+
   inertia_share only: [:shared_deferred_props] do
     {
       grit: InertiaRails.defer { 'intense' },

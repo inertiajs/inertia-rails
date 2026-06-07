@@ -14,10 +14,15 @@ module InertiaRails
       super(&block)
 
       @group = props[:group] || DEFAULT_GROUP
+      @rescue = props.fetch(:rescue, false)
     end
 
     def deferred?
       true
+    end
+
+    def rescue?
+      @rescue
     end
   end
 end
