@@ -220,6 +220,91 @@ document.removeEventListener('inertia:start', startEventListener)
 
 :::
 
+## One-time Listeners
+
+@available_since core=3.2.0
+
+You may register a listener that fires only once using the `router.once()` method. The listener is automatically removed after the first invocation.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.once('start', (event) => {
+  console.log(`Starting a visit to ${event.detail.visit.url}`)
+})
+```
+
+== React
+
+```jsx
+import { router } from '@inertiajs/react'
+
+router.once('start', (event) => {
+  console.log(`Starting a visit to ${event.detail.visit.url}`)
+})
+```
+
+== Svelte
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.once('start', (event) => {
+  console.log(`Starting a visit to ${event.detail.visit.url}`)
+})
+```
+
+:::
+
+Like `router.on()`, this method returns a callback you may invoke to remove the listener before it fires.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+let removeStartEventListener = router.once('start', (event) => {
+  console.log(`Starting a visit to ${event.detail.visit.url}`)
+})
+
+// Remove the listener before it fires...
+removeStartEventListener()
+```
+
+== React
+
+```jsx
+import { router } from '@inertiajs/react'
+
+let removeStartEventListener = router.once('start', (event) => {
+  console.log(`Starting a visit to ${event.detail.visit.url}`)
+})
+
+// Remove the listener before it fires...
+removeStartEventListener()
+```
+
+== Svelte
+
+```js
+import { router } from '@inertiajs/svelte'
+
+let removeStartEventListener = router.once('start', (event) => {
+  console.log(`Starting a visit to ${event.detail.visit.url}`)
+})
+
+// Remove the listener before it fires...
+removeStartEventListener()
+```
+
+:::
+
 ## Cancelling Events
 
 Some events, such as `before`, `networkError`, and `httpException`, support cancellation, allowing you to prevent Inertia's default behavior. Just like native events, the event will be cancelled if only one event listener calls `event.preventDefault()`.

@@ -129,6 +129,20 @@ class ApplicationController < ActionController::Base
 end
 ```
 
+## Conditional Once Props
+
+Some shared data is mostly stable but changes at specific moments, like the authenticated user. You may return a once prop while a user is authenticated, and `nil` otherwise. Sign in and sign out usually end with a redirect to a page that does not explicitly request the `auth` prop, so a remembered once value would go stale.
+
+Returning `nil` on signed-out requests overwrites the remembered user on every response, while returning a once prop when authenticated lets the client remember the user across visits.
+
+```ruby
+class InertiaController < ApplicationController
+  inertia_share(
+    auth: Current.user ? InertiaRails.once { Current.user&.as_json(only: [:id, :name, :email]) } : nil
+  )
+end
+```
+
 ## Prefetching
 
 Once props are compatible with [prefetching](/guide/prefetching). The client automatically includes any remembered once props in prefetched responses, so navigating to a prefetched page will already have the once props available.

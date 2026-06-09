@@ -566,6 +566,87 @@ RSpec.describe InertiaRails::PropsResolver do
     end
   end
 
+  describe 'DeferProp with rescue' do
+    it 'omits a rescued prop and records it in rescuedProps on partial request' do
+      page = resolve_partial(
+        {
+          name: 'Jonathan',
+          permissions: InertiaRails.defer(rescue: true) { raise 'boom' },
+        },
+        'name', 'permissions'
+      )
+
+      expect(page[:props][:name]).to eq('Jonathan')
+      expect(page[:props]).not_to have_key(:permissions)
+      expect(page[:rescuedProps]).to eq(['permissions'])
+    end
+
+    it 'records nested rescued props using their dot-path' do
+      page = resolve_partial(
+        {
+          auth: {
+            user: 'Jonathan',
+            notifications: InertiaRails.defer(rescue: true) { raise 'boom' },
+          },
+        },
+        'auth.user', 'auth.notifications'
+      )
+
+      expect(page[:props][:auth][:user]).to eq('Jonathan')
+      expect(page[:props][:auth]).not_to have_key(:notifications)
+      expect(page[:rescuedProps]).to eq(['auth.notifications'])
+    end
+
+    it 'resolves a rescued prop normally when no error is raised' do
+      page = resolve_partial(
+        { permissions: InertiaRails.defer(rescue: true) { %w[read write] } },
+        'permissions'
+      )
+
+      expect(page[:props][:permissions]).to eq(%w[read write])
+      expect(page).not_to have_key(:rescuedProps)
+    end
+
+    it 'rescues errors raised while serializing the prop value' do
+      # Mimics a value (e.g. an ActiveRecord::Relation) that only fails when its
+      # query runs / it is serialized, i.e. during as_json rather than in the block.
+      unserializable = Class.new do
+        def as_json(*)
+          raise 'boom while serializing'
+        end
+      end.new
+
+      page = resolve_partial(
+        { permissions: InertiaRails.defer(rescue: true) { unserializable } },
+        'permissions'
+      )
+
+      expect(page[:props]).not_to have_key(:permissions)
+      expect(page[:rescuedProps]).to eq(['permissions'])
+    end
+
+    it 'reports the rescued error via the Rails error reporter' do
+      skip('Requires Rails 7.0 or higher') if Rails.version < '7'
+
+      error = RuntimeError.new('boom')
+      expect(Rails.error).to receive(:report).with(error, handled: true)
+
+      resolve_partial(
+        { permissions: InertiaRails.defer(rescue: true) { raise error } },
+        'permissions'
+      )
+    end
+
+    it 'does not rescue errors for deferred props without the rescue option' do
+      expect do
+        resolve_partial(
+          { permissions: InertiaRails.defer { raise 'boom' } },
+          'permissions'
+        )
+      end.to raise_error('boom')
+    end
+  end
+
   describe 'OnceProp' do
     it 'resolves once prop on initial load' do
       page = resolve({ locale: InertiaRails.once { 'en' } })

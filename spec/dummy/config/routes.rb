@@ -41,6 +41,7 @@ Rails.application.routes.draw do
   get 'except_props' => 'inertia_render_test#except_props'
   get 'merge_props' => 'inertia_render_test#merge_props'
   get 'deferred_props' => 'inertia_render_test#deferred_props'
+  get 'rescued_deferred_props' => 'inertia_render_test#rescued_deferred_props'
   get 'shared_deferred_props' => 'inertia_render_test#shared_deferred_props'
   get 'scroll_test' => 'inertia_render_test#scroll_test'
   get 'shared_scroll_test' => 'inertia_render_test#shared_scroll_test'

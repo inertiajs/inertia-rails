@@ -235,6 +235,117 @@ export default () => (
 
 The `reloading` prop is `false` on the initial load and becomes `true` whenever a partial reload is in progress for the deferred keys. It returns to `false` once the reload completes.
 
+## Error Handling
+
+@available_since rails=master core=3.1.0
+
+By default, exceptions thrown while resolving a deferred prop result in an error response. You may instruct Inertia to rescue these exceptions by passing `rescue: true` to `InertiaRails.defer`.
+
+```ruby
+class UsersController < ApplicationController
+  def index
+    render inertia: {
+      permissions: InertiaRails.defer(rescue: true) { current_user.permissions },
+    }
+  end
+end
+```
+
+When a deferred prop is rescued, it is omitted from the response and the exception is reported via Rails's [Error Reporter](https://guides.rubyonrails.org/error_reporting.html#using-the-error-reporter).
+
+> [!NOTE]
+> To catch errors reliably, Inertia serializes the rescued prop (by calling `as_json` on its value) within the rescued scope. This means lazy values such as `ActiveRecord::Relation`s have their queries executed, and serialization errors are caught too — not just exceptions raised directly within the block.
+
+On the client side, you may provide a `rescue` slot to the `Deferred` component to render a fallback UI when a prop fails to load.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup>
+import { Deferred, router } from '@inertiajs/vue3'
+</script>
+<template>
+  <Deferred data="permissions">
+    <template #fallback>
+      <div>Loading...</div>
+    </template>
+    <template #rescue="{ reloading }">
+      <div>
+        <p>Failed to load permissions.</p>
+        <button
+          :disabled="reloading"
+          @click="router.reload({ only: ['permissions'] })"
+        >
+          Retry
+        </button>
+      </div>
+    </template>
+    <div v-for="permission in permissions">
+      <!-- ... -->
+    </div>
+  </Deferred>
+</template>
+```
+
+== React
+
+```jsx
+import { Deferred, router } from '@inertiajs/react'
+
+export default () => (
+  <Deferred
+    data="permissions"
+    fallback={<div>Loading...</div>}
+    rescue={({ reloading }) => (
+      <div>
+        <p>Failed to load permissions.</p>
+        <button
+          disabled={reloading}
+          onClick={() => router.reload({ only: ['permissions'] })}
+        >
+          Retry
+        </button>
+      </div>
+    )}
+  >
+    <PermissionsChildComponent />
+  </Deferred>
+)
+```
+
+== Svelte
+
+```svelte
+<script>
+  import { Deferred, router } from '@inertiajs/svelte'
+  let { permissions } = $props()
+</script>
+
+<Deferred data="permissions">
+  {#snippet fallback()}
+    <div>Loading...</div>
+  {/snippet}
+  {#snippet rescue({ reloading })}
+    <div>
+      <p>Failed to load permissions.</p>
+      <button
+        disabled={reloading}
+        onclick={() => router.reload({ only: ['permissions'] })}>Retry</button
+      >
+    </div>
+  {/snippet}
+  {#each permissions as permission}
+    <!-- ... -->
+  {/each}
+</Deferred>
+```
+
+:::
+
+The rescue state is preserved until you explicitly reload the rescued prop. The `rescue` slot receives a `reloading` boolean, allowing you to disable the retry button or show a loading indicator while the reload is in progress.
+
 ## Combining with Once Props
 
 @available_since rails=3.15.0 core=2.2.20

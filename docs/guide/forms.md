@@ -1626,6 +1626,8 @@ form.post('/profile', {
 
 :::
 
+You may pass the HTTP method and URL as the first two arguments to `useForm()`, then call `submit()` without arguments to dispatch the request. This also unlocks real-time validation. See [Precognition](#precognition-1) for details.
+
 If you need to modify the form data before it's sent to the server, you can do so via the `transform()` method.
 
 :::tabs key:frameworks
@@ -2233,7 +2235,7 @@ const form = useForm('post', '/users', {
 </script>
 
 <template>
-  <form @submit.prevent="form.post('/users')">
+  <form @submit.prevent="form.submit()">
     <input v-model="form.name" @change="form.validate('name')" />
     <p v-if="form.invalid('name')">{{ form.errors.name }}</p>
 
@@ -2252,22 +2254,19 @@ const form = useForm('post', '/users', {
 ```jsx
 import { useForm } from '@inertiajs/react'
 
-const { data, setData, post, errors, validating, validate, invalid } = useForm(
-  'post',
-  '/users',
-  {
+const { data, setData, submit, errors, validating, validate, invalid } =
+  useForm('post', '/users', {
     name: '',
     email: '',
-  },
-)
+  })
 
-function submit(e) {
+function handleSubmit(e) {
   e.preventDefault()
-  post('/users')
+  submit()
 }
 
 return (
-  <form onSubmit={submit}>
+  <form onSubmit={handleSubmit}>
     <input
       value={data.name}
       onChange={(e) => setData('name', e.target.value)}
@@ -2304,7 +2303,7 @@ return (
 <form
   onsubmit={(e) => {
     e.preventDefault()
-    form.post('/users')
+    form.submit()
   }}
 >
   <input bind:value={form.name} onchange={() => form.validate('name')} />
@@ -2478,7 +2477,7 @@ form.withAllErrors()
 
 :::
 
-With Precognition enabled, you may call `submit()` without arguments to submit to the configured endpoint.
+With Precognition enabled, you may call `submit()` without arguments to dispatch the request to the configured endpoint.
 
 ## Server-Side Responses
 
