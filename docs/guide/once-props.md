@@ -138,7 +138,7 @@ Returning `nil` on signed-out requests overwrites the remembered user on every r
 ```ruby
 class InertiaController < ApplicationController
   inertia_share(
-    auth: Current.user ? -> { Current.user&.as_json(only: [:id, :name, :email]) } : nil
+    auth: Current.user ? InertiaRails.once { Current.user&.as_json(only: [:id, :name, :email]) } : nil
   )
 end
 ```
