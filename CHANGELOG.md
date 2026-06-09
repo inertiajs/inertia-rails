@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.21.2] - 2026-06-09
+
 * Add `rescue: true` option to `InertiaRails.defer` to rescue and report exceptions raised while resolving a deferred prop (@skryukov)
 * Add CSP nonce to the initial page script when needed (@nicholaspufal)
 * Fix Vite install to use the configured package manager in the generator (@akicho8)

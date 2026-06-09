@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module InertiaRails
-  VERSION = '3.21.1'
+  VERSION = '3.21.2'
 end

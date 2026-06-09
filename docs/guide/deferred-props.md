@@ -237,7 +237,7 @@ The `reloading` prop is `false` on the initial load and becomes `true` whenever 
 
 ## Error Handling
 
-@available_since rails=master core=3.1.0
+@available_since rails=3.21.2 core=3.1.0
 
 By default, exceptions thrown while resolving a deferred prop result in an error response. You may instruct Inertia to rescue these exceptions by passing `rescue: true` to `InertiaRails.defer`.
 
