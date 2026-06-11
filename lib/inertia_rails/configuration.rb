@@ -54,6 +54,10 @@ module InertiaRails
 
       # When to refresh the XSRF token cookie on protected requests.
       xsrf_cookie_refresh: :always,
+      # Whether to convert redirects to external (cross-origin) URLs into
+      # Inertia location responses (409 Conflict + X-Inertia-Location header)
+      # for Inertia requests.
+      convert_external_redirects: true,
 
       # Whether to use `<script>` element for initial page rendering instead of the `data-page` attribute.
       use_script_element_for_initial_page: false,

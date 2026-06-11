@@ -169,8 +169,16 @@ module InertiaRails
     end
 
     def inertia_location(url)
-      headers['X-Inertia-Location'] = url
-      head :conflict
+      if request.inertia?
+        # The 409 isn't a redirect the middleware would touch, so mark it varying
+        # here. The else branch's redirect gets Vary from the middleware when the
+        # target is external; setting it here too would double the header.
+        headers['Vary'] = headers['Vary'].blank? ? 'X-Inertia' : "#{headers['Vary']}, X-Inertia"
+        headers['X-Inertia-Location'] = url
+        head :conflict
+      else
+        redirect_to url, allow_other_host: true
+      end
     end
 
     def inertia_collect_flash_data

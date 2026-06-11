@@ -2,11 +2,46 @@
 
 RSpec.describe 'InertiaRails::Response', type: :request do
   describe 'inertia location response' do
-    it 'returns an inertia location response' do
-      get my_location_path
+    context 'with an inertia request' do
+      it 'returns a conflict response with the location header' do
+        get my_location_path, headers: { 'X-Inertia' => true }
 
-      expect(response.status).to eq 409
-      expect(response.headers['X-Inertia-Location']).to eq empty_test_path
+        expect(response.status).to eq 409
+        expect(response.headers['X-Inertia-Location']).to eq empty_test_path
+        expect(response.headers['Location']).to be_nil
+        expect(response.headers['Vary']).to include 'X-Inertia'
+        expect(response.body).to be_empty
+      end
+
+      it 'returns a conflict response for an external url' do
+        get my_external_location_path, headers: { 'X-Inertia' => true }
+
+        expect(response.status).to eq 409
+        expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
+        expect(response.headers['Location']).to be_nil
+      end
+    end
+
+    context 'with a non-inertia request' do
+      it 'redirects to the url without a Vary header (same-origin, not cacheable)' do
+        get my_location_path
+
+        expect(response.status).to eq 302
+        expect(response.headers['Location']).to eq empty_test_url
+        expect(response.headers['X-Inertia-Location']).to be_nil
+        expect(response.headers['Vary'].to_s).not_to include 'X-Inertia'
+      end
+
+      it 'redirects to an external url with a single Vary header from the middleware' do
+        get my_external_location_path
+
+        expect(response.status).to eq 302
+        expect(response.headers['Location']).to eq 'http://external-website.com/some_path'
+        expect(response.headers['X-Inertia-Location']).to be_nil
+        # The middleware marks the external redirect; the controller must not also
+        # set it, or the header would read "X-Inertia, X-Inertia".
+        expect(response.headers['Vary']).to eq 'X-Inertia'
+      end
     end
   end
 

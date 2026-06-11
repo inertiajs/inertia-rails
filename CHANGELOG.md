@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Raise a clear error when `parent_controller` does not inherit from `ActionController::Base` instead of an opaque `NoMethodError` (@skryukov)
 * Add static `props:` support to the `inertia` routes helper: `inertia 'about' => 'About', props: { title: 'About us' }` (@skryukov)
 * Deduplicate `X-Inertia` in the `Vary` response header (@skryukov)
+* Automatically convert external (cross-origin) redirects to Inertia location responses (`409 Conflict` + `X-Inertia-Location`) for Inertia requests. Can be disabled with `config.convert_external_redirects = false` (@skryukov)
+* Fix `inertia_location` to perform a regular redirect for non-Inertia requests instead of always responding with `409 Conflict` (@skryukov)
 
 ## [3.21.2] - 2026-06-09
 

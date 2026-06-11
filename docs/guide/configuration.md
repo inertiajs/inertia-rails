@@ -196,6 +196,27 @@ end
 ```
 
 This is useful for applications that serve Inertia pages through a CDN or rely on HTTP conditional caching (`ETag` / `304`): most shared caches refuse to cache responses that carry `Set-Cookie`, and the default policy emits one on every response. See the [HTTP caching and XSRF cookie refresh cookbook note](/cookbook/http-caching-and-xsrf-cookie-refresh) for the full mechanism and caveats.
+### `convert_external_redirects`
+
+**Default**: `true`
+**ENV**: `INERTIA_CONVERT_EXTERNAL_REDIRECTS`
+
+@available_since rails=master
+
+Whether to automatically convert redirects to external (cross-origin) URLs into Inertia location responses (`409 Conflict` with the `X-Inertia-Location` header) for Inertia requests.
+
+Browsers follow XHR redirects transparently, so the Inertia client can never see a redirect to another origin — the follow-up request to the external URL fails CORS checks. Converting the redirect lets the client perform a full `window.location` visit instead. See [external redirects](/guide/redirects#external-redirects).
+
+Set to `false` to keep plain redirect responses untouched (for example, if your test suite asserts `302` responses for external redirects). The conversion can also be disabled for a specific controller:
+
+```ruby
+class OAuthCallbacksController < ApplicationController
+  inertia_config convert_external_redirects: false
+end
+```
+
+> [!NOTE]
+> The origin comparison relies on the request scheme as Rails sees it (`X-Forwarded-Proto` is honored, as it is everywhere in Rails). If your app is behind a proxy, make sure it forwards this header — otherwise every absolute `https://` redirect to your own host will look cross-origin and trigger a full page visit.
 
 ### `flash_keys`
 
