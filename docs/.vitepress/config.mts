@@ -127,6 +127,7 @@ export default withMermaid({
             { text: 'Optimistic updates', link: '/guide/optimistic-updates' },
             { text: 'File uploads', link: '/guide/file-uploads' },
             { text: 'Validation', link: '/guide/validation' },
+            { text: 'Precognition', link: '/guide/precognition' },
             { text: 'Layouts', link: '/guide/layouts' },
             { text: 'View transitions', link: '/guide/view-transitions' },
           ],

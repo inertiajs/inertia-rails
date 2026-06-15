@@ -1017,9 +1017,9 @@ export default ({ users }) => {
   return (
     <InfiniteScroll
       data="users"
-      itemsElement={() => tableBody.current}
-      startElement={() => tableHeader.current}
-      endElement={() => tableFooter.current}
+      itemsElement={tableBody}
+      startElement={tableHeader}
+      endElement={tableFooter}
     >
       <table>
         <thead ref={tableHeader}>
