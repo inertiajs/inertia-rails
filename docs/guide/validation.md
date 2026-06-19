@@ -184,3 +184,7 @@ So, the only work remaining is to display any validation errors using the `error
 > - The [form helper](/guide/forms.md) automatically scopes validation errors to each form instance
 >
 > If you have multiple forms on a page, use the `useForm()` helper and each form will maintain its own isolated error state.
+
+## Precognition
+
+Inertia Rails supports [Precognition](/guide/precognition) for real-time, server-driven validation without executing the full controller action. See the [Precognition guide](/guide/precognition) for setup instructions.

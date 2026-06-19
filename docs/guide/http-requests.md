@@ -602,6 +602,9 @@ http.post('/api/users', {
 
 The `useHttp` hook supports Precognition for real-time validation. Enable it by chaining `withPrecognition()` with the HTTP method and validation endpoint.
 
+> [!NOTE]
+> Precognition requires server-side support. See the [Precognition guide](/guide/precognition) for Rails setup instructions.
+
 :::tabs key:frameworks
 
 == Vue

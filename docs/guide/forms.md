@@ -1025,7 +1025,7 @@ The context provides access to all the same properties and methods available thr
 The `<Form>` component includes built-in support for Precognition, enabling real-time form validation without duplicating your server-side validation rules on the client.
 
 > [!NOTE]
-> Precognition requires server-side support. See the [precognition section](/guide/validation.md#precognition) of the validation documentation for Rails setup instructions.
+> Precognition requires server-side support. See the [Precognition guide](/guide/precognition) for Rails setup instructions.
 
 Once your server is configured, call `validate()` with a field name to trigger validation for that field. The `invalid()` helper checks if a field has validation errors, while `validating` indicates when a request is in progress.
 
@@ -2170,7 +2170,7 @@ form.dontRemember('password', 'password_confirmation')
 Just like the `<Form>` component, the `useForm` helper supports [Precognition](#precognition) for real-time validation. You may enable it by chaining the `withPrecognition()` method with the HTTP method and endpoint for validation requests.
 
 > [!NOTE]
-> Precognition requires server-side support. See the [precognition section](/guide/validation.md#precognition) of the validation documentation for Rails setup instructions.
+> Precognition requires server-side support. See the [Precognition guide](/guide/precognition) for Rails setup instructions.
 
 :::tabs key:frameworks
 
