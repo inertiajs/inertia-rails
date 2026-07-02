@@ -83,7 +83,7 @@ module InertiaRails
     end
 
     def redirect_to(options = {}, response_options = {})
-      capture_inertia_session_options(response_options)
+      capture_inertia_redirect_options(response_options)
       super
     end
 
@@ -188,8 +188,10 @@ module InertiaRails
       result.symbolize_keys
     end
 
-    def capture_inertia_session_options(options)
+    def capture_inertia_redirect_options(options)
       return unless (inertia = options[:inertia])
+
+      request.env['inertia_rails.full_page_redirect'] = true if inertia[:full_page]
 
       if (inertia_errors = inertia[:errors])
         if inertia_errors.respond_to?(:to_hash)

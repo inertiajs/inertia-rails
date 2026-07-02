@@ -207,6 +207,8 @@ Whether to automatically convert redirects to external (cross-origin) URLs into 
 
 Browsers follow XHR redirects transparently, so the Inertia client can never see a redirect to another origin — the follow-up request to the external URL fails CORS checks. Converting the redirect lets the client perform a full `window.location` visit instead. See [external redirects](/guide/redirects#external-redirects).
 
+Same-origin redirects are never converted automatically — mark them with [`inertia: { full_page: true }`](/guide/redirects#same-origin-redirects) when the target is not an Inertia endpoint.
+
 Set to `false` to keep plain redirect responses untouched (for example, if your test suite asserts `302` responses for external redirects). The conversion can also be disabled for a specific controller:
 
 ```ruby

@@ -25,8 +25,9 @@ module InertiaRails
                                 end
         request = ActionDispatch::Request.new(@env)
 
-        external_redirect = convertible_external_redirect?(status, headers, request)
-        convert_redirect = external_redirect && inertia_request?
+        convertible_redirect = convertible_external_redirect?(status, headers, request) ||
+                               full_page_redirect?(status, headers)
+        convert_redirect = convertible_redirect && inertia_request?
 
         # Inertia session data is added via redirect_to
         # Guard with session.loaded? to avoid forcing session I/O (and unnecessary
@@ -46,7 +47,7 @@ module InertiaRails
         elsif stale_inertia_get?
           force_refresh(request)
         else
-          add_vary_header(headers) if external_redirect || inertia_location_response?(status, headers)
+          add_vary_header(headers) if convertible_redirect || inertia_location_response?(status, headers)
           [status, headers, body]
         end
       end
@@ -166,6 +167,15 @@ module InertiaRails
 
       def inertia_location_response?(status, headers)
         status == 409 && headers['X-Inertia-Location'].present?
+      end
+
+      # Same-origin redirects to non-Inertia endpoints cannot be detected
+      # automatically; `redirect_to url, inertia: { full_page: true }` marks
+      # them for conversion explicitly.
+      def full_page_redirect?(status, headers)
+        convertible_redirect_status?(status) &&
+          headers['Location'].present? &&
+          @env['inertia_rails.full_page_redirect'].present?
       end
 
       # The response differs for Inertia and plain clients at the same URL, so

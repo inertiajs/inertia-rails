@@ -290,6 +290,40 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
     end
   end
 
+  context 'a same-origin redirect marked with inertia: { full_page: true }' do
+    context 'with an inertia request' do
+      it 'converts the redirect to a conflict response with the location header' do
+        get full_page_redirect_test_path, headers: { 'X-Inertia' => true }
+
+        expect(response.status).to eq 409
+        expect(response.headers['X-Inertia-Location']).to eq empty_test_url
+        expect(response.headers['Location']).to be_nil
+        expect(response.headers['Vary']).to include 'X-Inertia'
+      end
+
+      context 'when automatic conversion is disabled' do
+        with_inertia_config convert_external_redirects: false
+
+        it 'still converts the redirect' do
+          get full_page_redirect_test_path, headers: { 'X-Inertia' => true }
+
+          expect(response.status).to eq 409
+          expect(response.headers['X-Inertia-Location']).to eq empty_test_url
+        end
+      end
+    end
+
+    context 'with a non-inertia request' do
+      it 'redirects normally, marked as varying on X-Inertia' do
+        get full_page_redirect_test_path
+
+        expect(response.status).to eq 302
+        expect(response.headers['Location']).to eq empty_test_url
+        expect(response.headers['Vary']).to include 'X-Inertia'
+      end
+    end
+  end
+
   context 'a redirect status was passed with an http method that preserves itself on 302 redirect' do
     subject { response.status }
 

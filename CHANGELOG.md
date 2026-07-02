@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add static `props:` support to the `inertia` routes helper: `inertia 'about' => 'About', props: { title: 'About us' }` (@skryukov)
 * Deduplicate `X-Inertia` in the `Vary` response header (@skryukov)
 * Automatically convert external (cross-origin) redirects to Inertia location responses (`409 Conflict` + `X-Inertia-Location`) for Inertia requests. Can be disabled with `config.convert_external_redirects = false` (@skryukov)
+* Add `redirect_to url, inertia: { full_page: true }` option to convert a same-origin redirect into an Inertia location response, for redirects to non-Inertia endpoints (@skryukov)
 * Fix `inertia_location` to perform a regular redirect for non-Inertia requests instead of always responding with `409 Conflict` (@skryukov)
 
 ## [3.21.2] - 2026-06-09

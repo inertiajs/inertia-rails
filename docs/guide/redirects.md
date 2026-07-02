@@ -68,11 +68,15 @@ redirect_to article_path(article), inertia: { preserve_fragment: true }
 
 ## External Redirects
 
-Sometimes it's necessary to redirect to an external website, or even another non-Inertia endpoint in your app while handling an Inertia request.
+Sometimes it's necessary to redirect outside of your Inertia app: to another website, or to a non-Inertia endpoint in your own app. These destinations can't be visited as Inertia pages — the client has to leave the SPA with a full `window.location` visit. The server triggers that visit by responding with an Inertia location response: `409 Conflict` with the destination URL in the `X-Inertia-Location` header.
+
+Inertia Rails generates these responses in two ways: automatically for cross-origin redirects, and explicitly for same-origin redirects marked with `inertia: { full_page: true }`.
+
+### Cross-Origin Redirects
 
 @available_since rails=master
 
-A regular redirect works out of the box: Inertia Rails automatically converts redirects to external (cross-origin) URLs into Inertia location responses (`409 Conflict` with the destination URL in the `X-Inertia-Location` header) for Inertia requests. When this response is received client-side, Inertia will automatically perform a `window.location = url` visit.
+A regular redirect to another origin works out of the box — Inertia Rails automatically converts it into an Inertia location response for Inertia requests:
 
 ```ruby
 redirect_to 'https://checkout.stripe.com/session_123', allow_other_host: true
@@ -84,17 +88,38 @@ The conversion applies to `301`, `302`, and `303` responses. Method-preserving `
 
 You can disable this behavior with the [`convert_external_redirects`](/guide/configuration#convert_external_redirects) configuration option.
 
+### Same-Origin Redirects
+
+@available_since rails=master
+
+Redirects to a non-Inertia endpoint on the same origin can't be converted automatically: a `Location` header doesn't reveal whether its target renders an Inertia page, and converting every same-origin redirect would turn regular Inertia navigation into full page loads. A plain `redirect_to` fails differently here — the browser follows the redirect transparently, the non-Inertia endpoint responds without the `X-Inertia` header, and the client rejects it as an invalid Inertia response.
+
+Mark such redirects explicitly with `inertia: { full_page: true }`:
+
+```ruby
+redirect_to admin_path, inertia: { full_page: true }
+```
+
+For Inertia requests, the redirect is converted into an Inertia location response, even when `convert_external_redirects` is disabled. For non-Inertia requests, it stays a regular redirect.
+
+> [!TIP]
+> If a whole section of your app is non-Inertia, you can guard it on the target side instead, so that any Inertia request that reaches it — through a followed redirect or a stale link — is bounced into a full page visit:
+>
+> ```ruby
+> class NonInertiaBaseController < ApplicationController
+>   before_action -> { inertia_location(request.original_url) if request.inertia? }
+> end
+> ```
+
 ### `inertia_location`
 
-On older versions of Inertia Rails, or with automatic conversion disabled, use the `inertia_location` method, which generates the Inertia location response directly:
+On older versions of Inertia Rails, use the `inertia_location` method, which generates the Inertia location response directly:
 
 ```ruby
 inertia_location 'https://checkout.stripe.com/session_123'
 ```
 
 For Inertia requests, it generates a `409 Conflict` response with the destination URL in the `X-Inertia-Location` header; for non-Inertia requests (for example, a direct browser visit to the same endpoint), it performs a regular redirect.
-
-`inertia_location` is also the way to force a full `window.location` visit to a **same-origin** URL (for example, a non-Inertia endpoint in your app), since automatic conversion deliberately leaves same-origin redirects untouched.
 
 > [!WARNING]
 > `inertia_location` bypasses Rails' open redirect protection. Only pass trusted URLs to it, and don't redirect to user-provided URLs.
