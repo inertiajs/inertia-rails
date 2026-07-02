@@ -23,23 +23,21 @@ RSpec.describe 'InertiaRails::Response', type: :request do
     end
 
     context 'with a non-inertia request' do
-      it 'redirects to the url without a Vary header (same-origin, not cacheable)' do
+      it 'redirects to the url' do
         get my_location_path
 
         expect(response.status).to eq 302
         expect(response.headers['Location']).to eq empty_test_url
         expect(response.headers['X-Inertia-Location']).to be_nil
-        expect(response.headers['Vary'].to_s).not_to include 'X-Inertia'
+        expect(response.headers['Vary']).to be_nil
       end
 
-      it 'redirects to an external url with a single Vary header from the middleware' do
+      it 'redirects to an external url with a single Vary header' do
         get my_external_location_path
 
         expect(response.status).to eq 302
         expect(response.headers['Location']).to eq 'http://external-website.com/some_path'
         expect(response.headers['X-Inertia-Location']).to be_nil
-        # The middleware marks the external redirect; the controller must not also
-        # set it, or the header would read "X-Inertia, X-Inertia".
         expect(response.headers['Vary']).to eq 'X-Inertia'
       end
     end

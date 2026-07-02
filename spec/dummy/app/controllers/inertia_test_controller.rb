@@ -48,8 +48,12 @@ class InertiaTestController < ApplicationController
     redirect_to 'http://external-website.com/some_path', allow_other_host: true, inertia: { errors: { uh: 'oh' } }
   end
 
+  def external_redirect_with_vary_test
+    response.headers['Vary'] = 'Accept'
+    redirect_to 'http://external-website.com/some_path', allow_other_host: true
+  end
+
   def location_header_test
-    response.headers['Vary'] = params[:vary] if params[:vary].present?
     head (params[:status] || 302).to_i, location: params[:url]
   end
 

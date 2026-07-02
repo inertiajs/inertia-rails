@@ -38,12 +38,13 @@ Rails.application.routes.draw do
   patch 'external_redirect_test' => 'inertia_test#external_redirect_test'
   delete 'external_redirect_test' => 'inertia_test#external_redirect_test'
   get 'external_redirect_with_cookie_test' => 'inertia_test#external_redirect_with_cookie_test'
+  get 'external_redirect_with_vary_test' => 'inertia_test#external_redirect_with_vary_test'
   post 'external_redirect_with_inertia_errors_test' => 'inertia_test#external_redirect_with_inertia_errors_test'
   get 'opt_out_external_redirect_test' => 'inertia_conversion_opt_out#external_redirect_test'
   get 'same_origin_redirect_test' => 'inertia_test#same_origin_redirect_test'
   get 'secure_same_host_redirect_test' => 'inertia_test#secure_same_host_redirect_test'
   get 'location_header_test' => 'inertia_test#location_header_test'
-  get 'route_level_redirect_test', to: redirect('http://external-website.com/some_path')
+  get 'route_level_redirect_test' => redirect('http://external-website.com/some_path')
   get 'share_multithreaded' => 'inertia_multithreaded_share#share_multithreaded'
   get 'share_multithreaded_error' => 'inertia_multithreaded_share#share_multithreaded_error'
   get 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'

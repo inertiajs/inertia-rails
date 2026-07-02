@@ -80,7 +80,7 @@ For non-Inertia requests (for example, a direct browser visit to the same endpoi
 
 ### Automatic Conversion
 
-@available_since rails=master
+@available_since rails=3.22.0
 
 Inertia Rails automatically converts redirects to external (cross-origin) URLs into Inertia location responses for Inertia requests, so a plain `redirect_to` to another origin works out of the box:
 

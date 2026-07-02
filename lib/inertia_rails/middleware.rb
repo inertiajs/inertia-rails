@@ -11,11 +11,6 @@ module InertiaRails
     end
 
     class InertiaRailsRequest
-      # 301/302/303 carry a Location we can rewrite into a 409 location response.
-      # Method-preserving 307/308 are excluded: a `window.location` visit cannot
-      # preserve the original HTTP method.
-      CONVERTIBLE_REDIRECT_STATUSES = [301, 302, 303].freeze
-
       def initialize(app, env)
         @app = app
         @env = env
@@ -30,11 +25,7 @@ module InertiaRails
                                 end
         request = ActionDispatch::Request.new(@env)
 
-        # Computed without the `inertia_request?` gate so the plain-client branch
-        # below can reuse it to mark the 3xx as varying on `X-Inertia`.
         external_redirect = convertible_external_redirect?(status, headers, request)
-        # A converted external redirect behaves like `inertia_location`: the
-        # client navigates away, so Inertia session options must not outlive it.
         convert_redirect = external_redirect && inertia_request?
 
         # Inertia session data is added via redirect_to
@@ -55,7 +46,7 @@ module InertiaRails
         elsif stale_inertia_get?
           force_refresh(request)
         else
-          add_inertia_vary!(headers) if external_redirect
+          InertiaRails.add_vary_header(headers) if external_redirect
           [status, headers, body]
         end
       end
@@ -80,6 +71,12 @@ module InertiaRails
       # follow, and 307/308 preserve the request method by design.
       def convertible_redirect_status?(status)
         [301, 302].include? status
+      end
+
+      # Method-preserving 307/308 are excluded: a `window.location` visit
+      # cannot preserve the original HTTP method.
+      def convertible_redirect_status?(status)
+        [301, 302, 303].include? status
       end
 
       def non_get_redirectable_method?
@@ -132,7 +129,7 @@ module InertiaRails
       # the Inertia location response (409 + X-Inertia-Location), which makes
       # the client perform a full `window.location` visit.
       def convertible_external_redirect?(status, headers, request)
-        CONVERTIBLE_REDIRECT_STATUSES.include?(status) &&
+        convertible_redirect_status?(status) &&
           convert_external_redirects? &&
           external_origin?(headers['Location'], request)
       end
@@ -163,16 +160,8 @@ module InertiaRails
         headers.delete('Content-Length')
         body.close if body.respond_to?(:close)
 
-        add_inertia_vary!(headers)
+        InertiaRails.add_vary_header(headers)
         [409, headers, []]
-      end
-
-      # The response varies on the X-Inertia request header (e.g. a 3xx for a
-      # plain client vs the converted 409), so a shared cache must not serve one
-      # client's variant to the other.
-      def add_inertia_vary!(headers)
-        existing = headers['Vary']
-        headers['Vary'] = existing.blank? ? 'X-Inertia' : "#{existing}, X-Inertia"
       end
 
       def force_refresh(request)

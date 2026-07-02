@@ -201,7 +201,7 @@ This is useful for applications that serve Inertia pages through a CDN or rely o
 **Default**: `true`
 **ENV**: `INERTIA_CONVERT_EXTERNAL_REDIRECTS`
 
-@available_since rails=master
+@available_since rails=3.22.0
 
 Whether to automatically convert redirects to external (cross-origin) URLs into Inertia location responses (`409 Conflict` with the `X-Inertia-Location` header) for Inertia requests.
 

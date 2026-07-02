@@ -103,6 +103,14 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
         expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
       end
 
+      it 'converts a see-other (303) redirect' do
+        get location_header_test_path(url: 'http://external-website.com/some_path', status: 303),
+            headers: { 'X-Inertia' => true }
+
+        expect(response.status).to eq 409
+        expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
+      end
+
       it 'converts a redirect to the same host on a different port' do
         get location_header_test_path(url: 'http://www.example.com:8080/empty_test'),
             headers: { 'X-Inertia' => true }
@@ -133,25 +141,13 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
         expect(response.headers['X-Inertia-Location']).to eq '//external-website.com/some_path'
       end
 
-      it 'converts a PUT redirect to 409 instead of 303' do
-        put external_redirect_test_path, headers: { 'X-Inertia' => true }
+      %w[put patch delete].each do |method|
+        it "converts a #{method.upcase} redirect to 409 instead of 303" do
+          public_send method, external_redirect_test_path, headers: { 'X-Inertia' => true }
 
-        expect(response.status).to eq 409
-        expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
-      end
-
-      it 'converts a PATCH redirect to 409 instead of 303' do
-        patch external_redirect_test_path, headers: { 'X-Inertia' => true }
-
-        expect(response.status).to eq 409
-        expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
-      end
-
-      it 'converts a DELETE redirect to 409 instead of 303' do
-        delete external_redirect_test_path, headers: { 'X-Inertia' => true }
-
-        expect(response.status).to eq 409
-        expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
+          expect(response.status).to eq 409
+          expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
+        end
       end
 
       it 'does not keep inertia session options, matching inertia_location semantics' do
@@ -225,8 +221,7 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
       end
 
       it 'appends to an existing Vary header rather than replacing it' do
-        get location_header_test_path(url: 'http://external-website.com/some_path', vary: 'Accept'),
-            headers: { 'X-Inertia' => true }
+        get external_redirect_with_vary_test_path, headers: { 'X-Inertia' => true }
 
         expect(response.status).to eq 409
         expect(response.headers['Vary']).to eq 'Accept, X-Inertia'
@@ -278,7 +273,7 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
 
         expect(response.status).to eq 302
         expect(response.headers['Location']).to eq empty_test_url
-        expect(response.headers['Vary'].to_s).not_to include 'X-Inertia'
+        expect(response.headers['Vary']).to be_nil
       end
 
       context 'when conversion is disabled' do
@@ -289,7 +284,7 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
 
           expect(response.status).to eq 302
           expect(response.headers['Location']).to eq 'http://external-website.com/some_path'
-          expect(response.headers['Vary'].to_s).not_to include 'X-Inertia'
+          expect(response.headers['Vary']).to be_nil
         end
       end
     end
