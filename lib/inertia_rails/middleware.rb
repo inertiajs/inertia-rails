@@ -46,7 +46,7 @@ module InertiaRails
         elsif stale_inertia_get?
           force_refresh(request)
         else
-          InertiaRails.add_vary_header(headers) if external_redirect
+          add_vary_header(headers) if external_redirect || inertia_location_response?(status, headers)
           [status, headers, body]
         end
       end
@@ -160,8 +160,21 @@ module InertiaRails
         headers.delete('Content-Length')
         body.close if body.respond_to?(:close)
 
-        InertiaRails.add_vary_header(headers)
+        add_vary_header(headers)
         [409, headers, []]
+      end
+
+      def inertia_location_response?(status, headers)
+        status == 409 && headers['X-Inertia-Location'].present?
+      end
+
+      # The response differs for Inertia and plain clients at the same URL, so
+      # a shared cache must not serve one client's variant to the other.
+      def add_vary_header(headers)
+        vary = headers['Vary'].to_s.split(',').map(&:strip)
+        return if vary.any? { |token| token.casecmp?('X-Inertia') }
+
+        headers['Vary'] = [*vary, 'X-Inertia'].join(', ')
       end
 
       def force_refresh(request)

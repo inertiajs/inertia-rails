@@ -66,15 +66,6 @@ module InertiaRails
       @deprecator ||= ActiveSupport::Deprecation.new
     end
 
-    # Marks a response as varying on the X-Inertia request header, so a shared
-    # cache never serves an Inertia variant to a plain client or vice versa.
-    def add_vary_header(headers) # :nodoc:
-      vary = headers['Vary'].to_s.split(',').map(&:strip)
-      return if vary.any? { |token| token.casecmp?('X-Inertia') }
-
-      headers['Vary'] = [*vary, 'X-Inertia'].join(', ')
-    end
-
     def lazy(value = nil, &block)
       LazyProp.new(value, &block)
     end

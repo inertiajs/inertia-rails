@@ -68,21 +68,11 @@ redirect_to article_path(article), inertia: { preserve_fragment: true }
 
 ## External Redirects
 
-Sometimes it's necessary to redirect to an external website, or even another non-Inertia endpoint in your app while handling an Inertia request. This can be accomplished using a server-side initiated `window.location` visit via the `inertia_location` method.
+Sometimes it's necessary to redirect to an external website, or even another non-Inertia endpoint in your app while handling an Inertia request.
 
-```ruby
-inertia_location index_path
-```
+@available_since rails=master
 
-For Inertia requests, the `inertia_location` method will generate a `409 Conflict` response and include the destination URL in the `X-Inertia-Location` header. When this response is received client-side, Inertia will automatically perform a `window.location = url` visit.
-
-For non-Inertia requests (for example, a direct browser visit to the same endpoint), the `inertia_location` method performs a regular redirect to the given URL.
-
-### Automatic Conversion
-
-@available_since rails=3.22.0
-
-Inertia Rails automatically converts redirects to external (cross-origin) URLs into Inertia location responses for Inertia requests, so a plain `redirect_to` to another origin works out of the box:
+A regular redirect works out of the box: Inertia Rails automatically converts redirects to external (cross-origin) URLs into Inertia location responses (`409 Conflict` with the destination URL in the `X-Inertia-Location` header) for Inertia requests. When this response is received client-side, Inertia will automatically perform a `window.location = url` visit.
 
 ```ruby
 redirect_to 'https://checkout.stripe.com/session_123', allow_other_host: true
@@ -93,6 +83,18 @@ Without the conversion, such a redirect can never succeed: the browser follows X
 The conversion applies to `301`, `302`, and `303` responses. Method-preserving `307` and `308` redirects are left untouched, since a `window.location` visit cannot preserve the HTTP method. It applies to all Inertia requests, including background ones such as polling and prefetching.
 
 You can disable this behavior with the [`convert_external_redirects`](/guide/configuration#convert_external_redirects) configuration option.
+
+### `inertia_location`
+
+On older versions of Inertia Rails, or with automatic conversion disabled, use the `inertia_location` method, which generates the Inertia location response directly:
+
+```ruby
+inertia_location 'https://checkout.stripe.com/session_123'
+```
+
+For Inertia requests, it generates a `409 Conflict` response with the destination URL in the `X-Inertia-Location` header; for non-Inertia requests (for example, a direct browser visit to the same endpoint), it performs a regular redirect.
+
+`inertia_location` is also the way to force a full `window.location` visit to a **same-origin** URL (for example, a non-Inertia endpoint in your app), since automatic conversion deliberately leaves same-origin redirects untouched.
 
 > [!WARNING]
 > `inertia_location` bypasses Rails' open redirect protection. Only pass trusted URLs to it, and don't redirect to user-provided URLs.

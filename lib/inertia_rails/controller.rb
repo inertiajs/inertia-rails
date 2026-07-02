@@ -170,7 +170,6 @@ module InertiaRails
 
     def inertia_location(url)
       if request.inertia?
-        InertiaRails.add_vary_header(headers)
         headers['X-Inertia-Location'] = url
         head :conflict
       else
