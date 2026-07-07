@@ -94,7 +94,9 @@ module InertiaRails
 
     def tag_digest
       signature = @tag_data.sort.map { |k, v| "#{k}=#{v}" }.join('&')
-      Digest::MD5.hexdigest(signature)[0, 8]
+      # SHA256 instead of MD5: head keys are not security-sensitive, but MD5
+      # raises on FIPS-enabled Rubies.
+      Digest::SHA256.hexdigest(signature)[0, 8]
     end
 
     def generate_meta_head_key

@@ -63,7 +63,7 @@ RSpec.describe InertiaRails::MetaTag do
   describe 'generated head keys' do
     it 'generates a headKey of the format {tag name}-{hexdigest of tag content}' do
       meta_tag = described_class.new(some_name: 'description', content: 'Inertia rules')
-      expected_head_key = "meta-#{Digest::MD5.hexdigest('content=Inertia rules&some_name=description')[0, 8]}"
+      expected_head_key = "meta-#{Digest::SHA256.hexdigest('content=Inertia rules&some_name=description')[0, 8]}"
 
       expect(meta_tag.as_json[:headKey]).to eq(expected_head_key)
     end
@@ -116,7 +116,7 @@ RSpec.describe InertiaRails::MetaTag do
     context 'with allow_duplicates set to true' do
       it 'generates a head key with a unique suffix' do
         meta_tag = described_class.new(name: 'description', content: 'Inertia rules', allow_duplicates: true)
-        expected_hash = Digest::MD5.hexdigest('content=Inertia rules&name=description')[0, 8]
+        expected_hash = Digest::SHA256.hexdigest('content=Inertia rules&name=description')[0, 8]
 
         expect(meta_tag.as_json[:headKey]).to eq("meta-name-description-#{expected_hash}")
       end
