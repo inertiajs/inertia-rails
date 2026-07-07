@@ -36,9 +36,13 @@ module InertiaRails
       end
     end
 
-    def to_tag(tag_helper)
-      inertia_attribute_name = InertiaRails.configuration.use_data_inertia_head_attribute ? :'data-inertia' : :inertia
-      data = @tag_data.merge(type: @tag_type, inertia_attribute_name => @head_key)
+    # `inertia_attribute` falls back to the global configuration for backwards
+    # compatibility — callers with access to a controller should pass the
+    # controller-bound `inertia_configuration.head_attribute` instead.
+    def to_tag(tag_helper = nil, inertia_attribute: nil)
+      tag_helper ||= ActionController::Base.helpers.tag
+      inertia_attribute ||= InertiaRails.configuration.head_attribute
+      data = @tag_data.merge(type: @tag_type, inertia_attribute => @head_key)
 
       inner_content =
         if @tag_name == :script

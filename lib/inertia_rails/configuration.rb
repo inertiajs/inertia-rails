@@ -164,6 +164,11 @@ module InertiaRails
             "Expected one of: #{XSRF_COOKIE_REFRESH_OPTIONS.map(&:inspect).join(', ')}"
     end
 
+    # HTML attribute used to mark Inertia-managed `<head>` elements.
+    def head_attribute
+      use_data_inertia_head_attribute ? :'data-inertia' : :inertia
+    end
+
     OPTION_NAMES.each do |option|
       unless method_defined?(option)
         define_method(option) do

@@ -72,6 +72,19 @@ RSpec.describe 'Inertia configuration', type: :request do
         end
       end
     end
+
+    describe '#head_attribute' do
+      it 'defaults to :inertia' do
+        expect(InertiaRails::Configuration.default.head_attribute).to eq :inertia
+      end
+
+      it 'returns :"data-inertia" when use_data_inertia_head_attribute is enabled' do
+        config = InertiaRails::Configuration.default
+        config.use_data_inertia_head_attribute = true
+
+        expect(config.head_attribute).to eq :'data-inertia'
+      end
+    end
   end
 
   describe 'inertia_config' do

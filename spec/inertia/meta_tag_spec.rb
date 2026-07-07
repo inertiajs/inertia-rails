@@ -130,6 +130,27 @@ RSpec.describe InertiaRails::MetaTag do
       expect(tag).to eq('<meta name="description" content="Inertia rules" inertia="meta-12345678">')
     end
 
+    it 'defaults to a standalone tag builder when no helper is given' do
+      tag = meta_tag.to_tag
+      expect(tag).to eq('<meta name="description" content="Inertia rules" inertia="meta-12345678">')
+    end
+
+    context 'with an explicit inertia_attribute' do
+      it 'marks the tag with the given attribute' do
+        tag = meta_tag.to_tag(tag_helper, inertia_attribute: :'data-inertia')
+        expect(tag).to eq('<meta name="description" content="Inertia rules" data-inertia="meta-12345678">')
+      end
+
+      context 'when the global configuration says otherwise' do
+        with_inertia_config use_data_inertia_head_attribute: true
+
+        it 'takes precedence over the global configuration' do
+          tag = meta_tag.to_tag(tag_helper, inertia_attribute: :inertia)
+          expect(tag).to eq('<meta name="description" content="Inertia rules" inertia="meta-12345678">')
+        end
+      end
+    end
+
     it 'renders kebab case' do
       meta_tag = described_class.new(tag_name: :meta, head_key: dummy_head_key, http_equiv: 'X-UA-Compatible',
                                      content: 'IE=edge')
