@@ -106,6 +106,7 @@ module InertiaRails
     def initialize(controller: nil, **attrs)
       @controller = controller
       @options = attrs.extract!(*OPTION_NAMES)
+      validate_options!
 
       return if attrs.empty?
 
@@ -175,6 +176,18 @@ module InertiaRails
     end
 
     private
+
+    # Validate enum-style options eagerly so a bad value (from `inertia_config`,
+    # `InertiaRails.configure`, or an ENV variable) fails at configuration time
+    # instead of raising in an after_action on every live request.
+    def validate_options!
+      return unless @options.key?(:xsrf_cookie_refresh)
+
+      value = @options[:xsrf_cookie_refresh]
+      return if value.respond_to?(:call)
+
+      @options[:xsrf_cookie_refresh] = normalize_xsrf_cookie_refresh(value)
+    end
 
     def evaluate_option(value)
       return value unless value.respond_to?(:call)
