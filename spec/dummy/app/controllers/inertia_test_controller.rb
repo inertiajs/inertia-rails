@@ -41,6 +41,12 @@ class InertiaTestController < ApplicationController
     head 200
   end
 
+  def http_cache_test
+    fresh_when etag: 'v1'
+
+    head :ok unless performed?
+  end
+
   def inertia_partial_request_test
     if request.inertia_partial?
       head 202
