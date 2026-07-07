@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Fix cross-variant `304 Not Modified` poisoning under HTTP conditional caching (`fresh_when` / `stale?`): the HTML page, the Inertia JSON page, and partial reloads at the same URL now get distinct ETags, so a conditional request can no longer receive a `304` backed by another representation's body. Non-Inertia ETags are unchanged (@skryukov)
 * Add `xsrf_cookie_refresh` configuration option. Set to `:lazy` to skip rewriting the `XSRF-TOKEN` cookie on safe requests when a valid cookie is already present, keeping conditionally cached (`ETag`/`304`) responses free of `Set-Cookie` churn (@darkamenosa)
 * Add `@inertiajs/core` as a direct dev dependency in the TypeScript install generator, so pnpm exposes the adapter types that `globals.d.ts` augments (@heyrobertchang)
 

@@ -11,6 +11,11 @@ module InertiaRails
         InertiaRails::Current.request = request
       end
 
+      # Split the conditional-GET validator by request representation: the same
+      # URL answers as HTML, Inertia JSON, or a partial reload (different bodies)
+      # that would otherwise share one ETag. Like Rails' own `etag { flash }`.
+      etag { inertia_conditional_get_variant }
+
       after_action do
         next unless protect_against_forgery?
         next if XsrfCookieRefreshPolicy.skip?(self)
@@ -113,6 +118,19 @@ module InertiaRails
       return {} unless @_inertia_instance_props
 
       view_assigns.except(*@_inertia_skip_props)
+    end
+
+    # nil for non-Inertia requests (compacted out of the ETag, so plain-request
+    # ETags are unchanged); otherwise a value unique to the representation.
+    def inertia_conditional_get_variant
+      return unless request.inertia?
+
+      partial = [
+        request.get_header('HTTP_X_INERTIA_PARTIAL_COMPONENT'),
+        request.get_header('HTTP_X_INERTIA_PARTIAL_DATA'),
+        request.get_header('HTTP_X_INERTIA_PARTIAL_EXCEPT')
+      ]
+      partial.any? ? ['inertia', *partial] : 'inertia'
     end
 
     # Rails < 8: _normalize_options overwrites :layout with a resolved default,
