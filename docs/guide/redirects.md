@@ -113,13 +113,13 @@ For Inertia requests, the redirect is converted into an Inertia location respons
 
 ### `inertia_location`
 
-On older versions of Inertia Rails, use the `inertia_location` method, which generates the Inertia location response directly:
+On older versions of Inertia Rails, where the automatic conversion above is not available, use the `inertia_location` method, which generates the Inertia location response directly:
 
 ```ruby
 inertia_location 'https://checkout.stripe.com/session_123'
 ```
 
-For Inertia requests, it generates a `409 Conflict` response with the destination URL in the `X-Inertia-Location` header; for non-Inertia requests (for example, a direct browser visit to the same endpoint), it performs a regular redirect.
+For Inertia requests, it generates a `409 Conflict` response with the destination URL in the `X-Inertia-Location` header. For non-Inertia requests (for example, a direct browser visit to the same endpoint), it performs a regular redirect — on older versions of Inertia Rails, it responds with `409 Conflict` regardless of the request type.
 
 > [!WARNING]
 > `inertia_location` bypasses Rails' open redirect protection. Only pass trusted URLs to it, and don't redirect to user-provided URLs.
