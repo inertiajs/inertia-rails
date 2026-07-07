@@ -25,6 +25,7 @@ module InertiaRails
       @_once = {}
       @_scroll = {}
       @_rescued = []
+      @_streams = {}
 
       props = expand_dot_notation(@props)
       resolved = deep_transform_props(props)
@@ -73,6 +74,7 @@ module InertiaRails
       metadata[:matchPropsOn] = @_match_on unless @_match_on.empty?
       metadata[:onceProps] = @_once unless @_once.empty?
       metadata[:rescuedProps] = @_rescued unless @_rescued.empty?
+      (metadata[:rails] ||= {})[:streams] = @_streams unless @_streams.empty?
 
       metadata
     end
@@ -175,6 +177,7 @@ module InertiaRails
       collect_deferred_metadata(prop, path)
       collect_merge_metadata(prop, path)
       collect_once_metadata(prop, path)
+      collect_live_metadata(prop, path)
     end
 
     def collect_deferred_metadata(prop, path)
@@ -216,6 +219,14 @@ module InertiaRails
 
       once_key = (prop.once_key || path).to_s
       @_once[once_key] = { prop: path, expiresAt: prop.expires_at }.compact
+    end
+
+    def collect_live_metadata(prop, path)
+      return unless prop.try(:live?)
+
+      unsigned = InertiaRails::StreamName.stream_name_from(prop.streamable)
+      signed = (@_stream_name_cache ||= {})[unsigned] ||= InertiaRails.signed_stream_verifier.generate(unsigned)
+      (@_streams[signed] ||= { props: [] })[:props] << path
     end
 
     def rendering_partial_component?

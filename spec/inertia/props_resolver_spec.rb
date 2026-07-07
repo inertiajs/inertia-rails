@@ -1188,4 +1188,73 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props][:errors]).to eq({ email: 'required' })
     end
   end
+
+  describe 'LiveProp' do
+    let(:verifier) { ActiveSupport::MessageVerifier.new('test-key', digest: 'SHA256', serializer: JSON) }
+
+    before do
+      allow(InertiaRails).to receive(:signed_stream_verifier).and_return(verifier)
+    end
+
+    it 'resolves the live prop value normally' do
+      page = resolve({ tasks: InertiaRails.live(:project) { [{ id: 1 }] } })
+
+      expect(page[:props][:tasks]).to eq([{ id: 1 }])
+    end
+
+    it 'collects streams metadata' do
+      page = resolve({ tasks: InertiaRails.live(:project) { [{ id: 1 }] } })
+
+      expect(page.dig(:rails, :streams)).to be_a(Hash)
+      expect(page.dig(:rails, :streams).size).to eq(1)
+
+      signed_name, stream_data = page.dig(:rails, :streams).first
+      expect(verifier.verified(signed_name)).to eq('project')
+      expect(stream_data).to eq({ props: ['tasks'] })
+    end
+
+    it 'groups props sharing the same stream' do
+      page = resolve({
+        tasks: InertiaRails.live(:project) { [{ id: 1 }] },
+        members: InertiaRails.live(:project) { [{ id: 2 }] },
+      })
+
+      expect(page.dig(:rails, :streams).size).to eq(1)
+
+      _signed_name, stream_data = page.dig(:rails, :streams).first
+      expect(stream_data[:props]).to contain_exactly('tasks', 'members')
+    end
+
+    it 'collects multiple distinct streams' do
+      page = resolve({
+        tasks: InertiaRails.live(:project) { [{ id: 1 }] },
+        messages: InertiaRails.live(:chat) { [{ id: 2 }] },
+      })
+
+      expect(page.dig(:rails, :streams).size).to eq(2)
+    end
+
+    it 'collects live metadata alongside merge metadata' do
+      page = resolve({ tasks: InertiaRails.live(:project, merge: true) { [{ id: 1 }] } })
+
+      expect(page.dig(:rails, :streams)).to be_present
+      expect(page[:mergeProps]).to include('tasks')
+    end
+
+    it 'does not include streams metadata when no live props exist' do
+      page = resolve({ tasks: -> { [{ id: 1 }] } })
+
+      expect(page).not_to have_key(:rails)
+    end
+
+    it 'handles nested live props' do
+      page = resolve({ feed: { tasks: InertiaRails.live(:project) { [{ id: 1 }] } } })
+
+      expect(page[:props][:feed][:tasks]).to eq([{ id: 1 }])
+      expect(page.dig(:rails, :streams)).to be_present
+
+      _signed_name, stream_data = page.dig(:rails, :streams).first
+      expect(stream_data[:props]).to eq(['feed.tasks'])
+    end
+  end
 end

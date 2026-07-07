@@ -75,6 +75,10 @@ module InertiaRails
       # Cache store for prop-level caching and SSR response caching.
       # Defaults to Rails.cache when nil.
       cache_store: nil,
+
+      # Fallback serializer for broadcasts when no explicit serializer: is provided.
+      # Called with (record), must return a hash.
+      broadcast_serializer: nil,
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze
@@ -147,6 +151,10 @@ module InertiaRails
 
     def cache_store
       @options[:cache_store] || Rails.cache
+    end
+
+    def broadcast_serializer
+      @options[:broadcast_serializer]
     end
 
     OPTION_NAMES.each do |option|

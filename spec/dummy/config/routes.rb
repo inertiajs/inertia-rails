@@ -68,6 +68,11 @@ Rails.application.routes.draw do
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
   get 'deeply_nested_props' => 'inertia_render_test#deeply_nested_props'
 
+  get 'live_props' => 'inertia_live_test#live_props'
+  get 'multiple_live_props' => 'inertia_live_test#multiple_live_props'
+  get 'no_live_props' => 'inertia_live_test#no_live_props'
+  post 'tasks_create' => 'inertia_live_test#create_task'
+
   get 'instance_props_test' => 'inertia_rails_mimic#instance_props_test'
   get 'default_render_test' => 'inertia_rails_mimic#default_render_test'
   get 'transformed_default_render_test' => 'transformed_inertia_rails_mimic#render_test'

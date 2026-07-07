@@ -27,6 +27,11 @@ require_relative 'inertia_rails/merge_prop'
 require_relative 'inertia_rails/once_prop'
 require_relative 'inertia_rails/scroll_metadata'
 require_relative 'inertia_rails/scroll_prop'
+require_relative 'inertia_rails/broadcast'
+require_relative 'inertia_rails/live_prop'
+require_relative 'inertia_rails/stream_name'
+require_relative 'inertia_rails/debouncer'
+require_relative 'inertia_rails/broadcastable'
 require_relative 'inertia_rails/prop_evaluator'
 require_relative 'inertia_rails/props_resolver'
 
@@ -49,6 +54,8 @@ require_relative 'inertia_rails/engine'
 
 module InertiaRails
   class << self
+    attr_writer :signed_stream_verifier_key
+
     def configure
       yield(configuration)
     end
@@ -63,6 +70,18 @@ module InertiaRails
 
     def deprecator # :nodoc:
       @deprecator ||= ActiveSupport::Deprecation.new
+    end
+
+    # Verifier used to sign Action Cable stream names exposed to the client.
+    # See also <tt>Turbo.signed_stream_verifier</tt> — same idea, same defaults.
+    def signed_stream_verifier
+      @signed_stream_verifier ||= ActiveSupport::MessageVerifier.new(
+        signed_stream_verifier_key, digest: 'SHA256', serializer: JSON
+      )
+    end
+
+    def signed_stream_verifier_key
+      @signed_stream_verifier_key or raise ArgumentError, 'InertiaRails requires a signed_stream_verifier_key'
     end
 
     def lazy(value = nil, &block)
@@ -99,6 +118,22 @@ module InertiaRails
 
     def scroll(metadata = nil, **options, &block)
       ScrollProp.new(metadata: metadata, **options, &block)
+    end
+
+    def live(streamable, **options, &block)
+      LiveProp.new(streamable: streamable, **options, &block)
+    end
+
+    def broadcast_action_to(streamable, **props)
+      Broadcast.action_to(streamable, **props)
+    end
+
+    def broadcast_refresh_to(streamable, **props)
+      Broadcast.refresh_to(streamable, **props)
+    end
+
+    def broadcast_to(streamable, **props)
+      Broadcast.to(streamable, **props)
     end
   end
 end

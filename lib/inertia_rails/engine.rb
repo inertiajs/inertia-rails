@@ -2,8 +2,24 @@
 
 module InertiaRails
   class Engine < ::Rails::Engine
+    config.inertia_rails = ActiveSupport::OrderedOptions.new
+
     initializer 'inertia_rails.configure_rails_initialization', before: :build_middleware_stack do |app|
       app.middleware.use ::InertiaRails::Middleware
+    end
+
+    initializer 'inertia_rails.signed_stream_verifier_key' do |app|
+      config.after_initialize do
+        InertiaRails.signed_stream_verifier_key =
+          app.config.inertia_rails.signed_stream_verifier_key ||
+          app.key_generator.generate_key('inertia_rails/signed_stream_verifier_key')
+      end
+    end
+
+    initializer 'inertia_rails.test_immediate_debouncer' do
+      ActiveSupport.on_load(:active_support_test_case) do
+        InertiaRails::ThreadDebouncer.debouncer_class = InertiaRails::ImmediateDebouncer
+      end
     end
 
     initializer 'inertia_rails.action_controller' do
