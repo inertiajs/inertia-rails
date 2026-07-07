@@ -172,6 +172,8 @@ The default value will be changed to `true` in the next major version.
 **Default**: `:always`
 **ENV**: `INERTIA_XSRF_COOKIE_REFRESH`
 
+@available_since rails=master
+
 Controls when the Rails adapter refreshes the `XSRF-TOKEN` cookie on protected requests.
 
 Supported values:
@@ -193,7 +195,7 @@ class CachedPagesController < ApplicationController
 end
 ```
 
-This can be useful for applications that rely on browser HTTP conditional caching (`ETag` / `304`) on Inertia pages and want to reduce unnecessary `Set-Cookie` churn on steady-state safe requests, particularly for Safari/WebKit. See the [HTTP caching and XSRF cookie refresh cookbook note](/cookbook/http-caching-and-xsrf-cookie-refresh) for validation details and caveats.
+This is useful for applications that serve Inertia pages through a CDN or rely on HTTP conditional caching (`ETag` / `304`): most shared caches refuse to cache responses that carry `Set-Cookie`, and the default policy emits one on every response. See the [HTTP caching and XSRF cookie refresh cookbook note](/cookbook/http-caching-and-xsrf-cookie-refresh) for the full mechanism and caveats.
 
 ### `flash_keys`
 

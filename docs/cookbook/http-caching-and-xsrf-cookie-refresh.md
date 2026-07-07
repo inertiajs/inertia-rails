@@ -1,34 +1,25 @@
-# HTTP Caching and XSRF Cookie Refresh
+# HTTP caching and XSRF cookie refresh
 
-If your Rails app uses browser HTTP conditional caching (`ETag` / `Last-Modified` -> `304 Not Modified`) on Inertia pages, Safari/WebKit may keep returning `200 OK` on normal page reloads even though your controller code looks correct.
+By default, Inertia Rails rewrites the `XSRF-TOKEN` cookie on every protected request. Each rewrite emits a `Set-Cookie` header — including on otherwise cacheable `GET` responses and even on `304 Not Modified` responses. If your app relies on HTTP caching for Inertia pages, that header can quietly defeat it. This page explains why it happens and how to opt into a less aggressive refresh policy.
 
 ## Symptom
 
-Typical Safari/WebKit symptom:
+The problem shows up in two places:
 
-- a page returns `ETag` / `Last-Modified`
-- repeated browser reloads still return `200`
-- the browser does not settle into a clean `If-None-Match` / `304` loop
+- **CDNs and shared caches.** Most shared caches refuse to cache responses that carry `Set-Cookie`. For example, Cloudflare either strips the header or [sets the cache status to `BYPASS`](https://developers.cloudflare.com/cache/concepts/cache-behavior/), depending on cache settings. `rack-cache`, Varnish, and Fastly behave similarly by default. If every response carries a fresh `XSRF-TOKEN`, your cacheable pages never get cached.
+- **Browser conditional caching.** Apps using `fresh_when` / `stale?` expect reloads to settle into a clean `If-None-Match` / `304` loop. Repeated cookie writes on cacheable responses have been observed to prevent that, most notably in Safari/WebKit (Chrome and Firefox usually revalidate cookie-bearing responses correctly).
 
-This can show up first on authenticated pages with `fresh_when` or `stale?`. It is not necessarily a general browser behavior; Chrome and Firefox can revalidate the same cookie-bearing response correctly.
+## Why it happens
 
-## Why It Happens
+The adapter refreshes the `XSRF-TOKEN` cookie in an `after_action` on every request where forgery protection is active, so Inertia's HTTP client can read it and send it back as an `X-XSRF-TOKEN` header.
 
-The Rails adapter currently writes the `XSRF-TOKEN` cookie on every protected request:
+Rails normally suppresses `Set-Cookie` when a cookie is written with its existing value — but that never applies here. Rails masks CSRF tokens with a random one-time pad on every call (a BREACH mitigation), so `form_authenticity_token` returns a *different* string on every request even though the underlying token hasn't changed. The cookie jar sees a new value every time and emits `Set-Cookie` on every response, including `304`s.
 
-```ruby
-after_action do
-  cookies['XSRF-TOKEN'] = form_authenticity_token if protect_against_forgery?
-end
-```
+Because the value is re-masked on every call, the only way to know whether the cookie actually needs a refresh is to unmask and compare it against the session token — which is exactly what the `:lazy` policy does when it can.
 
-That behavior is convenient because Inertia's HTTP client can read the `XSRF-TOKEN` cookie and send it back as `X-XSRF-TOKEN`.
+## The `:lazy` policy
 
-However, some applications also depend on browser HTTP revalidation for conditionally cacheable GET pages. `Set-Cookie` does not make a response uncacheable by itself, and some browsers revalidate these responses correctly. In Safari/WebKit, repeatedly rewriting cookies on an otherwise cacheable HTML response can still prevent normal reloads from settling into the expected conditional request flow.
-
-## Supported Adapter Configuration
-
-If you want to reduce XSRF cookie churn on steady-state safe requests, you can opt into a less aggressive policy:
+To skip unnecessary rewrites on steady-state safe requests, opt into the `:lazy` policy:
 
 ```ruby
 InertiaRails.configure do |config|
@@ -36,13 +27,7 @@ InertiaRails.configure do |config|
 end
 ```
 
-That changes the adapter behavior to:
-
-- `GET` / `HEAD`: only set `XSRF-TOKEN` if the cookie is missing
-- `GET` / `HEAD` requests that have already loaded the session or CSRF token: validate an existing `XSRF-TOKEN` cookie and refresh it if it no longer matches the current session
-- non-safe requests: continue refreshing `XSRF-TOKEN` on every protected request
-
-You may also enable this only for specific controllers:
+You can also enable it for specific controllers only:
 
 ```ruby
 class CachedPagesController < ApplicationController
@@ -50,35 +35,48 @@ class CachedPagesController < ApplicationController
 end
 ```
 
-## When This Matters
+Under `:lazy`, the adapter behaves as follows:
 
-This issue matters most when all of the following are true:
+- `GET` / `HEAD` requests with no `XSRF-TOKEN` cookie: set the cookie, as before.
+- `GET` / `HEAD` requests with an existing cookie, when the session or CSRF token is already loaded: validate the cookie against the session and refresh it only if it's stale.
+- `GET` / `HEAD` requests with an existing cookie, when nothing has loaded the session: trust the cookie and skip the write (see the caveat below).
+- Non-safe requests (`POST`, `PATCH`, and so on): always refresh, as before.
 
-- your app uses `fresh_when` / `stale?`
+Conditionally cached pages take the validation path, not the trust path: `fresh_when` and `stale?` load the session (flash is part of the default ETag), so a stale cookie is detected and refreshed even on a `304` response.
+
+## When this matters
+
+This option matters most when all of the following are true:
+
+- your app uses `fresh_when` / `stale?` on Inertia pages, or serves them through a CDN
 - the route is a cacheable `GET`
-- you expect browser reloads or revisits to return `304`
-- your app is sensitive to repeated `Set-Cookie` writes on those responses
-- you have observed the issue in Safari/WebKit or another browser environment
+- you expect reloads or revisits to produce `304`s or CDN cache hits
 
-It usually does **not** matter for apps that rely only on Inertia prefetching or only on server-side caching.
+It usually does **not** matter for apps that rely only on Inertia prefetching or server-side caching.
 
-## What This Does Not Solve
+## What this does not solve
 
 This option only addresses `XSRF-TOKEN` churn.
 
-Some authenticated applications may also rewrite Rails session cookies on cacheable `GET` requests. This is common with cookie-backed sessions, where session data is stored in the browser cookie. If that is happening, `xsrf_cookie_refresh = :lazy` alone may not be enough to produce clean `304` revalidation behavior. Moving session storage off browser cookies, for example to Redis or a database, can reduce that separate source of `Set-Cookie` churn.
+Cookie-backed sessions are a separate source of `Set-Cookie` churn: the session cookie is re-encrypted on every response that touches the session, and `fresh_when` / `stale?` touch the session. If your app stores sessions in cookies, `:lazy` alone won't produce fully `Set-Cookie`-free `304`s — moving session storage to Redis or a database removes that second source.
 
-The adapter does not load the session only to validate an existing XSRF cookie on otherwise steady-state safe requests. Loading a cookie-backed session can itself cause Rails to emit a session `Set-Cookie` header, which would reintroduce the same browser revalidation problem this option is meant to reduce.
+The adapter also deliberately does *not* load a lazy session just to validate an existing cookie: loading a cookie-backed session emits its own session `Set-Cookie`, which would reintroduce the exact churn this option removes.
 
-## Security Tradeoff
+## Caveat: stale cookies on session-less requests
 
-The tradeoff is usually compatibility, not reduced CSRF protection.
+On `GET` / `HEAD` requests where nothing loads the session — no Inertia render, no flash, no `fresh_when` — an existing cookie is trusted without validation. A stale cookie (for example, after a `secret_key_base` rotation) is not detected on those requests, so the next protected request fails with `InvalidAuthenticityToken`.
 
-Even if an app chooses to refresh the `XSRF-TOKEN` cookie less aggressively:
+This failure is loud, never a silent CSRF bypass: the cookie is not a server-side validation input (the server checks the `X-XSRF-TOKEN` *header* against the session). And it self-heals — any request that loads the session, including every rendered Inertia response, validates and refreshes the cookie.
 
-- Rails still validates CSRF tokens on non-GET requests
-- existing XSRF cookies are validated before the adapter skips refresh on `GET` / `HEAD` when validation can happen without loading the session only for that check
-- apps may still emit `csrf_meta_tags`
-- legitimate failures are more likely to appear as `InvalidAuthenticityToken` than as silent CSRF bypass
+## Security tradeoff
+
+The tradeoff is compatibility, not reduced CSRF protection:
+
+- Rails still validates CSRF tokens on all non-GET requests.
+- Existing cookies are validated whenever validation is possible without loading the session solely for that check.
+- Legitimate failures appear as `InvalidAuthenticityToken`, not as a silent bypass.
 
 If you need every safe request to refresh the XSRF cookie from the current session state, keep the default `:always` policy.
+
+> [!NOTE]
+> Rails 8.2 introduces `protect_from_forgery using: :header_only`, which verifies requests with the `Sec-Fetch-Site` header instead of tokens. On apps using that strategy the `XSRF-TOKEN` cookie serves no purpose at all, and a policy to skip it entirely may be added in a future release. `:lazy` targets today's token-based apps, including Rails 8.2's `:header_or_legacy_token` upgrade path.

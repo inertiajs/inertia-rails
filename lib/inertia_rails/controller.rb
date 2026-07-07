@@ -149,7 +149,12 @@ module InertiaRails
       csrf_token_loaded = csrf_token_env_key && request.env.key?(csrf_token_env_key)
       valid_authenticity_token?(session, xsrf_token_cookie)
     ensure
-      # Avoid making validation itself create a CSRF token that Rails later commits.
+      # `valid_authenticity_token?` memoizes the real token into
+      # `request.env[CSRF_TOKEN]` (Rails 7.1+), and the session middleware later
+      # persists whatever sits there via `commit_csrf_token`. Drop the key when
+      # validation itself created it, so a validation-only read can't dirty the
+      # session and emit a session Set-Cookie. No-op on Rails < 7.1, where
+      # there is no env key to clean up.
       request.env.delete(csrf_token_env_key) if csrf_token_env_key && !csrf_token_loaded
     end
 
