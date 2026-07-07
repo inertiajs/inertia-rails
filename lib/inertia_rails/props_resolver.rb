@@ -74,7 +74,7 @@ module InertiaRails
       metadata[:matchPropsOn] = @_match_on unless @_match_on.empty?
       metadata[:onceProps] = @_once unless @_once.empty?
       metadata[:rescuedProps] = @_rescued unless @_rescued.empty?
-      (metadata[:rails] ||= {})[:streams] = @_streams unless @_streams.empty?
+      metadata[:rails] = { streams: @_streams, protocol: Broadcast::PROTOCOL } unless @_streams.empty?
 
       metadata
     end
@@ -224,9 +224,15 @@ module InertiaRails
     def collect_live_metadata(prop, path)
       return unless prop.try(:live?)
 
-      unsigned = InertiaRails::StreamName.stream_name_from(prop.streamable)
-      signed = (@_stream_name_cache ||= {})[unsigned] ||= InertiaRails.signed_stream_verifier.generate(unsigned)
-      (@_streams[signed] ||= { props: [] })[:props] << path
+      # MessageVerifier output is deterministic (HMAC), so grouping by the
+      # signed token needs no memoization.
+      signed = InertiaRails::StreamName.signed_stream_name(prop.streamable)
+      entry = (@_streams[signed] ||= { props: [] })
+      entry[:props] << path
+
+      if (model = prop.destroy_filter_model)
+        (entry[:filters] ||= []) << { prop: path, model: model }
+      end
     end
 
     def rendering_partial_component?

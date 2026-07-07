@@ -7,54 +7,66 @@ module InertiaRails
   module Broadcastable
     extend ActiveSupport::Concern
 
-    ACTION_MAP = { create: :append, update: :replace, destroy: :remove }.freeze
-
     included do
       thread_mattr_accessor :suppressed_inertia_broadcasts, instance_accessor: false
       delegate :suppressed_inertia_broadcasts?, to: 'self.class'
+
+      # Short names mirror turbo-rails. turbo-rails auto-includes its
+      # Broadcastable into every ActiveRecord model, so in hybrid apps the
+      # short names are already taken — there the canonical inertia_-prefixed
+      # macros are used side by side with Turbo's:
+      #
+      #   broadcasts_to ->(t) { t.board }             # Turbo → ERB pages
+      #   inertia_broadcasts_to ->(t) { t.board }     # ours  → Inertia pages
+      unless respond_to?(:broadcasts_to)
+        singleton_class.alias_method :broadcasts_to, :inertia_broadcasts_to
+      end
+      unless respond_to?(:broadcasts_refreshes_to)
+        singleton_class.alias_method :broadcasts_refreshes_to, :inertia_broadcasts_refreshes_to
+      end
     end
 
     class_methods do
-      # Configures the model to broadcast surgical updates (append/replace/remove) on create, update,
-      # and destroy to the stream name derived from +target+.
+      # Configures the model to broadcast lifecycle facts ({type, model, id})
+      # on create, update, and destroy to the stream derived from +target+.
+      # No payloads: clients coalesce facts into partial reloads (or filter
+      # destroys locally when the prop opted in).
       #
       #   class Message < ApplicationRecord
       #     belongs_to :board
-      #     broadcasts_to :board
+      #     inertia_broadcasts_to :board
       #   end
       #
       #   class Message < ApplicationRecord
-      #     broadcasts_to ->(message) { [message.board, :messages] }, inserts_by: :prepend
+      #     inertia_broadcasts_to ->(message) { [message.board, :messages] }
       #   end
-      def broadcasts_to(target, on: ACTION_MAP.keys, inserts_by: :append, serializer: nil, **options)
+      def inertia_broadcasts_to(target, on: Broadcast::ACTIONS, **options)
         filter_opts = options.slice(:if, :unless)
 
         Array(on).each do |event|
-          action = event == :create ? inserts_by : ACTION_MAP.fetch(event)
-
           after_commit(on: event, **filter_opts) do
             next if self.class.suppressed_inertia_broadcasts?
 
             streamable = resolve_broadcastable_target(target)
-            InertiaRails.broadcast_action_to(
+            InertiaRails.broadcast_change_to(
               streamable,
               record: self,
-              action: action,
-              serializer: serializer,
+              action: event,
               request_id: InertiaRails::Current.live_request_id
             )
           end
         end
       end
 
-      # Configures the model to broadcast a "page refresh" on create, update, and destroy. Refreshes are
-      # debounced by default so rapid changes coalesce into a single broadcast. Pass <tt>debounce: false</tt>
-      # to disable debouncing.
+      # Configures the model to broadcast a bare "reload" signal on create,
+      # update, and destroy. Refreshes are debounced by default so rapid
+      # same-request changes coalesce into a single broadcast. (Change signals
+      # are never debounced — coalescing typed facts drops destroys.)
       #
       #   class Column < ApplicationRecord
-      #     broadcasts_refreshes_to :board
+      #     inertia_broadcasts_refreshes_to :board
       #   end
-      def broadcasts_refreshes_to(target, on: %i[create update destroy], debounce: InertiaRails::Debouncer::DEFAULT_DELAY, **options)
+      def inertia_broadcasts_refreshes_to(target, on: Broadcast::ACTIONS, debounce: InertiaRails::Debouncer::DEFAULT_DELAY, **options)
         filter_opts = options.slice(:if, :unless)
 
         Array(on).each do |event|

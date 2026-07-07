@@ -17,16 +17,13 @@ module InertiaRails
       end
 
       def response
-        request = ActionDispatch::Request.new(@env)
-
-        InertiaRails::Current.live_request_id = request.headers['X-Inertia-Live-Request-Id']
-
         copy_xsrf_to_csrf!
         status, headers, body = if prevent_precognition_writes?
                                   ActiveRecord::Base.while_preventing_writes { @app.call(@env) }
                                 else
                                   @app.call(@env)
                                 end
+        request = ActionDispatch::Request.new(@env)
 
         # Inertia session data is added via redirect_to
         # Guard with session.loaded? to avoid forcing session I/O (and unnecessary

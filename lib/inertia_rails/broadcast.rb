@@ -4,47 +4,38 @@
 # https://github.com/hotwired/turbo-rails
 
 module InertiaRails
+  # Wire protocol v1: signals carry facts, never values. There is no
+  # serializer and no payload — clients refetch through the normal Inertia
+  # HTTP pipeline (re-authorized, re-scoped), or apply destroy signals
+  # locally when the prop opted in via +on_destroy+.
   module Broadcast
-    BROADCAST_TYPE = { remove: 'destroy', replace: 'update' }.freeze
+    PROTOCOL = 1
+
+    ACTIONS = %i[create update destroy].freeze
 
     class << self
-      def action_to(streamable, record:, action:, serializer: nil, request_id: nil)
-        stream_name = StreamName.stream_name_from(streamable)
-        id = record.try(:id)
-        type = BROADCAST_TYPE.fetch(action.to_sym, action.to_s)
+      # Broadcasts a record lifecycle fact: {type:, model:, id:, request_id:}.
+      # +action+ is the ActiveRecord event (:create/:update/:destroy) — a fact
+      # about the record, not an instruction to the client.
+      def change_to(streamable, record:, action:, request_id: nil)
+        unless ACTIONS.include?(action.to_sym)
+          raise ArgumentError, "Unknown broadcast action #{action.inspect} (expected one of #{ACTIONS.inspect})"
+        end
 
-        message = { type: type, id: id }
-        message[:value] = serialize_for_broadcast(record, serializer) unless action.to_sym == :remove
+        message = {
+          type: action.to_s,
+          model: record.model_name.name,
+          id: record.id,
+          request_id: request_id,
+        }.compact
 
-        message[:request_id] = request_id if request_id
-        ActionCable.server.broadcast(stream_name, message)
+        ActionCable.server.broadcast(StreamName.stream_name_from(streamable), message)
       end
 
+      # Broadcasts a bare "reload your props" signal: {type: "reload", request_id:}.
       def refresh_to(streamable, request_id: nil)
-        stream_name = StreamName.stream_name_from(streamable)
-        message = { type: 'reload' }
-        message[:request_id] = request_id if request_id
-        ActionCable.server.broadcast(stream_name, message)
-      end
-
-      def to(streamable, record: nil, action: nil, **options)
-        if record && action
-          InertiaRails.broadcast_action_to(streamable, record: record, action: action, **options)
-        else
-          InertiaRails.broadcast_refresh_to(streamable, **options.slice(:request_id))
-        end
-      end
-
-      private
-
-      def serialize_for_broadcast(record, serializer)
-        if serializer
-          serializer.is_a?(Class) ? serializer.new(record).to_h : serializer.call(record)
-        elsif (fallback = InertiaRails.configuration.broadcast_serializer)
-          fallback.call(record)
-        else
-          record.as_json
-        end
+        message = { type: 'reload', request_id: request_id }.compact
+        ActionCable.server.broadcast(StreamName.stream_name_from(streamable), message)
       end
     end
   end

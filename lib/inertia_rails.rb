@@ -80,8 +80,12 @@ module InertiaRails
       )
     end
 
+    # Derived lazily from the app's key generator (same salt pattern as
+    # turbo-rails); override via InertiaRails.signed_stream_verifier_key= in
+    # an initializer if key rotation demands it.
     def signed_stream_verifier_key
-      @signed_stream_verifier_key or raise ArgumentError, 'InertiaRails requires a signed_stream_verifier_key'
+      @signed_stream_verifier_key ||=
+        Rails.application.key_generator.generate_key('inertia_rails/signed_stream_verifier_key')
     end
 
     def lazy(value = nil, &block)
@@ -124,16 +128,14 @@ module InertiaRails
       LiveProp.new(streamable: streamable, **options, &block)
     end
 
-    def broadcast_action_to(streamable, **props)
-      Broadcast.action_to(streamable, **props)
+    # Broadcasts a record lifecycle fact ({type, model, id}) — no payload.
+    def broadcast_change_to(streamable, record:, action:, request_id: nil)
+      Broadcast.change_to(streamable, record: record, action: action, request_id: request_id)
     end
 
-    def broadcast_refresh_to(streamable, **props)
-      Broadcast.refresh_to(streamable, **props)
-    end
-
-    def broadcast_to(streamable, **props)
-      Broadcast.to(streamable, **props)
+    # Broadcasts a bare "reload your props" signal.
+    def broadcast_refresh_to(streamable, request_id: nil)
+      Broadcast.refresh_to(streamable, request_id: request_id)
     end
   end
 end

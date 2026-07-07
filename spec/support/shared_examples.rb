@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'base prop' do
+  let(:prop_options) { {} }
+
   describe '#call' do
     subject(:call) { prop.call(controller) }
-    let(:prop) { described_class.new { 'block' } }
+    let(:prop) { described_class.new(**prop_options) { 'block' } }
     let(:headers) { {} }
     let(:controller) do
       controller = ApplicationController.new
@@ -17,7 +19,7 @@ RSpec.shared_examples 'base prop' do
     it { is_expected.to eq('block') }
 
     context 'with dependency on the context of a controller' do
-      let(:prop) { described_class.new { controller_method } }
+      let(:prop) { described_class.new(**prop_options) { controller_method } }
 
       it { is_expected.to eq('controller_method value') }
     end

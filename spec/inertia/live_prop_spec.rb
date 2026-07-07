@@ -4,7 +4,8 @@ require 'rails_helper'
 
 RSpec.describe InertiaRails::LiveProp do
   it_behaves_like 'base prop' do
-    let(:prop) { described_class.new(streamable: :stream_name) { 'block' } }
+    let(:prop_options) { { streamable: :stream_name } }
+    let(:prop) { described_class.new(**prop_options) { 'block' } }
   end
 
   describe '#live?' do
@@ -18,6 +19,10 @@ RSpec.describe InertiaRails::LiveProp do
 
     it { expect(prop.streamable).to eq(:project) }
 
+    it 'is required' do
+      expect { described_class.new { 'data' } }.to raise_error(ArgumentError)
+    end
+
     context 'with an array streamable' do
       let(:prop) { described_class.new(streamable: [:project, :tasks]) { 'data' } }
 
@@ -25,10 +30,22 @@ RSpec.describe InertiaRails::LiveProp do
     end
   end
 
-  describe '#deferred?' do
-    let(:prop) { described_class.new(streamable: :project) { 'data' } }
+  describe '#destroy_filter_model' do
+    it 'is nil by default (destroys reload through the controller)' do
+      prop = described_class.new(streamable: :project) { 'data' }
+      expect(prop.destroy_filter_model).to be_nil
+    end
 
-    it { expect(prop.deferred?).to be false }
+    it 'accepts a model name string' do
+      prop = described_class.new(streamable: :project, on_destroy: 'Task') { 'data' }
+      expect(prop.destroy_filter_model).to eq('Task')
+    end
+
+    it 'accepts a class and uses its name' do
+      klass = Class.new { def self.name = 'Task' }
+      prop = described_class.new(streamable: :project, on_destroy: klass) { 'data' }
+      expect(prop.destroy_filter_model).to eq('Task')
+    end
   end
 
   describe '#merge?' do

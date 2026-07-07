@@ -10,7 +10,7 @@ RSpec.describe 'Live Props integration', type: :request do
   end
 
   describe 'full round-trip' do
-    it 'renders page with rails.streams' do
+    it 'renders page with rails.streams and the protocol version' do
       get live_props_path, headers: { 'X-Inertia' => true }
 
       json = JSON.parse(response.body)
@@ -18,7 +18,7 @@ RSpec.describe 'Live Props integration', type: :request do
       expect(json['component']).to eq('LiveTest')
       expect(json['props']['tasks']).to eq([{ 'id' => 1, 'title' => 'Task 1' }])
       expect(json['rails']['streams']).to be_a(Hash)
-      expect(json['rails']).not_to have_key('requestId')
+      expect(json['rails']['protocol']).to eq(1)
 
       # Verify the stream token
       signed_name = json['rails']['streams'].keys.first
@@ -43,13 +43,42 @@ RSpec.describe 'Live Props integration', type: :request do
       expect(chat_entry[1]['props']).to eq(['messages'])
     end
 
-    it 'broadcast_to sends to the correct ActionCable stream' do
+    it 'emits destroy filters for props that opted in via on_destroy' do
+      get filtered_live_props_path, headers: { 'X-Inertia' => true }
+
+      json = JSON.parse(response.body)
+      entry = json['rails']['streams'].values.first
+
+      expect(entry['props']).to contain_exactly('tasks', 'task_count')
+      expect(entry['filters']).to eq([{ 'prop' => 'tasks', 'model' => 'Task' }])
+    end
+
+    it 'broadcast_refresh_to sends a bare reload signal' do
       expect(ActionCable.server).to receive(:broadcast).with(
         'project',
         { type: 'reload' }
       )
 
-      InertiaRails.broadcast_to(:project)
+      InertiaRails.broadcast_refresh_to(:project)
+    end
+
+    it 'broadcast_change_to sends a payload-free lifecycle fact' do
+      record = double(id: 42, model_name: double(name: 'Task'))
+
+      expect(ActionCable.server).to receive(:broadcast).with(
+        'project',
+        { type: 'update', model: 'Task', id: 42, request_id: 'test-req-123' }
+      )
+
+      InertiaRails.broadcast_change_to(:project, record: record, action: :update, request_id: 'test-req-123')
+    end
+
+    it 'broadcast_change_to rejects unknown actions' do
+      record = double(id: 1, model_name: double(name: 'Task'))
+
+      expect do
+        InertiaRails.broadcast_change_to(:project, record: record, action: :append)
+      end.to raise_error(ArgumentError, /Unknown broadcast action/)
     end
 
     it 'non-live pages have no rails key' do
@@ -59,11 +88,11 @@ RSpec.describe 'Live Props integration', type: :request do
       expect(json).not_to have_key('rails')
       expect(json['props']['tasks']).to eq([{ 'id' => 1 }])
     end
-
   end
 
   describe 'shared live props' do
     around do |example|
+      existing_filters = InertiaLiveTestController._process_action_callbacks.map(&:filter)
       InertiaLiveTestController.class_eval do
         inertia_share do
           {
@@ -73,11 +102,13 @@ RSpec.describe 'Live Props integration', type: :request do
       end
       example.run
     ensure
-      # Clean up shared data by removing the before_action
+      # Remove ONLY the callbacks this block added — skipping every Proc
+      # before_action would also nuke InertiaRails::Controller's
+      # Current.request assignment for the rest of the suite.
       InertiaLiveTestController._process_action_callbacks.each do |callback|
-        if callback.kind == :before && callback.filter.is_a?(Proc)
-          InertiaLiveTestController.skip_before_action(callback.filter) rescue nil
-        end
+        next if existing_filters.include?(callback.filter)
+
+        InertiaLiveTestController.skip_before_action(callback.filter) rescue nil
       end
     end
 
@@ -97,49 +128,41 @@ RSpec.describe 'Live Props integration', type: :request do
     end
   end
 
-  describe 'self-exclusion via client header' do
-    it 'reads live_request_id from X-Inertia-Live-Request-Id header' do
-      captured_id = nil
-      allow(InertiaRails::Current).to receive(:live_request_id=).and_wrap_original do |m, val|
-        captured_id = val
-        m.call(val)
-      end
+  describe 'self-exclusion request id' do
+    it 'derives live_request_id lazily from the header during a request' do
+      get live_request_id_echo_path, headers: { 'X-Inertia-Live-Request-Id' => 'client-req-789' }
 
-      get live_props_path, headers: { 'X-Inertia' => true, 'X-Inertia-Live-Request-Id' => 'client-req-789' }
-
-      expect(captured_id).to eq('client-req-789')
+      expect(response.body).to eq('client-req-789')
     end
 
-    it 'live_request_id is nil when header is absent' do
-      captured_id = :not_set
-      allow(InertiaRails::Current).to receive(:live_request_id=).and_wrap_original do |m, val|
-        captured_id = val
-        m.call(val)
-      end
+    it 'is empty when the header is absent' do
+      get live_request_id_echo_path
 
-      get live_props_path, headers: { 'X-Inertia' => true }
-
-      expect(captured_id).to be_nil
+      expect(response.body).to eq('')
     end
 
-    it 'broadcasts include the request_id from the client header' do
-      expect(ActionCable.server).to receive(:broadcast).with(
-        'project',
-        hash_including(request_id: 'test-req-123')
-      )
+    it 'rejects malformed header values — the id is echoed into broadcasts' do
+      get live_request_id_echo_path, headers: { 'X-Inertia-Live-Request-Id' => 'x' * 100 }
+      expect(response.body).to eq('')
 
-      InertiaRails.broadcast_action_to(:project, record: double(id: 1, as_json: { 'id' => 1 }), action: :append, request_id: 'test-req-123')
+      get live_request_id_echo_path, headers: { 'X-Inertia-Live-Request-Id' => 'short' }
+      expect(response.body).to eq('')
+
+      get live_request_id_echo_path, headers: { 'X-Inertia-Live-Request-Id' => 'has spaces in it' }
+      expect(response.body).to eq('')
     end
 
-    it 'broadcastable concern passes Current.live_request_id automatically' do
-      InertiaRails::Current.live_request_id = 'client-req-456'
+    it 'accepts UUIDs and the non-crypto client fallback format' do
+      get live_request_id_echo_path,
+          headers: { 'X-Inertia-Live-Request-Id' => 'e58e50f4-2b69-45a1-bc99-95f38423fbf6' }
+      expect(response.body).to eq('e58e50f4-2b69-45a1-bc99-95f38423fbf6')
 
-      expect(ActionCable.server).to receive(:broadcast).with(
-        anything,
-        hash_including(request_id: 'client-req-456')
-      )
+      get live_request_id_echo_path, headers: { 'X-Inertia-Live-Request-Id' => 'k2j4h5g6f7-1751892345678' }
+      expect(response.body).to eq('k2j4h5g6f7-1751892345678')
+    end
 
-      InertiaRails.broadcast_action_to(:project, record: double(id: 1, as_json: { 'id' => 1 }), action: :append, request_id: InertiaRails::Current.live_request_id)
+    it 'is nil outside of a request' do
+      expect(InertiaRails::Current.live_request_id).to be_nil
     end
   end
 end
