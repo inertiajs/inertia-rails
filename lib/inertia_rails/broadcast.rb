@@ -11,6 +11,8 @@ module InertiaRails
   module Broadcast
     PROTOCOL = 1
 
+    REQUEST_ID_HEADER = 'X-Inertia-Live-Request-Id'
+
     ACTIONS = %i[create update destroy].freeze
 
     class << self

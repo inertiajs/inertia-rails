@@ -1,0 +1,212 @@
+{
+  "protocol": 1,
+  "channel": "InertiaRails::StreamsChannel",
+  "header": "X-Inertia-Live-Request-Id",
+  "pages": {
+    "full": {
+      "url": "/tasks",
+      "rails": {
+        "streams": {
+          "SIGNED_TOKEN_A": {
+            "props": [
+              "tasks",
+              "task_count"
+            ]
+          }
+        },
+        "protocol": 1
+      }
+    },
+    "two_streams": {
+      "url": "/tasks",
+      "rails": {
+        "streams": {
+          "SIGNED_TOKEN_A": {
+            "props": [
+              "tasks"
+            ]
+          },
+          "SIGNED_TOKEN_B": {
+            "props": [
+              "notifications"
+            ]
+          }
+        },
+        "protocol": 1
+      }
+    },
+    "with_destroy_filter": {
+      "url": "/tasks",
+      "rails": {
+        "streams": {
+          "SIGNED_TOKEN_A": {
+            "props": [
+              "tasks",
+              "task_count"
+            ],
+            "filters": [
+              {
+                "prop": "tasks",
+                "model": "Task"
+              }
+            ]
+          }
+        },
+        "protocol": 1
+      }
+    }
+  },
+  "signals": [
+    {
+      "name": "refresh",
+      "page": "full",
+      "message": {
+        "type": "reload",
+        "request_id": "req-other"
+      },
+      "expect": {
+        "reload": {
+          "only": [
+            "tasks",
+            "task_count"
+          ]
+        }
+      }
+    },
+    {
+      "name": "refresh_without_request_id",
+      "page": "full",
+      "message": {
+        "type": "reload"
+      },
+      "expect": {
+        "reload": {
+          "only": [
+            "tasks",
+            "task_count"
+          ]
+        }
+      }
+    },
+    {
+      "name": "create",
+      "page": "full",
+      "message": {
+        "type": "create",
+        "model": "Task",
+        "id": 42,
+        "request_id": "req-other"
+      },
+      "expect": {
+        "reload": {
+          "only": [
+            "tasks",
+            "task_count"
+          ]
+        }
+      }
+    },
+    {
+      "name": "update",
+      "page": "full",
+      "message": {
+        "type": "update",
+        "model": "Task",
+        "id": 2,
+        "request_id": "req-other"
+      },
+      "expect": {
+        "reload": {
+          "only": [
+            "tasks",
+            "task_count"
+          ]
+        }
+      }
+    },
+    {
+      "name": "destroy_without_filter",
+      "page": "full",
+      "message": {
+        "type": "destroy",
+        "model": "Task",
+        "id": 2,
+        "request_id": "req-other"
+      },
+      "expect": {
+        "reload": {
+          "only": [
+            "tasks",
+            "task_count"
+          ]
+        }
+      }
+    },
+    {
+      "name": "destroy_with_filter",
+      "page": "with_destroy_filter",
+      "message": {
+        "type": "destroy",
+        "model": "Task",
+        "id": 2,
+        "request_id": "req-other"
+      },
+      "expect": {
+        "filtered": {
+          "prop": "tasks",
+          "removedKey": "2"
+        },
+        "reload": {
+          "only": [
+            "task_count"
+          ]
+        }
+      }
+    },
+    {
+      "name": "destroy_filter_model_mismatch",
+      "page": "with_destroy_filter",
+      "message": {
+        "type": "destroy",
+        "model": "Comment",
+        "id": 2,
+        "request_id": "req-other"
+      },
+      "expect": {
+        "reload": {
+          "only": [
+            "tasks",
+            "task_count"
+          ]
+        }
+      }
+    },
+    {
+      "name": "self_excluded",
+      "page": "full",
+      "message": {
+        "type": "reload",
+        "request_id": "req-own"
+      },
+      "expect": {
+        "nothing": true
+      }
+    },
+    {
+      "name": "unknown_future_type",
+      "page": "full",
+      "message": {
+        "type": "compact_v9",
+        "request_id": "req-other"
+      },
+      "expect": {
+        "reload": {
+          "only": [
+            "tasks",
+            "task_count"
+          ]
+        }
+      }
+    }
+  ]
+}
