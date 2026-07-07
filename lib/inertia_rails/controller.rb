@@ -85,7 +85,7 @@ module InertiaRails
     end
 
     def inertia_meta
-      @inertia_meta ||= InertiaRails::MetaTagBuilder.new(self)
+      @inertia_meta ||= InertiaRails::MetaTagBuilder.new
     end
 
     private

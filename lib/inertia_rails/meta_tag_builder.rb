@@ -2,8 +2,7 @@
 
 module InertiaRails
   class MetaTagBuilder
-    def initialize(controller)
-      @controller = controller
+    def initialize
       @meta_tags = {}
     end
 
