@@ -275,17 +275,6 @@ RSpec.describe 'Precognition', type: :request do
   end
 
   describe 'precognition_prevent_writes' do
-    before do
-      stub_const('ActiveRecord::Base', Class.new do
-        def self.while_preventing_writes(&block)
-          Thread.current[:preventing_writes] = true
-          block.call
-        ensure
-          Thread.current[:preventing_writes] = false
-        end
-      end)
-    end
-
     with_inertia_config precognition_prevent_writes: true
 
     it 'wraps precognition requests with while_preventing_writes' do
