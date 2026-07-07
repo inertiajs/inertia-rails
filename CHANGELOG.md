@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Raise a clear error when `parent_controller` does not inherit from `ActionController::Base` instead of an opaque `NoMethodError` (@skryukov)
 * Add static `props:` support to the `inertia` routes helper: `inertia 'about' => 'About', props: { title: 'About us' }` (@skryukov)
 * Deduplicate `X-Inertia` in the `Vary` response header (@skryukov)
+* Add `config.server_head` option that serializes server driven meta tags as ready-to-render HTML strings into the `head` prop for the `serverHead` option of `createInertiaApp` (Inertia.js v3.5+), replacing the client-side cookbook component. Set it to a string to use a custom prop name (@skryukov)
 * Fix meta tags ignoring per-controller `use_data_inertia_head_attribute` configured via `inertia_config` — `MetaTag#to_tag` read the global configuration (@skryukov)
 * Use SHA256 instead of MD5 for generated meta tag head key digests — MD5 raises on FIPS-enabled Rubies. Auto-generated digest-suffixed head keys are opaque values regenerated on every response, so no action is needed (@skryukov)
 * Remove the unused controller argument from `MetaTagBuilder.new` (@skryukov)

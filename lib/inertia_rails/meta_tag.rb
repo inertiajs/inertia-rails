@@ -36,9 +36,8 @@ module InertiaRails
       end
     end
 
-    # `inertia_attribute` falls back to the global configuration for backwards
-    # compatibility — callers with access to a controller should pass the
-    # controller-bound `inertia_configuration.head_attribute` instead.
+    # Falls back to the global config: pass the controller-bound attribute
+    # or per-controller settings are ignored.
     def to_tag(tag_helper = nil, inertia_attribute: nil)
       tag_helper ||= ActionController::Base.helpers.tag
       inertia_attribute ||= InertiaRails.configuration.head_attribute
@@ -94,8 +93,6 @@ module InertiaRails
 
     def tag_digest
       signature = @tag_data.sort.map { |k, v| "#{k}=#{v}" }.join('&')
-      # SHA256 instead of MD5: head keys are not security-sensitive, but MD5
-      # raises on FIPS-enabled Rubies.
       Digest::SHA256.hexdigest(signature)[0, 8]
     end
 
