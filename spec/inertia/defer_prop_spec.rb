@@ -58,4 +58,18 @@ RSpec.describe InertiaRails::DeferProp do
       it { is_expected.to eq('custom') }
     end
   end
+
+  describe '#rescue?' do
+    subject(:rescue?) { prop.rescue? }
+
+    let(:prop) { described_class.new { 'block' } }
+
+    it { is_expected.to be false }
+
+    context 'when rescue is set' do
+      let(:prop) { described_class.new(rescue: true) { 'block' } }
+
+      it { is_expected.to be true }
+    end
+  end
 end

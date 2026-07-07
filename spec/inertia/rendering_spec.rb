@@ -857,6 +857,26 @@ RSpec.describe 'rendering inertia views', type: :request do
         )
       end
     end
+
+    context 'with a rescued deferred prop' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'permissions',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      before { get rescued_deferred_props_path, headers: headers }
+
+      it 'omits the rescued prop from props' do
+        expect(response.parsed_body['props']).not_to have_key('permissions')
+      end
+
+      it 'returns the rescued key in rescuedProps' do
+        expect(response.parsed_body['rescuedProps']).to eq(['permissions'])
+      end
+    end
   end
 
   context 'cached prop rendering' do

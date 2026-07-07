@@ -36,8 +36,14 @@ module InertiaRails
       id ||= config.root_dom_id
 
       if config.use_script_element_for_initial_page
+        script_options = { 'data-page': id, type: 'application/json' }
+        if respond_to?(:content_security_policy_nonce, true)
+          nonce = content_security_policy_nonce
+          script_options[:nonce] = nonce if nonce.present?
+        end
+
         safe_join([
-                    tag.script(page.to_json.html_safe, 'data-page': id, type: 'application/json'),
+                    tag.script(page.to_json.html_safe, **script_options),
                     tag.div(id: id)
                   ], "\n")
       else

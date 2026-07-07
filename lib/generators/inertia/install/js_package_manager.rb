@@ -15,10 +15,11 @@ module Inertia
         name.present?
       end
 
-      def add_dependencies(*dependencies)
+      def add_dependencies(*dependencies, dev: false)
+        dev_flag = dev ? ' -D' : ''
         options = @generator.options[:verbose] ? '' : ' --silent'
         @generator.in_root do
-          @generator.run "#{name} add #{dependencies.join(' ')}#{options}"
+          @generator.run "#{name} add#{dev_flag} #{dependencies.join(' ')}#{options}"
         end
       end
 

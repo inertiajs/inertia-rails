@@ -1025,7 +1025,7 @@ The context provides access to all the same properties and methods available thr
 The `<Form>` component includes built-in support for Precognition, enabling real-time form validation without duplicating your server-side validation rules on the client.
 
 > [!NOTE]
-> Precognition requires server-side support. See the [precognition section](/guide/validation.md#precognition) of the validation documentation for Rails setup instructions.
+> Precognition requires server-side support. See the [Precognition guide](/guide/precognition) for Rails setup instructions.
 
 Once your server is configured, call `validate()` with a field name to trigger validation for that field. The `invalid()` helper checks if a field has validation errors, while `validating` indicates when a request is in progress.
 
@@ -1626,6 +1626,8 @@ form.post('/profile', {
 
 :::
 
+You may pass the HTTP method and URL as the first two arguments to `useForm()`, then call `submit()` without arguments to dispatch the request. This also unlocks real-time validation. See [Precognition](#precognition-1) for details.
+
 If you need to modify the form data before it's sent to the server, you can do so via the `transform()` method.
 
 :::tabs key:frameworks
@@ -2168,7 +2170,7 @@ form.dontRemember('password', 'password_confirmation')
 Just like the `<Form>` component, the `useForm` helper supports [Precognition](#precognition) for real-time validation. You may enable it by chaining the `withPrecognition()` method with the HTTP method and endpoint for validation requests.
 
 > [!NOTE]
-> Precognition requires server-side support. See the [precognition section](/guide/validation.md#precognition) of the validation documentation for Rails setup instructions.
+> Precognition requires server-side support. See the [Precognition guide](/guide/precognition) for Rails setup instructions.
 
 :::tabs key:frameworks
 
@@ -2233,7 +2235,7 @@ const form = useForm('post', '/users', {
 </script>
 
 <template>
-  <form @submit.prevent="form.post('/users')">
+  <form @submit.prevent="form.submit()">
     <input v-model="form.name" @change="form.validate('name')" />
     <p v-if="form.invalid('name')">{{ form.errors.name }}</p>
 
@@ -2252,22 +2254,19 @@ const form = useForm('post', '/users', {
 ```jsx
 import { useForm } from '@inertiajs/react'
 
-const { data, setData, post, errors, validating, validate, invalid } = useForm(
-  'post',
-  '/users',
-  {
+const { data, setData, submit, errors, validating, validate, invalid } =
+  useForm('post', '/users', {
     name: '',
     email: '',
-  },
-)
+  })
 
-function submit(e) {
+function handleSubmit(e) {
   e.preventDefault()
-  post('/users')
+  submit()
 }
 
 return (
-  <form onSubmit={submit}>
+  <form onSubmit={handleSubmit}>
     <input
       value={data.name}
       onChange={(e) => setData('name', e.target.value)}
@@ -2304,7 +2303,7 @@ return (
 <form
   onsubmit={(e) => {
     e.preventDefault()
-    form.post('/users')
+    form.submit()
   }}
 >
   <input bind:value={form.name} onchange={() => form.validate('name')} />
@@ -2478,7 +2477,7 @@ form.withAllErrors()
 
 :::
 
-With Precognition enabled, you may call `submit()` without arguments to submit to the configured endpoint.
+With Precognition enabled, you may call `submit()` without arguments to dispatch the request to the configured endpoint.
 
 ## Server-Side Responses
 
@@ -2499,7 +2498,7 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:name, :email)
+    params.expect(user: [:name, :email])
   end
 end
 ```

@@ -74,6 +74,8 @@ class <%= controller_class_name %>Controller < <%= parent_controller %>
     def <%= "#{singular_table_name}_params" %>
       <%- if attributes_names.empty? -%>
       params.fetch(:<%= singular_table_name %>, {})
+      <%- elsif Rails::VERSION::MAJOR >= 8 -%>
+      params.expect(<%= singular_table_name %>: [<%= permitted_params %>])
       <%- else -%>
       params.require(:<%= singular_table_name %>).permit(<%= permitted_params %>)
       <%- end -%>

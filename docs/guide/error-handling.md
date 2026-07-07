@@ -8,6 +8,8 @@ The challenge is, if you're making an XHR request (which Inertia does) and you h
 
 Inertia solves this issue by showing all non-Inertia responses in a modal. This means you get the same beautiful error-reporting you're accustomed to, even though you've made that request over XHR.
 
+For applications using a [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) that restricts inline styles, you may pass a `nonce` to `createInertiaApp()` to permit the inline styles the error modal injects. See [Content Security Policy](/guide/client-side-setup#content-security-policy) for details.
+
 ## Dialog element
 
 @available_since core=2.2.13
