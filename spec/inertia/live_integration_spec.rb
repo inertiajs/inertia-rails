@@ -96,7 +96,7 @@ RSpec.describe 'Live Props integration', type: :request do
       InertiaLiveTestController.class_eval do
         inertia_share do
           {
-            notifications_count: InertiaRails.live([:user, :notifications]) { 42 },
+            notifications_count: InertiaRails.live(%i[user notifications]) { 42 },
           }
         end
       end
@@ -106,9 +106,10 @@ RSpec.describe 'Live Props integration', type: :request do
       # before_action would also nuke InertiaRails::Controller's
       # Current.request assignment for the rest of the suite.
       InertiaLiveTestController._process_action_callbacks.each do |callback|
+        next unless callback.kind == :before
         next if existing_filters.include?(callback.filter)
 
-        InertiaLiveTestController.skip_before_action(callback.filter) rescue nil
+        InertiaLiveTestController.skip_before_action(callback.filter)
       end
     end
 

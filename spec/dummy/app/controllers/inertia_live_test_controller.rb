@@ -31,8 +31,4 @@ class InertiaLiveTestController < ApplicationController
   def live_request_id_echo
     render plain: InertiaRails::Current.live_request_id.to_s
   end
-
-  def create_task
-    redirect_to live_props_path
-  end
 end

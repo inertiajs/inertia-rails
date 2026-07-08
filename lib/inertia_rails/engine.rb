@@ -6,12 +6,6 @@ module InertiaRails
       app.middleware.use ::InertiaRails::Middleware
     end
 
-    initializer 'inertia_rails.test_immediate_debouncer' do
-      ActiveSupport.on_load(:active_support_test_case) do
-        InertiaRails::ThreadDebouncer.debouncer_class = InertiaRails::ImmediateDebouncer
-      end
-    end
-
     initializer 'inertia_rails.action_controller' do
       ActiveSupport.on_load(:action_controller_base) do
         include ::InertiaRails::Controller

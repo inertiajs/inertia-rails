@@ -25,12 +25,20 @@ module InertiaRails
             protocol: Broadcast::PROTOCOL,
             channel: InertiaRails::StreamsChannel.name,
             header: Broadcast::REQUEST_ID_HEADER,
+            request_id_format: js_request_id_format,
             pages: pages,
             signals: signals,
           }
         end
 
         private
+
+        # Current::LIVE_REQUEST_ID_FORMAT with anchors translated for JS
+        # RegExp. Ids the client generates must satisfy this or the server
+        # drops them and self-exclusion silently stops working.
+        def js_request_id_format
+          Current::LIVE_REQUEST_ID_FORMAT.source.sub('\A', '^').sub('\z', '$')
+        end
 
         def pages
           with_placeholder_verifier do
@@ -80,7 +88,9 @@ module InertiaRails
             {
               name: 'create',
               page: 'full',
-              message: capture { Broadcast.change_to(:s, record: create_record, action: :create, request_id: 'req-other') },
+              message: capture do
+                Broadcast.change_to(:s, record: create_record, action: :create, request_id: 'req-other')
+              end,
               expect: { reload: { only: %w[tasks task_count] } },
             },
             {
@@ -124,7 +134,7 @@ module InertiaRails
               page: 'full',
               message: { type: 'compact_v9', request_id: 'req-other' },
               expect: { reload: { only: %w[tasks task_count] } },
-            },
+            }
           ]
         end
 
@@ -134,25 +144,25 @@ module InertiaRails
           fake_server = Object.new
           fake_server.define_singleton_method(:broadcast) { |_stream, message| captured = message }
 
-          original = ActionCable.instance_variable_get(:@server)
-          ActionCable.instance_variable_set(:@server, fake_server)
-          block.call
+          swapping_ivar(ActionCable, :@server, fake_server, &block)
           captured
-        ensure
-          ActionCable.instance_variable_set(:@server, original)
         end
 
-        def with_placeholder_verifier
+        def with_placeholder_verifier(&block)
           fake = Object.new
           fake.define_singleton_method(:generate) do |name|
             PLACEHOLDER_TOKENS.fetch(name) { raise ArgumentError, "no placeholder for stream #{name.inspect}" }
           end
 
-          original = InertiaRails.instance_variable_get(:@signed_stream_verifier)
-          InertiaRails.instance_variable_set(:@signed_stream_verifier, fake)
+          swapping_ivar(InertiaRails, :@signed_stream_verifier, fake, &block)
+        end
+
+        def swapping_ivar(owner, ivar, replacement)
+          original = owner.instance_variable_get(ivar)
+          owner.instance_variable_set(ivar, replacement)
           yield
         ensure
-          InertiaRails.instance_variable_set(:@signed_stream_verifier, original)
+          owner.instance_variable_set(ivar, original)
         end
       end
     end

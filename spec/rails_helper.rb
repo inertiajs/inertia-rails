@@ -58,5 +58,9 @@ RSpec.configure do |config|
   config.include ActiveSupport::Testing::TimeHelpers
 end
 
+# Broadcast debouncing is thread-based; run it inline in this suite. Specs
+# exercising real debounce behavior swap Debouncer back in an around hook.
+InertiaRails::ThreadDebouncer.debouncer_class = InertiaRails::ImmediateDebouncer
+
 require 'rails-controller-testing'
 Rails::Controller::Testing.install

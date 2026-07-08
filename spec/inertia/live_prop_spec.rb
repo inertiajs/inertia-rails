@@ -24,9 +24,9 @@ RSpec.describe InertiaRails::LiveProp do
     end
 
     context 'with an array streamable' do
-      let(:prop) { described_class.new(streamable: [:project, :tasks]) { 'data' } }
+      let(:prop) { described_class.new(streamable: %i[project tasks]) { 'data' } }
 
-      it { expect(prop.streamable).to eq([:project, :tasks]) }
+      it { expect(prop.streamable).to eq(%i[project tasks]) }
     end
   end
 
@@ -45,6 +45,22 @@ RSpec.describe InertiaRails::LiveProp do
       klass = Class.new { def self.name = 'Task' }
       prop = described_class.new(streamable: :project, on_destroy: klass) { 'data' }
       expect(prop.destroy_filter_model).to eq('Task')
+    end
+
+    # A typo'd policy would match no signal and silently degrade every
+    # destroy to a reload — reject anything that isn't :reload or a model.
+    it 'rejects unknown symbol policies loudly' do
+      expect do
+        described_class.new(streamable: :project, on_destroy: :filter) { 'data' }
+      end.to raise_error(ArgumentError, %r{on_destroy: expects :reload or a model class/name})
+    end
+
+    it 'rejects nil, empty strings, and anonymous classes' do
+      [nil, '', Class.new].each do |policy|
+        expect do
+          described_class.new(streamable: :project, on_destroy: policy) { 'data' }
+        end.to raise_error(ArgumentError, /on_destroy:/)
+      end
     end
   end
 

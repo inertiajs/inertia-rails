@@ -18,9 +18,7 @@ module InertiaRails
       #
       #   broadcasts_to ->(t) { t.board }             # Turbo → ERB pages
       #   inertia_broadcasts_to ->(t) { t.board }     # ours  → Inertia pages
-      unless respond_to?(:broadcasts_to)
-        singleton_class.alias_method :broadcasts_to, :inertia_broadcasts_to
-      end
+      singleton_class.alias_method :broadcasts_to, :inertia_broadcasts_to unless respond_to?(:broadcasts_to)
       unless respond_to?(:broadcasts_refreshes_to)
         singleton_class.alias_method :broadcasts_refreshes_to, :inertia_broadcasts_refreshes_to
       end
@@ -41,20 +39,13 @@ module InertiaRails
       #     inertia_broadcasts_to ->(message) { [message.board, :messages] }
       #   end
       def inertia_broadcasts_to(target, on: Broadcast::ACTIONS, **options)
-        filter_opts = options.slice(:if, :unless)
-
-        Array(on).each do |event|
-          after_commit(on: event, **filter_opts) do
-            next if self.class.suppressed_inertia_broadcasts?
-
-            streamable = resolve_broadcastable_target(target)
-            InertiaRails.broadcast_change_to(
-              streamable,
-              record: self,
-              action: event,
-              request_id: InertiaRails::Current.live_request_id
-            )
-          end
+        define_inertia_broadcast_callbacks(target, on, options) do |record, streamable, event|
+          InertiaRails.broadcast_change_to(
+            streamable,
+            record: record,
+            action: event,
+            request_id: InertiaRails::Current.live_request_id
+          )
         end
       end
 
@@ -66,31 +57,26 @@ module InertiaRails
       #   class Column < ApplicationRecord
       #     inertia_broadcasts_refreshes_to :board
       #   end
-      def inertia_broadcasts_refreshes_to(target, on: Broadcast::ACTIONS, debounce: InertiaRails::Debouncer::DEFAULT_DELAY, **options)
-        filter_opts = options.slice(:if, :unless)
+      def inertia_broadcasts_refreshes_to(target, on: Broadcast::ACTIONS,
+                                          debounce: InertiaRails::Debouncer::DEFAULT_DELAY, **options)
+        define_inertia_broadcast_callbacks(target, on, options) do |_record, streamable, _event|
+          request_id = InertiaRails::Current.live_request_id
 
-        Array(on).each do |event|
-          after_commit(on: event, **filter_opts) do
-            next if self.class.suppressed_inertia_broadcasts?
-
-            streamable = resolve_broadcastable_target(target)
-            request_id = InertiaRails::Current.live_request_id
-
-            if debounce
-              stream_name = InertiaRails::StreamName.stream_name_from([streamable, request_id].compact)
-              InertiaRails::ThreadDebouncer
-                .for("inertia_live_debounce:#{stream_name}", delay: debounce)
-                .debounce { InertiaRails.broadcast_refresh_to(streamable, request_id: request_id) }
-            else
-              InertiaRails.broadcast_refresh_to(streamable, request_id: request_id)
-            end
+          if debounce
+            stream_name = InertiaRails::StreamName.stream_name_from([streamable, request_id].compact)
+            InertiaRails::ThreadDebouncer
+              .for("inertia_live_debounce:#{stream_name}", delay: debounce)
+              .debounce { InertiaRails.broadcast_refresh_to(streamable, request_id: request_id) }
+          else
+            InertiaRails.broadcast_refresh_to(streamable, request_id: request_id)
           end
         end
       end
 
       # Executes +block+ preventing broadcasts from this model only.
       def suppressing_inertia_broadcasts(&block)
-        original, self.suppressed_inertia_broadcasts = suppressed_inertia_broadcasts, true
+        original = suppressed_inertia_broadcasts
+        self.suppressed_inertia_broadcasts = true
         yield
       ensure
         self.suppressed_inertia_broadcasts = original
@@ -99,9 +85,24 @@ module InertiaRails
       def suppressed_inertia_broadcasts?
         suppressed_inertia_broadcasts
       end
-    end
 
-    private
+      private
+
+      # Shared scaffold of both macros: one after_commit per lifecycle event,
+      # honoring if:/unless: and per-class suppression, resolving the stream
+      # target lazily against the record.
+      def define_inertia_broadcast_callbacks(target, on, options, &broadcast)
+        filter_opts = options.slice(:if, :unless)
+
+        Array(on).each do |event|
+          after_commit(on: event, **filter_opts) do
+            next if self.class.suppressed_inertia_broadcasts?
+
+            broadcast.call(self, resolve_broadcastable_target(target), event)
+          end
+        end
+      end
+    end
 
     def resolve_broadcastable_target(target)
       target.respond_to?(:call) ? target.call(self) : send(target)

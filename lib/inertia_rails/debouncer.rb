@@ -35,19 +35,13 @@ module InertiaRails
   # A debouncer that executes immediately without delays or background threads.
   # This doesn't debounce at all, but is safe to use in tests.
   class ImmediateDebouncer # :nodoc:
-    def initialize(delay: Debouncer::DEFAULT_DELAY)
-    end
+    def initialize(delay: Debouncer::DEFAULT_DELAY); end
 
     def debounce(&block)
       block.call
     end
 
-    def wait
-    end
-
-    def complete?
-      true
-    end
+    def wait; end
   end
 
   # A decorated debouncer that will store instances in the current thread clearing them

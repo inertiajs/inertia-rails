@@ -73,7 +73,6 @@ Rails.application.routes.draw do
   get 'filtered_live_props' => 'inertia_live_test#filtered_live_props'
   get 'no_live_props' => 'inertia_live_test#no_live_props'
   get 'live_request_id_echo' => 'inertia_live_test#live_request_id_echo'
-  post 'tasks_create' => 'inertia_live_test#create_task'
 
   get 'instance_props_test' => 'inertia_rails_mimic#instance_props_test'
   get 'default_render_test' => 'inertia_rails_mimic#default_render_test'

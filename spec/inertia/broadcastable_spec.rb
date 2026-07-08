@@ -37,9 +37,10 @@ RSpec.describe InertiaRails::Broadcastable do
       end
 
       include InertiaRails::Broadcastable
+
       belongs_to :parent, class_name: parent.name, optional: true
 
-      class_eval(&block)
+      class_eval(&block) if block
     end
   end
 
@@ -119,6 +120,36 @@ RSpec.describe InertiaRails::Broadcastable do
         record.update!(name: 'updated')
       end
     end
+
+    context 'with if: option' do
+      let(:child_class) do
+        build_child_class(parent_class) do
+          broadcasts_to ->(_record) { :test_stream }, if: -> { name != 'silent' }
+        end
+      end
+
+      it 'skips broadcasts when the condition is false' do
+        expect(InertiaRails).to receive(:broadcast_change_to).once
+
+        child_class.create!(name: 'loud')
+        child_class.create!(name: 'silent')
+      end
+    end
+
+    context 'with unless: option' do
+      let(:child_class) do
+        build_child_class(parent_class) do
+          broadcasts_to ->(_record) { :test_stream }, unless: -> { name == 'silent' }
+        end
+      end
+
+      it 'skips broadcasts when the condition is true' do
+        expect(InertiaRails).to receive(:broadcast_change_to).once
+
+        child_class.create!(name: 'loud')
+        child_class.create!(name: 'silent')
+      end
+    end
   end
 
   # --- broadcasts_refreshes_to (reload) ---
@@ -172,7 +203,7 @@ RSpec.describe InertiaRails::Broadcastable do
     end
 
     it 'aliases the short names when no other library claimed them' do
-      klass = build_child_class(parent_class) {}
+      klass = build_child_class(parent_class)
 
       expect(klass).to respond_to(:broadcasts_to)
       expect(klass).to respond_to(:broadcasts_refreshes_to)
@@ -236,8 +267,10 @@ RSpec.describe InertiaRails::Broadcastable do
     it 'keys debouncers per request_id so concurrent requests do not coalesce' do
       parent = parent_class.create!(name: 'parent')
 
-      expect(InertiaRails).to receive(:broadcast_refresh_to).with(:test_stream, hash_including(request_id: 'req-A')).once
-      expect(InertiaRails).to receive(:broadcast_refresh_to).with(:test_stream, hash_including(request_id: 'req-B')).once
+      expect(InertiaRails).to receive(:broadcast_refresh_to).with(:test_stream,
+                                                                  hash_including(request_id: 'req-A')).once
+      expect(InertiaRails).to receive(:broadcast_refresh_to).with(:test_stream,
+                                                                  hash_including(request_id: 'req-B')).once
 
       allow(InertiaRails::Current).to receive(:live_request_id).and_return('req-A')
       child_class.create!(name: 'from-A', parent_id: parent.id)

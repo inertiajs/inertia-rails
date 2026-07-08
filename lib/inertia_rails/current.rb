@@ -10,7 +10,9 @@ module InertiaRails
     LIVE_REQUEST_ID_FORMAT = /\A[0-9a-zA-Z-]{8,64}\z/
 
     def live_request_id
-      id = request&.headers&.[](Broadcast::REQUEST_ID_HEADER)
+      return unless request
+
+      id = request.headers[Broadcast::REQUEST_ID_HEADER]
       id if id&.match?(LIVE_REQUEST_ID_FORMAT)
     end
   end

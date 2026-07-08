@@ -2,6 +2,7 @@
   "protocol": 1,
   "channel": "InertiaRails::StreamsChannel",
   "header": "X-Inertia-Live-Request-Id",
+  "request_id_format": "^[0-9a-zA-Z-]{8,64}$",
   "pages": {
     "full": {
       "url": "/tasks",
