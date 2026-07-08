@@ -140,6 +140,7 @@ export default withMermaid({
             { text: 'Partial reloads', link: '/guide/partial-reloads' },
             { text: 'Deferred props', link: '/guide/deferred-props' },
             { text: 'Polling', link: '/guide/polling' },
+            { text: 'Live props', link: '/guide/live-props' },
             { text: 'Prefetching', link: '/guide/prefetching' },
             { text: 'Load when visible', link: '/guide/load-when-visible' },
             { text: 'Merging props', link: '/guide/merging-props' },
