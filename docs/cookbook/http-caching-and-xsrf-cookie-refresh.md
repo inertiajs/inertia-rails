@@ -13,7 +13,7 @@ The problem shows up in two places:
 
 The adapter refreshes the `XSRF-TOKEN` cookie in an `after_action` on every request where forgery protection is active, so Inertia's HTTP client can read it and send it back as an `X-XSRF-TOKEN` header.
 
-Rails normally suppresses `Set-Cookie` when a cookie is written with its existing value — but that never applies here. Rails masks CSRF tokens with a random one-time pad on every call (a BREACH mitigation), so `form_authenticity_token` returns a *different* string on every request even though the underlying token hasn't changed. The cookie jar sees a new value every time and emits `Set-Cookie` on every response, including `304`s.
+Rails normally suppresses `Set-Cookie` when a cookie is written with its existing value — but that never applies here. Rails masks CSRF tokens with a random one-time pad on every call (a BREACH mitigation), so `form_authenticity_token` returns a _different_ string on every request even though the underlying token hasn't changed. The cookie jar sees a new value every time and emits `Set-Cookie` on every response, including `304`s.
 
 Because the value is re-masked on every call, the only way to know whether the cookie actually needs a refresh is to unmask and compare it against the session token — which is exactly what the `:lazy` policy does when it can.
 
@@ -60,13 +60,13 @@ This option only addresses `XSRF-TOKEN` churn.
 
 Cookie-backed sessions are a separate source of `Set-Cookie` churn: the session cookie is re-encrypted on every response that touches the session, and `fresh_when` / `stale?` touch the session. If your app stores sessions in cookies, `:lazy` alone won't produce fully `Set-Cookie`-free `304`s — moving session storage to Redis or a database removes that second source.
 
-The adapter also deliberately does *not* load a lazy session just to validate an existing cookie: loading a cookie-backed session emits its own session `Set-Cookie`, which would reintroduce the exact churn this option removes.
+The adapter also deliberately does _not_ load a lazy session just to validate an existing cookie: loading a cookie-backed session emits its own session `Set-Cookie`, which would reintroduce the exact churn this option removes.
 
 ## Caveat: stale cookies on session-less requests
 
 On `GET` / `HEAD` requests where nothing loads the session — no Inertia render, no flash, no `fresh_when` — an existing cookie is trusted without validation. A stale cookie (for example, after a `secret_key_base` rotation) is not detected on those requests, so the next protected request fails with `InvalidAuthenticityToken`.
 
-This failure is loud, never a silent CSRF bypass: the cookie is not a server-side validation input (the server checks the `X-XSRF-TOKEN` *header* against the session). And it self-heals — any request that loads the session, including every rendered Inertia response, validates and refreshes the cookie.
+This failure is loud, never a silent CSRF bypass: the cookie is not a server-side validation input (the server checks the `X-XSRF-TOKEN` _header_ against the session). And it self-heals — any request that loads the session, including every rendered Inertia response, validates and refreshes the cookie.
 
 ## Security tradeoff
 
