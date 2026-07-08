@@ -142,13 +142,8 @@ module Inertia
       def install_typescript
         say 'Adding TypeScript support'
 
-        # @inertiajs/core is only a transitive dependency of the framework
-        # adapters, so it isn't exposed at the top level under pnpm's strict
-        # node_modules layout. The generated `types/globals.d.ts` augments the
-        # `@inertiajs/core` module (to type flash/shared props and errors), and
-        # the React/Svelte scaffolds import types from it directly. Declaring it
-        # as an explicit dependency keeps it resolvable across package managers.
-        # Pin it to the same version as the adapter so the types stay in sync.
+        # globals.d.ts augments @inertiajs/core and scaffolds import its types;
+        # pnpm won't expose the adapters' transitive dep, so declare it directly.
         add_dependencies(
           "@inertiajs/core@#{options[:inertia_version]}",
           *FRAMEWORKS[framework]['packages_ts'],
