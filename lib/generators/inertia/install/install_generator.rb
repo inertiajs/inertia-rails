@@ -142,7 +142,13 @@ module Inertia
       def install_typescript
         say 'Adding TypeScript support'
 
-        add_dependencies(*FRAMEWORKS[framework]['packages_ts'], dev: true)
+        # globals.d.ts augments @inertiajs/core and scaffolds import its types;
+        # pnpm won't expose the adapters' transitive dep, so declare it directly.
+        add_dependencies(
+          "@inertiajs/core@#{options[:inertia_version]}",
+          *FRAMEWORKS[framework]['packages_ts'],
+          dev: true
+        )
 
         say 'Copying tsconfig and types'
 
