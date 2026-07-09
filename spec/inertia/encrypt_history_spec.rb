@@ -53,6 +53,22 @@ RSpec.describe 'Inertia encrypt history', type: :request do
     end
   end
 
+  context 'with clear history on a see_other redirect' do
+    it 'returns clearHistory true after the redirect' do
+      delete encrypt_history_clear_history_after_see_other_redirect_path, headers: headers
+
+      expect(response.status).to eq(303)
+      expect(response.headers['Location']).to eq(empty_test_url)
+      expect(session[:inertia_clear_history]).to eq(true)
+
+      follow_redirect!
+      expect(response.body).to include('&quot;clearHistory&quot;:true')
+
+      get empty_test_path, headers: headers
+      expect(response.parsed_body['clearHistory']).to eq(false)
+    end
+  end
+
   context 'with preserve fragment' do
     it 'does not include preserveFragment by default' do
       get encrypt_history_default_config_path, headers: headers

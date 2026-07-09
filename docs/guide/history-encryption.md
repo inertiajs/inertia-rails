@@ -52,6 +52,18 @@ To clear the history state on the server side, you can pass the `clear_history` 
 render inertia: {}, clear_history: true
 ```
 
+You can also pass the option to `redirect_to`, for example in a logout action. The flag survives the redirect and is applied by the next rendered page:
+
+```ruby
+def destroy
+  terminate_session
+  redirect_to new_session_path, status: :see_other, inertia: { clear_history: true }
+end
+```
+
 Once the response has rendered on the client, the encryption key will be rotated, rendering the previous history state unreadable.
+
+> [!NOTE]
+> Clearing history only protects pages that were stored encrypted. With `encrypt_history` disabled, history entries are stored in plain text and remain readable after the key rotation, so the Back button will still restore them.
 
 You can also clear history on the client site by calling `router.clearHistory()`.

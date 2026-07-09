@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Fix `inertia: { errors: }` and `inertia: { clear_history: }` being discarded when `redirect_to` is given an explicit non-302 status such as `status: :see_other` (303/307/308) (@skryukov)
+
 ## [3.21.2] - 2026-06-09
 
 * Add `rescue: true` option to `InertiaRails.defer` to rescue and report exceptions raised while resolving a deferred prop (@skryukov)
