@@ -1,13 +1,5 @@
 # frozen_string_literal: true
 
-# Regression coverage for conditional-GET (304) cross-variant poisoning.
-#
-# The problem: different representations of the same URL (full HTML, full
-# Inertia JSON, and partial reloads) can share an ETag, so a conditional GET
-# carrying one representation's validator can wrong-serve a 304 for another.
-# The fix: `etag { inertia_conditional_get_variant }` in the concern folds the
-# representation into the validator for Inertia requests while leaving
-# non-Inertia ETags untouched (combine_etags compacts the nil).
 RSpec.describe 'conditional GET variant split', type: :request do
   def get_etag(path, headers = {})
     get path, headers: headers
@@ -32,7 +24,7 @@ RSpec.describe 'conditional GET variant split', type: :request do
       expect(html).not_to eq(json)
     end
 
-    it 'does NOT serve a wrong-variant 304 (poisoning prevented)' do
+    it 'does not serve a wrong-variant 304' do
       html = get_etag(conditional_get_path)
 
       get conditional_get_path, headers: { 'X-Inertia' => 'true', 'If-None-Match' => html }
@@ -67,7 +59,7 @@ RSpec.describe 'conditional GET variant split', type: :request do
       expect(full).not_to eq(partial)
     end
 
-    it 'does NOT serve the full-visit body to a partial conditional GET' do
+    it 'does not serve the full-visit body to a partial conditional GET' do
       full = get_etag(conditional_partial_path, 'X-Inertia' => 'true')
 
       get conditional_partial_path, headers: partial_headers.merge('If-None-Match' => full)
@@ -80,6 +72,22 @@ RSpec.describe 'conditional GET variant split', type: :request do
       partial = get_etag(conditional_partial_path, partial_headers)
       get conditional_partial_path, headers: partial_headers.merge('If-None-Match' => partial)
       expect(response.status).to eq(304)
+    end
+  end
+
+  describe 'body-affecting protocol headers beyond partial reloads' do
+    it 'gives a resetting partial reload a different ETag than a plain one' do
+      plain = get_etag(conditional_partial_path, partial_headers)
+      reset = get_etag(conditional_partial_path, partial_headers.merge('X-Inertia-Reset' => 'name'))
+
+      expect(plain).not_to eq(reset)
+    end
+
+    it 'gives a request skipping once props a different ETag than a full visit' do
+      full = get_etag(conditional_get_path, 'X-Inertia' => 'true')
+      except_once = get_etag(conditional_get_path, 'X-Inertia' => 'true', 'X-Inertia-Except-Once-Props' => 'name')
+
+      expect(full).not_to eq(except_once)
     end
   end
 
@@ -103,13 +111,11 @@ RSpec.describe 'conditional GET variant split', type: :request do
     end
   end
 
-  describe 'KNOWN LIMITATION: last_modified-only conditional GET' do
-    # With no ETag at all, there is no validator to fold the variant into, so
-    # the split cannot apply. A shared cache keyed only on the URL can still
-    # cross-serve variants here; the mitigation is Vary/If-None-Match, not this
-    # fix. Documented so the gap is explicit, not silent.
-    it 'wrong-serves a 304 across variants (fix does not cover this path)' do
-      get conditional_last_modified_path # HTML, sets Last-Modified
+  describe 'known limitation: last_modified-only conditional GET' do
+    # With no ETag there is no validator to fold the variant into, so the
+    # split cannot apply; pair last_modified with an etag to stay covered.
+    it 'wrong-serves a 304 across variants' do
+      get conditional_last_modified_path
       last_modified = response.headers['Last-Modified']
 
       get conditional_last_modified_path, headers: {
@@ -117,7 +123,7 @@ RSpec.describe 'conditional GET variant split', type: :request do
         'If-Modified-Since' => last_modified,
       }
 
-      expect(response.status).to eq(304) # <- the unfixed cross-variant hit
+      expect(response.status).to eq(304)
     end
   end
 end

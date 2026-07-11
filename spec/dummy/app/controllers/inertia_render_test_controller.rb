@@ -80,34 +80,26 @@ class InertiaRenderTestController < ApplicationController
     render inertia: 'TestComponent'
   end
 
-  # A conditionally-cacheable Inertia page. The literal etag is the same for
-  # both variants; the concern's variant discriminator is what splits HTML vs
-  # JSON (and full vs partial).
   def conditional_get
     fresh_when etag: 'shared-v1'
     render inertia: 'TestComponent', props: { name: 'conditional' } unless performed?
   end
 
-  # Two props so a partial reload returns a different body than a full visit at
-  # the same URL and same literal etag.
   def conditional_partial
     fresh_when etag: 'shared-v1'
     render inertia: 'TestComponent', props: { name: 'Brian', sport: 'hockey' } unless performed?
   end
 
-  # Strong-etag variant (exercises the combine_etags strong path).
   def conditional_strong
     fresh_when strong_etag: 'strong-v1'
     render inertia: 'TestComponent', props: { name: 'strong' } unless performed?
   end
 
-  # last_modified-only — no etag at all, so the discriminator can't apply.
   def conditional_last_modified
     fresh_when last_modified: Time.utc(2026, 1, 1)
     render inertia: 'TestComponent', props: { name: 'lm' } unless performed?
   end
 
-  # stale? block form.
   def conditional_stale
     return unless stale?(etag: 'stale-v1')
 
