@@ -54,24 +54,20 @@ RSpec.describe 'Inertia configuration', type: :request do
         end
       end
 
-      it 'raises for invalid xsrf_cookie_refresh values' do
-        config = InertiaRails::Configuration.default
+      it 'raises for invalid xsrf_cookie_refresh values when read' do
+        config = InertiaRails::Configuration.new(xsrf_cookie_refresh: :sometimes)
 
         expect do
-          config.xsrf_cookie_refresh = :sometimes
+          config.xsrf_cookie_refresh
         end.to raise_error(ArgumentError, /Invalid xsrf_cookie_refresh/)
       end
 
-      it 'raises for invalid xsrf_cookie_refresh values at construction (the inertia_config path)' do
-        expect do
-          InertiaRails::Configuration.new(xsrf_cookie_refresh: :sometimes)
-        end.to raise_error(ArgumentError, /Invalid xsrf_cookie_refresh/)
-      end
-
-      it 'raises for invalid INERTIA_XSRF_COOKIE_REFRESH env values at configuration build time' do
+      it 'raises for invalid INERTIA_XSRF_COOKIE_REFRESH env values when read' do
         with_env('INERTIA_XSRF_COOKIE_REFRESH' => 'garbage') do
+          config = InertiaRails::Configuration.default
+
           expect do
-            InertiaRails::Configuration.default
+            config.xsrf_cookie_refresh
           end.to raise_error(ArgumentError, /Invalid xsrf_cookie_refresh/)
         end
       end

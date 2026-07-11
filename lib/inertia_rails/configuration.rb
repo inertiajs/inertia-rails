@@ -106,7 +106,6 @@ module InertiaRails
     def initialize(controller: nil, **attrs)
       @controller = controller
       @options = attrs.extract!(*OPTION_NAMES)
-      validate_options!
 
       return if attrs.empty?
 
@@ -154,12 +153,15 @@ module InertiaRails
       @options[:cache_store] || Rails.cache
     end
 
+    # Normalized and validated at read time — ENV values arrive as strings, and callables are only evaluated here.
     def xsrf_cookie_refresh
-      normalize_xsrf_cookie_refresh(evaluate_option(options[:xsrf_cookie_refresh]))
-    end
+      value = evaluate_option(options[:xsrf_cookie_refresh])
+      value = value.to_sym if value.respond_to?(:to_sym)
+      return value if XSRF_COOKIE_REFRESH_OPTIONS.include?(value)
 
-    def xsrf_cookie_refresh=(value)
-      @options[:xsrf_cookie_refresh] = value.respond_to?(:call) ? value : normalize_xsrf_cookie_refresh(value)
+      raise ArgumentError,
+            "Invalid xsrf_cookie_refresh: #{value.inspect}. " \
+            "Expected one of: #{XSRF_COOKIE_REFRESH_OPTIONS.map(&:inspect).join(', ')}"
     end
 
     OPTION_NAMES.each do |option|
@@ -168,8 +170,6 @@ module InertiaRails
           evaluate_option options[option]
         end
       end
-      next if method_defined?("#{option}=")
-
       define_method("#{option}=") do |value|
         @options[option] = value
       end
@@ -177,32 +177,11 @@ module InertiaRails
 
     private
 
-    # Validate enum-style options eagerly so a bad value (from `inertia_config`,
-    # `InertiaRails.configure`, or an ENV variable) fails at configuration time
-    # instead of raising in an after_action on every live request.
-    def validate_options!
-      return unless @options.key?(:xsrf_cookie_refresh)
-
-      value = @options[:xsrf_cookie_refresh]
-      return if value.respond_to?(:call)
-
-      @options[:xsrf_cookie_refresh] = normalize_xsrf_cookie_refresh(value)
-    end
-
     def evaluate_option(value)
       return value unless value.respond_to?(:call)
       return value.call unless controller
 
       controller.instance_exec(&value)
-    end
-
-    def normalize_xsrf_cookie_refresh(value)
-      normalized = value.respond_to?(:to_sym) ? value.to_sym : value
-      return normalized if XSRF_COOKIE_REFRESH_OPTIONS.include?(normalized)
-
-      raise ArgumentError,
-            "Invalid xsrf_cookie_refresh: #{value.inspect}. " \
-            "Expected one of: #{XSRF_COOKIE_REFRESH_OPTIONS.map(&:inspect).join(', ')}"
     end
   end
 end
