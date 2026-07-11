@@ -13,7 +13,7 @@ module InertiaRails
 
       after_action do
         next unless protect_against_forgery?
-        next if skip_xsrf_cookie_refresh?
+        next if XsrfCookieRefreshPolicy.skip?(self)
 
         cookies['XSRF-TOKEN'] = form_authenticity_token
       end
@@ -125,49 +125,6 @@ module InertiaRails
 
     def inertia_configuration
       self.class._inertia_configuration.bind_controller(self)
-    end
-
-    def skip_xsrf_cookie_refresh?
-      return false unless inertia_configuration.xsrf_cookie_refresh == :lazy
-      return false unless request.get? || request.head?
-
-      xsrf_token_cookie = request.cookies['XSRF-TOKEN']
-      return false unless xsrf_token_cookie.present?
-
-      return true unless xsrf_cookie_can_be_validated_without_loading_session?
-
-      xsrf_cookie_valid_for_session?(xsrf_token_cookie)
-    end
-
-    def xsrf_cookie_can_be_validated_without_loading_session?
-      csrf_token_loaded_in_env? ||
-        (request.session.respond_to?(:loaded?) && request.session.loaded?)
-    end
-
-    def xsrf_cookie_valid_for_session?(xsrf_token_cookie)
-      csrf_token_env_key = self.csrf_token_env_key
-      csrf_token_loaded = csrf_token_env_key && request.env.key?(csrf_token_env_key)
-      valid_authenticity_token?(session, xsrf_token_cookie)
-    ensure
-      # `valid_authenticity_token?` memoizes the real token into
-      # `request.env[CSRF_TOKEN]` (Rails 7.1+), and the session middleware later
-      # persists whatever sits there via `commit_csrf_token`. Drop the key when
-      # validation itself created it, so a validation-only read can't dirty the
-      # session and emit a session Set-Cookie. No-op on Rails < 7.1, where
-      # there is no env key to clean up.
-      request.env.delete(csrf_token_env_key) if csrf_token_env_key && !csrf_token_loaded
-    end
-
-    def csrf_token_loaded_in_env?
-      csrf_token_env_key = self.csrf_token_env_key
-      csrf_token_env_key && request.env.key?(csrf_token_env_key)
-    end
-
-    def csrf_token_env_key
-      request_forgery_protection = ActionController::RequestForgeryProtection
-      return unless request_forgery_protection.const_defined?(:CSRF_TOKEN, false)
-
-      request_forgery_protection.const_get(:CSRF_TOKEN)
     end
 
     def inertia_shared_data
