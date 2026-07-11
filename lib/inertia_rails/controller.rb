@@ -12,7 +12,10 @@ module InertiaRails
       end
 
       after_action do
-        cookies['XSRF-TOKEN'] = form_authenticity_token if protect_against_forgery?
+        next unless protect_against_forgery?
+        next if XsrfCookieRefreshPolicy.skip?(self)
+
+        cookies['XSRF-TOKEN'] = form_authenticity_token
       end
 
       rescue_from InertiaRails::PrecognitionResponse do |e|

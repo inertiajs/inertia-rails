@@ -24,7 +24,8 @@ RSpec.describe 'Inertia configuration', type: :request do
         with_env(
           'INERTIA_SSR_ENABLED' => 'true',
           'INERTIA_SSR_URL' => 'http://env-ssr-url:1234',
-          'INERTIA_DEEP_MERGE_SHARED_DATA' => 'true'
+          'INERTIA_DEEP_MERGE_SHARED_DATA' => 'true',
+          'INERTIA_XSRF_COOKIE_REFRESH' => 'lazy'
         ) do
           config = InertiaRails::Configuration.default
 
@@ -33,6 +34,7 @@ RSpec.describe 'Inertia configuration', type: :request do
           expect(config.ssr_enabled).to eq false
           expect(config.ssr_url).to eq 'http://env-ssr-url:1234'
           expect(config.deep_merge_shared_data).to eq true
+          expect(config.xsrf_cookie_refresh).to eq :lazy
         end
       end
 
@@ -49,6 +51,24 @@ RSpec.describe 'Inertia configuration', type: :request do
           expect(controller_config.ssr_enabled).to eq true
           expect(controller_config.ssr_url).to eq 'http://ssr-url:1234'
           expect(controller_config.deep_merge_shared_data).to eq true
+        end
+      end
+
+      it 'raises for invalid xsrf_cookie_refresh values when read' do
+        config = InertiaRails::Configuration.new(xsrf_cookie_refresh: :sometimes)
+
+        expect do
+          config.xsrf_cookie_refresh
+        end.to raise_error(ArgumentError, /Invalid xsrf_cookie_refresh/)
+      end
+
+      it 'raises for invalid INERTIA_XSRF_COOKIE_REFRESH env values when read' do
+        with_env('INERTIA_XSRF_COOKIE_REFRESH' => 'garbage') do
+          config = InertiaRails::Configuration.default
+
+          expect do
+            config.xsrf_cookie_refresh
+          end.to raise_error(ArgumentError, /Invalid xsrf_cookie_refresh/)
         end
       end
     end
@@ -216,5 +236,6 @@ def reset_config!
   InertiaRails.configure do |config|
     config.version = nil
     config.layout = 'application'
+    config.xsrf_cookie_refresh = :always
   end
 end
