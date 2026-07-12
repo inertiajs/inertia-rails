@@ -23,7 +23,7 @@ module InertiaRails
       def copy_view_files
         actions.each do |action|
           @action = action
-          @path = File.join(base_path, "#{action.camelize}.#{extension}")
+          @path = File.join(base_path, "#{action}.#{extension}")
           template "#{options.frontend_framework}/#{template_filename}.#{extension}", @path
         end
       end
