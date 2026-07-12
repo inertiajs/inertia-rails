@@ -14,4 +14,11 @@ RSpec.describe InertiaTemplates::Generators::ControllerGenerator, type: :generat
     views_path = File.join(destination_root, 'app/frontend/pages/admin/tickets')
     expect(Dir.children(views_path)).to contain_exactly('index.tsx', 'show_details.tsx')
   end
+
+  it 'does not pluralize the view directory for singular controllers' do
+    run_generator %w[Ticket show --frontend-framework=react --typescript]
+
+    views_path = File.join(destination_root, 'app/frontend/pages/ticket')
+    expect(Dir.children(views_path)).to contain_exactly('show.tsx')
+  end
 end

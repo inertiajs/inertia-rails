@@ -37,8 +37,9 @@ module InertiaRails
         end
       end
 
+      # Matches controller_path, which the default component path resolver expects.
       def inertia_base_path
-        (class_path + [file_name.pluralize]).join('/')
+        (class_path + [file_name]).join('/')
       end
 
       def inertia_component_name

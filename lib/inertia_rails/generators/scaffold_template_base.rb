@@ -26,6 +26,11 @@ module InertiaRails
 
       private
 
+      # Scaffold controllers are pluralized, so the views live under the pluralized path.
+      def inertia_base_path
+        (controller_class_path + [controller_file_name]).join('/')
+      end
+
       def template_extension
         return extension unless typescript?
         return 'tsx' if frontend_framework == 'react'
