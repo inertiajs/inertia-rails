@@ -8,8 +8,8 @@ module InertiaRails
     class ControllerTemplateBase < Rails::Generators::NamedBase
       include Helper
 
-      class_option :frontend_framework, required: true, desc: 'Frontend framework to generate the views for.',
-                                        default: Helper.guess_the_default_framework
+      class_option :frontend_framework,
+                   desc: 'Frontend framework to generate the views for (defaults to the one detected in package.json).'
 
       class_option :typescript, type: :boolean, desc: 'Whether to use TypeScript',
                                 default: Helper.uses_typescript?
@@ -24,11 +24,15 @@ module InertiaRails
         actions.each do |action|
           @action = action
           @path = File.join(base_path, "#{action}.#{extension}")
-          template "#{options.frontend_framework}/#{template_filename}.#{extension}", @path
+          template "#{frontend_framework}/#{template_filename}.#{extension}", @path
         end
       end
 
       private
+
+      def frontend_framework
+        options[:frontend_framework] || Helper.guess_the_default_framework
+      end
 
       def base_path
         File.join(pages_path, inertia_base_path)
@@ -47,12 +51,12 @@ module InertiaRails
       end
 
       def extension
-        case options.frontend_framework
+        case frontend_framework
         when 'react' then typescript? ? 'tsx' : 'jsx'
         when 'vue' then 'vue'
         when 'svelte' then 'svelte'
         else
-          raise ArgumentError, "Unknown frontend framework: #{options.frontend_framework}"
+          raise ArgumentError, "Unknown frontend framework: #{frontend_framework}"
         end
       end
 

@@ -27,6 +27,8 @@ module InertiaRails
         end
 
         def guess_inertia_template(package_json_path = DEFAULT_PACKAGE_PATH)
+          return 'inertia_templates' unless package_json_path.exist?
+
           if package_json_path.read.include?('"tailwindcss"')
             'inertia_tw_templates'
           else
