@@ -1,6 +1,6 @@
 # HTTP caching and XSRF cookie refresh
 
-By default, Inertia Rails rewrites the `XSRF-TOKEN` cookie on every protected request. Each rewrite emits a `Set-Cookie` header — including on otherwise cacheable `GET` responses and even on `304 Not Modified` responses. If your app relies on HTTP caching for Inertia pages, that header can quietly defeat it. This page explains why it happens and how to opt into a less aggressive refresh policy.
+By default, Inertia Rails rewrites the `XSRF-TOKEN` cookie on every protected request. Each rewrite emits a `Set-Cookie` header — including on otherwise cacheable `GET` responses and even on `304 Not Modified` responses. If your app relies on HTTP caching for Inertia pages, that header can quietly defeat it. This page explains why it happens and how to opt into a less aggressive refresh policy. For the broader caching picture, see the [caching guide](/guide/caching).
 
 ## Symptom
 
