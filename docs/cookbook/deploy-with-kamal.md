@@ -1,221 +1,160 @@
-# Deploy with `Kamal`
+# Deploy with Kamal
 
-Rails 8 will ship with [Kamal](https://kamal-deploy.org/) preconfigured as the default deployment tool.
-If your application does not require [SSR](/guide/server-side-rendering.md), you simply just need to
-[update your asset_path](#update-asset-path-inconfig-deploy-yml), and deployment should work seamlessly.
+Rails ships with [Kamal](https://kamal-deploy.org/) preconfigured as the default deployment tool. A client-rendered Inertia Rails app deploys with a single config tweak — [updating the asset path](#update-the-asset-path). Enabling [SSR](/guide/server-side-rendering) adds one decision: where the SSR process runs. This guide covers both options — inside the web container via the built-in Puma plugin (recommended), and as a separate Kamal role.
 
-However, if you plan to configure your Inertia Rails application with [SSR](/guide/server-side-rendering.md) enabled,
-a few additional tweaks may be required. This guide will walk you through the steps to quickly configure
-[Kamal](https://kamal-deploy.org/) for deploying your next Inertia Rails application with
-[SSR](/guide/server-side-rendering.md) support.
+> [!NOTE]
+> This guide is based on Rails 8 and Kamal 2. It assumes SSR already works in development — see the [server-side rendering guide](/guide/server-side-rendering) for the initial setup.
 
-> Note: This guide is based on Rails 8.0 and Kamal 2.3.0 at the time of writing.
+## Update the asset path
 
+During a deploy, Kamal bridges fingerprinted assets between the old and new versions of the app, so in-flight requests don't hit 404s. Vite Ruby outputs assets to `public/vite` instead of the default `public/assets`, so point `asset_path` there:
 
-## Update your Dockerfile
+```yml
+# config/deploy.yml
+asset_path: /rails/public/assets # [!code --]
+asset_path: /rails/public/vite # [!code ++]
+```
 
-It is crucial to ensure that the **_Install JavaScript dependencies_** step is executed in the **_base_** image. This
-guarantees that the Node.js runtime is available for both the **_build_** stage and the **_runtime_** stage.
+This is the only Kamal-specific change a client-rendered Inertia app needs. If you don't use SSR, you can stop here.
+
+## Build the SSR bundle during image build
+
+Kamal packages your app as a Docker image, and `assets:precompile` runs inside `docker build`. By default, Vite Ruby only builds the client bundle. Enable the SSR build in `config/vite.json` so precompilation produces both bundles:
+
+```json
+// config/vite.json
+"all": {
+  "ssrEntrypoint": "~/entrypoints/inertia.js"
+},
+"production": {
+  "ssrBuildEnabled": true
+}
+```
+
+The `ssrEntrypoint` line points Vite Ruby's SSR build at your client entry point — the [Inertia Vite plugin](/guide/server-side-rendering#vite-plugin-setup) adapts it for the server automatically. Without it, the SSR build fails with `No SSR entrypoint available`. Skip that line only if you use a dedicated `~/ssr/ssr.js` entry point ([manual setup](/guide/server-side-rendering#manual-setup)), which Vite Ruby finds on its own.
+
+Then make sure SSR is enabled in the adapter:
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.ssr_enabled = true
+end
+```
+
+> [!NOTE]
+> If you followed the [manual SSR setup](/guide/server-side-rendering#manual-setup), you already have `config.ssr_enabled = ViteRuby.config.ssr_build_enabled` — keep it. It evaluates to `true` in production now that `ssrBuildEnabled` is set.
+
+## Make Node.js available at runtime
+
+The default Rails Dockerfile installs Node.js only in the throwaway `build` stage — or not at all, if your app was generated without a JavaScript bundler. The SSR server is a Node.js process, so the final image needs the `node` binary too.
+
+Move the entire "Install JavaScript dependencies" block from the `build` stage into the `base` stage, keeping the versions and package manager commands your Dockerfile already uses. If your Dockerfile has no such block, add it to the `base` stage:
 
 ```dockerfile
-# syntax=docker/dockerfile:1
-# check=error=true
-
-# This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
-# docker build -t fresh_rails .
-# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name fresh_rails fresh_rails
-
-# For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
-
-# Make sure RUBY_VERSION matches the Ruby version in .ruby-version
-ARG RUBY_VERSION=3.3.6
+# Dockerfile
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
 # Rails app lives here
 WORKDIR /rails
 
-# Install base packages
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips sqlite3 && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+# ...
 
-# Install JavaScript dependencies // [!code ++]
-ARG NODE_VERSION=22.11.0 // [!code ++]
-ARG YARN_VERSION=1.22.22 // [!code ++]
-ENV PATH=/usr/local/node/bin:$PATH // [!code ++]
-RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \ // [!code ++]
-    /tmp/node-build-master/bin/node-build "${NODE_VERSION}" /usr/local/node && \ // [!code ++]
-    npm install -g yarn@$YARN_VERSION && \ // [!code ++]
-    rm -rf /tmp/node-build-master // [!code ++]
-
-# Set production environment
-ENV RAILS_ENV="production" \
-    BUNDLE_DEPLOYMENT="1" \
-    BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT="development"
+# Install JavaScript dependencies # [!code ++]
+ARG NODE_VERSION=22.16.0 # [!code ++]
+ENV PATH=/usr/local/node/bin:$PATH # [!code ++]
+RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \ # [!code ++]
+    /tmp/node-build-master/bin/node-build "${NODE_VERSION}" /usr/local/node && \ # [!code ++]
+    rm -rf /tmp/node-build-master # [!code ++]
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
-# Install packages needed to build gems and node modules  // [!code ++]
-# Install packages needed to build gems  // [!code --]
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libpq-dev node-gyp pkg-config python-is-python3 && \ // [!code ++]
-    apt-get install --no-install-recommends -y build-essential git pkg-config && \ // [!code --]
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+# Install JavaScript dependencies # [!code --]
+ARG NODE_VERSION=22.16.0 # [!code --]
+ENV PATH=/usr/local/node/bin:$PATH # [!code --]
+RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \ # [!code --]
+    /tmp/node-build-master/bin/node-build "${NODE_VERSION}" /usr/local/node && \ # [!code --]
+    rm -rf /tmp/node-build-master # [!code --]
+```
 
-# Install application gems
-COPY .ruby-version Gemfile Gemfile.lock ./
-RUN bundle install && \
-    rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
-    bundle exec bootsnap precompile --gemfile
+Keep the `rm -rf node_modules` line at the end of the `build` stage — and if your Dockerfile doesn't have one, add it after the `assets:precompile` step. The SSR bundle is self-contained, so the runtime image only needs the `node` binary, not the packages:
 
-# Install node modules // [!code ++]
-COPY package.json yarn.lock ./ // [!code ++]
-RUN yarn install --frozen-lockfile // [!code ++]
-
-# Copy application code
-COPY . .
-
-# Precompile bootsnap code for faster boot times
-RUN bundle exec bootsnap precompile app/ lib/
-
+```dockerfile
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
-RUN rm -rf node_modules // [!code ++]
-
-
-# Final stage for app image
-FROM base
-
-# Copy built artifacts: gems, application
-COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
-COPY --from=build /rails /rails
-
-# Run and own only the runtime files as a non-root user for security
-RUN groupadd --system --gid 1000 rails && \
-    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
-    chown -R rails:rails db log storage tmp
-USER 1000:1000
-
-# Entrypoint prepares the database.
-ENTRYPOINT ["/rails/bin/docker-entrypoint"]
-
-# Start server via Thruster by default, this can be overwritten at runtime
-EXPOSE 80
-CMD ["./bin/thrust", "./bin/rails", "server"]
+RUN rm -rf node_modules # [!code ++]
 ```
 
+> [!NOTE]
+> If your app uses Bun, apply the same change to the Bun install block instead. The adapter [detects the runtime automatically](/guide/server-side-rendering#runtime-detection) from your lockfile.
 
-## Setup server role to run SSR server in `config/deploy.yml`
+## Run the SSR server
 
-The Node-based Inertia SSR server is used to pre-render pages on the server before sending them to the client.
-The `vite_ssr` role ensures that the SSR server runs separately from the main Rails app server.
+You can run the SSR server inside the web container with the Puma plugin, or as a separate container with its own Kamal role. The Puma plugin is simpler and fits most single-server setups, so start there.
+
+### Option A: Puma plugin (recommended)
+
+@available_since rails=3.20.0
+
+Add the built-in Puma plugin to your Puma configuration:
+
+```ruby
+# config/puma.rb
+plugin :inertia_ssr
+```
+
+The plugin starts the SSR process alongside Puma inside the same container, health-checks it, restarts it on crashes, and stops it on shutdown. It locates the SSR bundle automatically, so no `config/deploy.yml` changes are needed — the default `web` role runs everything. See the [Puma plugin documentation](/guide/server-side-rendering#puma-plugin) for details.
+
+> [!NOTE]
+> If a request arrives while the SSR process is still booting, Inertia Rails logs the error and falls back to client-side rendering for that request — the page still renders.
+
+### Option B: separate SSR container
+
+To scale SSR independently from the web server, run it as a dedicated Kamal role. The role reuses the same app image and starts the SSR server with `bin/vite ssr`:
 
 ```yml
-# Deploy to these servers.
+# config/deploy.yml
 servers:
   web:
     - 192.168.0.1
-  vite_ssr: // [!code ++]
-    hosts: // [!code ++]
-      - 192.168.0.1 // [!code ++]
-    cmd: bundle exec vite ssr // [!code ++]
-    options: // [!code ++]
-      network-alias: vite_ssr // [!code ++]
-  # job:
-  #   hosts:
-  #     - 192.168.0.1
-  #   cmd: bin/jobs
-```
+  ssr: # [!code ++]
+    hosts: # [!code ++]
+      - 192.168.0.1 # [!code ++]
+    cmd: bin/vite ssr # [!code ++]
+    options: # [!code ++]
+      network-alias: inertia-ssr # [!code ++]
 
-
-## Specify the Vite server in `config/deploy.yml`
-
-The Rails app needs to know where to send SSR requests. Add the `VITE_RUBY_HOST` environment variable
-to ensure your Rails application can connect to the correct SSR server. The value **_VITE_RUBY_HOST: "vite_ssr"_**
-must match the **_network-alias_** defined in the `vite_ssr` role above.
-
-```yml
-# Inject ENV variables into containers (secrets come from .kamal/secrets).
 env:
-  secret:
-    - RAILS_MASTER_KEY
   clear:
-    # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
-    # When you start using multiple servers, you should split out job processing to a dedicated machine.
-    SOLID_QUEUE_IN_PUMA: true
-
-    VITE_RUBY_HOST: "vite_ssr" // [!code ++]
-
-    # Set number of processes dedicated to Solid Queue (default: 1)
-    # JOB_CONCURRENCY: 3
-
-    # Set number of cores available to the application on each server (default: 1).
-    # WEB_CONCURRENCY: 2
-
-    # Match this to any external database server to configure Active Record correctly
-    # Use inertia_rails_svelte5_ssr-db for a db accessory server on same machine via local kamal docker network.
-    # DB_HOST: 192.168.0.2
-
-    # Log everything from Rails
-    # RAILS_LOG_LEVEL: debug
-
+    INERTIA_SSR_URL: 'http://inertia-ssr:13714' # [!code ++]
 ```
 
+Then point the adapter at the SSR container:
 
-## Update asset_path in`config/deploy.yml`
-
-Update the asset_path to `/rails/public/vite` if you haven't.
-
-```yml
-# Bridge fingerprinted assets, like JS and CSS, between versions to avoid
-# hitting 404 on in-flight requests. Combines all files from new and old
-# version inside the asset_path.
-asset_path: /rails/public/assets // [!code --]
-asset_path: /rails/public/vite // [!code ++]
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.ssr_enabled = true
+  config.ssr_url = ENV["INERTIA_SSR_URL"] if ENV["INERTIA_SSR_URL"] # [!code ++]
+end
 ```
 
+A few things to keep in mind with this setup:
 
-## Ensure that your `vite.config.ts` is configured to support SSR
+- Don't add the Puma plugin — pointing `ssr_url` at the SSR container replaces it.
+- The `network-alias` value must match the hostname in `INERTIA_SSR_URL`. Kamal connects all containers on a host to a shared Docker network, so the alias resolves from the web container.
+- The SSR server binds to `0.0.0.0` by default, so it accepts connections from other containers. If you [restricted the host](/guide/server-side-rendering#host), remove that restriction for this setup.
+- If the web and SSR roles run on different servers, the Docker network alias won't resolve across hosts — set `INERTIA_SSR_URL` to an address the web server can reach instead.
 
-Configure Vite with an `ssr` block in your `vite.config.ts` file to ensures all dependencies are bundled for SSR.
+## Deploy
 
-```js
-import { svelte } from '@sveltejs/vite-plugin-svelte'
-import { defineConfig } from 'vite'
-import ViteRails from "vite-plugin-rails"
+With the configuration in place, ship it:
 
-export default defineConfig({
-    ssr: {// [!code ++]
-        noExternal: true,// [!code ++]
-    },// [!code ++]
-    plugins: [
-        svelte(),
-        ViteRails({
-            envVars: { RAILS_ENV: "development" },
-            envOptions: { defineOn: "import.meta.env" },
-            fullReload: {
-                additionalPaths: [],
-            },
-        }),
-    ],
-})
+```bash
+kamal setup  # first deploy only: installs Docker and the proxy on the server
+kamal deploy
 ```
 
-## Configure SSR URL in the Inertia's Rails adapter
-
-To enable Server-Side Rendering (SSR) in your Inertia Rails application, you need to specify
-the correct SSR server URL in the adapter. It can be set via the `INERTIA_SSR_URL` ENV variable.
-
-
-## Deploy and enjoy 🎉
-
-Once everything is set up, you can deploy your application by running:
-
-* `kamal setup` (if you haven’t provisioned the server yet).
-* `kamal deploy` (to deploy your application).
-
-In just a few minutes, your application will be live and ready, complete with SSR support! 🎉
-Good luck, and happy deploying! 🚀
+Your app is now live with server-side rendering enabled. To verify SSR is working, load a page with JavaScript disabled — the content still renders.

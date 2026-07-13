@@ -198,22 +198,21 @@ export default withMermaid({
               ],
             },
             {
-              text: 'Troubleshooting',
+              text: 'Deployment',
               items: [
                 {
-                  text: 'HTTP caching and XSRF cookie refresh',
-                  link: '/cookbook/http-caching-and-xsrf-cookie-refresh',
-                },
-                {
-                  text: 'Rails validation error types',
-                  link: '/cookbook/handling-validation-error-types',
+                  text: 'Deploy with Kamal',
+                  link: '/cookbook/deploy-with-kamal',
                 },
               ],
             },
             {
-              text: 'Deployment',
+              text: 'Troubleshooting',
               items: [
-                { text: 'Deploy with Kamal', link: '/cookbook/deploy-with-kamal' },
+                {
+                  text: 'Rails validation error types',
+                  link: '/cookbook/handling-validation-error-types',
+                },
               ],
             },
           ],
