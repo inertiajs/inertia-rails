@@ -56,6 +56,14 @@ RSpec.describe 'rendering inertia views', type: :request do
           expect(response.headers['Content-Type']).to eq 'text/html; charset=utf-8'
         end
       end
+
+      context 'when X-Inertia is already in the Vary header' do
+        it 'does not duplicate it' do
+          get vary_header_with_inertia_path
+
+          expect(response.headers['Vary']).to eq 'Accept-Language, X-Inertia'
+        end
+      end
     end
 
     context 'via an inertia route' do
@@ -74,6 +82,38 @@ RSpec.describe 'rendering inertia views', type: :request do
       before { get inertia_route_item_path(id: 1) }
 
       it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'route defaults hygiene' do
+      def route_defaults(name)
+        Rails.application.routes.routes.find { |route| route.name == name }.defaults
+      end
+
+      it 'does not leak the route-to-component pair into the route defaults' do
+        expect(route_defaults('inertia_route')).to eq(component: 'TestComponent')
+      end
+
+      it 'preserves the component when user defaults are given' do
+        expect(route_defaults('inertia_route_with_defaults')).to eq(category: 'static', component: 'TestComponent')
+      end
+    end
+
+    context 'via a multi-pair inertia route' do
+      context 'with the first pair' do
+        let(:page) { InertiaRails::Renderer.new('MultiA', controller, request, response, '').send(:page) }
+
+        before { get inertia_multi_route_a_path }
+
+        it { is_expected.to include inertia_div(page) }
+      end
+
+      context 'with the second pair' do
+        let(:page) { InertiaRails::Renderer.new('MultiB', controller, request, response, '').send(:page) }
+
+        before { get inertia_multi_route_b_path }
+
+        it { is_expected.to include inertia_div(page) }
+      end
     end
 
     context 'via a scoped inertia route' do

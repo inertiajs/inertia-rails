@@ -80,6 +80,12 @@ class InertiaRenderTestController < ApplicationController
     render inertia: 'TestComponent'
   end
 
+  def vary_header_with_inertia
+    response.headers['Vary'] = 'Accept-Language, X-Inertia'
+
+    render inertia: 'TestComponent'
+  end
+
   def lazy_props
     render inertia: 'TestComponent', props: {
       name: 'Brian',
