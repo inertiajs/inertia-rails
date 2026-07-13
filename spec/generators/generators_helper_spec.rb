@@ -49,5 +49,6 @@ RSpec.describe InertiaRails::Generators::Helper, type: :helper do
 
     it_behaves_like 'template detection', 'tailwind_package.json', 'inertia_tw_templates'
     it_behaves_like 'template detection', 'empty_package.json', 'inertia_templates'
+    it_behaves_like 'template detection', 'missing_package.json', 'inertia_templates'
   end
 end

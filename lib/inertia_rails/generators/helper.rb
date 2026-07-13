@@ -27,6 +27,8 @@ module InertiaRails
         end
 
         def guess_inertia_template(package_json_path = DEFAULT_PACKAGE_PATH)
+          return 'inertia_templates' unless package_json_path.exist?
+
           if package_json_path.read.include?('"tailwindcss"')
             'inertia_tw_templates'
           else
@@ -35,8 +37,9 @@ module InertiaRails
         end
       end
 
+      # Matches controller_path, which the default component path resolver expects.
       def inertia_base_path
-        (class_path + [file_name.pluralize]).join('/')
+        (class_path + [file_name]).join('/')
       end
 
       def inertia_component_name
