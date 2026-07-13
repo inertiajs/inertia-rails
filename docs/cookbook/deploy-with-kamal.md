@@ -39,7 +39,7 @@ Kamal packages your app as a Docker image, and `assets:precompile` runs inside `
 The `ssrEntrypoint` line points Vite Ruby's SSR build at your client entry point (adjust the path to your entry file's actual name and extension — `.jsx`, `.ts`, or `.tsx`) — the [Inertia Vite plugin](/guide/server-side-rendering#vite-plugin-setup) adapts it for the server automatically. Without it, the SSR build fails with `No SSR entrypoint available`. Skip that line only if you use a dedicated `~/ssr/ssr.js` entry point ([manual setup](/guide/server-side-rendering#manual-setup)), which Vite Ruby finds on its own.
 
 > [!NOTE]
-> Using [`rails_vite`](https://github.com/skryukov/rails_vite) instead of `vite_rails`? There is no `config/vite.json` — add `vite build --ssr` to your `package.json` `build` script instead, and in [Option B](#option-b-separate-ssr-container) start the SSR server with `node ssr/ssr.js` rather than `bin/vite ssr`. The rest of the recipe applies unchanged.
+> Using [`rails_vite`](https://github.com/skryukov/rails_vite) instead of `vite_rails`? There is no `config/vite.json` — add the [rake enhancement from the SSR guide](/guide/server-side-rendering#_3-configure-the-ssr-build) so `assets:precompile` builds the SSR bundle, and in [Option B](#option-b-separate-ssr-container) start the SSR server with `node ssr/inertia.js` (the bundle is named after your entry point) rather than `bin/vite ssr`. The rest of the recipe applies unchanged.
 
 Then make sure SSR is enabled in the adapter:
 
@@ -86,7 +86,19 @@ RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz
     rm -rf /tmp/node-build-master # [!code --]
 ```
 
-Keep the `rm -rf node_modules` line at the end of the `build` stage — and if your Dockerfile doesn't have one, add it after the `assets:precompile` step. The SSR bundle is self-contained, so the runtime image only needs the `node` binary, not the packages:
+By default, the SSR bundle imports its dependencies from `node_modules` at runtime, so removing the packages from the image would crash the SSR server at boot (Inertia then silently falls back to client-side rendering). To keep the runtime image slim, make the bundle self-contained first:
+
+```js
+// vite.config.js
+export default defineConfig({
+  ssr: {
+    noExternal: true, // [!code ++]
+  },
+  // ...
+})
+```
+
+With that in place, keep the `rm -rf node_modules` line at the end of the `build` stage — and if your Dockerfile doesn't have one, add it after the `assets:precompile` step; the runtime image then needs only the `node` binary:
 
 ```dockerfile
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
@@ -94,6 +106,8 @@ RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 RUN rm -rf node_modules # [!code ++]
 ```
+
+If you'd rather not bundle dependencies into the SSR bundle, drop the `rm -rf node_modules` line instead, so the packages ship with the image.
 
 > [!NOTE]
 > If your app uses Bun, apply the same change to the Bun install block instead. The adapter [detects the runtime automatically](/guide/server-side-rendering#runtime-detection) from your lockfile.
