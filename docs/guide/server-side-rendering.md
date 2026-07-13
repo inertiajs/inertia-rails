@@ -58,9 +58,23 @@ inertia({
 })
 ```
 
-### 3. Update your build script
+### 3. Configure the SSR build
 
-Update the `build` script in your `package.json` to build both bundles.
+Vite Ruby drives production builds (including `rails assets:precompile`) and resolves the SSR entry point on its own, so tell it about the SSR bundle in `config/vite.json`. Point `ssrEntrypoint` at your client entry point — the Inertia plugin adapts it for the server — and enable the SSR build for production:
+
+```json
+// config/vite.json
+"all": {
+  "ssrEntrypoint": "~/entrypoints/inertia.js"
+},
+"production": {
+  "ssrBuildEnabled": true
+}
+```
+
+Without `ssrEntrypoint`, `vite build --ssr` fails with `No SSR entrypoint available`. Skip that line only if you use a dedicated [custom SSR entry point](#custom-ssr-entry-point) at `~/ssr/ssr.js`, which Vite Ruby finds on its own.
+
+With `ssrBuildEnabled` set, `rails assets:precompile` builds both bundles. If you build with npm scripts instead, also update the `build` script in your `package.json`:
 
 ```json
 {
@@ -71,6 +85,19 @@ Update the `build` script in your `package.json` to build both bundles.
   }
 }
 ```
+
+### 4. Enable SSR in the adapter
+
+Turn SSR on in the Inertia Rails configuration:
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.ssr_enabled = true
+end
+```
+
+In development, the plugin's dev server endpoint handles rendering. In production, the adapter sends render requests to the SSR server running your built bundle.
 
 ### Development Mode
 
@@ -87,12 +114,14 @@ The Vite plugin exposes a server endpoint that Rails uses for rendering, complet
 
 ### Production
 
-For production, build both bundles and start the SSR server.
+For production, build both bundles and start the SSR server. The bundle is written to `public/vite-ssr/ssr.js`, and `bin/vite ssr` runs it:
 
 ```bash
-npm run build
-node public/assets-ssr/inertia.js
+bin/rails assets:precompile
+bin/vite ssr
 ```
+
+The recommended way to run the server in production is the [Puma plugin](#puma-plugin), which manages the SSR process for you.
 
 ### Custom SSR Entry Point
 
@@ -189,7 +218,7 @@ If you prefer not to use the Vite plugin, you may configure SSR manually.
 
 ### 1. Create an SSR entry point
 
-Create an SSR entry point file within your Laravel project.
+Create an SSR entry point file within your Rails project.
 
 :::tabs key:frameworks
 == Vue
@@ -226,7 +255,7 @@ createServer((page) =>
     page,
     render: renderToString,
     resolve: (name) => {
-      const pages = import.meta.glob('../pges/**/*.vue')
+      const pages = import.meta.glob('../pages/**/*.vue')
       return pages[`../pages/${name}.vue`]()
     },
     setup({ App, props, plugin }) {
@@ -249,7 +278,7 @@ createServer((page) =>
     page,
     render: ReactDOMServer.renderToString,
     resolve: (name) => {
-      const pages = import.meta.glob('../pges/**/*.jsx')
+      const pages = import.meta.glob('../pages/**/*.jsx')
       return pages[`../pages/${name}.jsx`]()
     },
     setup: ({ App, props }) => <App {...props} />,
@@ -266,7 +295,7 @@ createServer((page) =>
   createInertiaApp({
     page,
     resolve: (name) => {
-      const pages = import.meta.glob('../pges/**/*.svelte')
+      const pages = import.meta.glob('../pages/**/*.svelte')
       return pages[`../pages/${name}.svelte`]()
     },
     setup({ App, props }) {
@@ -290,7 +319,7 @@ Next, we need to update our Vite configuration to build our new `ssr.js` file. W
 
 ### 3. Enable SSR in the Inertia's Rails adapter
 
-Update Inertia Rails adapter cinfig to turn SSR on.
+Update the Inertia Rails adapter config to turn SSR on.
 
 ```ruby
 # config/initializers/inertia_rails.rb
