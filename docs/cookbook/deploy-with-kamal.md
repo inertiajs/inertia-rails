@@ -7,13 +7,18 @@ Rails ships with [Kamal](https://kamal-deploy.org/) preconfigured as the default
 
 ## Update the asset path
 
-During a deploy, Kamal bridges fingerprinted assets between the old and new versions of the app, so in-flight requests don't hit 404s. Vite Ruby outputs assets to `public/vite` instead of the default `public/assets`, so point `asset_path` there:
+During a deploy, Kamal bridges fingerprinted assets between the old and new versions of the app, so in-flight requests don't hit 404s. An Inertia Rails app serves fingerprinted files from two directories — `public/vite` (Vite Ruby) and `public/assets` (Propshaft, used by the default layout's stylesheet) — and Kamal supports only a single `asset_path`, so point it at their common parent:
 
 ```yml
 # config/deploy.yml
 asset_path: /rails/public/assets # [!code --]
-asset_path: /rails/public/vite # [!code ++]
+asset_path: /rails/public # [!code ++]
 ```
+
+Kamal merges the old and new directories without overwriting same-named files, so unfingerprinted files like error pages and `robots.txt` stay correct for each running version.
+
+> [!NOTE]
+> If your app keeps large static files in `public`, or gems write there at runtime (sitemap generators, upload folders), narrow the path to `/rails/public/vite` — at the cost of not bridging Propshaft assets during deploys.
 
 This is the only Kamal-specific change a client-rendered Inertia app needs. One caveat: `assets:precompile` runs Vite inside `docker build`, so your Dockerfile must install Node.js in the `build` stage. If your app was generated without a JavaScript bundler, the default Dockerfile skips that — add the install block from [Make Node.js available at runtime](#make-node-js-available-at-runtime) (for a client-rendered app, the `build` stage is enough). If you don't use SSR, you can stop here.
 
