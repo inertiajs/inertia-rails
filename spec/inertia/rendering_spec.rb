@@ -98,6 +98,14 @@ RSpec.describe 'rendering inertia views', type: :request do
       end
     end
 
+    context 'via an inertia route with props' do
+      it 'renders the static props' do
+        get inertia_route_with_props_path, headers: { 'X-Inertia' => true }
+
+        expect(response.parsed_body['props']).to include('title' => 'Static Page')
+      end
+    end
+
     context 'via a multi-pair inertia route' do
       context 'with the first pair' do
         let(:page) { InertiaRails::Renderer.new('MultiA', controller, request, response, '').send(:page) }

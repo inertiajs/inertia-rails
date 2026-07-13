@@ -33,6 +33,14 @@ Rails.application.routes.draw do
 end
 ```
 
+You can also pass static props to the component:
+
+@available_since rails=master
+
+```ruby
+inertia 'about' => 'About', props: { title: 'About us' }
+```
+
 ## Generating URLs
 
 Some server-side frameworks allow you to generate URLs from named routes. However, you will not have access to those helpers client-side. Here are a couple ways to still use named routes with Inertia.

@@ -108,6 +108,7 @@ Rails.application.routes.draw do
   inertia 'inertia_route' => 'TestComponent'
   inertia 'inertia_route_with_defaults' => 'TestComponent', defaults: { category: 'static' }
   inertia 'inertia_multi_route_a' => 'MultiA', 'inertia_multi_route_b' => 'MultiB'
+  inertia 'inertia_route_with_props' => 'TestComponent', props: { title: 'Static Page' }
   inertia :inertia_route_with_default_component
   scope :scoped, as: 'scoped' do
     inertia 'inertia_route' => 'TestComponent'

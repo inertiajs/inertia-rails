@@ -12,7 +12,7 @@ module InertiaRails
       end
 
       respond_to do |format|
-        format.html { render inertia: params[:component] }
+        format.html { render inertia: params[:component], props: request.path_parameters[:props]&.deep_dup || {} }
       end
     end
   end
