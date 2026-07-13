@@ -84,7 +84,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       it { is_expected.to include inertia_div(page) }
     end
 
-    context 'route defaults hygiene' do
+    context 'inertia route defaults' do
       def route_defaults(name)
         Rails.application.routes.routes.find { |route| route.name == name }.defaults
       end

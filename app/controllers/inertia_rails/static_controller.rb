@@ -8,8 +8,7 @@ module InertiaRails
       unless is_a?(::ActionController::Base)
         raise ArgumentError,
               '`config.parent_controller` must inherit from ActionController::Base to serve `inertia` routes, ' \
-              "got #{InertiaRails.configuration.parent_controller.inspect}. API controllers lack the rendering " \
-              'stack Inertia responses require.'
+              "got #{InertiaRails.configuration.parent_controller.inspect}"
       end
 
       respond_to do |format|

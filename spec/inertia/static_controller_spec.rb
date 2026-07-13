@@ -7,7 +7,7 @@ RSpec.describe 'InertiaRails::StaticController' do
   end
 
   context 'when parent_controller does not inherit from ActionController::Base' do
-    it 'still loads (API-only apps must boot) but raises a clear error when the action runs' do
+    it 'loads the controller class but raises when the action runs' do
       original = InertiaRails.configuration.parent_controller
       stub_const('ApiParentController', Class.new(ActionController::API))
       InertiaRails.configure { |config| config.parent_controller = 'ApiParentController' }
