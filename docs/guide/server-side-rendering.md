@@ -148,7 +148,7 @@ The Vite plugin reuses your `inertia.js` entry point for both browser and SSR re
 
 Most app customizations, such as registering plugins or wrapping with providers, may be handled using the [`withApp` callback](/guide/client-side-setup#customizing-the-app) in your main entry point. A separate SSR entry point is only needed when you require completely different setup logic for the server.
 
-You may create a separate `resources/js/ssr.js` file for this purpose.
+You may create a separate `app/frontend/ssr/ssr.js` file for this purpose.
 
 :::tabs key:frameworks
 
