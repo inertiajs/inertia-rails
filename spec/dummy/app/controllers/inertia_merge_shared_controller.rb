@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 class InertiaMergeSharedController < ApplicationController
   inertia_share do
     {
       nested: {
         goals: 100,
         assists: 100,
-      }
+      },
     }
   end
 
@@ -12,7 +14,7 @@ class InertiaMergeSharedController < ApplicationController
     render inertia: 'ShareTestComponent', props: {
       nested: {
         assists: 200,
-      }
+      },
     }
   end
 
@@ -20,7 +22,7 @@ class InertiaMergeSharedController < ApplicationController
     render inertia: 'ShareTestComponent', props: {
       nested: {
         assists: 300,
-      }
+      },
     }, deep_merge: true
   end
 
@@ -28,7 +30,7 @@ class InertiaMergeSharedController < ApplicationController
     render inertia: 'ShareTestComponent', props: {
       nested: {
         assists: 200,
-      }
+      },
     }, deep_merge: false
   end
 end

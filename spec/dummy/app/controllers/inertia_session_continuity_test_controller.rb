@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class InertiaSessionContinuityTestController < ApplicationController
   def initialize_session
     render inertia: 'TestNewSessionComponent'
@@ -10,6 +12,6 @@ class InertiaSessionContinuityTestController < ApplicationController
   def clear_session
     session.clear
 
-    return redirect_to initialize_session_path
+    redirect_to initialize_session_path
   end
 end

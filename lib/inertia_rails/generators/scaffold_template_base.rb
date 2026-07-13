@@ -14,31 +14,36 @@ module InertiaRails
 
       def copy_view_files
         available_views.each do |view|
-          template "#{options.frontend_framework}/#{view}.#{template_extension}",
+          template "#{frontend_framework}/#{view}.#{template_extension}",
                    File.join(base_path, "#{view}.#{extension}")
         end
 
-        template "#{options.frontend_framework}/#{partial_name}.#{template_extension}",
-                 File.join(base_path, "#{inertia_component_name}.#{extension}")
+        template "#{frontend_framework}/#{partial_name}.#{template_extension}",
+                 File.join(base_path, "#{singular_name}.#{extension}")
 
-        template "#{options.frontend_framework}/types.ts", File.join(base_path, 'types.ts') if typescript?
+        template "#{frontend_framework}/types.ts", File.join(base_path, 'types.ts') if typescript?
       end
 
       private
 
+      # Scaffold controllers are pluralized, so the views live under the pluralized path.
+      def inertia_base_path
+        (controller_class_path + [controller_file_name]).join('/')
+      end
+
       def template_extension
         return extension unless typescript?
-        return 'tsx' if options.frontend_framework == 'react'
+        return 'tsx' if frontend_framework == 'react'
 
         "ts.#{extension}"
       end
 
       def available_views
-        %w[Index Edit Show New Form]
+        %w[index edit show new form]
       end
 
       def partial_name
-        'One'
+        'one'
       end
     end
   end

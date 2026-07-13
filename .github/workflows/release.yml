@@ -1,0 +1,94 @@
+name: Prepare Release
+
+# Manually-triggered workflow that prepares a release commit and tag by
+# running bin/prepare_publish on CI. Pushing the tag triggers
+# .github/workflows/push_gem.yml, which publishes to rubygems.org via
+# trusted publishing and creates a GitHub release.
+#
+# To use: Actions tab → "Prepare Release" → Run workflow → select bump type.
+# For an exact version, set bump to "none" and fill in version_override.
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump type. Set to 'none' when using version_override."
+        required: true
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+          - none
+      version_override:
+        description: "Exact version to release (X.Y.Z). Mutually exclusive with bump type — set bump to 'none' when using this."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    if: github.repository == 'inertiajs/inertia-rails'
+    runs-on: ubuntu-latest
+    name: Prepare release (${{ inputs.version_override || inputs.bump }})
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        with:
+          client-id: ${{ secrets.GEM_RELEASE_PREPARER_APP_ID }}
+          private-key: ${{ secrets.GEM_RELEASE_PREPARER_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: master
+          # Full history so tag resolution and the push both work.
+          fetch-depth: 0
+          token: ${{ steps.generate_token.outputs.token }}
+
+      - name: Resolve version
+        id: version
+        run: bin/resolve_version "${{ inputs.bump }}" "${{ inputs.version_override }}"
+
+      - name: Setup System
+        run: sudo apt-get install -y libsqlite3-dev
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@e65c17d16e57e481586a6a5a0282698790062f92 # v1.300.0
+        with:
+          ruby-version: "4.0"
+          bundler: latest
+          bundler-cache: true
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Run bin/prepare_publish
+        run: bin/prepare_publish "${{ steps.version.outputs.version }}"
+
+      - name: Push commit and tag
+        run: git push --atomic origin master "refs/tags/v${{ steps.version.outputs.version }}"
+
+      - name: Summary
+        run: |
+          {
+            echo "### Release v${{ steps.version.outputs.version }} prepared"
+            echo
+            echo "Tag \`v${{ steps.version.outputs.version }}\` has been pushed."
+            echo
+            echo "The [Publish gem to rubygems.org](../../actions/workflows/push_gem.yml) workflow will publish the gem and create a GitHub release."
+          } >> "$GITHUB_STEP_SUMMARY"

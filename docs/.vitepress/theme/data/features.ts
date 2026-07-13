@@ -1,0 +1,58 @@
+export const features = [
+  {
+    icon: 'form-input',
+    title: 'Forms That Work',
+    desc: 'Validation errors flow from Rails to your components automatically. No manual wiring.',
+    link: '/guide/forms',
+    size: 'large' as const,
+  },
+  {
+    icon: 'zap',
+    title: 'Server-Side Rendering',
+    desc: 'Full SSR support for SEO and fast first-paint. Your React/Vue/Svelte, rendered on Rails.',
+    link: '/guide/server-side-rendering',
+    size: 'large' as const,
+  },
+  {
+    icon: 'check-circle',
+    title: 'Test Like Rails',
+    desc: 'RSpec and Minitest matchers that feel native. Assert on props, components, and more.',
+    link: '/guide/testing',
+    size: 'large' as const,
+  },
+  {
+    icon: 'refresh-cw',
+    title: 'Partial Reloads',
+    desc: 'Refresh only the data you need. Keep interactions snappy without full page loads.',
+    link: '/guide/partial-reloads',
+    size: 'small' as const,
+  },
+  {
+    icon: 'package',
+    title: 'Shared Data',
+    desc: 'Current user, flash messages, permissions. Available on every page automatically.',
+    link: '/guide/shared-data',
+    size: 'small' as const,
+  },
+  {
+    icon: 'clock',
+    title: 'Deferred Props',
+    desc: 'Load the page fast, fetch expensive data after. Built-in loading states included.',
+    link: '/guide/deferred-props',
+    size: 'small' as const,
+  },
+  {
+    icon: 'terminal',
+    title: 'Rails Generators',
+    desc: 'Scaffold entire CRUD interfaces. Generate controllers with matching components.',
+    link: '/guide/server-side-setup',
+    size: 'small' as const,
+  },
+  {
+    icon: 'lock',
+    title: 'History Encryption',
+    desc: 'Sensitive data stays private, even in browser history. Toggle per-page.',
+    link: '/guide/history-encryption',
+    size: 'small' as const,
+  },
+]

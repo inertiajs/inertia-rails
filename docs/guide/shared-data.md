@@ -1,27 +1,79 @@
-# Shared data
+# Shared Data
 
 Sometimes you need to access specific pieces of data on numerous pages within your application. For example, you may need to display the current user in the site header. Passing this data manually in each response across your entire application is cumbersome. Thankfully, there is a better option: shared data.
 
-## Sharing data
+## Sharing Data
 
-Inertia's Rails adapter comes with the `shared_data` controller method. This method allows you to define shared data that will be automatically merged with the page props provided in your controller.
+The `inertia_share` method allows you to define data that will be available to all controller actions, automatically merging with page-specific props.
+
+### Basic Usage
 
 ```ruby
 class EventsController < ApplicationController
-  # share synchronously
-  inertia_share app_name: env['app.name']
+  # Static sharing: Data is evaluated immediately
+  inertia_share app_name: Rails.configuration.app_name
 
-  # share lazily, evaluated at render time
+  # Dynamic sharing: Data is evaluated at render time
   inertia_share do
-    if logged_in?
-      {
-        user: logged_in_user,
-      }
-    end
+    {
+      user: current_user&.as_json(only: [:id, :name, :email]),
+      notifications: current_user&.unread_notifications_count
+    } if user_signed_in?
   end
 
-  # share lazily alternate syntax
-  inertia_share user_count: lambda { User.count }
+  # Alternative syntax for single dynamic values
+  inertia_share total_users: -> { User.count }
+end
+```
+
+### Inheritance and Shared Data
+
+Shared data defined in parent controllers is automatically inherited by child controllers. Child controllers can also override or add to the shared data:
+
+```ruby
+# Parent controller
+  class ApplicationController < ActionController::Base
+  inertia_share app_name: 'My App', version: '1.0'
+end
+
+# Child controller
+class UsersController < ApplicationController
+  # Inherits app_name and version, adds/overrides auth
+  inertia_share auth: -> { { user: current_user&.as_json(only: [:id, :name, :email]) } }
+end
+```
+
+### Conditional Sharing
+
+You can control when data is shared using Rails-style controller filters. The `inertia_share` method supports these filter options:
+
+- `only`: Share data for specific actions
+- `except`: Share data for all actions except specified ones
+- `if`: Share data when condition is true
+- `unless`: Share data when condition is false
+
+```ruby
+class EventsController < ApplicationController
+  # Share user data only when authenticated
+  inertia_share if: :user_signed_in? do
+    {
+      user: {
+        name: current_user.name,
+        email: current_user.email,
+        role: current_user.role
+      }
+    }
+  end
+
+  # Share data only for specific actions
+  inertia_share only: [:index, :show] do
+    {
+      meta: {
+        last_updated: Time.current,
+        version: "1.0"
+      }
+    }
+  end
 end
 ```
 
@@ -31,11 +83,26 @@ end
 > [!NOTE]
 > Page props and shared data are merged together, so be sure to namespace your shared data appropriately to avoid collisions.
 
-## Accessing shared data
+## Sharing Once Props
+
+@available_since rails=3.15.0 core=2.2.20
+
+You may share data that is resolved only once and remembered by the client across subsequent navigations using [once props](/guide/once-props).
+
+```ruby
+class ApplicationController < ActionController::Base
+  inertia_share countries: InertiaRails.once { Country.all }
+end
+```
+
+For more information on once props, see the [once props](/guide/once-props) documentation.
+
+## Accessing Shared Data
 
 Once you have shared the data server-side, you will be able to access it within any of your pages or components. Here's an example of how to access shared data in a layout component.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -75,7 +142,7 @@ export default function Layout({ children }) {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -84,7 +151,7 @@ export default function Layout({ children }) {
 
 <main>
   <header>
-    You are logged in as: {$page.props.auth.user.name}
+    You are logged in as: {page.props.auth.user.name}
   </header>
   <article>
     <slot />
@@ -94,86 +161,15 @@ export default function Layout({ children }) {
 
 :::
 
-# Flash messages
+## TypeScript
 
-Another great use-case for shared data is flash messages. These are messages stored in the session only for the next request. For example, it's common to set a flash message after completing a task and before redirecting to a different page.
+You may configure the shared props type globally using [TypeScript's declaration merging](/guide/typescript#shared-page-props).
 
-Here's a simple way to implement flash messages in your Inertia applications. First, share the flash message on each request.
+## Flash Data
 
-```ruby
-class ApplicationController < ActionController::Base
-  inertia_share flash: -> { flash.to_hash }
-end
-```
+@available_since rails=3.17.0 core=2.3.3
 
-Next, display the flash message in a frontend component, such as the site layout.
-
-:::tabs key:frameworks
-== Vue
-
-```vue
-<template>
-  <main>
-    <header></header>
-    <article>
-      <div v-if="$page.props.flash.alert" class="alert">
-        {{ $page.props.flash.alert }}
-      </div>
-      <div v-if="$page.props.flash.notice" class="notice">
-        {{ $page.props.flash.notice }}
-      </div>
-      <slot />
-    </article>
-    <footer></footer>
-  </main>
-</template>
-```
-
-== React
-
-```jsx
-import { usePage } from '@inertiajs/react'
-
-export default function Layout({ children }) {
-  const { flash } = usePage().props
-
-  return (
-    <main>
-      <header></header>
-      <article>
-        {flash.alert && <div className="alert">{flash.alert}</div>}
-        {flash.notice && <div className="notice">{flash.notice}</div>}
-        {children}
-      </article>
-      <footer></footer>
-    </main>
-  )
-}
-```
-
-== Svelte 4|Svelte 5
-
-```svelte
-<script>
-  import { page } from '@inertiajs/svelte'
-</script>
-
-<main>
-  <header></header>
-  <article>
-    {#if $page.props.flash.alert}
-      <div class="alert">{$page.props.flash.alert}</div>
-    {/if}
-    {#if $page.props.flash.notice}
-      <div class="notice">{$page.props.flash.notice}</div>
-    {/if}
-    <slot />
-  </article>
-  <footer></footer>
-</main>
-```
-
-:::
+For one-time notifications like toast messages or success alerts, you may use [flash data](/guide/flash-data). Unlike shared data, flash data is not persisted in the browser's history state, so it won't reappear when navigating through history.
 
 ## Deep Merging Shared Data
 
@@ -192,9 +188,9 @@ Let's say we want a particular action to change only part of that data structure
 ```ruby
 class CrazyScorersController < ApplicationController
   def index
-    render inertia: 'CrazyScorersComponent',
-      props: { basketball_data: { points: 100 } },
-      deep_merge: true
+    render inertia: {
+      basketball_data: { points: 100 }
+    }, deep_merge: true
   end
 end
 
@@ -231,9 +227,9 @@ class CrazyScorersController < ApplicationController
   end
 
   def index
-    render inertia: 'CrazyScorersComponent',
-      props: { basketball_data: { points: 100 } },
-      deep_merge: false
+    render inertia: {
+      basketball_data: { points: 100 }
+    }, deep_merge: false
   end
 end
 

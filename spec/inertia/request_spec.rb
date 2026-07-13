@@ -1,16 +1,22 @@
+# frozen_string_literal: true
+
 RSpec.describe 'Inertia::Request', type: :request do
+  def set_cookie_header
+    Array(response.headers['Set-Cookie']).join("\n")
+  end
+
   describe 'it tests whether a call is an inertia call' do
     subject { response.status }
     before { get inertia_request_test_path, headers: headers }
 
     context 'it is an inertia call' do
-      let(:headers) { {'X-Inertia' => true} }
+      let(:headers) { { 'X-Inertia' => true } }
 
       it { is_expected.to eq 202 }
     end
 
     context 'it is not an inertia call' do
-      let(:headers) { Hash.new }
+      let(:headers) { {} }
 
       it { is_expected.to eq 200 }
     end
@@ -21,7 +27,9 @@ RSpec.describe 'Inertia::Request', type: :request do
     before { get inertia_partial_request_test_path, headers: headers }
 
     context 'it is a partial inertia call' do
-      let(:headers) { { 'X-Inertia' => true, 'X-Inertia-Partial-Component' => 'Component', 'X-Inertia-Partial-Data' => 'foo,bar,baz' } }
+      let(:headers) do
+        { 'X-Inertia' => true, 'X-Inertia-Partial-Component' => 'Component', 'X-Inertia-Partial-Data' => 'foo,bar,baz' }
+      end
 
       it { is_expected.to eq 202 }
     end
@@ -72,13 +80,13 @@ RSpec.describe 'Inertia::Request', type: :request do
     before { get content_type_test_path, headers: headers }
 
     context 'it is an inertia call' do
-      let(:headers) { {'X-Inertia' => true} }
+      let(:headers) { { 'X-Inertia' => true } }
 
       it { is_expected.to eq 'application/json' }
     end
 
     context 'it is not an inertia call' do
-      let(:headers) { Hash.new }
+      let(:headers) { {} }
 
       it { is_expected.to eq 'text/html' }
     end
@@ -107,28 +115,159 @@ RSpec.describe 'Inertia::Request', type: :request do
       end
 
       context 'it is not an inertia call' do
-        let(:headers) { Hash.new }
+        let(:headers) { {} }
         it { is_expected.to include('XSRF-TOKEN') }
       end
 
       context 'it is an inertia call' do
-        let(:headers){ { 'X-Inertia' => true } }
+        let(:headers) { { 'X-Inertia' => true } }
         it { is_expected.to include('XSRF-TOKEN') }
       end
     end
 
-    describe 'copying an X-XSRF-Token header (like Axios sends by default) into the X-CSRF-Token header (that Rails looks for by default)' do
+    describe 'xsrf_cookie_refresh configuration' do
+      it 'continues setting the XSRF-TOKEN cookie on repeated safe requests by default' do
+        with_forgery_protection do
+          get inertia_request_test_path
+          expect(set_cookie_header).to include('XSRF-TOKEN')
+
+          get inertia_request_test_path
+          expect(set_cookie_header).to include('XSRF-TOKEN')
+        end
+      end
+
+      it 'rewrites the XSRF-TOKEN cookie even on 304 Not Modified responses by default' do
+        with_forgery_protection do
+          get http_cache_test_path
+          etag = response.headers['ETag']
+
+          get http_cache_test_path, headers: { 'If-None-Match' => etag }
+
+          expect(response.status).to eq(304)
+          expect(set_cookie_header).to include('XSRF-TOKEN')
+        end
+      end
+
+      context 'when xsrf_cookie_refresh is :lazy' do
+        with_inertia_config xsrf_cookie_refresh: :lazy
+
+        it 'still sets the XSRF-TOKEN cookie on the first safe request' do
+          with_forgery_protection do
+            get inertia_request_test_path
+
+            expect(set_cookie_header).to include('XSRF-TOKEN')
+          end
+        end
+
+        it 'trusts an existing XSRF-TOKEN cookie on repeated safe requests when the session is never loaded' do
+          with_forgery_protection do
+            get inertia_request_test_path
+            expect(set_cookie_header).to include('XSRF-TOKEN')
+
+            get inertia_request_test_path
+            expect(set_cookie_header).to be_empty
+          end
+        end
+
+        # Documents the accepted trade-off of the trust path above: a stale
+        # cookie is not detected on session-less safe requests, so a protected
+        # request fails loudly until the first session-loading request heals
+        # the cookie. Never a CSRF bypass — the cookie is not a server-side
+        # validation input.
+        it 'blind-trusts a stale cookie on session-less safe requests until a session-loading request heals it' do
+          with_forgery_protection do
+            cookies['XSRF-TOKEN'] = 'stale-token'
+
+            get inertia_request_test_path
+            expect(set_cookie_header).to be_empty
+
+            expect do
+              post submit_form_to_test_csrf_path,
+                   headers: { 'X-Inertia' => true, 'X-XSRF-Token' => 'stale-token' }
+            end.to raise_error(ActionController::InvalidAuthenticityToken)
+
+            get session_loaded_request_test_path
+            expect(set_cookie_header).to include('XSRF-TOKEN')
+          end
+        end
+
+        it 'does not rewrite the XSRF-TOKEN cookie on safe requests when the existing cookie can be validated' do
+          with_forgery_protection do
+            get session_loaded_request_test_path
+            expect(set_cookie_header).to include('XSRF-TOKEN')
+
+            get session_loaded_request_test_path
+            expect(set_cookie_header).not_to include('XSRF-TOKEN')
+          end
+        end
+
+        it 'refreshes the XSRF-TOKEN cookie on safe requests when an invalid cookie can be validated' do
+          with_forgery_protection do
+            cookies['XSRF-TOKEN'] = 'stale-token'
+
+            get session_loaded_request_test_path
+
+            expect(set_cookie_header).to include('XSRF-TOKEN')
+          end
+        end
+
+        it 'still refreshes the XSRF-TOKEN cookie on non-safe requests' do
+          with_forgery_protection do
+            get initialize_session_path
+            initial_xsrf_token_cookie = response.cookies['XSRF-TOKEN']
+
+            post submit_form_to_test_csrf_path,
+                 headers: { 'X-Inertia' => true, 'X-XSRF-Token' => initial_xsrf_token_cookie }
+
+            expect(set_cookie_header).to include('XSRF-TOKEN')
+          end
+        end
+
+        # The motivating scenario: HTTP conditional caching (fresh_when/304).
+        # fresh_when loads the session (flash is part of the default etag), so
+        # the validation path — not blind trust — governs these requests.
+        describe 'with HTTP conditional caching' do
+          it 'does not rewrite the XSRF-TOKEN cookie on a 304 when the cookie is valid' do
+            with_forgery_protection do
+              get http_cache_test_path
+              expect(set_cookie_header).to include('XSRF-TOKEN')
+              etag = response.headers['ETag']
+
+              get http_cache_test_path, headers: { 'If-None-Match' => etag }
+
+              expect(response.status).to eq(304)
+              expect(set_cookie_header).not_to include('XSRF-TOKEN')
+            end
+          end
+
+          it 'refreshes a stale XSRF-TOKEN cookie even on a 304' do
+            with_forgery_protection do
+              get http_cache_test_path
+              etag = response.headers['ETag']
+              cookies['XSRF-TOKEN'] = 'stale-token'
+
+              get http_cache_test_path, headers: { 'If-None-Match' => etag }
+
+              expect(response.status).to eq(304)
+              expect(set_cookie_header).to include('XSRF-TOKEN')
+            end
+          end
+        end
+      end
+    end
+
+    describe 'copying an X-XSRF-Token header (Inertia default) into the X-CSRF-Token header (Rails default)' do
       subject { request.headers['X-CSRF-Token'] }
       before { get inertia_request_test_path, headers: headers }
 
       context 'it is an inertia call' do
-        let(:headers) {{ 'X-Inertia' => true, 'X-XSRF-Token' => 'foo' }}
+        let(:headers) { { 'X-Inertia' => true, 'X-XSRF-Token' => 'foo' } }
         it { is_expected.to eq 'foo' }
       end
 
       context 'it is not an inertia call' do
         let(:headers) { { 'X-XSRF-Token' => 'foo' } }
-        it { is_expected.to be_nil }
+        it { is_expected.to eq 'foo' }
       end
     end
 
@@ -138,7 +277,8 @@ RSpec.describe 'Inertia::Request', type: :request do
         expect(response).to have_http_status(:ok)
         initial_xsrf_token_cookie = response.cookies['XSRF-TOKEN']
 
-        post submit_form_to_test_csrf_path, headers: { 'X-Inertia' => true, 'X-XSRF-Token' => initial_xsrf_token_cookie }
+        post submit_form_to_test_csrf_path,
+             headers: { 'X-Inertia' => true, 'X-XSRF-Token' => initial_xsrf_token_cookie }
         expect(response).to have_http_status(:ok)
 
         delete clear_session_path, headers: { 'X-Inertia' => true, 'X-XSRF-Token' => initial_xsrf_token_cookie }
@@ -149,7 +289,8 @@ RSpec.describe 'Inertia::Request', type: :request do
         expect(post_logout_xsrf_token_cookie).not_to be_nil
         expect(post_logout_xsrf_token_cookie).not_to eq(initial_xsrf_token_cookie)
 
-        post submit_form_to_test_csrf_path, headers: { 'X-Inertia' => true, 'X-XSRF-Token' => post_logout_xsrf_token_cookie }
+        post submit_form_to_test_csrf_path,
+             headers: { 'X-Inertia' => true, 'X-XSRF-Token' => post_logout_xsrf_token_cookie }
         expect(response).to have_http_status(:ok)
       end
     end
@@ -157,9 +298,9 @@ RSpec.describe 'Inertia::Request', type: :request do
 
   describe 'a non existent route' do
     it 'raises a 404 exception' do
-      expect {
+      expect do
         get '/non_existent_route', headers: { 'X-Inertia' => true }
-      }.to raise_error(ActionController::RoutingError,  /No route matches/)
+      end.to raise_error(ActionController::RoutingError, /No route matches/)
     end
   end
 end

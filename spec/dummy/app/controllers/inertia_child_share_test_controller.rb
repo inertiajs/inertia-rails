@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class InertiaChildShareTestController < InertiaShareTestController
   inertia_share name: 'No Longer Brandon'
 

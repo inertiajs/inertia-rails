@@ -3,7 +3,9 @@ import type { Theme } from 'vitepress'
 import { enhanceAppWithTabs } from 'vitepress-plugin-tabs/client'
 import DefaultTheme from 'vitepress/theme'
 import { h } from 'vue'
+import { AvailableSince, Opt, React, Svelte, Vue } from './components'
 import { setupFrameworksTabs } from './frameworksTabs'
+import LandingLayout from './layouts/LandingLayout.vue'
 import './style.css'
 
 export default {
@@ -15,6 +17,12 @@ export default {
   },
   enhanceApp({ app, router, siteData }) {
     enhanceAppWithTabs(app)
+    app.component('AvailableSince', AvailableSince)
+    app.component('Opt', Opt)
+    app.component('React', React)
+    app.component('Vue', Vue)
+    app.component('Svelte', Svelte)
+    app.component('LandingLayout', LandingLayout)
   },
   setup() {
     setupFrameworksTabs()

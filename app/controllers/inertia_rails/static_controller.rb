@@ -1,7 +1,11 @@
+# frozen_string_literal: true
+
 module InertiaRails
-  class StaticController < ::ApplicationController
+  class StaticController < InertiaRails.configuration.parent_controller.constantize
     def static
-      render inertia: params[:component]
+      respond_to do |format|
+        format.html { render inertia: params[:component] }
+      end
     end
   end
 end

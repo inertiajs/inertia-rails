@@ -1,0 +1,31 @@
+import { Head, Link } from '@inertiajs/react'
+
+import Form from './form'
+import type { <%= inertia_model_type %> } from './types'
+
+interface NewProps {
+  <%= singular_table_name %>: <%= inertia_model_type %>
+}
+
+export default function New({ <%= singular_table_name %> }: NewProps) {
+  return (
+    <>
+      <Head title="New <%= human_name.downcase %>" />
+
+      <h1>New <%= human_name.downcase %></h1>
+
+      <Form
+        <%= singular_table_name %>={<%= singular_table_name %>}
+        action="<%= js_resources_path %>"
+        method="post"
+        submitText="Create <%= human_name %>"
+      />
+
+      <br />
+
+      <div>
+        <Link href="<%= js_resources_path %>">Back to <%= human_name.pluralize.downcase %></Link>
+      </div>
+    </>
+  )
+}

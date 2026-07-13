@@ -1,4 +1,4 @@
-# Partial reloads
+# Partial Reloads
 
 When making visits to the same page you are already on, it's not always necessary to re-fetch all of the page's data from the server. In fact, selecting only a subset of the data can be a helpful performance optimization if it's acceptable that some page data becomes stale. Inertia makes this possible via its "partial reload" feature.
 
@@ -7,11 +7,12 @@ As an example, consider a "user index" page that includes a list of users, as we
 > [!NOTE]
 > Partial reloads only work for visits made to the same page component.
 
-## Only certain props
+## Only Certain Props
 
 To perform a partial reload, use the `only` visit option to specify which data the server should return. This option should be an array of keys which correspond to the keys of the props.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -24,7 +25,7 @@ router.visit(url, {
 
 == React
 
-```jsx
+```js
 import { router } from '@inertiajs/react'
 
 router.visit(url, {
@@ -32,7 +33,7 @@ router.visit(url, {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -44,11 +45,12 @@ router.visit(url, {
 
 :::
 
-## Except certain props
+## Except Certain Props
 
-In addition to the only visit option you can also use the except option to specify which data the server should exclude. This option should also be an array of keys which correspond to the keys of the props.
+In addition to the `only` visit option you can also use the `except` option to specify which data the server should exclude. This option should also be an array of keys which correspond to the keys of the props.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -61,7 +63,7 @@ router.visit(url, {
 
 == React
 
-```jsx
+```js
 import { router } from '@inertiajs/react'
 
 router.visit(url, {
@@ -69,7 +71,7 @@ router.visit(url, {
 })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -81,59 +83,12 @@ router.visit(url, {
 
 :::
 
-## Dot notation
-
-Both the `only` and `except` visit options support dot notation to specify nested data, and they can be used together. In the following example, only `settings.theme` will be rendered, but without its `colors` property.
-
-:::tabs key:frameworks
-== Vue
-
-```js
-import { router } from '@inertiajs/vue3'
-
-router.visit(url, {
-  only: ['settings.theme'],
-  except: ['setting.theme.colors'],
-})
-```
-
-== React
-
-```jsx
-import { router } from '@inertiajs/react'
-
-router.visit(url, {
-  only: ['settings.theme'],
-  except: ['setting.theme.colors'],
-})
-```
-
-== Svelte 4|Svelte 5
-
-```js
-import { router } from '@inertiajs/svelte'
-
-router.visit(url, {
-  only: ['settings.theme'],
-  except: ['setting.theme.colors'],
-})
-```
-
-:::
-
-Please remember that, by design, partial reloading filters props _before_ they are evaluated, so it can only target explicitly defined prop keys. Let's say you have this prop:
-
-`users: -> { User.all }`
-
-Requesting `only: ['users.name']` will exclude the entire `users` prop, since `users.name` is not available before evaluating the prop.
-
-Requesting `except: ['users.name']` will not exclude anything.
-
-## Router shorthand
+## Router Shorthand
 
 Since partial reloads can only be made to the same page component the user is already on, it almost always makes sense to just use the `router.reload()` method, which automatically uses the current URL.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```js
@@ -150,7 +105,7 @@ import { router } from '@inertiajs/react'
 router.reload({ only: ['users'] })
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 import { router } from '@inertiajs/svelte'
@@ -160,11 +115,12 @@ router.reload({ only: ['users'] })
 
 :::
 
-## Using links
+## Using Links
 
 It's also possible to perform partial reloads with Inertia links using the `only` property.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -189,7 +145,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <script>
@@ -203,14 +159,14 @@ export default () => (
 
 :::
 
-## Lazy data evaluation
+## Lazy Data Evaluation
 
 For partial reloads to be most effective, be sure to also use lazy data evaluation when returning props from your server-side routes or controllers. This can be accomplished by wrapping all optional page data in a lambda.
 
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
+    render inertia: {
       users: -> { User.all },
       companies: -> { Company.all },
     }
@@ -218,23 +174,15 @@ class UsersController < ApplicationController
 end
 ```
 
-When Inertia performs a request, it will determine which data is required and only then will it evaluate the closure. This can significantly increase the performance of pages that contain a lot of optional data.
+When Inertia performs a request, it will determine which data is required and only then will it evaluate the lambda. This can significantly increase the performance of pages that contain a lot of optional data.
 
 Additionally, Inertia provides an `InertiaRails.optional` method to specify that a prop should never be included unless explicitly requested using the `only` option:
 
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
+    render inertia: {
       users: InertiaRails.optional { User.all },
-
-      # Also works with a lambda:
-      # users: InertiaRails.optional(-> { User.all }),
-
-      # Also works with a simple value,
-      # but this way the prop is always evaluated,
-      # even if not included:
-      # users: InertiaRails.optional(User.all),
     }
   end
 end
@@ -248,7 +196,7 @@ On the inverse, you can use the `InertiaRails.always` method to specify that a p
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
+    render inertia: {
       users: InertiaRails.always { User.all },
     }
   end
@@ -257,30 +205,82 @@ end
 
 Here's a summary of each approach:
 
+| Approach                                                                      | Standard Visits | Partial Reloads | Evaluated        |
+| :---------------------------------------------------------------------------- | :-------------- | :-------------- | :--------------- |
+| <span style="white-space: nowrap">`User.all`</span>                           | Always          | Optionally      | Always           |
+| <span style="white-space: nowrap">`-> { User.all }`</span>                    | Always          | Optionally      | Only when needed |
+| <span style="white-space: nowrap">`InertiaRails.optional { User.all }`</span> | Never           | Optionally      | Only when needed |
+| <span style="white-space: nowrap">`InertiaRails.always { User.all }`</span>   | Always          | Always          | Always           |
+
+## Preserving Errors
+
+@available_since core=3.0.0
+
+Since the Rails adapter shares errors using `InertiaRails.always`, they are included in every response, even partial reloads where no validation runs. This means an empty errors hash from the server will overwrite any existing client-side validation errors. You may use the `preserveErrors` option to keep existing errors when the server doesn't return new ones.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+router.reload({
+  only: ['posts'],
+  preserveErrors: true,
+})
+```
+
+== React
+
+```js
+router.reload({
+  only: ['posts'],
+  preserveErrors: true,
+})
+```
+
+== Svelte
+
+```js
+router.reload({
+  only: ['posts'],
+  preserveErrors: true,
+})
+```
+
+:::
+
+## Combining with Once Props
+
+@available_since rails=3.15.0 core=2.2.20
+
+You may pass the `once: true` argument to a deferred prop to ensure the data is resolved only once and remembered by the client across subsequent navigations.
+
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
-      # ALWAYS included on standard visits
-      # OPTIONALLY included on partial reloads
-      # ALWAYS evaluated
-      users: User.all,
-
-      # ALWAYS included on standard visits
-      # OPTIONALLY included on partial reloads
-      # ONLY evaluated when needed
-      users: -> { User.all },
-
-      # NEVER included on standard visits
-      # OPTIONALLY included on partial reloads
-      # ONLY evaluated when needed
-      users: InertiaRails.lazy { User.all },
-
-      # ALWAYS included on standard visits
-      # ALWAYS included on partial reloads
-      # ALWAYS evaluated
-      users: InertiaRails.always(User.all),
+    render inertia: {
+      users: InertiaRails.optional(once: true) { User.all },
     }
   end
 end
 ```
+
+For more information on once props, see the [once props](/guide/once-props) documentation.
+
+## Combining with Caching
+
+@available_since rails=3.21.0
+
+You may pass the `cache` option to an optional prop to cache the resolved value on the server side. On cache hits, the block is not evaluated.
+
+```ruby
+class UsersController < ApplicationController
+  def index
+    render inertia: {
+      users: InertiaRails.optional(cache: 'all_users') { User.all },
+    }
+  end
+end
+```
+
+For more information on cache keys and options, see the [cached props](/guide/cached-props) documentation.

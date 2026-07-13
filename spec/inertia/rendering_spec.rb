@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe 'rendering inertia views', type: :request do
   subject { response.body }
 
@@ -7,7 +9,10 @@ RSpec.describe 'rendering inertia views', type: :request do
     let(:page) { InertiaRails::Renderer.new('TestComponent', controller, request, response, '').send(:page) }
 
     context 'with props' do
-      let(:page) { InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: {name: 'Brandon', sport: 'hockey'}).send(:page) }
+      let(:page) do
+        InertiaRails::Renderer.new('TestComponent', controller, request, response, '',
+                                   props: { name: 'Brandon', sport: 'hockey' }).send(:page)
+      end
       before { get props_path }
 
       it { is_expected.to include inertia_div(page) }
@@ -17,7 +22,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       before { get view_data_path }
 
       it { is_expected.to include inertia_div(page) }
-      it { is_expected.to include({name: 'Brian', sport: 'basketball'}.to_json) }
+      it { is_expected.to include({ name: 'Brian', sport: 'basketball' }.to_json) }
     end
 
     context 'with no data' do
@@ -57,12 +62,96 @@ RSpec.describe 'rendering inertia views', type: :request do
       before { get inertia_route_path }
 
       it { is_expected.to include inertia_div(page) }
+
+      context 'with non html format' do
+        it 'raises UnknownFormat error' do
+          expect { get '/inertia_route.json' }.to raise_error(ActionController::UnknownFormat)
+        end
+      end
+    end
+
+    context 'via a resource inertia route' do
+      before { get inertia_route_item_path(id: 1) }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'via a scoped inertia route' do
+      before { get scoped_inertia_route_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'via a namespaced inertia route' do
+      before { get namespaced_inertia_route_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a default component' do
+      let(:page) do
+        InertiaRails::Renderer.new('inertia_route_with_default_component', controller, request, response,
+                                   '').send(:page)
+      end
+
+      before { get inertia_route_with_default_component_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a default component resource' do
+      let(:page) do
+        InertiaRails::Renderer.new('items/inertia_route_with_default_component', controller, request, response,
+                                   '').send(:page)
+      end
+
+      before { get item_inertia_route_with_default_component_path(item_id: 1) }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a default component resource on member' do
+      let(:page) do
+        InertiaRails::Renderer.new(
+          'items/inertia_route_with_default_component_on_member', controller, request, response, ''
+        ).send(:page)
+      end
+
+      before { get inertia_route_with_default_component_on_member_item_path(id: 1) }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a default component resource on collection' do
+      let(:page) do
+        InertiaRails::Renderer.new(
+          'items/inertia_route_with_default_component_on_collection', controller, request, response, ''
+        ).send(:page)
+      end
+
+      before { get inertia_route_with_default_component_on_collection_items_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a default component resource & scoped' do
+      let(:page) do
+        InertiaRails::Renderer.new('items/inertia_route_with_default_component', controller, request, response,
+                                   '').send(:page)
+      end
+
+      before { get scoped_item_inertia_route_with_default_component_path(item_id: 1) }
+
+      it { is_expected.to include inertia_div(page) }
     end
   end
 
   context 'subsequent requests' do
-    let(:page) { InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: {name: 'Brandon', sport: 'hockey'}).send(:page) }
-    let(:headers) { {'X-Inertia' => true} }
+    let(:page) do
+      InertiaRails::Renderer.new('TestComponent', controller, request, response, '',
+                                 props: { name: 'Brandon', sport: 'hockey' }).send(:page)
+    end
+    let(:headers) { { 'X-Inertia' => true } }
 
     before { get props_path, headers: headers }
 
@@ -84,14 +173,17 @@ RSpec.describe 'rendering inertia views', type: :request do
   end
 
   context 'partial rendering' do
-    let(:page) {
-      InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { sport: 'hockey' }).send(:page)
-    }
-    let(:headers) {{
-      'X-Inertia' => true,
-      'X-Inertia-Partial-Data' => 'sport',
-      'X-Inertia-Partial-Component' => 'TestComponent',
-    }}
+    let(:page) do
+      InertiaRails::Renderer.new('TestComponent', controller, request, response, '',
+                                 props: { sport: 'hockey' }).send(:page)
+    end
+    let(:headers) do
+      {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'sport',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+      }
+    end
 
     context 'with the correct partial component header' do
       before { get props_path, headers: headers }
@@ -101,10 +193,10 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
 
     context 'with a non matching partial component header' do
-      before {
+      before do
         headers['X-Inertia-Partial-Component'] = 'NotTheTestComponent'
         get props_path, headers: headers
-      }
+      end
 
       it { is_expected.not_to eq page.to_json }
       it 'includes all of the props' do
@@ -116,7 +208,9 @@ RSpec.describe 'rendering inertia views', type: :request do
       let(:headers) do
         {
           'X-Inertia' => true,
-          'X-Inertia-Partial-Data' => 'nested.first,nested.deeply_nested.second,nested.deeply_nested.what_about_nil,nested.deeply_nested.what_about_empty_hash',
+          'X-Inertia-Partial-Data' =>
+            'nested.first,nested.deeply_nested.second,nested.deeply_nested.what_about_nil,' \
+            'nested.deeply_nested.what_about_empty_hash',
           'X-Inertia-Partial-Component' => 'TestComponent',
         }
       end
@@ -134,7 +228,7 @@ RSpec.describe 'rendering inertia views', type: :request do
               'what_about_empty_hash' => {},
               'deeply_nested_always' => 'deeply nested always prop',
             },
-          },
+          }
         )
       end
     end
@@ -163,12 +257,12 @@ RSpec.describe 'rendering inertia views', type: :request do
               'deeply_nested_always' => 'deeply nested always prop',
               'deeply_nested_lazy' => 'deeply nested lazy prop',
             },
-          },
+          }
         )
       end
     end
 
-    context 'with nonsensical partial data that includes and excludes the same prop and tries to exclude an always prop' do
+    context 'with partial data that includes and excludes the same prop and tries to exclude an always prop' do
       let(:headers) do
         {
           'X-Inertia' => true,
@@ -180,14 +274,9 @@ RSpec.describe 'rendering inertia views', type: :request do
 
       before { get deeply_nested_props_path, headers: headers }
 
-      it 'excludes everything but Always props' do
+      it 'excludes everything but top-level Always props' do
         expect(response.parsed_body['props']).to eq(
-          'always' => 'always prop',
-          'nested' => {
-            'deeply_nested' => {
-              'deeply_nested_always' => 'deeply nested always prop',
-            },
-          },
+          'always' => 'always prop'
         )
       end
     end
@@ -203,14 +292,15 @@ RSpec.describe 'rendering inertia views', type: :request do
 
       before { get deeply_nested_props_path, headers: headers }
 
-      it 'filters out the entire evaluated prop' do
+      it 'resolves the closure and includes all children' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
           'nested' => {
-            'deeply_nested' => {
-              'deeply_nested_always' => 'deeply nested always prop',
+            'evaluated' => {
+              'first' => 'first evaluated nested param',
+              'second' => 'second evaluated nested param',
             },
-          },
+          }
         )
       end
     end
@@ -247,7 +337,7 @@ RSpec.describe 'rendering inertia views', type: :request do
               'deeply_nested_always' => 'deeply nested always prop',
               'deeply_nested_lazy' => 'deeply nested lazy prop',
             },
-          },
+          }
         )
       end
     end
@@ -257,7 +347,7 @@ RSpec.describe 'rendering inertia views', type: :request do
     let(:headers) do
       {
         'X-Inertia' => true,
-        'X-Inertia-Partial-Data' => 'nested,nested_lazy',
+        'X-Inertia-Partial-Data' => 'nested,nested_optional',
         'X-Inertia-Partial-Except' => 'nested',
         'X-Inertia-Partial-Component' => 'TestComponent',
       }
@@ -268,39 +358,43 @@ RSpec.describe 'rendering inertia views', type: :request do
     it 'returns listed props without excepted' do
       expect(response.parsed_body['props']).to eq(
         'always' => 'always prop',
-        'nested_lazy' => { 'first' => 'first nested lazy param' },
+        'nested_optional' => { 'first' => 'first nested optional param' }
       )
     end
 
     context 'when except without X-Inertia-Partial-Data' do
-      let(:headers) {{
-        'X-Inertia' => true,
-        'X-Inertia-Partial-Except' => 'nested',
-        'X-Inertia-Partial-Component' => 'TestComponent',
-      }}
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Except' => 'nested',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
 
       it 'returns all regular and partial props except excepted' do
         expect(response.parsed_body['props']).to eq(
           'flat' => 'flat param',
-          'lazy' => 'lazy param',
+          'optional' => 'optional param',
           'always' => 'always prop',
-          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested_optional' => { 'first' => 'first nested optional param' }
         )
       end
     end
 
     context 'when except always prop' do
-      let(:headers) {{
-        'X-Inertia' => true,
-        'X-Inertia-Partial-Data' => 'nested_lazy',
-        'X-Inertia-Partial-Except' => 'always_prop',
-        'X-Inertia-Partial-Component' => 'TestComponent',
-      }}
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'nested_optional',
+          'X-Inertia-Partial-Except' => 'always_prop',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
 
       it 'returns always prop anyway' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
-          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested_optional' => { 'first' => 'first nested optional param' }
         )
       end
     end
@@ -309,7 +403,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       let(:headers) do
         {
           'X-Inertia' => true,
-          'X-Inertia-Partial-Data' => 'nested_lazy',
+          'X-Inertia-Partial-Data' => 'nested_optional',
           'X-Inertia-Partial-Except' => 'unknown',
           'X-Inertia-Partial-Component' => 'TestComponent',
         }
@@ -318,7 +412,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       it 'returns props' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
-          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested_optional' => { 'first' => 'first nested optional param' }
         )
       end
     end
@@ -327,8 +421,8 @@ RSpec.describe 'rendering inertia views', type: :request do
       let(:headers) do
         {
           'X-Inertia' => true,
-          'X-Inertia-Partial-Data' => 'nested,nested_lazy',
-          'X-Inertia-Partial-Except' => 'nested.first,nested_lazy.first',
+          'X-Inertia-Partial-Data' => 'nested,nested_optional',
+          'X-Inertia-Partial-Except' => 'nested.first,nested_optional.first',
           'X-Inertia-Partial-Component' => 'TestComponent',
         }
       end
@@ -337,7 +431,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
           'nested' => { 'second' => 'second nested param' },
-          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'nested_optional' => { 'first' => 'first nested optional param' }
         )
       end
     end
@@ -345,23 +439,29 @@ RSpec.describe 'rendering inertia views', type: :request do
 
   context 'lazy prop rendering' do
     context 'on first load' do
-      let(:page) {
-        InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { name: 'Brian'}).send(:page)
-      }
+      let(:page) do
+        InertiaRails::Renderer.new('TestComponent', controller, request, response, '',
+                                   props: { name: 'Brian' }).send(:page)
+      end
       before { get lazy_props_path }
 
       it { is_expected.to include inertia_div(page) }
     end
 
     context 'with a partial reload' do
-      let(:page) {
-        InertiaRails::Renderer.new('TestComponent', controller, request, response, '', props: { sport: 'basketball', level: 'worse than he believes', grit: 'intense'}).send(:page)
-      }
-      let(:headers) {{
-        'X-Inertia' => true,
-        'X-Inertia-Partial-Data' => 'sport,level',
-        'X-Inertia-Partial-Component' => 'TestComponent',
-      }}
+      let(:page) do
+        InertiaRails::Renderer.new(
+          'TestComponent', controller, request, response, '',
+          props: { sport: 'basketball', level: 'worse than he believes', grit: 'intense' }
+        ).send(:page)
+      end
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'sport,level',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
 
       before { get lazy_props_path, headers: headers }
 
@@ -372,29 +472,1040 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'optional prop rendering' do
+    context 'on first load' do
+      let(:page) do
+        InertiaRails::Renderer.new('TestComponent', controller, request, response, '',
+                                   props: { regular: 1 }).send(:page)
+      end
+      before { get optional_props_path }
+
+      it { is_expected.to include inertia_div(page) }
+    end
+
+    context 'with a partial reload' do
+      let(:page) do
+        InertiaRails::Renderer.new('TestComponent', controller, request, response, '',
+                                   props: { regular: 1, optional: 1 }).send(:page)
+      end
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'optional',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      before { get optional_props_path, headers: headers }
+
+      it { is_expected.to eq page.to_json }
+    end
+  end
+
   context 'always prop rendering' do
     let(:headers) { { 'X-Inertia' => true } }
 
     before { get always_props_path, headers: headers }
 
-    it "returns non-optional props on first load" do
-      expect(response.parsed_body["props"]).to eq({"always" => 'always prop', "regular" => 'regular prop' })
+    it 'returns non-optional props on first load' do
+      expect(response.parsed_body['props']).to eq({ 'always' => 'always prop', 'regular' => 'regular prop' })
     end
 
     context 'with a partial reload' do
-      let(:headers) {{
-        'X-Inertia' => true,
-        'X-Inertia-Partial-Data' => 'lazy',
-        'X-Inertia-Partial-Component' => 'TestComponent',
-      }}
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'optional',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
 
-      it "returns listed and always props" do
-        expect(response.parsed_body["props"]).to eq({"always" => 'always prop', "lazy" => 'lazy prop' })
+      it 'returns listed and always props' do
+        expect(response.parsed_body['props']).to eq({ 'always' => 'always prop', 'optional' => 'optional prop' })
+      end
+    end
+  end
+
+  context 'merged prop rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    before { get merge_props_path, headers: headers }
+
+    it 'returns non-optional props and meta on first load' do
+      expect(response.parsed_body['props']).to eq(
+        'merge' => 'merge prop', 'match_on' => [{ 'id' => 1 }],
+        'deep_merge' => { 'deep' => 'merge prop' }, 'deep_match_on' => { 'deep' => [{ 'id' => 1 }] },
+        'regular' => 'regular prop'
+      )
+      expect(response.parsed_body['mergeProps']).to match_array(
+        %w[merge match_on deferred_merge deferred_match_on]
+      )
+      expect(response.parsed_body['deepMergeProps']).to match_array(
+        %w[deep_merge deep_match_on deferred_deep_merge
+           deferred_deep_match_on]
+      )
+      expect(response.parsed_body['deferredProps']).to eq(
+        'default' => %w[deferred_merge deferred_match_on
+                        deferred_deep_merge deferred_deep_match_on deferred]
+      )
+      expect(response.parsed_body['matchPropsOn']).to match_array(
+        %w[deep_match_on.deep.id deferred_deep_match_on.deep.id
+           deferred_match_on.id match_on.id]
+      )
+    end
+
+    context 'with a partial reload' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'deferred_merge,deferred_deep_merge,deferred_deep_match_on,deferred_match_on',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      it 'returns listed merge props' do
+        expect(response.parsed_body['props']).to eq(
+          'deferred_merge' => 'deferred and merge prop',
+          'deferred_deep_merge' => { 'deep' => 'deferred and merge prop' },
+          'deferred_deep_match_on' => { 'deep' => [{ 'id' => 1 }] },
+          'deferred_match_on' => [{ 'id' => 1 }]
+        )
+        expect(response.parsed_body['mergeProps']).to match_array(%w[deferred_merge deferred_match_on])
+        expect(response.parsed_body['deepMergeProps']).to match_array(%w[deferred_deep_merge deferred_deep_match_on])
+        expect(response.parsed_body['deferredProps']).to be_nil
+        expect(response.parsed_body['matchPropsOn']).to match_array(%w[deferred_deep_match_on.deep.id
+                                                                       deferred_match_on.id])
+      end
+    end
+
+    context 'with a reset header' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'deferred_merge,deferred_deep_merge',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+          'X-Inertia-Reset' => 'deferred_merge,deferred_deep_merge',
+        }
+      end
+
+      it 'returns listed props' do
+        expect(response.parsed_body['props']).to eq(
+          'deferred_merge' => 'deferred and merge prop',
+          'deferred_deep_merge' => { 'deep' => 'deferred and merge prop' }
+        )
+        expect(response.parsed_body['mergeProps']).to be_nil
+        expect(response.parsed_body['deferredProps']).to be_nil
+        expect(response.parsed_body['matchPropsOn']).to be_nil
+      end
+    end
+
+    context 'with an except header' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'deferred_merge,deferred_deep_merge,deep_match_on',
+          'X-Inertia-Partial-Except' => 'deferred_merge',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      it 'returns only the excepted props' do
+        expect(response.parsed_body['props']).to eq(
+          'deferred_deep_merge' => { 'deep' => 'deferred and merge prop' },
+          'deep_match_on' => { 'deep' => [{ 'id' => 1 }] }
+        )
+        expect(response.parsed_body['mergeProps']).to be_nil
+        expect(response.parsed_body['deepMergeProps']).to match_array(%w[deferred_deep_merge deep_match_on])
+        expect(response.parsed_body['deferredProps']).to be_nil
+        expect(response.parsed_body['matchPropsOn']).to match_array(%w[deep_match_on.deep.id])
+      end
+    end
+  end
+
+  context 'scroll props rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    before do
+      # Create a mock controller action that returns scroll props
+      get '/scroll_test', headers: headers
+    end
+
+    it 'includes scroll props metadata in response without reset' do
+      expect(response).to be_successful
+      expect(response.parsed_body['scrollProps']).to include('users')
+      expect(response.parsed_body['scrollProps']['users']).to include(
+        'pageName' => 'page',
+        'currentPage' => 1,
+        'nextPage' => 2,
+        'previousPage' => nil,
+        'reset' => false
+      )
+    end
+
+    context 'with reset header' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Reset' => 'users',
+        }
+      end
+
+      it 'marks scroll props as reset' do
+        expect(response).to be_successful
+        expect(response.parsed_body['scrollProps']['users']['reset']).to be true
+      end
+    end
+  end
+
+  context 'shared scroll props rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    before do
+      # Create a mock controller action that returns scroll props
+      get '/shared_scroll_test', headers: headers
+    end
+
+    it 'includes scroll props metadata in response without reset' do
+      expect(response).to be_successful
+      expect(response.parsed_body['scrollProps']).to include('users')
+      expect(response.parsed_body['scrollProps']['users']).to include(
+        'pageName' => 'page',
+        'currentPage' => 1,
+        'nextPage' => 2,
+        'previousPage' => nil,
+        'reset' => false
+      )
+    end
+  end
+
+  context 'deferred scroll props rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    context 'on initial load' do
+      before { get '/deferred_scroll_test', headers: headers }
+
+      it 'excludes deferred scroll prop from props' do
+        expect(response).to be_successful
+        expect(response.parsed_body['props']).to eq({ 'name' => 'Brian' })
+      end
+
+      it 'includes deferred scroll prop in deferredProps' do
+        expect(response.parsed_body['deferredProps']).to eq({ 'default' => ['users'] })
+      end
+
+      it 'excludes deferred scroll prop from scrollProps' do
+        expect(response.parsed_body['scrollProps']).to be_nil
+      end
+    end
+
+    context 'on partial request' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'users',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      before { get '/deferred_scroll_test', headers: headers }
+
+      it 'resolves deferred scroll prop in props' do
+        expect(response).to be_successful
+        expect(response.parsed_body['props']['users']).to eq([{ 'id' => 1, 'name' => 'User 1' },
+                                                              { 'id' => 2, 'name' => 'User 2' }])
+      end
+
+      it 'includes scroll metadata in scrollProps' do
+        expect(response.parsed_body['scrollProps']).to include('users')
+        expect(response.parsed_body['scrollProps']['users']).to include(
+          'pageName' => 'page',
+          'currentPage' => 1,
+          'nextPage' => 2,
+          'previousPage' => nil
+        )
+      end
+
+      it 'includes merge props' do
+        expect(response.parsed_body['mergeProps']).to include('users')
+      end
+
+      it 'does not include deferredProps on partial request' do
+        expect(response.parsed_body['deferredProps']).to be_nil
+      end
+    end
+
+    context 'with custom group' do
+      before { get '/deferred_scroll_test_custom_group', headers: headers }
+
+      it 'uses the custom group in deferredProps' do
+        expect(response.parsed_body['deferredProps']).to eq({ 'custom' => ['users'] })
+      end
+    end
+  end
+
+  context 'prepend merge props rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    before do
+      get '/prepend_merge_test', headers: headers
+    end
+
+    it 'includes prepend props in response' do
+      expect(response).to be_successful
+      expect(response.parsed_body['prependProps']).to include('prepend_prop')
+      expect(response.parsed_body['mergeProps']).to include('append_prop')
+    end
+  end
+
+  context 'nested paths merge props rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    before do
+      get '/nested_paths_test', headers: headers
+    end
+
+    it 'includes nested paths in merge props' do
+      expect(response).to be_successful
+      expect(response.parsed_body['mergeProps']).to include('foo.data')
+      expect(response.parsed_body['prependProps']).to include('bar.data.items')
+    end
+
+    it 'includes match strategies for nested paths' do
+      expect(response).to be_successful
+      expect(response.parsed_body['matchPropsOn']).to include('foo.data.id')
+      expect(response.parsed_body['matchPropsOn']).to include('bar.data.items.uuid')
+    end
+  end
+
+  context 'enhanced reset header handling' do
+    let(:headers) do
+      {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'merge_prop',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Reset' => 'merge_prop',
+      }
+    end
+
+    before do
+      get '/reset_test', headers: headers
+    end
+
+    it 'excludes reset merge props from mergeProps array' do
+      expect(response).to be_successful
+      expect(response.parsed_body['props']).to include('merge_prop')
+      expect(response.parsed_body['mergeProps']).to be_nil
+    end
+  end
+
+  context 'deferred prop rendering' do
+    context 'on first load' do
+      let(:headers) { { 'X-Inertia' => true } }
+
+      before { get deferred_props_path, headers: headers }
+
+      it 'does not include defer props inside props in first load' do
+        expect(response.parsed_body['props']).to eq({ 'name' => 'Brian' })
+      end
+
+      it 'returns deferredProps' do
+        expect(response.parsed_body['deferredProps']).to eq(
+          'default' => %w[level grit],
+          'other' => ['sport']
+        )
+      end
+    end
+
+    context 'with a partial reload' do
+      let(:page) do
+        InertiaRails::Renderer.new(
+          'TestComponent', controller, request, response, '',
+          props: { sport: 'basketball', level: 'worse than he believes', grit: 'intense' }
+        ).send(:page)
+      end
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'level,grit', # Simulate default group
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      before { get deferred_props_path, headers: headers }
+
+      it { is_expected.to eq page.to_json }
+      it { is_expected.to include('intense') }
+      it { is_expected.to include('worse') }
+      it { is_expected.not_to include('basketball') }
+      it 'does not deferredProps key in json' do
+        expect(response.parsed_body['deferredProps']).to eq(nil)
+      end
+    end
+
+    context 'with shared data' do
+      let(:headers) { { 'X-Inertia' => true } }
+
+      before { get shared_deferred_props_path, headers: headers }
+
+      it 'does not include defer props inside props in first load' do
+        expect(response.parsed_body['props']).to eq({ 'name' => 'Brian' })
+      end
+
+      it 'returns deferredProps' do
+        expect(response.parsed_body['deferredProps']).to eq(
+          'default' => ['grit']
+        )
+      end
+    end
+
+    context 'with a rescued deferred prop' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'permissions',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      before { get rescued_deferred_props_path, headers: headers }
+
+      it 'omits the rescued prop from props' do
+        expect(response.parsed_body['props']).not_to have_key('permissions')
+      end
+
+      it 'returns the rescued key in rescuedProps' do
+        expect(response.parsed_body['rescuedProps']).to eq(['permissions'])
+      end
+    end
+  end
+
+  context 'cached prop rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+    let(:cache_store) { ActiveSupport::Cache::MemoryStore.new }
+
+    before do
+      allow(InertiaRails).to receive(:cache_store).and_return(cache_store)
+    end
+
+    context 'InertiaRails.cache in props' do
+      before { get cached_props_path, headers: headers }
+
+      it 'includes cached prop value in response' do
+        expect(response.parsed_body['props']).to eq(
+          'name' => 'Brian',
+          'stats' => { 'count' => 42 }
+        )
+      end
+
+      it 'writes to cache store' do
+        expect(cache_store.read('inertia_rails/stats_key')).to eq({ count: 42 }.to_json)
+      end
+
+      it 'returns RawJson on second request' do
+        get cached_props_path, headers: headers
+        expect(response.parsed_body['props']['stats']).to eq({ 'count' => 42 })
+      end
+    end
+
+    context 'cached deferred prop' do
+      context 'on first load' do
+        before { get cached_deferred_props_path, headers: headers }
+
+        it 'excludes deferred prop from props' do
+          expect(response.parsed_body['props']).to eq({ 'name' => 'Brian' })
+        end
+
+        it 'includes deferredProps metadata' do
+          expect(response.parsed_body['deferredProps']).to eq(
+            'feed' => ['feed']
+          )
+        end
+
+        it 'does not write to cache on first load' do
+          expect(cache_store.read('inertia_rails/feed_key')).to be_nil
+        end
+      end
+
+      context 'on partial reload (cache miss)' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'feed',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        before { get cached_deferred_props_path, headers: headers }
+
+        it 'evaluates block and returns fresh data' do
+          expect(response.parsed_body['props']['feed']).to eq(%w[fresh_item])
+        end
+
+        it 'writes result to cache' do
+          expect(cache_store.read('inertia_rails/feed_key')).to eq(%w[fresh_item].to_json)
+        end
+      end
+
+      context 'on partial reload (cache hit)' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'feed',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        before do
+          cache_store.write('inertia_rails/feed_key', '["cached_item"]')
+          get cached_deferred_props_path, headers: headers
+        end
+
+        it 'returns cached data without evaluating block' do
+          expect(response.parsed_body['props']['feed']).to eq(%w[cached_item])
+        end
+      end
+    end
+
+    context 'cached optional prop' do
+      context 'on first load' do
+        before { get optional_cached_props_path, headers: headers }
+
+        it 'excludes optional prop from props' do
+          expect(response.parsed_body['props']).to eq({ 'regular' => 'regular prop' })
+        end
+
+        it 'does not write to cache on first load' do
+          expect(cache_store.read('inertia_rails/categories_key')).to be_nil
+        end
+      end
+
+      context 'on partial reload (cache miss)' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'categories',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        before { get optional_cached_props_path, headers: headers }
+
+        it 'evaluates block and returns data' do
+          expect(response.parsed_body['props']['categories']).to eq(%w[category1 category2])
+        end
+
+        it 'writes result to cache' do
+          expect(cache_store.read('inertia_rails/categories_key')).to eq(%w[category1 category2].to_json)
+        end
+      end
+
+      context 'on partial reload (cache hit)' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'categories',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        before do
+          cache_store.write('inertia_rails/categories_key', '["cached_cat"]')
+          get optional_cached_props_path, headers: headers
+        end
+
+        it 'returns cached data without evaluating block' do
+          expect(response.parsed_body['props']['categories']).to eq(%w[cached_cat])
+        end
+      end
+    end
+  end
+
+  context 'view configuration options' do
+    after do
+      InertiaRails.configure do |config|
+        config.use_script_element_for_initial_page = false
+        config.root_dom_id = 'app'
+      end
+    end
+
+    describe 'root_dom_id' do
+      let(:page) { InertiaRails::Renderer.new('TestComponent', controller, request, response, '').send(:page) }
+
+      context 'with default root_dom_id' do
+        before { get component_path }
+
+        it 'renders div with id="app"' do
+          expect(response.body).to include('<div id="app" data-page=')
+        end
+      end
+
+      context 'with custom root_dom_id' do
+        before do
+          InertiaRails.configure { |c| c.root_dom_id = 'custom-root' }
+          get component_path
+        end
+
+        it 'renders div with custom id' do
+          expect(response.body).to include('<div id="custom-root" data-page=')
+        end
+      end
+    end
+
+    describe 'use_script_element_for_initial_page' do
+      let(:page) { InertiaRails::Renderer.new('TestComponent', controller, request, response, '').send(:page) }
+
+      context 'when false (default)' do
+        before { get component_path }
+
+        it 'renders div with data-page attribute' do
+          expect(response.body).to include('<div id="app" data-page=')
+        end
+
+        it 'does not render script element for page data' do
+          expect(response.body).not_to include('<script data-page=')
+        end
+      end
+
+      context 'when true' do
+        before do
+          InertiaRails.configure { |c| c.use_script_element_for_initial_page = true }
+          get component_path
+        end
+
+        it 'renders script element with page data' do
+          expect(response.body).to include('<script data-page="app" type="application/json">')
+          expect(response.body).to include(page.to_json)
+          expect(response.body).to include('</script>')
+        end
+
+        it 'renders div without data-page attribute' do
+          expect(response.body).to include('<div id="app"></div>')
+        end
+      end
+
+      context 'when true with custom root_dom_id' do
+        before do
+          InertiaRails.configure do |c|
+            c.use_script_element_for_initial_page = true
+            c.root_dom_id = 'inertia-app'
+          end
+          get component_path
+        end
+
+        it 'renders script element with custom data-page attribute' do
+          expect(response.body).to include('<script data-page="inertia-app" type="application/json">')
+        end
+
+        it 'renders div with custom id' do
+          expect(response.body).to include('<div id="inertia-app"></div>')
+        end
+      end
+    end
+  end
+
+  context 'once prop rendering' do
+    let(:headers) { { 'X-Inertia' => true } }
+
+    context 'on first load' do
+      before { get once_props_path, headers: headers }
+
+      it 'returns props on first load' do
+        expect(response.parsed_body['props']).to include('cached_data' => 'expensive data', 'regular' => 'regular prop')
+      end
+
+      it 'returns onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_data' => { 'prop' => 'cached_data' }
+        )
+      end
+    end
+
+    context 'with expires_in' do
+      before { get once_props_with_expires_in_path, headers: headers }
+
+      it 'includes expiresAt in onceProps' do
+        once_props = response.parsed_body['onceProps']
+        expect(once_props['cached_data']['expiresAt']).to be_a(Integer)
+        expect(once_props['cached_data']['expiresAt']).to be > (Time.current.to_f * 1000).to_i
+      end
+    end
+
+    context 'with custom key' do
+      before { get once_props_with_custom_key_path, headers: headers }
+
+      it 'uses custom key in onceProps' do
+        expect(response.parsed_body['onceProps']).to have_key('my_custom_key')
+        expect(response.parsed_body['onceProps']['my_custom_key']['prop']).to eq('cached_data')
+      end
+    end
+
+    context 'with X-Inertia-Except-Once-Props header' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Except-Once-Props' => 'cached_data',
+        }
+      end
+
+      before { get once_props_path, headers: headers }
+
+      it 'excludes cached once props from props' do
+        expect(response.parsed_body['props']).not_to have_key('cached_data')
+        expect(response.parsed_body['props']).to include('regular' => 'regular prop')
+      end
+
+      it 'still includes once props in onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_data' => { 'prop' => 'cached_data' }
+        )
+      end
+    end
+
+    context 'with custom key and X-Inertia-Except-Once-Props header' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Except-Once-Props' => 'my_custom_key',
+        }
+      end
+
+      before { get once_props_with_custom_key_path, headers: headers }
+
+      it 'excludes prop by custom key' do
+        expect(response.parsed_body['props']).not_to have_key('cached_data')
+      end
+    end
+
+    context 'when refreshing once prop via partial reload' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'cached_data',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+          'X-Inertia-Except-Once-Props' => 'cached_data',
+        }
+      end
+
+      before { get once_props_path, headers: headers }
+
+      it 'returns the once prop when explicitly requested' do
+        expect(response.parsed_body['props']).to include('cached_data' => 'expensive data')
+      end
+
+      it 'includes prop in onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_data' => { 'prop' => 'cached_data' }
+        )
+      end
+    end
+
+    context 'with deferred once props' do
+      before { get deferred_once_props_path, headers: headers }
+
+      it 'returns deferredProps on first load' do
+        expect(response.parsed_body['deferredProps']).to eq('default' => ['deferred_cached'])
+      end
+
+      it 'returns onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'deferred_cached' => { 'prop' => 'deferred_cached' }
+        )
+      end
+
+      context 'with a partial reload' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'deferred_cached',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        it 'returns the deferred prop value' do
+          expect(response.parsed_body['props']).to include('deferred_cached' => 'deferred and cached')
+        end
+      end
+
+      context 'with a partial reload and prop already cached' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'deferred_cached',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+            'X-Inertia-Except-Once-Props' => 'deferred_cached',
+          }
+        end
+
+        it 'returns the prop when explicitly requested (bypasses cache)' do
+          expect(response.parsed_body['props']).to include('deferred_cached' => 'deferred and cached')
+        end
+      end
+    end
+
+    context 'with shared once props' do
+      before { get shared_once_props_path, headers: headers }
+
+      it 'returns shared once props' do
+        expect(response.parsed_body['props']).to include('shared_cached' => 'shared once data')
+      end
+
+      it 'returns onceProps metadata for shared props' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'shared_cached' => { 'prop' => 'shared_cached' }
+        )
+      end
+    end
+
+    context 'with partial reload requesting only specific props' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'cached_one',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      before { get multiple_once_props_path, headers: headers }
+
+      it 'only includes requested props in props' do
+        expect(response.parsed_body['props']).to eq('cached_one' => 'first cached')
+      end
+
+      it 'only includes requested once props in onceProps' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_one' => { 'prop' => 'cached_one' }
+        )
+      end
+    end
+
+    context 'with partial reload excluding specific props' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Except' => 'cached_two',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      before { get multiple_once_props_path, headers: headers }
+
+      it 'excludes specified props from props' do
+        expect(response.parsed_body['props']).to eq(
+          'cached_one' => 'first cached',
+          'regular' => 'regular prop'
+        )
+      end
+
+      it 'excludes specified once props from onceProps' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_one' => { 'prop' => 'cached_one' }
+        )
+      end
+    end
+
+    context 'with fresh: false (default behavior)' do
+      before { get once_props_not_fresh_path, headers: headers }
+
+      it 'returns the prop value on first load' do
+        expect(response.parsed_body['props']).to include('cached_data' => 'cached data')
+      end
+
+      it 'includes prop in onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_data' => { 'prop' => 'cached_data' }
+        )
+      end
+
+      context 'when client has prop cached' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Except-Once-Props' => 'cached_data',
+          }
+        end
+
+        it 'excludes the prop from response' do
+          expect(response.parsed_body['props']).not_to have_key('cached_data')
+        end
+      end
+    end
+
+    context 'with fresh: true (force refresh)' do
+      before { get once_props_fresh_path, headers: headers }
+
+      it 'returns the prop value' do
+        expect(response.parsed_body['props']).to include('cached_data' => 'fresh data')
+      end
+
+      it 'includes prop in onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'cached_data' => { 'prop' => 'cached_data' }
+        )
+      end
+
+      context 'when client has prop cached' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Except-Once-Props' => 'cached_data',
+          }
+        end
+
+        it 'still includes the prop (bypasses cache)' do
+          expect(response.parsed_body['props']).to include('cached_data' => 'fresh data')
+        end
+
+        it 'includes prop in onceProps so client updates cache' do
+          expect(response.parsed_body['onceProps']).to eq(
+            'cached_data' => { 'prop' => 'cached_data' }
+          )
+        end
+      end
+    end
+
+    context 'with mixed fresh and non-fresh once props' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Except-Once-Props' => 'foo,baz',
+        }
+      end
+
+      before { get once_props_fresh_and_non_fresh_path, headers: headers }
+
+      it 'includes fresh prop but excludes non-fresh prop from props' do
+        expect(response.parsed_body['props']).to include('foo' => 'bar')
+        expect(response.parsed_body['props']).not_to have_key('baz')
+      end
+
+      it 'includes both props in onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'foo' => { 'prop' => 'foo' },
+          'baz' => { 'prop' => 'baz' }
+        )
+      end
+    end
+
+    context 'with merge once props' do
+      before { get merge_once_props_path, headers: headers }
+
+      it 'returns the prop value on first load' do
+        expect(response.parsed_body['props']).to include('activity' => [{ 'id' => 1, 'action' => 'login' }])
+      end
+
+      it 'includes prop in mergeProps metadata' do
+        expect(response.parsed_body['mergeProps']).to eq(['activity'])
+      end
+
+      it 'includes prop in onceProps metadata' do
+        expect(response.parsed_body['onceProps']).to eq(
+          'activity' => { 'prop' => 'activity' }
+        )
+      end
+
+      context 'when client has prop cached' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Except-Once-Props' => 'activity',
+          }
+        end
+
+        it 'excludes prop from props' do
+          expect(response.parsed_body['props']).not_to have_key('activity')
+        end
+
+        it 'still includes prop in mergeProps metadata' do
+          expect(response.parsed_body['mergeProps']).to eq(['activity'])
+        end
+
+        it 'still includes prop in onceProps metadata' do
+          expect(response.parsed_body['onceProps']).to eq(
+            'activity' => { 'prop' => 'activity' }
+          )
+        end
+      end
+
+      context 'when refreshing via partial reload' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'activity',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+            'X-Inertia-Except-Once-Props' => 'activity',
+          }
+        end
+
+        it 'returns the prop when explicitly requested' do
+          expect(response.parsed_body['props']).to include('activity' => [{ 'id' => 1, 'action' => 'login' }])
+        end
+      end
+    end
+
+    context 'with optional once props' do
+      context 'on first load' do
+        before { get optional_once_props_path, headers: headers }
+
+        it 'excludes optional prop from props on first load' do
+          expect(response.parsed_body['props']).not_to have_key('categories')
+          expect(response.parsed_body['props']).to include('regular' => 'regular prop')
+        end
+
+        it 'includes onceProps metadata so client knows to cache when requested' do
+          expect(response.parsed_body['onceProps']).to eq(
+            'categories' => { 'prop' => 'categories' }
+          )
+        end
+      end
+
+      context 'with a partial reload requesting the optional prop' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'categories',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+          }
+        end
+
+        before { get optional_once_props_path, headers: headers }
+
+        it 'returns the optional prop when explicitly requested' do
+          expect(response.parsed_body['props']).to include('categories' => %w[category1 category2])
+        end
+
+        it 'includes prop in onceProps metadata' do
+          expect(response.parsed_body['onceProps']).to eq(
+            'categories' => { 'prop' => 'categories' }
+          )
+        end
+      end
+
+      context 'when refreshing optional once prop (explicit request bypasses cache)' do
+        let(:headers) do
+          {
+            'X-Inertia' => true,
+            'X-Inertia-Partial-Data' => 'categories',
+            'X-Inertia-Partial-Component' => 'TestComponent',
+            'X-Inertia-Except-Once-Props' => 'categories',
+          }
+        end
+
+        before { get optional_once_props_path, headers: headers }
+
+        it 'returns prop when explicitly requested even with cache header' do
+          expect(response.parsed_body['props']).to include('categories' => %w[category1 category2])
+        end
+
+        it 'includes prop in onceProps metadata' do
+          expect(response.parsed_body['onceProps']).to eq(
+            'categories' => { 'prop' => 'categories' }
+          )
+        end
       end
     end
   end
 end
 
 def inertia_div(page)
-  "<div id=\"app\" data-page=\"#{CGI::escape_html(page.to_json)}\"></div>"
+  "<div id=\"app\" data-page=\"#{CGI.escape_html(page.to_json)}\"></div>"
 end

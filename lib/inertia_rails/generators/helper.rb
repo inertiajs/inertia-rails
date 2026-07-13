@@ -4,14 +4,17 @@ module InertiaRails
   module Generators
     module Helper
       class << self
-        def guess_the_default_framework
-          package = Rails.root.join('package.json').read
-          case package
-          when %r{@inertiajs/react}
+        DEFAULT_PACKAGE_PATH = Rails.root.join('package.json')
+
+        def guess_the_default_framework(package_json_path = DEFAULT_PACKAGE_PATH)
+          package_json = JSON.parse(package_json_path.read)
+          dependencies = package_json['dependencies'] || {}
+
+          if dependencies['@inertiajs/react']
             'react'
-          when %r{@inertiajs/svelte}
-            package.match?(/"svelte": "\^5/) ? 'svelte' : 'svelte4'
-          when %r{@inertiajs/vue3}
+          elsif dependencies['@inertiajs/svelte']
+            'svelte'
+          elsif dependencies['@inertiajs/vue3']
             'vue'
           else
             Thor::Shell::Basic.new.say_error 'Could not determine the Inertia.js framework you are using.'
@@ -19,12 +22,14 @@ module InertiaRails
           end
         end
 
-        def guess_typescript
+        def uses_typescript?
           Rails.root.join('tsconfig.json').exist?
         end
 
-        def guess_inertia_template
-          if Rails.root.join('tailwind.config.js').exist? || Rails.root.join('tailwind.config.ts').exist?
+        def guess_inertia_template(package_json_path = DEFAULT_PACKAGE_PATH)
+          return 'inertia_templates' unless package_json_path.exist?
+
+          if package_json_path.read.include?('"tailwindcss"')
             'inertia_tw_templates'
           else
             'inertia_templates'
@@ -32,8 +37,9 @@ module InertiaRails
         end
       end
 
+      # Matches controller_path, which the default component path resolver expects.
       def inertia_base_path
-        (class_path + [file_name]).map(&:camelize).join('/')
+        (class_path + [file_name]).join('/')
       end
 
       def inertia_component_name
@@ -82,14 +88,6 @@ module InertiaRails
 
       def js_resources_path
         route_url
-      end
-
-      def inertia_js_version
-        @inertia_js_version ||= Gem::Version.new(
-          JSON.parse(`npm ls @inertiajs/core --json`).then do |json|
-            json['dependencies'].values.first['version']
-          end
-        )
       end
 
       def ts_type(attribute)

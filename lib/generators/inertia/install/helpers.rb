@@ -31,6 +31,15 @@ module Inertia
         File.join(destination_root, *relative_path)
       end
 
+      def update_package_json
+        package_json_path = file_path('package.json')
+        package_json = JSON.parse(File.read(package_json_path))
+
+        yield package_json
+
+        File.write(package_json_path, "#{JSON.pretty_generate(package_json)}\n")
+      end
+
       # Interactivity Helpers
       def ask(*)
         unless options[:interactive]

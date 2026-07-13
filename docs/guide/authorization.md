@@ -9,7 +9,7 @@ Here's an example of how you might do this in a Rails controller using the [Acti
 ```ruby
 class UsersController < ApplicationController
   def index
-    render inertia: 'Users/Index', props: {
+    render inertia: {
       can: {
         create_user: allowed_to?(:create, User)
       },

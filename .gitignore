@@ -7,7 +7,9 @@
 /spec/reports/
 /tmp/
 /.cache/
+/vendor/
 /Gemfile.lock
+.DS_Store
 
 /spec/dummy/db/*.sqlite3
 /spec/dummy/db/*.sqlite3-journal

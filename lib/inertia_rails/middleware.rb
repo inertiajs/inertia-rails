@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module InertiaRails
   class Middleware
     def initialize(app)
@@ -16,11 +18,23 @@ module InertiaRails
 
       def response
         copy_xsrf_to_csrf!
-        status, headers, body = @app.call(@env)
+        status, headers, body = if prevent_precognition_writes?
+                                  ActiveRecord::Base.while_preventing_writes { @app.call(@env) }
+                                else
+                                  @app.call(@env)
+                                end
         request = ActionDispatch::Request.new(@env)
 
-        # Inertia errors are added to the session via redirect_to
-        request.session.delete(:inertia_errors) unless keep_inertia_errors?(status)
+        # Inertia session data is added via redirect_to
+        # Guard with session.loaded? to avoid forcing session I/O (and unnecessary
+        # database writes) on requests that never accessed the session, e.g. sessionless
+        # controllers. If the session was never loaded the Inertia keys cannot have been
+        # set, so the cleanup would be a no-op anyway.
+        unless keep_inertia_session_options?(status) || !request.session.loaded?
+          request.session.delete(:inertia_errors)
+          request.session.delete(:inertia_clear_history)
+          request.session.delete(:inertia_preserve_fragment)
+        end
 
         status = 303 if inertia_non_post_redirect?(status)
 
@@ -29,7 +43,7 @@ module InertiaRails
 
       private
 
-      def keep_inertia_errors?(status)
+      def keep_inertia_session_options?(status)
         redirect_status?(status) || stale_inertia_request?
       end
 
@@ -42,7 +56,7 @@ module InertiaRails
       end
 
       def non_get_redirectable_method?
-        ['PUT', 'PATCH', 'DELETE'].include? request_method
+        %w[PUT PATCH DELETE].include? request_method
       end
 
       def inertia_non_post_redirect?(status)
@@ -58,7 +72,7 @@ module InertiaRails
       end
 
       def controller
-        @env["action_controller.instance"]
+        @env['action_controller.instance']
       end
 
       def request_method
@@ -78,7 +92,7 @@ module InertiaRails
       end
 
       def server_version
-        controller&.send(:inertia_configuration)&.version
+        (controller&.send(:inertia_configuration) || InertiaRails.configuration).version
       end
 
       def coerce_version(version)
@@ -87,11 +101,21 @@ module InertiaRails
 
       def force_refresh(request)
         request.flash.keep
-        Rack::Response.new('', 409, {'X-Inertia-Location' => request.original_url}).finish
+        Rack::Response.new('', 409, { 'X-Inertia-Location' => request.original_url }).finish
       end
 
       def copy_xsrf_to_csrf!
-        @env['HTTP_X_CSRF_TOKEN'] = @env['HTTP_X_XSRF_TOKEN'] if @env['HTTP_X_XSRF_TOKEN'] && inertia_request?
+        @env['HTTP_X_CSRF_TOKEN'] = @env['HTTP_X_XSRF_TOKEN'] if @env['HTTP_X_XSRF_TOKEN']
+      end
+
+      def precognition_request?
+        @env['HTTP_PRECOGNITION'] == 'true'
+      end
+
+      def prevent_precognition_writes?
+        precognition_request? &&
+          InertiaRails.configuration.precognition_prevent_writes &&
+          defined?(ActiveRecord::Base)
       end
     end
   end

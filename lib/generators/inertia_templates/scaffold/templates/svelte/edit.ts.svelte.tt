@@ -1,0 +1,33 @@
+<script lang="ts">
+  import { Link } from '@inertiajs/svelte'
+
+  import type { <%= inertia_model_type %> } from './types'
+  import Form from './form.svelte'
+
+  let { <%= singular_table_name %> } = $props<{ <%= singular_table_name %>: <%= inertia_model_type %> }>()
+</script>
+
+<svelte:head>
+  <title>Editing <%= human_name.downcase %></title>
+</svelte:head>
+
+<h1>Editing <%= human_name.downcase %></h1>
+
+<Form
+  {<%= singular_table_name %>}
+  submitText="Update <%= human_name %>"
+  action={`<%= js_resource_path %>`}
+<% if attributes.any?(&:attachments?) -%>
+  method="post"
+  headers={{ 'X-HTTP-METHOD-OVERRIDE': 'patch' }}
+<% else -%>
+  method="patch"
+<% end -%>
+/>
+
+<br />
+
+<div>
+  <Link href={`<%= js_resource_path %>`}>Show this <%= human_name.downcase %></Link> |
+  <Link href="<%= js_resources_path %>">Back to <%= human_name.pluralize.downcase %></Link>
+</div>

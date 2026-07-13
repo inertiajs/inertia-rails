@@ -1,9 +1,9 @@
-name: Documentation Checks
+name: Documentation
 
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'docs/**'
       - '.github/workflows/docs.yml'
@@ -12,21 +12,24 @@ on:
       - 'docs/**'
       - '.github/workflows/docs.yml'
 
+permissions:
+  contents: read
+
 jobs:
   check_formatting:
     runs-on: ubuntu-latest
     name: Check Documentation Formatting
 
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.workflow }}-format-${{ github.ref }}
       cancel-in-progress: true
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'npm'
@@ -39,3 +42,36 @@ jobs:
       - name: Check formatting
         working-directory: ./docs
         run: npm run format:check
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build Documentation
+
+    concurrency:
+      group: ${{ github.workflow }}-build-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: './docs/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ./docs
+        run: npm ci
+
+      - name: Build docs
+        working-directory: ./docs
+        run: npm run docs:build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: docs-build
+          path: docs/.vitepress/dist

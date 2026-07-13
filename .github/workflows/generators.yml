@@ -20,24 +20,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [react, vue, svelte, svelte4]
+        framework: [react, vue, svelte]
         typescript: [true, false]
         tailwind: [true, false]
-        ruby: ['3.3']
+        ruby: ['3.4']
         node: ['22']
-        inertia_version: ['1.2.0', 'next', 'beta']
-        exclude:
-          # 1.2.0 does not support typescript
-          - typescript: true
-            inertia_version: '1.2.0'
-          # 1.2.0 doesn't support Svelte 5
-          - framework: svelte
-            inertia_version: '1.2.0'
+        inertia_version: ['latest']
 
     name: ${{ matrix.framework }} (TS:${{ matrix.typescript }}, TW:${{ matrix.tailwind }}, Inertia:${{ matrix.inertia_version }})
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -45,8 +38,11 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
+      - name: Run generator tests
+        run: bundle exec rspec --tag type:generator
+
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
 
@@ -73,7 +69,7 @@ jobs:
 
       - name: Upload test artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-output-${{ matrix.framework }}-ts${{ matrix.typescript }}-tw${{ matrix.tailwind }}-v${{ matrix.inertia_version }}
           path: |

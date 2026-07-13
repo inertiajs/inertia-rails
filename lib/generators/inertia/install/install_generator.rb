@@ -49,11 +49,6 @@ module Inertia
       def install
         say "Installing Inertia's Rails adapter"
 
-        if inertia_resolved_version.version == '0'
-          say_error "Could not find the Inertia.js package version #{options[:inertia_version]}.", :red
-          exit(false)
-        end
-
         install_vite unless ruby_vite_installed?
 
         install_typescript if typescript?
@@ -65,8 +60,20 @@ module Inertia
         install_example_page if options[:example_page]
 
         say 'Copying bin/dev'
-        copy_file "#{__dir__}/templates/dev", 'bin/dev'
+        copy_file 'dev', 'bin/dev'
         chmod 'bin/dev', 0o755, verbose: verbose?
+
+        if install_vite?
+          say 'Adding redirect to localhost'
+          routing_code = <<~RUBY
+            \n  # Redirect to localhost from 127.0.0.1 to use same IP address with Vite server
+              constraints(host: "127.0.0.1") do
+                get "(*path)", to: redirect { |params, req| "\#{req.protocol}localhost:\#{req.port}/\#{params[:path]}" }
+              end
+          RUBY
+
+          route routing_code
+        end
 
         say "Inertia's Rails adapter successfully installed", :green
       end
@@ -78,60 +85,99 @@ module Inertia
         template 'initializer.rb', file_path('config/initializers/inertia_rails.rb')
 
         say 'Installing Inertia npm packages'
-        add_dependencies(*FRAMEWORKS[framework]['packages'])
-        add_dependencies(inertia_package)
+        add_dependencies(inertia_package, *FRAMEWORKS[framework]['packages'])
+
+        unless File.read(vite_config_path).include?('@inertiajs/vite')
+          say 'Adding Inertia Vite plugin'
+          # Append to the end of the plugins array.
+          gsub_file vite_config_path, /(plugins: \[.*?)(\n\s*\])/m, "\\1\n    inertia(),\\2"
+          prepend_file vite_config_path, "import inertia from '@inertiajs/vite'\n"
+        end
 
         unless File.read(vite_config_path).include?(FRAMEWORKS[framework]['vite_plugin_import'])
           say "Adding Vite plugin for #{framework}"
-          insert_into_file vite_config_path, "\n    #{FRAMEWORKS[framework]['vite_plugin_call']},", after: 'plugins: ['
+          # Append to the end of the plugins array.
+          gsub_file vite_config_path, /(plugins: \[.*?)(\n\s*\])/m,
+                    "\\1\n    #{FRAMEWORKS[framework]['vite_plugin_call']},\\2"
           prepend_file vite_config_path, "#{FRAMEWORKS[framework]['vite_plugin_import']}\n"
         end
 
         say "Copying #{inertia_entrypoint} entrypoint"
-        template "#{framework}/#{inertia_entrypoint}", js_file_path("entrypoints/#{inertia_entrypoint}")
+        copy_file "#{framework}/#{inertia_entrypoint}", js_file_path("entrypoints/#{inertia_entrypoint}")
+
+        # Copy framework-specific config files
+        if svelte?
+          say 'Copying svelte.config.js'
+          copy_file 'svelte/svelte.config.js', file_path('svelte.config.js')
+        end
+
+        say 'Copying InertiaController'
+        copy_file 'inertia_controller.rb', file_path('app/controllers/inertia_controller.rb')
 
         if application_layout.exist?
           say "Adding #{inertia_entrypoint} script tag to the application layout"
           headers = <<-ERB
-    <%= #{vite_tag} "inertia" %>
+    <%= #{vite_tag} %>
     <%= inertia_ssr_head %>
           ERB
           insert_into_file application_layout.to_s, headers, after: "<%= vite_client_tag %>\n"
 
-          if framework == 'react' && !application_layout.read.include?('vite_react_refresh_tag')
+          if react? && !application_layout.read.include?('vite_react_refresh_tag')
             say 'Adding Vite React Refresh tag to the application layout'
             insert_into_file application_layout.to_s, "<%= vite_react_refresh_tag %>\n    ",
                              before: '<%= vite_client_tag %>'
           end
 
-          gsub_file application_layout.to_s, /<title>/, '<title inertia>' unless svelte?
+          gsub_file application_layout.to_s, /<title>/, '<title data-inertia>' unless svelte?
         else
           say_error 'Could not find the application layout file. Please add the following tags manually:', :red
           say_error '-  <title>...</title>'
-          say_error '+  <title inertia>...</title>'
+          say_error '+  <title data-inertia>...</title>'
           say_error '+  <%= inertia_ssr_head %>'
-          say_error '+  <%= vite_react_refresh_tag %>' if framework == 'react'
-          say_error "+  <%= #{vite_tag} \"inertia\" %>"
+          say_error '+  <%= vite_react_refresh_tag %>' if react?
+          say_error "+  <%= #{vite_tag} %>"
         end
       end
 
       def install_typescript
         say 'Adding TypeScript support'
-        if svelte? && inertia_resolved_version.release < Gem::Version.new('1.3.0')
-          say 'WARNING: @inertiajs/svelte < 1.3.0 does not support TypeScript ' \
-              "(resolved version: #{inertia_resolved_version}).",
-              :yellow
-          say 'Skipping TypeScript support for @inertiajs/svelte', :yellow
-          @typescript = false
-          return
+
+        # globals.d.ts augments @inertiajs/core and scaffolds import its types;
+        # pnpm won't expose the adapters' transitive dep, so declare it directly.
+        add_dependencies(
+          "@inertiajs/core@#{options[:inertia_version]}",
+          *FRAMEWORKS[framework]['packages_ts'],
+          dev: true
+        )
+
+        say 'Copying tsconfig and types'
+
+        # Copy tsconfig files
+        tsconfig_files = %w[tsconfig.json tsconfig.node.json]
+        tsconfig_files << 'tsconfig.app.json' unless svelte?
+
+        tsconfig_files.each do |file|
+          template "#{framework}/#{file}", file_path(file)
         end
 
-        add_dependencies(*FRAMEWORKS[framework]['packages_ts'])
+        # Copy type definition files
+        types_files = %w[types/vite-env.d.ts types/globals.d.ts types/index.ts]
+        types_files.each do |file|
+          template "#{framework}/#{file}", file_path("#{js_destination_path}/#{file}")
+        end
 
-        say 'Copying adding scripts to package.json'
-        run 'npm pkg set scripts.check="svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"' if svelte?
-        run 'npm pkg set scripts.check="vue-tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"' if framework == 'vue'
-        run 'npm pkg set scripts.check="tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"' if framework == 'react'
+        say 'Adding TypeScript check scripts to package.json'
+        update_package_json do |package_json|
+          package_json['scripts'] ||= {}
+          package_json['scripts']['check'] =
+            if svelte?
+              'svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json'
+            elsif react?
+              'tsc -p tsconfig.app.json && tsc -p tsconfig.node.json'
+            elsif vue?
+              'vue-tsc -p tsconfig.app.json && tsc -p tsconfig.node.json'
+            end
+        end
       end
 
       def install_example_page
@@ -140,6 +186,7 @@ module Inertia
 
         say 'Adding a route for the example Inertia controller'
         route "get 'inertia-example', to: 'inertia_example#index'"
+        route "root 'inertia_example#index'" unless File.read(file_path('config/routes.rb')).match?(/^\s*root\s+/)
 
         say 'Copying page assets'
         copy_files = FRAMEWORKS[framework]['copy_files'].merge(
@@ -152,11 +199,9 @@ module Inertia
 
       def install_tailwind
         say 'Installing Tailwind CSS'
-        add_dependencies(%w[tailwindcss postcss autoprefixer @tailwindcss/forms @tailwindcss/typography
-                            @tailwindcss/container-queries])
-
-        template 'tailwind/tailwind.config.js', file_path('tailwind.config.js')
-        copy_file 'tailwind/postcss.config.js', file_path('postcss.config.js')
+        add_dependencies(%w[tailwindcss @tailwindcss/vite @tailwindcss/forms @tailwindcss/typography])
+        prepend_file vite_config_path, "import tailwindcss from '@tailwindcss/vite'\n"
+        insert_into_file vite_config_path, "\n    tailwindcss(),", after: 'plugins: ['
         copy_file 'tailwind/application.css', js_file_path('entrypoints/application.css')
 
         if application_layout.exist?
@@ -184,15 +229,29 @@ module Inertia
               say_error 'Failed to install Vite Rails gem', :red
               exit(false)
             end
-            if (capture = run('bundle exec vite install', capture: !verbose?))
+            vite_ruby_install_options = package_manager.present? ? "--package-manager=#{package_manager.name}" : ''
+            if (capture = run("bundle exec vite install #{vite_ruby_install_options}", capture: !verbose?))
+              rename_application_js_to_ts if typescript?
+              run('bundle binstub vite_ruby', capture: !verbose?) unless File.exist?(file_path('bin/vite'))
               say 'Vite Rails successfully installed', :green
             else
               say capture
               say_error 'Failed to install Vite Rails', :red
               exit(false)
             end
+
+            add_package_manager_to_bin_setup
           end
         end
+      end
+
+      def rename_application_js_to_ts
+        return unless File.exist?(application_js_path)
+        return unless application_layout.read.include?("<%= vite_javascript_tag 'application' %>")
+
+        FileUtils.mv(application_js_path, application_ts_path)
+        gsub_file application_layout.to_s, /<%= vite_javascript_tag 'application' %>/,
+                  "<%= vite_typescript_tag 'application' %>"
       end
 
       def ruby_vite_installed?
@@ -230,8 +289,8 @@ module Inertia
         @package_manager ||= JSPackageManager.new(self)
       end
 
-      def add_dependencies(*packages)
-        package_manager.add_dependencies(*packages)
+      def add_dependencies(*packages, dev: false)
+        package_manager.add_dependencies(*packages, dev: dev)
       end
 
       def vite_config_path
@@ -256,18 +315,22 @@ module Inertia
         @typescript = options[:typescript] || yes?('Would you like to use TypeScript? (y/n)', :green)
       end
 
+      def application_js_path
+        js_file_path('entrypoints/application.js')
+      end
+
+      def application_ts_path
+        js_file_path('entrypoints/application.ts')
+      end
+
       def inertia_entrypoint
-        "inertia.#{typescript? ? 'ts' : 'js'}"
+        "inertia.#{typescript? ? 'ts' : 'js'}#{'x' if react?}"
       end
 
       def vite_tag
-        typescript? ? 'vite_typescript_tag' : 'vite_javascript_tag'
-      end
-
-      def inertia_resolved_version
-        @inertia_resolved_version ||= Gem::Version.new(
-          `npm show @inertiajs/core@#{options[:inertia_version]} version`.strip
-        )
+        tag = typescript? ? 'vite_typescript_tag' : 'vite_javascript_tag'
+        filename = "\"#{react? ? inertia_entrypoint : 'inertia'}\""
+        "#{tag} #{filename}"
       end
 
       def verbose?
@@ -278,6 +341,14 @@ module Inertia
         framework.start_with? 'svelte'
       end
 
+      def react?
+        framework.start_with? 'react'
+      end
+
+      def vue?
+        framework.start_with? 'vue'
+      end
+
       def inertia_package
         "#{FRAMEWORKS[framework]['inertia_package']}@#{options[:inertia_version]}"
       end
@@ -285,6 +356,26 @@ module Inertia
       def framework
         @framework ||= options[:framework] || ask('What framework do you want to use with Inertia?', :green,
                                                   limited_to: FRAMEWORKS.keys, default: 'react')
+      end
+
+      def add_package_manager_to_bin_setup
+        setup_file = file_path('bin/setup')
+        return unless File.exist?(setup_file)
+
+        content = File.read(setup_file)
+        pm_name = package_manager.name
+
+        # Check if package manager install already exists
+        return if content.include?("#{pm_name} install")
+
+        if content.include?('system("bundle check") || system!("bundle install")')
+          say 'Adding package manager install to bin/setup'
+          cmd = "system! \"#{pm_name} install\""
+          insert_into_file setup_file, "\n  #{cmd}",
+                           after: 'system("bundle check") || system!("bundle install")'
+        else
+          say_status "Couldn't add `#{cmd}` script to bin/setup, add it manually", :red
+        end
       end
     end
   end

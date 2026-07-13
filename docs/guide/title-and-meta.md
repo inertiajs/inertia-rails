@@ -1,18 +1,18 @@
-# Title & meta
+# Title & Meta
 
 Since Inertia powered JavaScript apps are rendered within the document `<body>`, they are unable to render markup to the document `<head>`, as it's outside of their scope. To help with this, Inertia ships with a `<Head>` component which can be used to set the page `<title>`, `<meta>` tags, and other `<head>` elements.
 
 > [!NOTE]
-> The `<Head>` component will only replace `<head>` elements that are not in your server-side layout.
+> Since v3.10.0, Inertia Rails supports managing meta tags via Rails. This allows your meta tags to work with link preview services without setting up server-side rendering. Since this isn't a part of the Inertia.js core, it's documented in the [server driven meta tags cookbook](/cookbook/server-managed-meta-tags).
 
-> [!NOTE]
-> The `<Head>` component is not available in the Svelte adapter, as Svelte already ships with its own `<svelte:head>` component.
+The `<Head>` component is not available in the Svelte adapter, as Svelte already ships with its own `<svelte:head>` component.
 
-## Head component
+## Head Component
 
 To add `<head>` elements to your page, use the `<Head>` component. Within this component, you can include the elements that you wish to add to the document `<head>`.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -41,7 +41,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```svelte
 <svelte:head>
@@ -50,16 +50,14 @@ export default () => (
 </svelte:head>
 ```
 
-> [!NOTE]
-> The `<svelte:head>` component is provided by Svelte.
-
 :::
 
-Title shorthand
+## Title Shorthand
 
 If you only need to add a `<title>` to the document `<head>`, you may simply pass the title as a prop to the `<Head>` component.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -80,7 +78,7 @@ import { Head } from '@inertiajs/react'
 export default () => <Head title="Your page title" />
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 // Not supported
@@ -88,9 +86,9 @@ export default () => <Head title="Your page title" />
 
 :::
 
-## Title callback
+## Title Callback
 
-You can globally modify the page `<title>` using the title callback in the `createInertiaApp` setup method. Typically, this method is invoked in your application's main JavaScript file. A common use case for the title callback is automatically adding an app name before or after each page title.
+You can globally modify the page `<title>` using the `title` callback in the `createInertiaApp` setup method. Typically, this method is invoked in your application's main JavaScript file. A common use case for the title callback is automatically adding an app name before or after each page title.
 
 ```js
 createInertiaApp({
@@ -99,9 +97,10 @@ createInertiaApp({
 })
 ```
 
-After defining the title callback, the callback will automatically be invoked when you set a title using the `<Head>` component.
+After defining the `title` callback, the callback will automatically be invoked when you set a title using the `<Head>` component.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -122,7 +121,7 @@ import { Head } from '@inertiajs/react'
 export default () => <Head title="Home" />
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 // Not supported
@@ -139,6 +138,7 @@ Which, in this example, will result in the following `<title>` tag.
 The `title` callback will also be invoked when you set the title using a `<title>` tag within your `<Head>` component.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -165,7 +165,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 // Not supported
@@ -173,11 +173,12 @@ export default () => (
 
 :::
 
-# Multiple Head instances
+## Multiple Head Instances
 
 It's possible to have multiple instances of the `<Head>` component throughout your application. For example, your layout can set some default `<Head>` elements, and then your individual pages can override those defaults.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -248,7 +249,7 @@ export default () => (
 )
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 // Not supported
@@ -268,15 +269,17 @@ The code example above will render the following HTML.
 </head>
 ```
 
-### Head extension
+## Head Extension
 
 When building a real application, it can sometimes be helpful to create a custom head component that extends Inertia's `<Head>` component. This gives you a place to set app-wide defaults, such as appending the app name to the page title.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
 <!-- AppHead.vue -->
+
 <script setup>
 import { Head } from '@inertiajs/vue3'
 
@@ -293,7 +296,8 @@ defineProps({ title: String })
 == React
 
 ```jsx
-// AppHead.jsx
+// AppHead.js
+
 import { Head } from '@inertiajs/react'
 
 export default ({ title, children }) => {
@@ -306,7 +310,7 @@ export default ({ title, children }) => {
 }
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 // Not supported
@@ -314,9 +318,10 @@ export default ({ title, children }) => {
 
 :::
 
-Once you have created the custom component, you may simply start using the custom component in your pages.
+Once you have created the custom component, you can just start using it in your pages.
 
 :::tabs key:frameworks
+
 == Vue
 
 ```vue
@@ -337,10 +342,29 @@ import AppHead from './AppHead'
 export default () => <AppHead title="About" />
 ```
 
-== Svelte 4|Svelte 5
+== Svelte
 
 ```js
 // Not supported
 ```
 
 :::
+
+## Inertia Attribute on Elements
+
+@available_since core=2.2.13
+
+Inertia has historically used the `inertia` attribute to track and manage elements in the document `<head>`. However, you can now opt-in to using the more standards-compliant `data-inertia` attribute instead. According to the HTML specification, custom attributes should be prefixed with `data-` to avoid conflicts with future HTML standards.
+
+To enable this for `@inertiajs/core` < 3.0, configure the `future.useDataInertiaHeadAttribute` option in your [application defaults](/guide/client-side-setup#configuring-defaults).
+
+```js
+createInertiaApp({
+  // resolve, setup, etc.
+  defaults: {
+    future: {
+      useDataInertiaHeadAttribute: true,
+    },
+  },
+})
+```

@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
-  mount InertiaRails::Engine => "/inertia-rails"
+  mount InertiaRails::Engine => '/inertia-rails'
 
   get 'configuration' => 'inertia_config_test#configuration'
   get 'props' => 'inertia_render_test#props'
+  get 'ssr_cache_disabled' => 'inertia_render_test#ssr_cache_disabled'
   get 'view_data' => 'inertia_render_test#view_data'
   get 'component' => 'inertia_render_test#component'
   get 'vary_header' => 'inertia_render_test#vary_header'
@@ -10,8 +13,12 @@ Rails.application.routes.draw do
   get 'share_with_inherited' => 'inertia_child_share_test#share_with_inherited'
   get 'empty_test' => 'inertia_test#empty_test'
   get 'with_different_layout' => 'inertia_test#with_different_layout'
+  get 'with_inline_layout' => 'inertia_test#with_inline_layout'
+  get 'without_layout' => 'inertia_test#without_layout'
   get 'redirect_test' => 'inertia_test#redirect_test'
   get 'inertia_request_test' => 'inertia_test#inertia_request_test'
+  get 'session_loaded_request_test' => 'inertia_test#session_loaded_request_test'
+  get 'http_cache_test' => 'inertia_test#http_cache_test'
   get 'inertia_partial_request_test' => 'inertia_test#inertia_partial_request_test'
   post 'redirect_with_responders' => 'inertia_responders_test#redirect_test'
   post 'redirect_test' => 'inertia_test#redirect_test'
@@ -24,25 +31,89 @@ Rails.application.routes.draw do
   get 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
   post 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
   post 'redirect_with_inertia_error_object' => 'inertia_test#redirect_with_inertia_error_object'
+  post 'redirect_with_non_hash_inertia_errors' => 'inertia_test#redirect_with_non_hash_inertia_errors'
   post 'redirect_back_with_inertia_errors' => 'inertia_test#redirect_back_with_inertia_errors'
   post 'redirect_back_or_to_with_inertia_errors' => 'inertia_test#redirect_back_or_to_with_inertia_errors'
   get 'error_404' => 'inertia_test#error_404'
   get 'error_500' => 'inertia_test#error_500'
   get 'content_type_test' => 'inertia_test#content_type_test'
   get 'lazy_props' => 'inertia_render_test#lazy_props'
+  get 'optional_props' => 'inertia_render_test#optional_props'
   get 'always_props' => 'inertia_render_test#always_props'
   get 'except_props' => 'inertia_render_test#except_props'
+  get 'merge_props' => 'inertia_render_test#merge_props'
+  get 'deferred_props' => 'inertia_render_test#deferred_props'
+  get 'rescued_deferred_props' => 'inertia_render_test#rescued_deferred_props'
+  get 'shared_deferred_props' => 'inertia_render_test#shared_deferred_props'
+  get 'scroll_test' => 'inertia_render_test#scroll_test'
+  get 'shared_scroll_test' => 'inertia_render_test#shared_scroll_test'
+  get 'deferred_scroll_test' => 'inertia_render_test#deferred_scroll_test'
+  get 'deferred_scroll_test_custom_group' => 'inertia_render_test#deferred_scroll_test_custom_group'
+  get 'prepend_merge_test' => 'inertia_render_test#prepend_merge_test'
+  get 'nested_paths_test' => 'inertia_render_test#nested_paths_test'
+  get 'reset_test' => 'inertia_render_test#reset_test'
+  get 'once_props' => 'inertia_render_test#once_props'
+  get 'once_props_with_expires_in' => 'inertia_render_test#once_props_with_expires_in'
+  get 'once_props_with_custom_key' => 'inertia_render_test#once_props_with_custom_key'
+  get 'deferred_once_props' => 'inertia_render_test#deferred_once_props'
+  get 'shared_once_props' => 'inertia_render_test#shared_once_props'
+  get 'nested_once_props' => 'inertia_render_test#nested_once_props'
+  get 'multiple_once_props' => 'inertia_render_test#multiple_once_props'
+  get 'once_props_not_fresh' => 'inertia_render_test#once_props_not_fresh'
+  get 'once_props_fresh' => 'inertia_render_test#once_props_fresh'
+  get 'once_props_fresh_and_non_fresh' => 'inertia_render_test#once_props_fresh_and_non_fresh'
+  get 'merge_once_props' => 'inertia_render_test#merge_once_props'
+  get 'optional_once_props' => 'inertia_render_test#optional_once_props'
+  get 'optional_cached_props' => 'inertia_render_test#optional_cached_props'
+  get 'cached_props' => 'inertia_render_test#cached_props'
+  get 'cached_deferred_props' => 'inertia_render_test#cached_deferred_props'
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
   get 'deeply_nested_props' => 'inertia_render_test#deeply_nested_props'
 
   get 'instance_props_test' => 'inertia_rails_mimic#instance_props_test'
   get 'default_render_test' => 'inertia_rails_mimic#default_render_test'
   get 'transformed_default_render_test' => 'transformed_inertia_rails_mimic#render_test'
+  get 'prop_transformer_test' => 'inertia_prop_transformer#just_props'
+  get 'prop_transformer_with_meta_test' => 'inertia_prop_transformer#props_and_meta'
+  get 'prop_transformer_no_props_test' => 'inertia_prop_transformer#no_props'
   get 'default_component_test' => 'inertia_rails_mimic#default_component_test'
+  get 'default_component_with_props_test' => 'inertia_rails_mimic#default_component_with_props_test'
+  get 'default_component_with_duplicated_props_test' =>
+        'inertia_rails_mimic#default_component_with_duplicated_props_test'
   get 'provided_props_test' => 'inertia_rails_mimic#provided_props_test'
 
   post 'redirect_to_share_test' => 'inertia_test#redirect_to_share_test'
+
+  post 'redirect_with_inertia_flash' => 'inertia_test#redirect_with_inertia_flash'
+  get 'redirect_with_inertia_flash' => 'inertia_test#redirect_with_inertia_flash'
+  post 'redirect_with_inertia_flash_and_errors' => 'inertia_test#redirect_with_inertia_flash_and_errors'
+  post 'double_redirect_with_flash' => 'inertia_test#double_redirect_with_flash'
+  get 'render_with_inertia_flash_method' => 'inertia_test#render_with_inertia_flash_method'
+  get 'render_with_inertia_flash_now' => 'inertia_test#render_with_inertia_flash_now'
+  post 'redirect_with_kept_inertia_flash_now' => 'inertia_test#redirect_with_kept_inertia_flash_now'
+  post 'redirect_with_rails_notice' => 'inertia_test#redirect_with_rails_notice'
+  post 'redirect_with_rails_alert' => 'inertia_test#redirect_with_rails_alert'
+  post 'redirect_with_mixed_flash' => 'inertia_test#redirect_with_mixed_flash'
+  post 'redirect_with_non_allowlisted_key' => 'inertia_test#redirect_with_non_allowlisted_key'
+  post 'redirect_with_flash_inertia_hash' => 'inertia_test#redirect_with_flash_inertia_hash'
+
   inertia 'inertia_route' => 'TestComponent'
+  inertia :inertia_route_with_default_component
+  scope :scoped, as: 'scoped' do
+    inertia 'inertia_route' => 'TestComponent'
+  end
+  namespace :namespaced do
+    inertia 'inertia_route' => 'TestComponent'
+  end
+  resources :items do
+    inertia inertia_route: 'TestComponent', on: :member
+    inertia :inertia_route_with_default_component
+    inertia :inertia_route_with_default_component_on_member, on: :member
+    inertia :inertia_route_with_default_component_on_collection, on: :collection
+    scope :scoped, as: 'scoped' do
+      inertia :inertia_route_with_default_component
+    end
+  end
 
   get 'merge_shared' => 'inertia_merge_shared#merge_shared'
   get 'deep_merge_shared' => 'inertia_merge_shared#deep_merge_shared'
@@ -59,4 +130,35 @@ Rails.application.routes.draw do
   get 'conditional_share_show' => 'inertia_conditional_sharing#show'
   get 'conditional_share_edit' => 'inertia_conditional_sharing#edit'
   get 'conditional_share_show_with_a_problem' => 'inertia_conditional_sharing#show_with_a_problem'
+
+  get 'encrypt_history_default_config' => 'inertia_encrypt_history#default_config'
+  get 'encrypt_history_encrypt_history' => 'inertia_encrypt_history#encrypt_history'
+  get 'encrypt_history_override_config' => 'inertia_encrypt_history#override_config'
+  get 'encrypt_history_clear_history' => 'inertia_encrypt_history#clear_history'
+  post 'encrypt_history_clear_history_after_redirect' => 'inertia_encrypt_history#clear_history_after_redirect'
+  get 'encrypt_history_preserve_fragment' => 'inertia_encrypt_history#preserve_fragment'
+  post 'encrypt_history_preserve_fragment_after_redirect' => 'inertia_encrypt_history#preserve_fragment_after_redirect'
+
+  get 'basic_meta' => 'inertia_meta#basic'
+  get 'multiple_title_tags_meta' => 'inertia_meta#multiple_title_tags'
+  get 'from_before_filter_meta' => 'inertia_meta#from_before_filter'
+  get 'with_duplicate_head_keys_meta' => 'inertia_meta#with_duplicate_head_keys'
+  get 'override_tags_from_module_meta' => 'inertia_meta#override_tags_from_module'
+  get 'auto_dedup_meta' => 'inertia_meta#auto_dedup'
+  get 'allowed_duplicates_meta' => 'inertia_meta#allowed_duplicates'
+  get 'cleared_meta' => 'inertia_meta#cleared_meta'
+  get 'meta_with_default_render' => 'inertia_meta#meta_with_default_render'
+
+  post 'precognition_basic' => 'inertia_precognition_test#basic'
+  post 'precognition_non_bang' => 'inertia_precognition_test#non_bang'
+  post 'precognition_with_before_action' => 'inertia_precognition_test#with_before_action'
+  post 'precognition_without' => 'inertia_precognition_test#without_precognition'
+  post 'precognition_with_custom_validator' => 'inertia_precognition_test#with_custom_validator'
+  post 'precognition_with_string_keyed_errors' => 'inertia_precognition_test#with_string_keyed_errors'
+  post 'precognition_with_module_level' => 'inertia_precognition_test#with_module_level'
+  post 'precognition_double_bang' => 'inertia_precognition_test#double_bang'
+  post 'precognition_double_non_bang' => 'inertia_precognition_test#double_non_bang'
+  post 'precognition_double_module_level' => 'inertia_precognition_test#double_module_level'
+  post 'precognition_mixed_non_bang_then_bang' => 'inertia_precognition_test#mixed_non_bang_then_bang'
+  post 'precognition_mixed_bang_then_module_level' => 'inertia_precognition_test#mixed_bang_then_module_level'
 end

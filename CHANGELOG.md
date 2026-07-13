@@ -4,6 +4,192 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+* Generate controller views at the paths resolved by `render inertia: true` (@oiahoon)
+* Add `xsrf_cookie_refresh` configuration option. Set to `:lazy` to skip rewriting the `XSRF-TOKEN` cookie on safe requests when a valid cookie is already present, keeping conditionally cached (`ETag`/`304`) responses free of `Set-Cookie` churn (@darkamenosa)
+* Add `@inertiajs/core` as a direct dev dependency in the TypeScript install generator, so pnpm exposes the adapter types that `globals.d.ts` augments (@heyrobertchang)
+
+## [3.21.2] - 2026-06-09
+
+* Add `rescue: true` option to `InertiaRails.defer` to rescue and report exceptions raised while resolving a deferred prop (@skryukov)
+* Add CSP nonce to the initial page script when needed (@nicholaspufal)
+* Fix Vite install to use the configured package manager in the generator (@akicho8)
+* Fix TypeScript packages installed as dependencies instead of devDependencies (@alec-c4)
+
+## [3.21.1] - 2026-05-19
+
+* Specify initializer run order for middleware insertion to avoid frozen middleware stack errors on Rails 8.1+ (@julik)
+* Set an explicit `formats: :html` when rendering Inertia responses (@agrobbin)
+* Use `params.expect` instead of `params.require(...).permit(...)` in scaffold generator and docs (@tyrro)
+* Add railsfullstack.com to Awesome page (@code-creativeapps)
+
+## [3.21.0] - 2026-04-14
+
+* Skip excluded hash props on partial reloads (@erickreutz)
+* Fix Vite plugin insertion order in install generator (@onk)
+* Fix typo in `inertia()` plugin configuration example in docs (@onk)
+* Better SSR Puma plugin lookup defaults (@skryukov)
+* Add prop-level caching and caching documentation (@skryukov)
+* Skip session cleanup in middleware when session was never loaded (@khamusa)
+* Support `layout` option in `render inertia:` calls (@skryukov)
+
+## [3.20.0] - 2026-04-04
+
+* Fix partial reload filtering with arrays
+* Docs update for the v3.0 upgrade
+* Add plugin for Puma so that SSR Just Works in production for apps using Puma
+
+## [3.19.0] - 2026-03-25
+
+* Upgrades to support Inertia.js 3.x! All thanks to @skyrukov!
+* Improvements to renderer code structure
+* Improved `inertia_share` implementation, including an instance method to go alongside the class method
+* Better SSR in development
+* Docs updates
+* Support nested deferred/optional props
+* ...and more!
+
+## [3.18.0] - 2026-03-11
+
+* New (super awesome) landing page design (seriously, go look at the animated graphic) (@skryukov)
+* Convert `_inertia_meta` to Hash in props for testing (@greendrop)
+* Make InertaRails.scroll props deferable (@skyrukov)
+* Add `withAllErrors` as default (@skyrukov)
+* Improved testing with `evaluate_optional_props` (@skyrukov)
+* Add Railsified Precognition support (@skyrukov)
+
+## [3.17.0] - 2026-02-04
+
+* Add support for use_data_inertia_head_attribute configuration option (@greendrop)
+* Fix for exception pages in Rails 8.2 (@feliperaul)
+* Improved test helpers for both RSpec and Minitest (@skryukov)
+* Add Calm Companies to Awesome page (@raulpopadineti)
+* Clarify error bags in docs (@skryukov)
+* A smattering of helpful docs updates (@skryukov)
+* Fix vit binstub (@skryukov)
+
+## [3.16.0] - 2025-12-30
+
+* Fix optional once props (@skryukov)
+* Support for new Flash API in Inertia.js page object (@skryukov)
+* Generator improvements (@skryukov)
+* Fix debug exceptions patch for Rails 8.2 (@crobbo)
+
+## [3.15.0] - 2025-12-11
+
+* Support for rendering initial page data in a script tag (@skryukov)
+* Once props support (@skryukov)
+* Fix file references in TypeScript templates (@bigmasonwang)
+
+## [3.14.0] - 2025-11-27
+
+Lots of quality of life improvements!
+
+* OG Pilot in Awesome page (@raulpopadineti)
+* Expose InertiaRails version (@capripot)
+* Svelte improvements to install generators (@alec-c4)
+* Add start kits to docs (@skryukov)
+* Fix types in React install templates (@skryukov)
+* Update docs with new inertia branding (@skryukov)
+* Add protocol diagram (@skryukov)
+* Fix forceIndicesArrayFormatInFormData in install generator (@skryukov)
+* Add Kickstart templates to awesome page (@alec-c4)
+* Improve generators for TypeScript users (@Andy9822)
+* Update example pages to mimic Rails styling and appear at root path by default (@capripot)
+* Update error types in install templates (@skryukov)
+
+## [3.13.0] - 2025-11-19
+
+* Update installers (@skryukov)
+* Update scaffolds (@skryukov)
+* Remove Svelte 4 option in installation generators (@skryukov)
+
+## [3.12.1] - 2025-11-09
+
+* Fix scroll props and deferred props for shared data (@bknoles)
+* Deprecate the probably-no-actually-used-anywhere public readers on InertiaRails::Renderer (@bknoles)
+
+## [3.12.0] - 2025-11-08
+
+* Docs updates (@leenyburger, @skryukov, @bn-l)
+* Reimplement devcontainers (@kieraneglin)
+* Support for Inertia.js infinite scroll components (@skyrukov)
+* New merge options (@skryukov)
+
+## [3.11.0] - 2025-08-29
+
+* Fix Svelte generator (@skryukov)
+* Docs updates for SSR and 2.1.2 (@skryukov)
+* Devcontainers for local dev (@kieraneglin)
+* Add configurable prop transformation (@kieraneglin)
+* Gradual deprecation of null errors because Inertis.js expects an empty object (@skryukov)
+* Allow the more helpful UnknownFormat exception to raise when a static intertia route is requested with a non-HTML format (@skryukov)
+
+## [3.10.0] - 2025-07-30
+
+* llms.txt in docs (@brandonshar and @skryukov)
+* Add support for deep merging merge props (@skryukov)
+* Server managed meta tags (@bknoles and @skryukov)
+
+## [3.9.0] - 2025-06-18
+
+* Docs updates
+* Add `parent_controller` configuration option for static Inertia routes
+
+## [3.8.0] - 2025-04-12
+
+* Docs updates
+* Fix template detection for scaffolds using Tailwind 4 (#202)
+* Improved inertia route helper (#201)
+* RSpec tweaks
+* Add inertia_rendering? helper method (#209)
+* Add support for new client-side deep merging option (#213)
+
+## [3.7.1] - 2025-04-01
+
+* Docs updates
+* Fix for namespaced static routes (@skyrukov)
+* Fix for detecting tailwindcss in templates (@skyrukov)
+
+## [3.7.0] - 2025-03-17
+
+* Docs updates
+* Configuration via ENV variables (#196, @skryukov)
+* Routing improvements for the inertia routes helper (#195, @skryukov)
+* When automatically determining the component path, the component name can now be omitted, instead of requiring `render inertia: true` (#199, @skryukov)
+
+## [3.6.1] - 2025-02-04
+
+* Install generator tweaks @skryukov
+* Performance improvement for oj serialization users @alexspeller
+* Doc updates @youyoumu
+* Doc updates @pedroaugustoramalhoduarte
+* Tailwind v4 support in install generators @arandilopez
+* Various CI fixes @bknoles / @skryukov
+
+## [3.6.0] - 2024-12-13
+
+Support for the v2.0 Inertia.js release! It's a minor bump because there are no breaking changes!
+
+Kudos to @skryukov and @PedroAugustoRamalhoDuarte for driving the features in this release!
+
+* InertiaRails.defer for deferred props
+* History encryption
+* InertiaRails.merge for merge props
+* InertiaRails.optional props (replaces lazy props in v2.0, InertiaRails.lazy now has a deprecation warning)
+
+## [3.5.0] - 2024-11-29
+
+* Add Algolia search for docs (#151, @skryukov)
+* Add support for Always props (#152, @skryukov)
+* Add support for :except in partial reloads (#152, @skryukov)
+* CI fixes (#156, @bknoles)
+* Support dot notation for :only partial reloads (#163, @bknoles)
+* Avoid some monkey patching (#164, @adrianpacala)
+* Upstream generators from inertia_rails-contrib (#158, @skryukov)
+* Raise a deprecation warning instead of an exception if you pass a non-hashable to inertia errors (#168, @skryukov)
+
 ## [3.4.0] - 2024-11-02
 
 * Inertia Rails documentation (@skryukov)
@@ -111,7 +297,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.7.1] - 2020-11-24
 
-* Fix the definition for InertiaRails::Lazy to avoid an uninitialized constant error when booting an application. 
+* Fix the definition for InertiaRails::Lazy to avoid an uninitialized constant error when booting an application.
 
 ## [1.7.0] - 2020-11-24
 

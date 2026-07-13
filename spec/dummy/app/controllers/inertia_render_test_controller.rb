@@ -1,26 +1,34 @@
+# frozen_string_literal: true
+
 class InertiaRenderTestController < ApplicationController
-  
   def props
     render inertia: 'TestComponent', props: {
       name: 'Brandon',
-      sport: -> { 'hockey' }
+      sport: -> { 'hockey' },
     }
+  end
+
+  def ssr_cache_disabled
+    render inertia: 'TestComponent', props: {
+      name: 'Brandon',
+      sport: -> { 'hockey' },
+    }, ssr_cache: false
   end
 
   def except_props
     render inertia: 'TestComponent', props: {
       flat: 'flat param',
-      lazy: InertiaRails.lazy('lazy param'),
-      nested_lazy: InertiaRails.lazy do
+      optional: InertiaRails.optional { 'optional param' },
+      nested_optional: InertiaRails.optional do
         {
-          first: 'first nested lazy param',
+          first: 'first nested optional param',
         }
       end,
       nested: {
         first: 'first nested param',
-        second: 'second nested param'
+        second: 'second nested param',
       },
-      always: InertiaRails.always { 'always prop' }
+      always: InertiaRails.always { 'always prop' },
     }
   end
 
@@ -36,10 +44,10 @@ class InertiaRenderTestController < ApplicationController
       nested: {
         first: 'first nested param',
         second: 'second nested param',
-        evaluated: -> do
+        evaluated: lambda do
           {
             first: 'first evaluated nested param',
-            second: 'second evaluated nested param'
+            second: 'second evaluated nested param',
           }
         end,
         deeply_nested: {
@@ -48,10 +56,10 @@ class InertiaRenderTestController < ApplicationController
           what_about_nil: nil,
           what_about_empty_hash: {},
           deeply_nested_always: InertiaRails.always { 'deeply nested always prop' },
-          deeply_nested_lazy: InertiaRails.lazy { 'deeply nested lazy prop' }
-        }
+          deeply_nested_lazy: InertiaRails.lazy { 'deeply nested lazy prop' },
+        },
       },
-      always: InertiaRails.always { 'always prop' }
+      always: InertiaRails.always { 'always prop' },
     }
   end
 
@@ -67,7 +75,7 @@ class InertiaRenderTestController < ApplicationController
   end
 
   def vary_header
-    response.headers["Vary"] = 'Accept-Language'
+    response.headers['Vary'] = 'Accept-Language'
 
     render inertia: 'TestComponent'
   end
@@ -79,7 +87,15 @@ class InertiaRenderTestController < ApplicationController
       level: InertiaRails.lazy do
         'worse than he believes'
       end,
-      grit: InertiaRails.lazy(->{ 'intense' })
+      grit: InertiaRails.lazy(-> { 'intense' }),
+    }
+  end
+
+  def optional_props
+    render inertia: 'TestComponent', props: {
+      regular: 1,
+      optional: InertiaRails.optional { 1 },
+      another_optional: InertiaRails.optional { 1 },
     }
   end
 
@@ -87,10 +103,243 @@ class InertiaRenderTestController < ApplicationController
     render inertia: 'TestComponent', props: {
       always: InertiaRails.always { 'always prop' },
       regular: 'regular prop',
-      lazy: InertiaRails.lazy do
-        'lazy prop'
+      optional: InertiaRails.optional do
+        'optional prop'
       end,
-      another_lazy: InertiaRails.lazy(->{ 'another lazy prop' })
+      another_optional: InertiaRails.optional { 'another optional prop' },
+    }
+  end
+
+  def merge_props
+    render inertia: 'TestComponent', props: {
+      merge: InertiaRails.merge { 'merge prop' },
+      match_on: InertiaRails.merge(match_on: 'id') { [{ id: 1 }] },
+      deep_merge: InertiaRails.deep_merge { { deep: 'merge prop' } },
+      deep_match_on: InertiaRails.deep_merge(match_on: 'deep.id') { { deep: [{ id: 1 }] } },
+      regular: 'regular prop',
+      deferred_merge: InertiaRails.defer(merge: true) { 'deferred and merge prop' },
+      deferred_match_on: InertiaRails.defer(merge: true, match_on: 'id') { [{ id: 1 }] },
+      deferred_deep_merge: InertiaRails.defer(deep_merge: true) { { deep: 'deferred and merge prop' } },
+      deferred_deep_match_on: InertiaRails.defer(deep_merge: true, match_on: 'deep.id') { { deep: [{ id: 1 }] } },
+      deferred: InertiaRails.defer { 'deferred' },
+    }
+  end
+
+  def deferred_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      sport: InertiaRails.defer(group: 'other') { 'basketball' },
+      level: InertiaRails.defer do
+        'worse than he believes'
+      end,
+      grit: InertiaRails.defer { 'intense' },
+    }
+  end
+
+  def rescued_deferred_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      permissions: InertiaRails.defer(rescue: true) { raise 'boom' },
+    }
+  end
+
+  inertia_share only: [:shared_deferred_props] do
+    {
+      grit: InertiaRails.defer { 'intense' },
+    }
+  end
+  def shared_deferred_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+    }
+  end
+
+  def scroll_test
+    pagy = (defined?(Pagy::Offset) ? Pagy::Offset : Pagy).new(
+      next: 2,
+      page: 1,
+      count: 100
+    )
+
+    render inertia: 'TestComponent', props: {
+      users: InertiaRails.scroll(pagy) { [{ id: 1, name: 'User 1' }, { id: 2, name: 'User 2' }] },
+    }
+  end
+
+  inertia_share only: [:shared_scroll_test] do
+    pagy = (defined?(Pagy::Offset) ? Pagy::Offset : Pagy).new(
+      next: 2,
+      page: 1,
+      count: 100
+    )
+    {
+      users: InertiaRails.scroll(pagy) { [{ id: 1, name: 'User 1' }, { id: 2, name: 'User 2' }] },
+    }
+  end
+
+  def shared_scroll_test
+    render inertia: 'TestComponent'
+  end
+
+  def deferred_scroll_test
+    pagy = (defined?(Pagy::Offset) ? Pagy::Offset : Pagy).new(
+      next: 2,
+      page: 1,
+      count: 100
+    )
+
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      users: InertiaRails.scroll(pagy, defer: true) { [{ id: 1, name: 'User 1' }, { id: 2, name: 'User 2' }] },
+    }
+  end
+
+  def deferred_scroll_test_custom_group
+    pagy = (defined?(Pagy::Offset) ? Pagy::Offset : Pagy).new(
+      next: 2,
+      page: 1,
+      count: 100
+    )
+
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      users: InertiaRails.scroll(pagy, defer: true, group: 'custom') do
+        [{ id: 1, name: 'User 1' }, { id: 2, name: 'User 2' }]
+      end,
+    }
+  end
+
+  def prepend_merge_test
+    render inertia: 'TestComponent', props: {
+      prepend_prop: InertiaRails.merge(prepend: true) { %w[item1 item2] },
+      append_prop: InertiaRails.merge { %w[item3 item4] },
+    }
+  end
+
+  def nested_paths_test
+    render inertia: 'TestComponent', props: {
+      foo: InertiaRails.merge(append: { data: :id }) { { data: [{ id: 1 }, { id: 2 }] } },
+      bar: InertiaRails.merge(prepend: { 'data.items' => 'uuid' }) do
+        { data: { items: [{ uuid: 1 }, { uuid: 2 }] } }
+      end,
+    }
+  end
+
+  def reset_test
+    render inertia: 'TestComponent', props: {
+      merge_prop: InertiaRails.merge { 'merge value' },
+      regular_prop: 'regular value',
+    }
+  end
+
+  def once_props
+    render inertia: 'TestComponent', props: {
+      cached_data: InertiaRails.once { 'expensive data' },
+      regular: 'regular prop',
+    }
+  end
+
+  def once_props_with_expires_in
+    render inertia: 'TestComponent', props: {
+      cached_data: InertiaRails.once(expires_in: 1.hour) { 'expensive data with expiration' },
+    }
+  end
+
+  def once_props_with_custom_key
+    render inertia: 'TestComponent', props: {
+      cached_data: InertiaRails.once(key: 'my_custom_key') { 'expensive data with custom key' },
+    }
+  end
+
+  def deferred_once_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      deferred_cached: InertiaRails.defer(once: true) { 'deferred and cached' },
+    }
+  end
+
+  inertia_share only: [:shared_once_props] do
+    {
+      shared_cached: InertiaRails.once { 'shared once data' },
+    }
+  end
+
+  def shared_once_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+    }
+  end
+
+  def nested_once_props
+    render inertia: 'TestComponent', props: {
+      nested: {
+        cached: InertiaRails.once { 'nested cached data' },
+      },
+      regular: 'regular prop',
+    }
+  end
+
+  def multiple_once_props
+    render inertia: 'TestComponent', props: {
+      cached_one: InertiaRails.once { 'first cached' },
+      cached_two: InertiaRails.once { 'second cached' },
+      regular: 'regular prop',
+    }
+  end
+
+  def once_props_not_fresh
+    render inertia: 'TestComponent', props: {
+      cached_data: InertiaRails::OnceProp.new { 'cached data' },
+      regular: 'regular prop',
+    }
+  end
+
+  def once_props_fresh
+    render inertia: 'TestComponent', props: {
+      cached_data: InertiaRails::OnceProp.new(fresh: true) { 'fresh data' },
+      regular: 'regular prop',
+    }
+  end
+
+  def once_props_fresh_and_non_fresh
+    render inertia: 'TestComponent', props: {
+      foo: InertiaRails::OnceProp.new(fresh: true) { 'bar' },
+      baz: InertiaRails::OnceProp.new { 'qux' },
+    }
+  end
+
+  def merge_once_props
+    render inertia: 'TestComponent', props: {
+      activity: InertiaRails.merge(once: true) { [{ id: 1, action: 'login' }] },
+      regular: 'regular prop',
+    }
+  end
+
+  def optional_once_props
+    render inertia: 'TestComponent', props: {
+      categories: InertiaRails.optional(once: true) { %w[category1 category2] },
+      regular: 'regular prop',
+    }
+  end
+
+  def optional_cached_props
+    render inertia: 'TestComponent', props: {
+      categories: InertiaRails.optional(cache: 'categories_key') { %w[category1 category2] },
+      regular: 'regular prop',
+    }
+  end
+
+  def cached_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      stats: InertiaRails.cache('stats_key') { { count: 42 } },
+    }
+  end
+
+  def cached_deferred_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      feed: InertiaRails.defer(cache: 'feed_key', group: 'feed') { %w[fresh_item] },
     }
   end
 end

@@ -35,6 +35,22 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
     end
   end
 
+  shared_context 'assert application.js entrypoint renaming' do
+    let(:typescript_enabled?) { args.include?('--typescript') }
+
+    it 'renames application.js to application.ts if TypeScript flag is enabled' do
+      expect { generator }.not_to raise_error
+
+      if typescript_enabled?
+        expect(File.exist?(File.join(destination_root, 'app/frontend/entrypoints/application.ts'))).to be true
+        expect(File.exist?(File.join(destination_root, 'app/frontend/entrypoints/application.js'))).to be false
+      else
+        expect(File.exist?(File.join(destination_root, 'app/frontend/entrypoints/application.js'))).to be true
+        expect(File.exist?(File.join(destination_root, 'app/frontend/entrypoints/application.ts'))).to be false
+      end
+    end
+  end
+
   context 'without vite' do
     before do
       prepare_application(with_vite: false)
@@ -55,9 +71,22 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
           directory('app/frontend') do
             no_file('entrypoints/application.css')
           end
-          no_file('postcss.config.js')
-          no_file('tailwind.config.js')
         end)
+      end
+
+      it 'creates the vite binstub' do
+        expect { generator }.not_to raise_error
+        expect(destination_root).to(have_structure do
+          file('bin/vite')
+        end)
+      end
+
+      include_context 'assert application.js entrypoint renaming'
+
+      context 'with --typescript' do
+        let(:args) { super() + %w[--typescript] }
+
+        include_context 'assert application.js entrypoint renaming'
       end
     end
   end
@@ -67,7 +96,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
 
     before { prepare_application }
 
-    it 'installs Tailwind' do
+    it 'installs Tailwind with vite plugin' do
       expect { generator }.not_to raise_error
       expect_tailwind_config
     end
@@ -75,42 +104,8 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
 
   context 'with --framework=svelte' do
     let(:framework) { :svelte }
-    include_context 'assert framework structure'
 
-    context 'with --typescript' do
-      let(:inertia_version) { '1.3.0-beta.1' }
-      let(:args) { super() + %W[--typescript --inertia-version=#{inertia_version}] }
-      let(:ext) { 'ts' }
-
-      include_context 'assert framework structure'
-
-      context 'with old Inertia version' do
-        let(:inertia_version) { '1.2.0' }
-        let(:ext) { 'js' }
-
-        include_context 'assert framework structure'
-      end
-    end
-  end
-
-  context 'with --framework=svelte4' do
-    let(:framework) { :svelte4 }
-    include_context 'assert framework structure'
-
-    context 'with --typescript' do
-      let(:inertia_version) { '1.3.0-beta.1' }
-      let(:args) { super() + %W[--typescript --inertia-version=#{inertia_version}] }
-      let(:ext) { 'ts' }
-
-      include_context 'assert framework structure'
-
-      context 'with old Inertia version' do
-        let(:inertia_version) { '1.2.0' }
-        let(:ext) { 'js' }
-
-        include_context 'assert framework structure'
-      end
-    end
+    include_context 'assert framework js and ts structures'
   end
 
   context 'with --framework=vue' do
@@ -134,10 +129,17 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
   def expect_tailwind_config
     expect(destination_root).to(have_structure do
       directory('app/frontend') do
-        file('entrypoints/application.css')
+        file('entrypoints/application.css') do
+          contains("@import 'tailwindcss';")
+        end
       end
-      file('postcss.config.js')
-      file('tailwind.config.js')
+      file('package.json') do
+        contains('"tailwindcss":')
+        contains('"@tailwindcss/vite":')
+      end
+      file('vite.config.ts') do
+        contains('tailwindcss(),')
+      end
     end)
   end
 
@@ -172,7 +174,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
             contains('"typescript":')
             contains('"vue-tsc":')
           end
-        when :svelte, :svelte4
+        when :svelte
           contains('"@inertiajs/svelte":')
           contains('"svelte":')
           contains('"@sveltejs/vite-plugin-svelte":')
@@ -187,24 +189,24 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
     end)
   end
 
-  def expect_inertia_prepared_for(framework, ext: 'js')
+  def expect_inertia_prepared_for(framework, ext: 'js', application_js_exists: false)
     expect(destination_root).to(have_structure do
       case framework
       when :react
         file('vite.config.ts') do
           contains('react()')
         end
-        file("app/frontend/entrypoints/inertia.#{ext}") do
-          contains("import { createInertiaApp } from '@inertiajs/react'")
+        file("app/frontend/entrypoints/inertia.#{ext}x") do
+          contains("from '@inertiajs/react'")
         end
       when :vue
         file('vite.config.ts') do
           contains('vue()')
         end
         file("app/frontend/entrypoints/inertia.#{ext}") do
-          contains("import { createInertiaApp } from '@inertiajs/vue3'")
+          contains("from '@inertiajs/vue3'")
         end
-      when :svelte, :svelte4
+      when :svelte
         file('svelte.config.js') do
           contains('preprocess: vitePreprocess()')
         end
@@ -212,23 +214,20 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
           contains('svelte()')
         end
         file("app/frontend/entrypoints/inertia.#{ext}") do
-          if ext == 'ts'
-            contains("import { createInertiaApp, type ResolvedComponent } from '@inertiajs/svelte'")
-          else
-            contains("import { createInertiaApp } from '@inertiajs/svelte'")
-          end
-          if framework == :svelte4
-            contains('new App({ target: el, props })')
-          else
-            contains('mount(App, { target: el, props })')
-          end
+          contains("from '@inertiajs/svelte'")
+          contains('createInertiaApp(')
         end
       end
       file('app/views/layouts/application.html.erb') do
-        if ext == 'ts'
-          contains('<%= vite_typescript_tag "inertia" %>')
+        if ext == 'ts' && application_js_exists
+          contains("<%= vite_typescript_tag \"inertia#{'.tsx' if framework == :react}\" %>")
+          contains("<%= vite_typescript_tag 'application' %>")
+        elsif ext == 'ts' && !application_js_exists
+          contains("<%= vite_typescript_tag \"inertia#{'.tsx' if framework == :react}\" %>")
+          contains("<%= vite_javascript_tag 'application' %>")
         else
-          contains('<%= vite_javascript_tag "inertia" %>')
+          contains("<%= vite_javascript_tag \"inertia#{'.jsx' if framework == :react}\" %>")
+          contains("<%= vite_javascript_tag 'application' %>")
         end
         if framework == :react
           contains('<%= vite_react_refresh_tag %>')
@@ -244,9 +243,17 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
         contains('overmind start -f Procfile.dev')
       end
 
+      file('bin/vite')
+
       if ext == 'ts'
-        file('app/frontend/vite-env.d.ts') do
+        file('app/frontend/types/vite-env.d.ts') do
           contains('/// <reference types="vite/client" />')
+        end
+        file('app/frontend/types/globals.d.ts') do
+          contains('export interface InertiaConfig')
+        end
+        file('app/frontend/types/index.ts') do
+          contains('export type SharedProps')
         end
         file('tsconfig.node.json') do
           contains('"include": ["vite.config.ts"]')
@@ -266,7 +273,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
           file('tsconfig.app.json') do
             contains('"include": ["app/frontend/**/*.ts", "app/frontend/**/*.tsx", "app/frontend/**/*.vue"]')
           end
-        when :svelte, :svelte4
+        when :svelte
           file('tsconfig.json') do
             contains('"include": ["app/frontend/**/*.ts", "app/frontend/**/*.js", "app/frontend/**/*.svelte"]')
           end
@@ -280,32 +287,24 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
       directory('app/frontend') do
         case framework
         when :react
-          file("pages/InertiaExample.#{ext == 'js' ? 'jsx' : 'tsx'}")
-          file('pages/InertiaExample.module.css')
+          file("pages/inertia_example/index.#{ext == 'js' ? 'jsx' : 'tsx'}")
+          file('pages/inertia_example/index.module.css')
           file('assets/react.svg')
         when :vue
-          file('pages/InertiaExample.vue')
+          file('pages/inertia_example/index.vue')
           file('assets/vue.svg')
-        when :svelte4
-          file('pages/InertiaExample.svelte') do
-            if ext == 'ts'
-              contains('export let name: string')
-            else
-              contains('export let name')
-            end
-          end
-          file('assets/svelte.svg')
         when :svelte
-          file('pages/InertiaExample.svelte') do
+          file('pages/inertia_example/index.svelte') do
             if ext == 'ts'
-              contains('let { name }: { name: string } = $props()')
+              contains('let { rails_version, rack_version, ruby_version, inertia_rails_version }:')
             else
-              contains('let { name } = $props()')
+              contains('let { rails_version, rack_version, ruby_version, inertia_rails_version } = $props()')
             end
           end
           file('assets/svelte.svg')
         end
 
+        file('assets/rails.svg')
         file('assets/inertia.svg')
         file('assets/vite_ruby.svg')
       end
