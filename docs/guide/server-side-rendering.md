@@ -399,16 +399,16 @@ rails({
 
 ### 3. Enable SSR in the Inertia's Rails adapter
 
-Update the Inertia Rails adapter config to turn SSR on in production. Without the Vite plugin there is no development-mode SSR, so enabling it unconditionally would log a failed SSR attempt on every request in development:
+Update the Inertia Rails adapter config to turn SSR on:
 
 ```ruby
 # config/initializers/inertia_rails.rb
 InertiaRails.configure do |config|
-  config.ssr_enabled = Rails.env.production?
+  config.ssr_enabled = true
 end
 ```
 
-With `vite_rails`, you may tie it to the build setting instead: `config.ssr_enabled = ViteRuby.config.ssr_build_enabled`.
+Without the Vite plugin there is no development-mode SSR server, so in development each request logs a failed SSR attempt and falls back to client-side rendering. If you'd rather skip those attempts, `vite_rails` users may tie the setting to the build flag instead: `config.ssr_enabled = ViteRuby.config.ssr_build_enabled`.
 
 ### Clustering
 

@@ -63,7 +63,7 @@ end
 ```
 
 > [!NOTE]
-> If you followed the [manual SSR setup](/guide/server-side-rendering#manual-setup), your existing setting — `Rails.env.production?` or the `ViteRuby.config.ssr_build_enabled` tie — already enables SSR in production. Keep it.
+> If you use the `config.ssr_enabled = ViteRuby.config.ssr_build_enabled` tie from the [manual SSR setup](/guide/server-side-rendering#manual-setup), keep it — it evaluates to `true` in production now that `ssrBuildEnabled` is set.
 
 ## Make Node.js available at runtime
 
