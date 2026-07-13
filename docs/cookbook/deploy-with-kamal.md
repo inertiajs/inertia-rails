@@ -15,7 +15,7 @@ asset_path: /rails/public/assets # [!code --]
 asset_path: /rails/public/vite # [!code ++]
 ```
 
-This is the only Kamal-specific change a client-rendered Inertia app needs. If you don't use SSR, you can stop here.
+This is the only Kamal-specific change a client-rendered Inertia app needs. One caveat: `assets:precompile` runs Vite inside `docker build`, so your Dockerfile must install Node.js in the `build` stage. If your app was generated without a JavaScript bundler, the default Dockerfile skips that — add the install block from [Make Node.js available at runtime](#make-node-js-available-at-runtime) (for a client-rendered app, the `build` stage is enough). If you don't use SSR, you can stop here.
 
 ## Build the SSR bundle during image build
 
@@ -31,7 +31,7 @@ Kamal packages your app as a Docker image, and `assets:precompile` runs inside `
 }
 ```
 
-The `ssrEntrypoint` line points Vite Ruby's SSR build at your client entry point — the [Inertia Vite plugin](/guide/server-side-rendering#vite-plugin-setup) adapts it for the server automatically. Without it, the SSR build fails with `No SSR entrypoint available`. Skip that line only if you use a dedicated `~/ssr/ssr.js` entry point ([manual setup](/guide/server-side-rendering#manual-setup)), which Vite Ruby finds on its own.
+The `ssrEntrypoint` line points Vite Ruby's SSR build at your client entry point (adjust the path to your entry file's actual name and extension — `.jsx`, `.ts`, or `.tsx`) — the [Inertia Vite plugin](/guide/server-side-rendering#vite-plugin-setup) adapts it for the server automatically. Without it, the SSR build fails with `No SSR entrypoint available`. Skip that line only if you use a dedicated `~/ssr/ssr.js` entry point ([manual setup](/guide/server-side-rendering#manual-setup)), which Vite Ruby finds on its own.
 
 Then make sure SSR is enabled in the adapter:
 
