@@ -5,6 +5,9 @@ Rails ships with [Kamal](https://kamal-deploy.org/) preconfigured as the default
 > [!NOTE]
 > This guide is based on Rails 8 and Kamal 2. It assumes SSR already works in development — see the [server-side rendering guide](/guide/server-side-rendering) for the initial setup.
 
+> [!TIP]
+> The official [starter kits](/guide/starter-kits) ship this whole arrangement out of the box — an SSR-ready Dockerfile with Node.js in the runtime image, the `noExternal` build configuration, and the Puma plugin.
+
 ## Update the asset path
 
 During a deploy, Kamal bridges fingerprinted assets between the old and new versions of the app, so in-flight requests don't hit 404s. An Inertia Rails app serves fingerprinted files from two directories — `public/vite` (Vite Ruby) and `public/assets` (Propshaft, used by the default layout's stylesheet) — and Kamal supports only a single `asset_path`, so point it at their common parent:
@@ -90,12 +93,15 @@ By default, the SSR bundle imports its dependencies from `node_modules` at runti
 
 ```js
 // vite.config.js
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   ssr: {
-    noExternal: true, // [!code ++]
+    // Bundle dependencies into the SSR build. Only do this for production
+    // builds: CJS-only packages (like React) must stay external in
+    // development, or dev-mode SSR breaks.
+    noExternal: command === 'build' ? true : undefined,
   },
   // ...
-})
+}))
 ```
 
 With that in place, keep the `rm -rf node_modules` line at the end of the `build` stage — and if your Dockerfile doesn't have one, add it after the `assets:precompile` step; the runtime image then needs only the `node` binary:
