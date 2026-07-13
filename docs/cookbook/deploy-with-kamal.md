@@ -27,7 +27,13 @@ This is the only Kamal-specific change a client-rendered Inertia app needs. One 
 
 ## Build the SSR bundle during image build
 
-Kamal packages your app as a Docker image, and `assets:precompile` runs inside `docker build`. By default, Vite Ruby only builds the client bundle. Enable the SSR build in `config/vite.json` so precompilation produces both bundles:
+Kamal packages your app as a Docker image, and `assets:precompile` runs inside `docker build`. By default, it only builds the client bundle — enable the SSR build for your Vite integration:
+
+:::tabs key:vite
+
+== vite_rails
+
+Enable the SSR build in `config/vite.json` so precompilation produces both bundles:
 
 ```json
 // config/vite.json
@@ -41,8 +47,11 @@ Kamal packages your app as a Docker image, and `assets:precompile` runs inside `
 
 The `ssrEntrypoint` line points Vite Ruby's SSR build at your client entry point (adjust the path to your entry file's actual name and extension — `.jsx`, `.ts`, or `.tsx`) — the [Inertia Vite plugin](/guide/server-side-rendering#vite-plugin-setup) adapts it for the server automatically. Without it, the SSR build fails with `No SSR entrypoint available`. Skip that line only if you use a dedicated `~/ssr/ssr.js` entry point ([manual setup](/guide/server-side-rendering#manual-setup)), which Vite Ruby finds on its own.
 
-> [!NOTE]
-> Using [`rails_vite`](https://github.com/skryukov/rails_vite) instead of `vite_rails`? There is no `config/vite.json` — add the [rake enhancement from the SSR guide](/guide/server-side-rendering#_3-configure-the-ssr-build) so `assets:precompile` builds the SSR bundle, and in [Option B](#option-b-separate-ssr-container) start the SSR server with `node ssr/inertia.js` (the bundle is named after your entry point) rather than `bin/vite ssr`. The rest of the recipe applies unchanged.
+== rails_vite
+
+There is no `config/vite.json` — add the [rake enhancement from the SSR guide](/guide/server-side-rendering#_3-configure-the-ssr-build) so `assets:precompile` builds the SSR bundle. In [Option B](#option-b-separate-ssr-container), start the SSR server with `node ssr/inertia.js` (the bundle is named after your entry point) rather than `bin/vite ssr`.
+
+:::
 
 Then make sure SSR is enabled in the adapter:
 
@@ -54,7 +63,7 @@ end
 ```
 
 > [!NOTE]
-> If you followed the [manual SSR setup](/guide/server-side-rendering#manual-setup), you already have `config.ssr_enabled = ViteRuby.config.ssr_build_enabled` — keep it. It evaluates to `true` in production now that `ssrBuildEnabled` is set.
+> If you followed the [manual SSR setup](/guide/server-side-rendering#manual-setup), your existing setting — `Rails.env.production?` or the `ViteRuby.config.ssr_build_enabled` tie — already enables SSR in production. Keep it.
 
 ## Make Node.js available at runtime
 
@@ -89,7 +98,7 @@ RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz
     rm -rf /tmp/node-build-master # [!code --]
 ```
 
-By default, the SSR bundle imports its dependencies from `node_modules` at runtime, so removing the packages from the image would crash the SSR server at boot (Inertia then silently falls back to client-side rendering). To keep the runtime image slim, make the bundle self-contained first:
+By default, the SSR bundle imports its dependencies from `node_modules` at runtime, so removing the packages from the image would crash the SSR server at boot. Pages would still render through the client-side fallback, with every SSR failure logged to `Rails.logger` — wire up [`on_ssr_error`](/guide/server-side-rendering#error-handling) to surface such failures in your error tracker. To keep the runtime image slim, make the bundle self-contained first:
 
 ```js
 // vite.config.js
