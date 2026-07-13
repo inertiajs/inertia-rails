@@ -38,6 +38,9 @@ Kamal packages your app as a Docker image, and `assets:precompile` runs inside `
 
 The `ssrEntrypoint` line points Vite Ruby's SSR build at your client entry point (adjust the path to your entry file's actual name and extension — `.jsx`, `.ts`, or `.tsx`) — the [Inertia Vite plugin](/guide/server-side-rendering#vite-plugin-setup) adapts it for the server automatically. Without it, the SSR build fails with `No SSR entrypoint available`. Skip that line only if you use a dedicated `~/ssr/ssr.js` entry point ([manual setup](/guide/server-side-rendering#manual-setup)), which Vite Ruby finds on its own.
 
+> [!NOTE]
+> Using [`rails_vite`](https://github.com/skryukov/rails_vite) instead of `vite_rails`? There is no `config/vite.json` — add `vite build --ssr` to your `package.json` `build` script instead, and in [Option B](#option-b-separate-ssr-container) start the SSR server with `node ssr/ssr.js` rather than `bin/vite ssr`. The rest of the recipe applies unchanged.
+
 Then make sure SSR is enabled in the adapter:
 
 ```ruby

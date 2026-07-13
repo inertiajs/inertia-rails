@@ -60,7 +60,9 @@ inertia({
 
 ### 3. Configure the SSR build
 
-Vite Ruby drives production builds (including `rails assets:precompile`) and resolves the SSR entry point on its own, so tell it about the SSR bundle in `config/vite.json`. Point `ssrEntrypoint` at your client entry point — the Inertia plugin adapts it for the server — and enable the SSR build for production:
+How the SSR bundle gets built in production depends on your Vite integration gem.
+
+With `vite_rails` (Vite Ruby), production builds run through `rails assets:precompile`, and `vite-plugin-ruby` resolves the SSR entry point on its own. Point `ssrEntrypoint` at your client entry point — the Inertia plugin adapts it for the server — and enable the SSR build in `config/vite.json`:
 
 ```json
 // config/vite.json
@@ -72,9 +74,9 @@ Vite Ruby drives production builds (including `rails assets:precompile`) and res
 }
 ```
 
-Without `ssrEntrypoint`, `vite build --ssr` fails with `No SSR entrypoint available`. Skip that line only if you use a dedicated [custom SSR entry point](#custom-ssr-entry-point) at `~/ssr/ssr.js`, which Vite Ruby finds on its own.
+With this in place, `rails assets:precompile` builds both bundles. Without `ssrEntrypoint`, `vite build --ssr` fails with `No SSR entrypoint available`. Skip that line only if you use a dedicated [custom SSR entry point](#custom-ssr-entry-point) at `~/ssr/ssr.js`, which Vite Ruby finds on its own.
 
-With `ssrBuildEnabled` set, `rails assets:precompile` builds both bundles. If you build with npm scripts instead, also update the `build` script in your `package.json`:
+With [`rails_vite`](https://github.com/skryukov/rails_vite) + `jsbundling-rails`, no extra Vite configuration is needed — the Inertia plugin supplies the SSR entry. Update the `build` script in your `package.json` so `rails assets:precompile` produces both bundles:
 
 ```json
 {
@@ -114,14 +116,12 @@ The Vite plugin exposes a server endpoint that Rails uses for rendering, complet
 
 ### Production
 
-For production, build both bundles and start the SSR server. The bundle is written to `public/vite-ssr/ssr.js`, and `bin/vite ssr` runs it:
+For production, `rails assets:precompile` builds both bundles. Where the SSR bundle lands and how to start the server depends on your Vite integration:
 
-```bash
-bin/rails assets:precompile
-bin/vite ssr
-```
+- `vite_rails`: the bundle is written to `public/vite-ssr/ssr.js`; run it with `bin/vite ssr`.
+- `rails_vite`: the bundle is written to `ssr/ssr.js`; run it with `node ssr/ssr.js`.
 
-The recommended way to run the server in production is the [Puma plugin](#puma-plugin), which manages the SSR process for you.
+The recommended way to run the server in production is the [Puma plugin](#puma-plugin), which locates the bundle for either integration and manages the SSR process for you.
 
 ### Custom SSR Entry Point
 
