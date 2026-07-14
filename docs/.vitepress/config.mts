@@ -22,6 +22,10 @@ export default withMermaid({
 
   cleanUrls: true,
 
+  sitemap: {
+    hostname: site,
+  },
+
   vite: {
     plugins: [
       llmstxt({
