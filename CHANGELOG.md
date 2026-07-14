@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Fix cross-variant `304 Not Modified` responses under HTTP conditional caching (`fresh_when` / `stale?`) by folding the Inertia request headers into the ETag, so HTML, JSON, and partial-reload representations of the same URL no longer share a validator (@skryukov)
 * Generate controller views at the paths resolved by `render inertia: true` (@oiahoon)
 * Add `xsrf_cookie_refresh` configuration option. Set to `:lazy` to skip rewriting the `XSRF-TOKEN` cookie on safe requests when a valid cookie is already present, keeping conditionally cached (`ETag`/`304`) responses free of `Set-Cookie` churn (@darkamenosa)
 * Add `@inertiajs/core` as a direct dev dependency in the TypeScript install generator, so pnpm exposes the adapter types that `globals.d.ts` augments (@heyrobertchang)
