@@ -4,6 +4,7 @@ module InertiaRails
   module InertiaMapper
     def inertia(*args, **options)
       defaults = options.delete(:defaults) || {}
+      defaults = defaults.merge(props: options.delete(:props)) if options.key?(:props)
 
       extract_routes(args, options).each do |route, component|
         get(route, to: StaticController.action(:static), defaults: defaults.merge(component: component), **options)

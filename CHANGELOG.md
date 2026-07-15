@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add `@inertiajs/core` as a direct dev dependency in the TypeScript install generator, so pnpm exposes the adapter types that `globals.d.ts` augments (@heyrobertchang)
 * Fix option handling in the `inertia` routes helper: user-supplied `defaults:` no longer replace the component (previously producing `component: null` responses), the route-to-component pair no longer leaks into `params`, and additional String-keyed pairs define routes instead of being silently dropped (@skryukov)
 * Raise a clear error when `parent_controller` does not inherit from `ActionController::Base` instead of an opaque `NoMethodError` (@skryukov)
+* Add static `props:` support to the `inertia` routes helper: `inertia 'about' => 'About', props: { title: 'About us' }` (@skryukov)
 * Deduplicate `X-Inertia` in the `Vary` response header (@skryukov)
 
 ## [3.21.2] - 2026-06-09
