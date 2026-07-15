@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fix cross-variant `304 Not Modified` responses under HTTP conditional caching (`fresh_when` / `stale?`) by folding the Inertia request headers into the ETag, so HTML, JSON, and partial-reload representations of the same URL no longer share a validator (@skryukov)
 * Generate controller views at the paths resolved by `render inertia: true` (@oiahoon)
 * Add `@inertiajs/core` as a direct dev dependency in the TypeScript install generator, so pnpm exposes the adapter types that `globals.d.ts` augments (@heyrobertchang)
+* Fix option handling in the `inertia` routes helper: user-supplied `defaults:` no longer replace the component (previously producing `component: null` responses), the route-to-component pair no longer leaks into `params`, and additional String-keyed pairs define routes instead of being silently dropped (@skryukov)
+* Raise a clear error when `parent_controller` does not inherit from `ActionController::Base` instead of an opaque `NoMethodError` (@skryukov)
+* Deduplicate `X-Inertia` in the `Vary` response header (@skryukov)
 
 ## [3.21.2] - 2026-06-09
 

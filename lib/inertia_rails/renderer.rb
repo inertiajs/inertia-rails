@@ -44,11 +44,9 @@ module InertiaRails
     end
 
     def render
-      @response.headers['Vary'] = if @response.headers['Vary'].blank?
-                                    'X-Inertia'
-                                  else
-                                    "#{@response.headers['Vary']}, X-Inertia"
-                                  end
+      vary = @response.headers['Vary'].to_s.split(',').map(&:strip).reject(&:empty?)
+      vary << 'X-Inertia' if vary.none? { |value| value.casecmp?('X-Inertia') }
+      @response.headers['Vary'] = vary.join(', ')
       if @request.inertia?
         @response.set_header('X-Inertia', 'true')
         @render_method.call json: page.to_json, status: @response.status, content_type: Mime[:json]

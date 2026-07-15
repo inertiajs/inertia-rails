@@ -80,6 +80,12 @@ class InertiaRenderTestController < ApplicationController
     render inertia: 'TestComponent'
   end
 
+  def vary_header_with_inertia
+    response.headers['Vary'] = 'Accept-Language, X-Inertia'
+
+    render inertia: 'TestComponent'
+  end
+
   def conditional_get
     fresh_when etag: 'shared-v1'
     render inertia: 'TestComponent', props: { name: 'conditional' } unless performed?

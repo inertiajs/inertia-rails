@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   get 'view_data' => 'inertia_render_test#view_data'
   get 'component' => 'inertia_render_test#component'
   get 'vary_header' => 'inertia_render_test#vary_header'
+  get 'vary_header_with_inertia' => 'inertia_render_test#vary_header_with_inertia'
   get 'conditional_get' => 'inertia_render_test#conditional_get'
   get 'conditional_partial' => 'inertia_render_test#conditional_partial'
   get 'conditional_strong' => 'inertia_render_test#conditional_strong'
@@ -105,6 +106,8 @@ Rails.application.routes.draw do
   post 'redirect_with_flash_inertia_hash' => 'inertia_test#redirect_with_flash_inertia_hash'
 
   inertia 'inertia_route' => 'TestComponent'
+  inertia 'inertia_route_with_defaults' => 'TestComponent', defaults: { category: 'static' }
+  inertia 'inertia_multi_route_a' => 'MultiA', 'inertia_multi_route_b' => 'MultiB'
   inertia :inertia_route_with_default_component
   scope :scoped, as: 'scoped' do
     inertia 'inertia_route' => 'TestComponent'

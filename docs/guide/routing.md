@@ -14,6 +14,9 @@ Rails.application.routes.draw do
   # Basic usage - maps 'dashboard' URL to 'Dashboard' component
   inertia 'dashboard' => 'Dashboard'
 
+  # Multiple pages at once
+  inertia 'about' => 'About', 'contact' => 'Contact'
+
   # Using a symbol - infers component name from route
   inertia :settings
 
