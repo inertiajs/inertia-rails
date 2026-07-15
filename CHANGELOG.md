@@ -6,12 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Add `xsrf_cookie_refresh` configuration option. Set to `:lazy` to skip rewriting the `XSRF-TOKEN` cookie on safe requests when a valid cookie is already present, keeping conditionally cached (`ETag`/`304`) responses free of `Set-Cookie` churn (@darkamenosa)
+* Fix `inertia: { errors: }` and `inertia: { clear_history: }` being discarded when `redirect_to` is given an explicit non-302 status such as `status: :see_other` (303/307/308) (@skryukov)
+* Fix cross-variant `304 Not Modified` responses under HTTP conditional caching (`fresh_when` / `stale?`) by folding the Inertia request headers into the ETag, so HTML, JSON, and partial-reload representations of the same URL no longer share a validator (@skryukov)
+* Generate controller views at the paths resolved by `render inertia: true` (@oiahoon)
+* Add `@inertiajs/core` as a direct dev dependency in the TypeScript install generator, so pnpm exposes the adapter types that `globals.d.ts` augments (@heyrobertchang)
 * Fix option handling in the `inertia` routes helper: user-supplied `defaults:` no longer replace the component (previously producing `component: null` responses), the route-to-component pair no longer leaks into `params`, and additional String-keyed pairs define routes instead of being silently dropped (@skryukov)
 * Raise a clear error when `parent_controller` does not inherit from `ActionController::Base` instead of an opaque `NoMethodError` (@skryukov)
 * Deduplicate `X-Inertia` in the `Vary` response header (@skryukov)
-* Generate controller views at the paths resolved by `render inertia: true` (@oiahoon)
-* Add `xsrf_cookie_refresh` configuration option. Set to `:lazy` to skip rewriting the `XSRF-TOKEN` cookie on safe requests when a valid cookie is already present, keeping conditionally cached (`ETag`/`304`) responses free of `Set-Cookie` churn (@darkamenosa)
-* Add `@inertiajs/core` as a direct dev dependency in the TypeScript install generator, so pnpm exposes the adapter types that `globals.d.ts` augments (@heyrobertchang)
 
 ## [3.21.2] - 2026-06-09
 

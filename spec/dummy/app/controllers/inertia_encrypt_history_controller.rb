@@ -25,6 +25,10 @@ class InertiaEncryptHistoryController < ApplicationController
     redirect_to :empty_test, inertia: { clear_history: true }
   end
 
+  def clear_history_after_see_other_redirect
+    redirect_to :empty_test, status: :see_other, inertia: { clear_history: true }
+  end
+
   def preserve_fragment
     render inertia: 'TestComponent', preserve_fragment: true
   end

@@ -51,7 +51,15 @@ module InertiaRails
         inertia_request? && version_stale?
       end
 
+      # Matches Rack::Response::Helpers#redirect? — Inertia session options
+      # must survive every redirect until a render consumes them.
       def redirect_status?(status)
+        [301, 302, 303, 307, 308].include? status
+      end
+
+      # Only 301/302 are rewritten to 303: a 303 already forces a GET on
+      # follow, and 307/308 preserve the request method by design.
+      def convertible_redirect_status?(status)
         [301, 302].include? status
       end
 
@@ -60,7 +68,7 @@ module InertiaRails
       end
 
       def inertia_non_post_redirect?(status)
-        inertia_request? && redirect_status?(status) && non_get_redirectable_method?
+        inertia_request? && convertible_redirect_status?(status) && non_get_redirectable_method?
       end
 
       def stale_inertia_get?
