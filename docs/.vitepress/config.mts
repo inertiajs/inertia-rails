@@ -22,6 +22,10 @@ export default withMermaid({
 
   cleanUrls: true,
 
+  sitemap: {
+    hostname: site,
+  },
+
   vite: {
     plugins: [
       llmstxt({
@@ -200,6 +204,10 @@ export default withMermaid({
             {
               text: 'Troubleshooting',
               items: [
+                {
+                  text: 'HTTP caching and XSRF cookie refresh',
+                  link: '/cookbook/http-caching-and-xsrf-cookie-refresh',
+                },
                 {
                   text: 'Rails validation error types',
                   link: '/cookbook/handling-validation-error-types',

@@ -27,23 +27,18 @@ Other prop types don't need it:
 
 ## HTTP Caching
 
-Rails provides built-in HTTP caching via `stale?` and `fresh_when`. These work with Inertia responses, but require one adjustment: because the same URL returns HTML on the initial page load and JSON on subsequent Inertia visits, ETags must account for the request type.
+Rails provides built-in HTTP caching via `stale?` and `fresh_when`, and it works with Inertia responses out of the box.
 
-### Differentiating ETags
+@available_since rails=master
 
-Use the `etag` method in your controller to include `request.inertia?` in the ETag calculation:
+The same URL answers with different bodies: an HTML document on the initial visit, an Inertia JSON page on client-side visits, and prop subsets on partial reloads. Inertia Rails folds the Inertia request headers into every ETag automatically, so each representation gets its own ETag and a conditional request never receives a `304 Not Modified` backed by a different representation's body. Plain (non-Inertia) requests are unaffected.
 
-```ruby
-class ApplicationController < ActionController::Base
-  etag { request.inertia? }
-end
-```
-
-This ensures that HTML and JSON responses for the same URL produce different ETags, preventing the browser from serving a stale cached response in the wrong format.
+> [!NOTE]
+> On older adapter versions, differentiate the ETags yourself by adding `etag { request.inertia? }` to your `ApplicationController`.
 
 ### Using `stale?`
 
-With the ETag differentiation in place, use `stale?` as you normally would in Rails:
+Use `stale?` as you normally would in Rails:
 
 ```ruby
 class PostsController < ApplicationController
@@ -73,6 +68,11 @@ class PostsController < ApplicationController
   end
 end
 ```
+
+> [!WARNING]
+> Automatic differentiation applies to ETags. A `fresh_when last_modified:` call with no `etag` produces no validator to differentiate, so a shared cache that ignores `Vary` can pair a `304` with the wrong representation. Pair `last_modified` with an `etag`.
+
+If your conditionally cached responses still carry `Set-Cookie` headers — most shared caches refuse to store those — see [HTTP caching and XSRF cookie refresh](/cookbook/http-caching-and-xsrf-cookie-refresh).
 
 ## Prop-Level Caching
 

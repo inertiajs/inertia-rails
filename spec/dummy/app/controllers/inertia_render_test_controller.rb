@@ -80,6 +80,32 @@ class InertiaRenderTestController < ApplicationController
     render inertia: 'TestComponent'
   end
 
+  def conditional_get
+    fresh_when etag: 'shared-v1'
+    render inertia: 'TestComponent', props: { name: 'conditional' } unless performed?
+  end
+
+  def conditional_partial
+    fresh_when etag: 'shared-v1'
+    render inertia: 'TestComponent', props: { name: 'Brian', sport: 'hockey' } unless performed?
+  end
+
+  def conditional_strong
+    fresh_when strong_etag: 'strong-v1'
+    render inertia: 'TestComponent', props: { name: 'strong' } unless performed?
+  end
+
+  def conditional_last_modified
+    fresh_when last_modified: Time.utc(2026, 1, 1)
+    render inertia: 'TestComponent', props: { name: 'lm' } unless performed?
+  end
+
+  def conditional_stale
+    return unless stale?(etag: 'stale-v1')
+
+    render inertia: 'TestComponent', props: { name: 'stale' }
+  end
+
   def lazy_props
     render inertia: 'TestComponent', props: {
       name: 'Brian',

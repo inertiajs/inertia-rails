@@ -3,6 +3,7 @@
 module InertiaRails
   class Configuration
     DEFAULT_SSR_URL = 'http://localhost:13714'
+    XSRF_COOKIE_REFRESH_OPTIONS = %i[always lazy].freeze
 
     DEFAULTS = {
       # Whether to combine hashes with the same keys instead of replacing them.
@@ -50,6 +51,9 @@ module InertiaRails
 
       # Whether to include empty `errors` hash to the props when no errors are present.
       always_include_errors_hash: nil,
+
+      # When to refresh the XSRF token cookie on protected requests.
+      xsrf_cookie_refresh: :always,
 
       # Whether to use `<script>` element for initial page rendering instead of the `data-page` attribute.
       use_script_element_for_initial_page: false,
@@ -147,6 +151,17 @@ module InertiaRails
 
     def cache_store
       @options[:cache_store] || Rails.cache
+    end
+
+    # Normalized and validated at read time — ENV values arrive as strings, and callables are only evaluated here.
+    def xsrf_cookie_refresh
+      value = evaluate_option(options[:xsrf_cookie_refresh])
+      value = value.to_sym if value.respond_to?(:to_sym)
+      return value if XSRF_COOKIE_REFRESH_OPTIONS.include?(value)
+
+      raise ArgumentError,
+            "Invalid xsrf_cookie_refresh: #{value.inspect}. " \
+            "Expected one of: #{XSRF_COOKIE_REFRESH_OPTIONS.map(&:inspect).join(', ')}"
     end
 
     OPTION_NAMES.each do |option|
