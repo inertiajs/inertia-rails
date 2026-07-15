@@ -1,7 +1,7 @@
 <template>
   <Head :title="`<%= human_name %> #${<%= singular_table_name %>.id}`" />
 
-  <div className="mx-auto md:w-2/3 w-full px-8 pt-8">
+  <div class="mx-auto md:w-2/3 w-full px-8 pt-8">
     <div class="mx-auto">
       <p
         v-if="page.flash.notice"

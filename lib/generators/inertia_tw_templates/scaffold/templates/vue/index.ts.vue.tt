@@ -1,7 +1,7 @@
 <template>
   <Head title="<%= human_name.pluralize %>" />
 
-  <div className="mx-auto md:w-2/3 w-full px-8 pt-8">
+  <div class="mx-auto md:w-2/3 w-full px-8 pt-8">
     <p
       v-if="page.flash.notice"
       class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-lg inline-block"
