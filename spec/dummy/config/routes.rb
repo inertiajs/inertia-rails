@@ -35,6 +35,8 @@ Rails.application.routes.draw do
   get 'share_multithreaded_error' => 'inertia_multithreaded_share#share_multithreaded_error'
   get 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
   post 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'
+  post 'redirect_with_status_and_inertia_errors' => 'inertia_test#redirect_with_status_and_inertia_errors'
+  delete 'redirect_with_status_and_inertia_errors' => 'inertia_test#redirect_with_status_and_inertia_errors'
   post 'redirect_with_inertia_error_object' => 'inertia_test#redirect_with_inertia_error_object'
   post 'redirect_with_non_hash_inertia_errors' => 'inertia_test#redirect_with_non_hash_inertia_errors'
   post 'redirect_back_with_inertia_errors' => 'inertia_test#redirect_back_with_inertia_errors'
@@ -141,6 +143,8 @@ Rails.application.routes.draw do
   get 'encrypt_history_override_config' => 'inertia_encrypt_history#override_config'
   get 'encrypt_history_clear_history' => 'inertia_encrypt_history#clear_history'
   post 'encrypt_history_clear_history_after_redirect' => 'inertia_encrypt_history#clear_history_after_redirect'
+  delete 'encrypt_history_clear_history_after_see_other_redirect' =>
+         'inertia_encrypt_history#clear_history_after_see_other_redirect'
   get 'encrypt_history_preserve_fragment' => 'inertia_encrypt_history#preserve_fragment'
   post 'encrypt_history_preserve_fragment_after_redirect' => 'inertia_encrypt_history#preserve_fragment_after_redirect'
 

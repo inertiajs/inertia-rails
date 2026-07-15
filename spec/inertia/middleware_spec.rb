@@ -51,6 +51,30 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
     end
   end
 
+  context 'inertia session options with explicit redirect statuses' do
+    [303, 307, 308].each do |status|
+      it "keeps inertia errors across a #{status} redirect" do
+        post redirect_with_status_and_inertia_errors_path(status: status), headers: { 'X-Inertia' => true }
+
+        expect(response.status).to eq status
+        expect(session[:inertia_errors]).to be_present
+
+        get response.headers['Location'], headers: { 'X-Inertia' => true }
+        expect(response.body).to include({ errors: { uh: 'oh' } }.to_json)
+      end
+    end
+  end
+
+  context 'a redirect with an explicit status that must not be rewritten' do
+    [303, 307, 308].each do |status|
+      it "leaves an explicit #{status} as #{status}" do
+        delete redirect_with_status_and_inertia_errors_path(status: status), headers: { 'X-Inertia' => true }
+
+        expect(response.status).to eq status
+      end
+    end
+  end
+
   context 'a redirect status was passed with an http method that preserves itself on 302 redirect' do
     subject { response.status }
 
