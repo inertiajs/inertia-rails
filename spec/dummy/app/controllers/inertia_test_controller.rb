@@ -40,10 +40,6 @@ class InertiaTestController < ApplicationController
     redirect_to empty_test_url
   end
 
-  def secure_same_host_redirect_test
-    redirect_to "https://#{request.host}/empty_test", allow_other_host: true
-  end
-
   def external_redirect_with_inertia_errors_test
     redirect_to 'http://external-website.com/some_path', allow_other_host: true, inertia: { errors: { uh: 'oh' } }
   end
