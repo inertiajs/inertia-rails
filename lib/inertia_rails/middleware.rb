@@ -7,6 +7,10 @@ module InertiaRails
     # excluded: a `window.location` visit cannot preserve the HTTP method.
     LOCATION_CONVERTIBLE_STATUSES = [301, 302, 303].freeze
 
+    # Env key set by `redirect_to url, inertia: { full_page: true }` to mark a
+    # same-origin redirect for conversion.
+    FULL_PAGE_REDIRECT_KEY = 'inertia_rails.full_page_redirect'
+
     def initialize(app)
       @app = app
     end
@@ -20,7 +24,7 @@ module InertiaRails
       # them. Rails header objects accept either casing, but raw Rack apps
       # return plain hashes, so both casings must be read and the
       # Rack-appropriate one written.
-      LOWERCASE_HEADERS = Gem::Version.new(Rack.release) >= Gem::Version.new('3')
+      USE_LOWERCASE_HEADERS = Gem::Version.new(Rack.release) >= Gem::Version.new('3')
 
       def initialize(app, env)
         @app = app
@@ -36,16 +40,16 @@ module InertiaRails
                                 end
         request = ActionDispatch::Request.new(@env)
 
-        convertible_redirect = convertible_external_redirect?(status, headers, request) ||
+        location_convertible = convertible_external_redirect?(status, headers, request) ||
                                full_page_redirect?(status, headers)
-        should_convert_redirect = convertible_redirect && inertia_request?
+        convert_to_location = location_convertible && inertia_request?
 
         # Inertia session data is added via redirect_to
         # Guard with session.loaded? to avoid forcing session I/O (and unnecessary
         # database writes) on requests that never accessed the session, e.g. sessionless
         # controllers. If the session was never loaded the Inertia keys cannot have been
         # set, so the cleanup would be a no-op anyway.
-        unless (keep_inertia_session_options?(status) && !should_convert_redirect) || !request.session.loaded?
+        unless (keep_inertia_session_options?(status) && !convert_to_location) || !request.session.loaded?
           request.session.delete(:inertia_errors)
           request.session.delete(:inertia_clear_history)
           request.session.delete(:inertia_preserve_fragment)
@@ -53,12 +57,12 @@ module InertiaRails
 
         status = 303 if inertia_non_post_redirect?(status)
 
-        if should_convert_redirect
+        if convert_to_location
           convert_to_location_response(headers, body)
         elsif stale_inertia_get?
           force_refresh(request)
         else
-          add_vary_header(headers) if convertible_redirect || inertia_location_response?(status, headers)
+          add_vary_header(headers) if location_convertible || inertia_location_response?(status, headers)
           [status, headers, body]
         end
       end
@@ -190,7 +194,7 @@ module InertiaRails
       def full_page_redirect?(status, headers)
         location_convertible_status?(status) &&
           get_header(headers, 'Location').present? &&
-          @env['inertia_rails.full_page_redirect'].present?
+          @env[FULL_PAGE_REDIRECT_KEY].present?
       end
 
       # The response differs for Inertia and plain clients at the same URL, so
@@ -213,7 +217,7 @@ module InertiaRails
       end
 
       def set_header(headers, name, value)
-        headers[LOWERCASE_HEADERS ? name.downcase : name] = value
+        headers[USE_LOWERCASE_HEADERS ? name.downcase : name] = value
       end
 
       def force_refresh(request)

@@ -171,6 +171,14 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
         expect(response.headers['Location']).to eq '//www.example.com/empty_test'
       end
 
+      it 'converts a scheme-relative redirect to the same host when the request port differs' do
+        get "http://www.example.com:8080#{location_header_test_path(url: '//www.example.com/empty_test')}",
+            headers: { 'X-Inertia' => true }
+
+        expect(response.status).to eq 409
+        expect(response.headers['X-Inertia-Location']).to eq '//www.example.com/empty_test'
+      end
+
       it 'does not convert a redirect to a relative path' do
         get location_header_test_path(url: '/empty_test'), headers: { 'X-Inertia' => true }
 

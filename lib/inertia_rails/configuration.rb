@@ -54,6 +54,7 @@ module InertiaRails
 
       # When to refresh the XSRF token cookie on protected requests.
       xsrf_cookie_refresh: :always,
+
       # Whether to convert redirects to external (cross-origin) URLs into
       # Inertia location responses (409 Conflict + X-Inertia-Location header)
       # for Inertia requests.

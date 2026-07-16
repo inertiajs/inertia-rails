@@ -196,6 +196,7 @@ end
 ```
 
 This is useful for applications that serve Inertia pages through a CDN or rely on HTTP conditional caching (`ETag` / `304`): most shared caches refuse to cache responses that carry `Set-Cookie`, and the default policy emits one on every response. See the [HTTP caching and XSRF cookie refresh cookbook note](/cookbook/http-caching-and-xsrf-cookie-refresh) for the full mechanism and caveats.
+
 ### `convert_external_redirects`
 
 **Default**: `true`
