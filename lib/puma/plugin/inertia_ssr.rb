@@ -52,15 +52,18 @@ Puma::Plugin.create do
         break
       end
 
-      if wait_for_server(uri)
+      outcome, status = wait_for_boot(uri)
+
+      case outcome
+      when :ready
         log "* Inertia SSR: server ready (pid: #{@pid})"
         consecutive_crashes = 0
         delay = 1
-      else
+      when :timeout
         log "! Inertia SSR: server failed to respond within #{BOOT_TIMEOUT}s"
       end
 
-      _, status = Process.wait2(@pid)
+      _, status = Process.wait2(@pid) unless status
       break unless @running
 
       consecutive_crashes += 1
@@ -98,20 +101,23 @@ Puma::Plugin.create do
     @pid = nil
   end
 
-  def wait_for_server(uri) # rubocop:disable Naming/PredicateMethod
+  def wait_for_boot(uri)
     BOOT_TIMEOUT.times do
-      return false unless @running
+      return [:stopping, nil] unless @running
+
+      _, status = Process.wait2(@pid, Process::WNOHANG)
+      return [:exited, status] if status
 
       begin
         Net::HTTP.start(uri.host, uri.port, open_timeout: 1, read_timeout: 1) do |http|
           http.get('/health')
         end
-        return true
+        return [:ready, nil]
       rescue Errno::ECONNREFUSED, Errno::EADDRNOTAVAIL, Net::OpenTimeout, Net::ReadTimeout
         sleep 1
       end
     end
-    false
+    [:timeout, nil]
   end
 
   def ssr_enabled?
