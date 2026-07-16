@@ -44,8 +44,15 @@ Rails.application.routes.draw do
   get 'same_origin_redirect_test' => 'inertia_test#same_origin_redirect_test'
   get 'secure_same_host_redirect_test' => 'inertia_test#secure_same_host_redirect_test'
   get 'full_page_redirect_test' => 'inertia_test#full_page_redirect_test'
+  get 'invalid_full_page_redirect_test' => 'inertia_test#invalid_full_page_redirect_test'
   get 'location_header_test' => 'inertia_test#location_header_test'
   get 'route_level_redirect_test' => redirect('http://external-website.com/some_path')
+  # Raw Rack endpoints bypass ActionController entirely, so their response
+  # headers are plain hashes: lowercase per the Rack 3 SPEC, capitalized on
+  # Rack 2. The middleware must handle both.
+  raw_redirect = ->(key) { ->(_env) { [302, { key => 'http://external-website.com/some_path' }, []] } }
+  get 'raw_rack_redirect_test' => raw_redirect.call('location'), as: :raw_rack_redirect_test
+  get 'raw_rack_capitalized_redirect_test' => raw_redirect.call('Location'), as: :raw_rack_capitalized_redirect_test
   get 'share_multithreaded' => 'inertia_multithreaded_share#share_multithreaded'
   get 'share_multithreaded_error' => 'inertia_multithreaded_share#share_multithreaded_error'
   get 'redirect_with_inertia_errors' => 'inertia_test#redirect_with_inertia_errors'

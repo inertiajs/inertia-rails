@@ -83,7 +83,7 @@ module InertiaRails
     end
 
     def redirect_to(options = {}, response_options = {})
-      capture_inertia_redirect_options(response_options)
+      capture_inertia_session_options(response_options)
       super
     end
 
@@ -188,10 +188,10 @@ module InertiaRails
       result.symbolize_keys
     end
 
-    def capture_inertia_redirect_options(options)
+    def capture_inertia_session_options(options)
       return unless (inertia = options[:inertia])
 
-      request.env['inertia_rails.full_page_redirect'] = true if inertia[:full_page]
+      mark_full_page_redirect(options) if inertia[:full_page]
 
       if (inertia_errors = inertia[:errors])
         if inertia_errors.respond_to?(:to_hash)
@@ -206,6 +206,17 @@ module InertiaRails
 
       session[:inertia_clear_history] = inertia[:clear_history] if inertia[:clear_history]
       session[:inertia_preserve_fragment] = true if inertia[:preserve_fragment]
+    end
+
+    def mark_full_page_redirect(options)
+      status = Rack::Utils.status_code(options.fetch(:status, :found))
+
+      unless Middleware::LOCATION_CONVERTIBLE_STATUSES.include?(status)
+        raise ArgumentError, "`inertia: { full_page: true }` requires a 301, 302, or 303 redirect (got #{status}): " \
+                             'a full page visit always issues a GET, so it cannot preserve the HTTP method.'
+      end
+
+      request.env['inertia_rails.full_page_redirect'] = true
     end
   end
 end

@@ -227,6 +227,27 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
         expect(response.headers['Vary']).to eq 'Accept, X-Inertia'
       end
 
+      # Raw Rack apps return plain header hashes, keyed lowercase under
+      # Rack 3 and capitalized under Rack 2 — unlike Rails responses, whose
+      # header objects are case-insensitive.
+      it 'converts a raw rack redirect with a lowercase location header' do
+        get raw_rack_redirect_test_path, headers: { 'X-Inertia' => true }
+
+        expect(response.status).to eq 409
+        expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
+        expect(response.headers['Location']).to be_nil
+        expect(response.headers['Vary']).to include 'X-Inertia'
+      end
+
+      it 'converts a raw rack redirect with a capitalized Location header' do
+        get raw_rack_capitalized_redirect_test_path, headers: { 'X-Inertia' => true }
+
+        expect(response.status).to eq 409
+        expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
+        expect(response.headers['Location']).to be_nil
+        expect(response.headers['Vary']).to include 'X-Inertia'
+      end
+
       context 'when the asset version is stale' do
         with_inertia_config version: '1.0'
 
@@ -276,6 +297,14 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
         expect(response.headers['Vary']).to be_nil
       end
 
+      it 'marks a raw rack redirect as varying on X-Inertia' do
+        get raw_rack_redirect_test_path
+
+        expect(response.status).to eq 302
+        expect(response.headers['Location']).to eq 'http://external-website.com/some_path'
+        expect(response.headers['Vary']).to include 'X-Inertia'
+      end
+
       context 'when conversion is disabled' do
         with_inertia_config convert_external_redirects: false
 
@@ -321,6 +350,12 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
         expect(response.headers['Location']).to eq empty_test_url
         expect(response.headers['Vary']).to include 'X-Inertia'
       end
+    end
+
+    it 'raises for a method-preserving redirect status' do
+      expect do
+        get invalid_full_page_redirect_test_path, headers: { 'X-Inertia' => true }
+      end.to raise_error(ArgumentError, /full_page: true/)
     end
   end
 

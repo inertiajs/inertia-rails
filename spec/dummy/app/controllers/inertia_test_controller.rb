@@ -57,6 +57,10 @@ class InertiaTestController < ApplicationController
     redirect_to empty_test_path, inertia: { full_page: true }
   end
 
+  def invalid_full_page_redirect_test
+    redirect_to empty_test_path, status: 307, inertia: { full_page: true }
+  end
+
   def location_header_test
     head (params[:status] || 302).to_i, location: params[:url]
   end

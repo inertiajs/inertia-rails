@@ -102,6 +102,8 @@ redirect_to admin_path, inertia: { full_page: true }
 
 For Inertia requests, the redirect is converted into an Inertia location response, even when `convert_external_redirects` is disabled. For non-Inertia requests, it stays a regular redirect.
 
+The mark requires a `301`, `302`, or `303` redirect. Combining it with a method-preserving `307` or `308` status raises an `ArgumentError`, since a `window.location` visit cannot preserve the HTTP method.
+
 > [!TIP]
 > If a whole section of your app is non-Inertia, you can guard it on the target side instead, so that any Inertia request that reaches it — through a followed redirect or a stale link — is bounced into a full page visit:
 >
