@@ -84,7 +84,6 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
         expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
         expect(response.headers['Location']).to be_nil
         expect(response.headers['Content-Type']).to be_nil
-        expect(response.headers['Vary']).to include 'X-Inertia'
         expect(response.body).to be_empty
       end
 
@@ -228,34 +227,6 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
         expect(response.headers['X-Inertia-Location']).to be_nil
       end
 
-      it 'appends to an existing Vary header rather than replacing it' do
-        get external_redirect_with_vary_test_path, headers: { 'X-Inertia' => true }
-
-        expect(response.status).to eq 409
-        expect(response.headers['Vary']).to eq 'Accept, X-Inertia'
-      end
-
-      # Raw Rack apps return plain header hashes, keyed lowercase under
-      # Rack 3 and capitalized under Rack 2 — unlike Rails responses, whose
-      # header objects are case-insensitive.
-      it 'converts a raw rack redirect with a lowercase location header' do
-        get raw_rack_redirect_test_path, headers: { 'X-Inertia' => true }
-
-        expect(response.status).to eq 409
-        expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
-        expect(response.headers['Location']).to be_nil
-        expect(response.headers['Vary']).to include 'X-Inertia'
-      end
-
-      it 'converts a raw rack redirect with a capitalized Location header' do
-        get raw_rack_capitalized_redirect_test_path, headers: { 'X-Inertia' => true }
-
-        expect(response.status).to eq 409
-        expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
-        expect(response.headers['Location']).to be_nil
-        expect(response.headers['Vary']).to include 'X-Inertia'
-      end
-
       context 'when the asset version is stale' do
         with_inertia_config version: '1.0'
 
@@ -289,40 +260,11 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
     end
 
     context 'with a non-inertia request' do
-      it 'does not convert the redirect but marks it as varying on X-Inertia' do
+      it 'does not convert the redirect' do
         get external_redirect_test_path
 
         expect(response.status).to eq 302
         expect(response.headers['Location']).to eq 'http://external-website.com/some_path'
-        expect(response.headers['Vary']).to include 'X-Inertia'
-      end
-
-      it 'does not mark a same-origin redirect as varying on X-Inertia' do
-        get same_origin_redirect_test_path
-
-        expect(response.status).to eq 302
-        expect(response.headers['Location']).to eq empty_test_url
-        expect(response.headers['Vary']).to be_nil
-      end
-
-      it 'marks a raw rack redirect as varying on X-Inertia' do
-        get raw_rack_redirect_test_path
-
-        expect(response.status).to eq 302
-        expect(response.headers['Location']).to eq 'http://external-website.com/some_path'
-        expect(response.headers['Vary']).to include 'X-Inertia'
-      end
-
-      context 'when conversion is disabled' do
-        with_inertia_config convert_external_redirects: false
-
-        it 'leaves the redirect untouched and unmarked' do
-          get external_redirect_test_path
-
-          expect(response.status).to eq 302
-          expect(response.headers['Location']).to eq 'http://external-website.com/some_path'
-          expect(response.headers['Vary']).to be_nil
-        end
       end
     end
   end
@@ -335,7 +277,6 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
         expect(response.status).to eq 409
         expect(response.headers['X-Inertia-Location']).to eq empty_test_url
         expect(response.headers['Location']).to be_nil
-        expect(response.headers['Vary']).to include 'X-Inertia'
       end
 
       context 'when automatic conversion is disabled' do
@@ -351,12 +292,11 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
     end
 
     context 'with a non-inertia request' do
-      it 'redirects normally, marked as varying on X-Inertia' do
+      it 'redirects normally' do
         get full_page_redirect_test_path
 
         expect(response.status).to eq 302
         expect(response.headers['Location']).to eq empty_test_url
-        expect(response.headers['Vary']).to include 'X-Inertia'
       end
     end
 

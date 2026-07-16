@@ -9,7 +9,6 @@ RSpec.describe 'InertiaRails::Response', type: :request do
         expect(response.status).to eq 409
         expect(response.headers['X-Inertia-Location']).to eq empty_test_path
         expect(response.headers['Location']).to be_nil
-        expect(response.headers['Vary']).to include 'X-Inertia'
         expect(response.body).to be_empty
       end
 
@@ -29,16 +28,14 @@ RSpec.describe 'InertiaRails::Response', type: :request do
         expect(response.status).to eq 302
         expect(response.headers['Location']).to eq empty_test_url
         expect(response.headers['X-Inertia-Location']).to be_nil
-        expect(response.headers['Vary']).to be_nil
       end
 
-      it 'redirects to an external url with a single Vary header' do
+      it 'redirects to an external url' do
         get my_external_location_path
 
         expect(response.status).to eq 302
         expect(response.headers['Location']).to eq 'http://external-website.com/some_path'
         expect(response.headers['X-Inertia-Location']).to be_nil
-        expect(response.headers['Vary']).to eq 'X-Inertia'
       end
     end
   end

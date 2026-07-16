@@ -48,11 +48,6 @@ class InertiaTestController < ApplicationController
     redirect_to 'http://external-website.com/some_path', allow_other_host: true, inertia: { errors: { uh: 'oh' } }
   end
 
-  def external_redirect_with_vary_test
-    response.headers['Vary'] = 'Accept'
-    redirect_to 'http://external-website.com/some_path', allow_other_host: true
-  end
-
   def full_page_redirect_test
     redirect_to empty_test_path, inertia: { full_page: true }
   end

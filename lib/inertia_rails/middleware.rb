@@ -20,12 +20,6 @@ module InertiaRails
     end
 
     class InertiaRailsRequest
-      # Rack 3 requires lowercase response header names, Rack 2 capitalizes
-      # them. Rails header objects accept either casing, but raw Rack apps
-      # return plain hashes, so both casings must be read and the
-      # Rack-appropriate one written.
-      USE_LOWERCASE_HEADERS = Gem::Version.new(Rack.release) >= Gem::Version.new('3')
-
       def initialize(app, env)
         @app = app
         @env = env
@@ -40,9 +34,9 @@ module InertiaRails
                                 end
         request = ActionDispatch::Request.new(@env)
 
-        location_convertible = convertible_external_redirect?(status, headers, request) ||
-                               full_page_redirect?(status, headers)
-        convert_to_location = location_convertible && inertia_request?
+        convert_to_location = inertia_request? &&
+                              (convertible_external_redirect?(status, headers, request) ||
+                               full_page_redirect?(status, headers))
 
         # Inertia session data is added via redirect_to
         # Guard with session.loaded? to avoid forcing session I/O (and unnecessary
@@ -62,7 +56,6 @@ module InertiaRails
         elsif stale_inertia_get?
           force_refresh(request)
         else
-          add_vary_header(headers) if location_convertible || inertia_location_response?(status, headers)
           [status, headers, body]
         end
       end
@@ -151,7 +144,7 @@ module InertiaRails
       def convertible_external_redirect?(status, headers, request)
         location_convertible_status?(status) &&
           convert_external_redirects? &&
-          external_origin?(get_header(headers, 'Location'), request)
+          external_origin?(headers['Location'], request)
       end
 
       def convert_external_redirects?
@@ -173,51 +166,27 @@ module InertiaRails
       end
 
       # Mutates the response triple in place to preserve other headers, notably
-      # Set-Cookie (which matters mid-OAuth).
+      # Set-Cookie (which matters mid-OAuth). Capitalized header literals work
+      # on both Rack generations because Rails-originated responses carry a
+      # case-insensitive Rack::Headers on Rack 3 and a capitalized plain hash
+      # on Rack 2; redirects from raw Rack endpoints (plain lowercase hashes
+      # on Rack 3) pass through unconverted.
       def convert_to_location_response(headers, body)
-        set_header(headers, 'X-Inertia-Location', delete_header(headers, 'Location'))
-        delete_header(headers, 'Content-Type')
-        delete_header(headers, 'Content-Length')
+        headers['X-Inertia-Location'] = headers.delete('Location')
+        headers.delete('Content-Type')
+        headers.delete('Content-Length')
         body.close if body.respond_to?(:close)
 
-        add_vary_header(headers)
         [409, headers, []]
-      end
-
-      def inertia_location_response?(status, headers)
-        status == 409 && get_header(headers, 'X-Inertia-Location').present?
       end
 
       # Same-origin redirects to non-Inertia endpoints cannot be detected
       # automatically; `redirect_to url, inertia: { full_page: true }` marks
       # them for conversion explicitly.
       def full_page_redirect?(status, headers)
-        location_convertible_status?(status) &&
-          get_header(headers, 'Location').present? &&
-          @env[FULL_PAGE_REDIRECT_KEY].present?
-      end
-
-      # The response differs for Inertia and plain clients at the same URL, so
-      # a shared cache must not serve one client's variant to the other.
-      def add_vary_header(headers)
-        vary = get_header(headers, 'Vary').to_s.split(',').map(&:strip)
-        return if vary.any? { |token| token.casecmp?('X-Inertia') }
-
-        delete_header(headers, 'Vary')
-        set_header(headers, 'Vary', [*vary, 'X-Inertia'].join(', '))
-      end
-
-      def get_header(headers, name)
-        headers[name] || headers[name.downcase]
-      end
-
-      def delete_header(headers, name)
-        value = headers.delete(name)
-        headers.delete(name.downcase) || value
-      end
-
-      def set_header(headers, name, value)
-        headers[USE_LOWERCASE_HEADERS ? name.downcase : name] = value
+        @env[FULL_PAGE_REDIRECT_KEY] &&
+          location_convertible_status?(status) &&
+          headers['Location'].present?
       end
 
       def force_refresh(request)
