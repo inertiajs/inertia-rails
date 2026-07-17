@@ -16,10 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Raise a clear error when `parent_controller` does not inherit from `ActionController::Base` instead of an opaque `NoMethodError` (@skryukov)
 * Add static `props:` support to the `inertia` routes helper: `inertia 'about' => 'About', props: { title: 'About us' }` (@skryukov)
 * Deduplicate `X-Inertia` in the `Vary` response header (@skryukov)
-* Automatically convert external (cross-origin) redirects to Inertia location responses (`409 Conflict` + `X-Inertia-Location`) for Inertia requests. Can be disabled with `config.convert_external_redirects = false` (@skryukov)
-* Add `redirect_to url, inertia: { full_page: true }` option to convert a same-origin redirect into an Inertia location response, for redirects to non-Inertia endpoints (@skryukov)
-* Fix `inertia_location` to perform a regular redirect for non-Inertia requests instead of always responding with `409 Conflict` (@skryukov)
-* Fix stale asset versions no longer replacing Inertia location responses (`inertia_location` and converted redirects) with a forced refresh to the current URL — the response already triggers a full page visit, so the refresh only added a pointless extra request (@skryukov)
+* Convert external (cross-origin) redirects to Inertia location responses automatically (disable with `config.convert_external_redirects = false`), and add `redirect_to url, inertia: { full_page: true }` for same-origin redirects to non-Inertia endpoints (@skryukov)
+* Fix `inertia_location` to redirect plain (non-Inertia) requests instead of responding `409 Conflict`, and stop stale asset versions from replacing location responses with a forced refresh (@skryukov)
 
 ## [3.21.2] - 2026-06-09
 
