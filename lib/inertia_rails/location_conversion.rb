@@ -1,19 +1,15 @@
 # frozen_string_literal: true
 
 module InertiaRails
-  # Decides whether a redirect must become an Inertia location response
-  # (409 Conflict + X-Inertia-Location, which makes the client perform a full
-  # `window.location` visit) and performs the conversion.
+  # Converts a redirect into an Inertia location response (409 Conflict +
+  # X-Inertia-Location), which makes the client perform a `window.location` visit.
   #
-  # XHR requests follow redirects transparently, so an Inertia client can
-  # never see a redirect to another origin: the follow-up request fails CORS
-  # checks. Cross-origin redirects therefore convert automatically. Same-origin
-  # redirects to non-Inertia endpoints cannot be detected — a Location header
-  # does not reveal whether its target renders an Inertia page — so they
-  # convert only when marked with `redirect_to url, inertia: { full_page: true }`.
+  # Cross-origin redirects convert automatically: XHR follows redirects
+  # transparently, so the follow-up request would fail CORS checks. Same-origin
+  # redirects convert only when marked with `inertia: { full_page: true }` —
+  # a Location header doesn't reveal whether its target renders an Inertia page.
   class LocationConversion
-    # Redirect statuses eligible for conversion. Method-preserving 307/308 are
-    # excluded: a `window.location` visit cannot preserve the HTTP method.
+    # Method-preserving 307/308 are excluded: a full page visit is always a GET.
     STATUSES = [301, 302, 303].freeze
 
     FULL_PAGE_REDIRECT_KEY = 'inertia_rails.full_page_redirect'
@@ -39,12 +35,8 @@ module InertiaRails
       STATUSES.include?(@status) && (external_redirect? || full_page_redirect?)
     end
 
-    # Mutates the response triple in place to preserve other headers, notably
-    # Set-Cookie (which matters mid-OAuth). Capitalized header literals work
-    # on both Rack generations because Rails-originated responses carry a
-    # case-insensitive Rack::Headers on Rack 3 and a capitalized plain hash
-    # on Rack 2; redirects from raw Rack endpoints (plain lowercase hashes
-    # on Rack 3) pass through unconverted.
+    # Mutates the headers in place to keep the rest of the response, notably
+    # Set-Cookie (which matters mid-OAuth).
     def convert!(body)
       @headers['X-Inertia-Location'] = @headers.delete('Location')
       @headers.delete('Content-Type')
