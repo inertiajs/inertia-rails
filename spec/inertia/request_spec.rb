@@ -123,6 +123,16 @@ RSpec.describe 'Inertia::Request', type: :request do
         let(:headers) { { 'X-Inertia' => true } }
         it { is_expected.to include('XSRF-TOKEN') }
       end
+
+      context 'it is an XHR call that is not HTML' do
+        let(:headers) { { 'X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json' } }
+        it { is_expected.to include('XSRF-TOKEN') }
+      end
+
+      context 'it is neither an HTML nor an XHR call' do
+        let(:headers) { { 'Accept' => 'image/png' } }
+        it { is_expected.not_to include('XSRF-TOKEN') }
+      end
     end
 
     describe 'xsrf_cookie_refresh configuration' do
