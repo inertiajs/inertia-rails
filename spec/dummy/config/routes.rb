@@ -42,6 +42,7 @@ Rails.application.routes.draw do
   get 'opt_out_external_redirect_test' => 'inertia_conversion_opt_out#external_redirect_test'
   get 'same_origin_redirect_test' => 'inertia_test#same_origin_redirect_test'
   get 'full_page_redirect_test' => 'inertia_test#full_page_redirect_test'
+  get 'full_page_redirect_with_cookie_test' => 'inertia_test#full_page_redirect_with_cookie_test'
   get 'invalid_full_page_redirect_test' => 'inertia_test#invalid_full_page_redirect_test'
   get 'location_header_test' => 'inertia_test#location_header_test'
   get 'route_level_redirect_test' => redirect('http://external-website.com/some_path')

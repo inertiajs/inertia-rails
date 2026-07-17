@@ -3,12 +3,11 @@
 RSpec.describe InertiaRails::LocationConversion do
   let(:configuration) { InertiaRails::Configuration.new(convert_external_redirects: true) }
 
-  def convertible?(location, status: 302, request_url: 'http://www.example.com/articles', env: {},
-                   config: configuration)
+  def convertible?(location, status: 302, request_url: 'http://www.example.com/articles', config: configuration)
     request = ActionDispatch::Request.new(Rack::MockRequest.env_for(request_url))
     headers = location ? { 'Location' => location } : {}
 
-    described_class.new(env, status, headers, request, config).convertible?
+    described_class.new(status, headers, request, config).convertible?
   end
 
   describe '#convertible?' do
@@ -79,47 +78,6 @@ RSpec.describe InertiaRails::LocationConversion do
       it 'does not convert an external redirect' do
         expect(convertible?('http://external-website.com/some_path')).to be false
       end
-
-      it 'still converts a redirect marked as full page' do
-        env = { described_class::FULL_PAGE_REDIRECT_KEY => true }
-
-        expect(convertible?('http://www.example.com/empty_test', env: env)).to be true
-      end
-    end
-
-    context 'with a full page mark' do
-      let(:env) { { described_class::FULL_PAGE_REDIRECT_KEY => true } }
-
-      it 'converts a same-origin redirect' do
-        expect(convertible?('http://www.example.com/empty_test', env: env)).to be true
-      end
-
-      it 'does not convert a response without a location' do
-        expect(convertible?(nil, env: env)).to be false
-      end
-
-      # A rescue_from handler can replace the marked redirect with a render.
-      it 'does not convert a response whose status is no longer a redirect' do
-        expect(convertible?('http://www.example.com/empty_test', status: 200, env: env)).to be false
-      end
-    end
-  end
-
-  describe '.mark_full_page!' do
-    it 'marks the env for a convertible status' do
-      env = {}
-
-      described_class.mark_full_page!(env, 303)
-
-      expect(env[described_class::FULL_PAGE_REDIRECT_KEY]).to be true
-    end
-
-    [307, 308].each do |status|
-      it "raises for a method-preserving #{status} status" do
-        expect do
-          described_class.mark_full_page!({}, status)
-        end.to raise_error(ArgumentError, /full_page: true/)
-      end
     end
   end
 
@@ -132,7 +90,7 @@ RSpec.describe InertiaRails::LocationConversion do
         def closed? = @closed
       end.new
       request = ActionDispatch::Request.new(Rack::MockRequest.env_for('http://www.example.com/articles'))
-      conversion = described_class.new({}, 302, headers, request, configuration)
+      conversion = described_class.new(302, headers, request, configuration)
 
       status, response_headers, response_body = conversion.convert!(body)
 

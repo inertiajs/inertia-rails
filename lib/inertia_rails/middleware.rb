@@ -25,15 +25,15 @@ module InertiaRails
                                 end
         request = ActionDispatch::Request.new(@env)
 
-        conversion = LocationConversion.new(@env, status, headers, request, configuration)
-        convert_to_location = inertia_request? && conversion.convertible?
+        conversion = LocationConversion.new(status, headers, request, configuration)
+        status, headers, body = conversion.convert!(body) if inertia_request? && conversion.convertible?
 
         # Inertia session data is added via redirect_to
         # Guard with session.loaded? to avoid forcing session I/O (and unnecessary
         # database writes) on requests that never accessed the session, e.g. sessionless
         # controllers. If the session was never loaded the Inertia keys cannot have been
         # set, so the cleanup would be a no-op anyway.
-        if request.session.loaded? && (convert_to_location || !keep_inertia_session_options?(status))
+        unless keep_inertia_session_options?(status) || !request.session.loaded?
           request.session.delete(:inertia_errors)
           request.session.delete(:inertia_clear_history)
           request.session.delete(:inertia_preserve_fragment)
@@ -41,9 +41,8 @@ module InertiaRails
 
         status = 303 if inertia_non_post_redirect?(status)
 
-        if convert_to_location
-          conversion.convert!(body)
-        elsif stale_inertia_get?
+        # A response with X-Inertia-Location is already a full page visit — nothing to refresh.
+        if stale_inertia_get? && !headers['X-Inertia-Location']
           force_refresh(request)
         else
           [status, headers, body]

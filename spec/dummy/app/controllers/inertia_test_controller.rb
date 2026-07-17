@@ -48,6 +48,11 @@ class InertiaTestController < ApplicationController
     redirect_to empty_test_path, inertia: { full_page: true }
   end
 
+  def full_page_redirect_with_cookie_test
+    cookies['full_page_cookie'] = 'hello'
+    redirect_to empty_test_path, notice: 'converted', inertia: { full_page: true }
+  end
+
   def invalid_full_page_redirect_test
     redirect_to empty_test_path, status: 307, inertia: { full_page: true }
   end
