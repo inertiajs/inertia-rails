@@ -24,7 +24,7 @@ module InertiaRails
                                   @app.call(@env)
                                 end
 
-        status, headers, body = convert_to_location_response(headers, body) if external_redirect?(status, headers)
+        status, headers, body = convert_to_location_response!(headers, body) if external_redirect?(status, headers)
 
         # Inertia session data is added via redirect_to
         # Guard with session.loaded? to avoid forcing session I/O (and unnecessary
@@ -75,7 +75,7 @@ module InertiaRails
 
       # Mutates the headers in place to keep the rest of the response, notably
       # Set-Cookie (which matters mid-OAuth).
-      def convert_to_location_response(headers, body)
+      def convert_to_location_response!(headers, body)
         headers['X-Inertia-Location'] = headers.delete('Location')
         headers.delete('Content-Type')
         headers.delete('Content-Length')
