@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Only set the `XSRF-TOKEN` cookie on HTML and XHR responses, so responses no client reads it from — notably ActiveStorage's image endpoints, which also inherit from `ActionController::Base` — no longer carry a `Set-Cookie` that stops CDNs from caching them (@acetinick)
 * Add `xsrf_cookie_refresh` configuration option. Set to `:lazy` to skip rewriting the `XSRF-TOKEN` cookie on safe requests when a valid cookie is already present, keeping conditionally cached (`ETag`/`304`) responses free of `Set-Cookie` churn (@darkamenosa)
 * Fix `inertia: { errors: }` and `inertia: { clear_history: }` being discarded when `redirect_to` is given an explicit non-302 status such as `status: :see_other` (303/307/308) (@skryukov)
 * Fix cross-variant `304 Not Modified` responses under HTTP conditional caching (`fresh_when` / `stale?`) by folding the Inertia request headers into the ETag, so HTML, JSON, and partial-reload representations of the same URL no longer share a validator (@skryukov)

@@ -123,6 +123,21 @@ RSpec.describe 'Inertia::Request', type: :request do
         let(:headers) { { 'X-Inertia' => true } }
         it { is_expected.to include('XSRF-TOKEN') }
       end
+
+      context 'it is an XHR call that is not HTML' do
+        let(:headers) { { 'X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json' } }
+        it { is_expected.to include('XSRF-TOKEN') }
+      end
+
+      # The concern is included into ActionController::Base, so this after_action
+      # also runs for controllers that never render Inertia — ActiveStorage's
+      # image endpoints among them. A Set-Cookie on an image is both useless (no
+      # client reads it) and harmful: CDNs bypass their cache for any response
+      # carrying one, so `public, immutable` images are never edge-cached.
+      context 'it is neither an HTML nor an XHR call' do
+        let(:headers) { { 'Accept' => 'image/png' } }
+        it { is_expected.not_to include('XSRF-TOKEN') }
+      end
     end
 
     describe 'xsrf_cookie_refresh configuration' do
