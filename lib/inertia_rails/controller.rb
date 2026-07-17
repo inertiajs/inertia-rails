@@ -207,8 +207,8 @@ module InertiaRails
       session[:inertia_preserve_fragment] = true if inertia[:preserve_fragment]
     end
 
-    def mark_full_page_redirect(options)
-      status = Rack::Utils.status_code(options.fetch(:status, :found))
+    def mark_full_page_redirect(response_options)
+      status = Rack::Utils.status_code(response_options.fetch(:status, :found))
 
       LocationConversion.mark_full_page!(request.env, status)
     end

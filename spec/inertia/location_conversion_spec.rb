@@ -123,7 +123,7 @@ RSpec.describe InertiaRails::LocationConversion do
     end
   end
 
-  describe '#to_response' do
+  describe '#convert!' do
     it 'moves the location into X-Inertia-Location, drops content headers, and closes the body' do
       headers = { 'Location' => 'http://external-website.com/some_path',
                   'Content-Type' => 'text/html', 'Content-Length' => '42', 'Set-Cookie' => 'key=value', }
@@ -134,7 +134,7 @@ RSpec.describe InertiaRails::LocationConversion do
       request = ActionDispatch::Request.new(Rack::MockRequest.env_for('http://www.example.com/articles'))
       conversion = described_class.new({}, 302, headers, request, configuration)
 
-      status, response_headers, response_body = conversion.to_response(body)
+      status, response_headers, response_body = conversion.convert!(body)
 
       expect(status).to eq 409
       expect(response_headers).to eq('X-Inertia-Location' => 'http://external-website.com/some_path',

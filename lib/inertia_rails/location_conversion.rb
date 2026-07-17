@@ -45,7 +45,7 @@ module InertiaRails
     # case-insensitive Rack::Headers on Rack 3 and a capitalized plain hash
     # on Rack 2; redirects from raw Rack endpoints (plain lowercase hashes
     # on Rack 3) pass through unconverted.
-    def to_response(body)
+    def convert!(body)
       @headers['X-Inertia-Location'] = @headers.delete('Location')
       @headers.delete('Content-Type')
       @headers.delete('Content-Length')

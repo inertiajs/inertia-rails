@@ -125,13 +125,15 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
         expect(response.headers['Location']).to eq empty_test_url
       end
 
-      it 'does not convert a method-preserving (307) redirect' do
-        get location_header_test_path(url: 'http://external-website.com/some_path', status: 307),
-            headers: { 'X-Inertia' => true }
+      [307, 308].each do |status|
+        it "does not convert a method-preserving (#{status}) redirect" do
+          get location_header_test_path(url: 'http://external-website.com/some_path', status: status),
+              headers: { 'X-Inertia' => true }
 
-        expect(response.status).to eq 307
-        expect(response.headers['Location']).to eq 'http://external-website.com/some_path'
-        expect(response.headers['X-Inertia-Location']).to be_nil
+          expect(response.status).to eq status
+          expect(response.headers['Location']).to eq 'http://external-website.com/some_path'
+          expect(response.headers['X-Inertia-Location']).to be_nil
+        end
       end
 
       context 'when the asset version is stale' do

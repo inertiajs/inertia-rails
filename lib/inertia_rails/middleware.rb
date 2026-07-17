@@ -33,7 +33,7 @@ module InertiaRails
         # database writes) on requests that never accessed the session, e.g. sessionless
         # controllers. If the session was never loaded the Inertia keys cannot have been
         # set, so the cleanup would be a no-op anyway.
-        unless (keep_inertia_session_options?(status) && !convert_to_location) || !request.session.loaded?
+        if request.session.loaded? && (convert_to_location || !keep_inertia_session_options?(status))
           request.session.delete(:inertia_errors)
           request.session.delete(:inertia_clear_history)
           request.session.delete(:inertia_preserve_fragment)
@@ -42,7 +42,7 @@ module InertiaRails
         status = 303 if inertia_non_post_redirect?(status)
 
         if convert_to_location
-          conversion.to_response(body)
+          conversion.convert!(body)
         elsif stale_inertia_get?
           force_refresh(request)
         else
@@ -68,7 +68,7 @@ module InertiaRails
 
       # Only 301/302 are rewritten to 303: a 303 already forces a GET on
       # follow, and 307/308 preserve the request method by design.
-      def convertible_redirect_status?(status)
+      def rewritable_redirect_status?(status)
         [301, 302].include? status
       end
 
@@ -77,7 +77,7 @@ module InertiaRails
       end
 
       def inertia_non_post_redirect?(status)
-        inertia_request? && convertible_redirect_status?(status) && non_get_redirectable_method?
+        inertia_request? && rewritable_redirect_status?(status) && non_get_redirectable_method?
       end
 
       def stale_inertia_get?
