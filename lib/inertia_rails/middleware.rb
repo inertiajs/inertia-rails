@@ -53,7 +53,7 @@ module InertiaRails
       # reachable through a window.location visit (409 + X-Inertia-Location).
       # 307/308 are excluded: a full page visit is always a GET.
       def external_redirect?(status, headers)
-        inertia_request? &&
+        request.inertia? &&
           configuration.convert_external_redirects &&
           [301, 302, 303].include?(status) &&
           external_origin?(headers['Location'])
@@ -89,7 +89,7 @@ module InertiaRails
       end
 
       def stale_inertia_request?
-        inertia_request? && version_stale?
+        request.inertia? && version_stale?
       end
 
       # Matches Rack::Response::Helpers#redirect? — Inertia session options
@@ -105,19 +105,15 @@ module InertiaRails
       end
 
       def non_get_redirectable_method?
-        %w[PUT PATCH DELETE].include? request_method
+        %w[PUT PATCH DELETE].include? request.request_method
       end
 
       def inertia_non_post_redirect?(status)
-        inertia_request? && rewritable_redirect_status?(status) && non_get_redirectable_method?
+        request.inertia? && rewritable_redirect_status?(status) && non_get_redirectable_method?
       end
 
       def stale_inertia_get?
-        get? && stale_inertia_request?
-      end
-
-      def get?
-        request_method == 'GET'
+        request.get? && stale_inertia_request?
       end
 
       def request
@@ -128,16 +124,8 @@ module InertiaRails
         @env['action_controller.instance']
       end
 
-      def request_method
-        @env['REQUEST_METHOD']
-      end
-
       def client_version
         @env['HTTP_X_INERTIA_VERSION']
-      end
-
-      def inertia_request?
-        @env['HTTP_X_INERTIA'].present?
       end
 
       def version_stale?
