@@ -136,6 +136,66 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
         end
       end
 
+      [301, 303].each do |status|
+        it "converts a #{status} redirect" do
+          get location_header_test_path(url: 'http://external-website.com/some_path', status: status),
+              headers: { 'X-Inertia' => true }
+
+          expect(response.status).to eq 409
+          expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
+        end
+      end
+
+      it 'does not convert a non-redirect response with a location header' do
+        get location_header_test_path(url: 'http://external-website.com/some_path', status: 200),
+            headers: { 'X-Inertia' => true }
+
+        expect(response.status).to eq 200
+      end
+
+      context 'by Location origin' do
+        [
+          'http://www.example.com:8080/empty_test',  # same host, different port
+          'https://www.example.com/empty_test',      # same host, different scheme
+          '//external-website.com/some_path'         # scheme-relative, different host
+        ].each do |location|
+          it "converts a redirect to #{location}" do
+            get location_header_test_path(url: location), headers: { 'X-Inertia' => true }
+
+            expect(response.status).to eq 409
+            expect(response.headers['X-Inertia-Location']).to eq location
+          end
+        end
+
+        [
+          '//www.example.com/empty_test',            # scheme-relative, same origin
+          '/empty_test',                             # relative path
+          'http://www.example.com:80/empty_test',    # explicit default port
+          'http://WWW.EXAMPLE.COM/empty_test',       # same host, different casing
+          'http://exa mple.com/path'                 # invalid URI
+        ].each do |location|
+          it "does not convert a redirect to #{location}" do
+            get location_header_test_path(url: location), headers: { 'X-Inertia' => true }
+
+            expect(response.status).to eq 302
+            expect(response.headers['Location']).to eq location
+          end
+        end
+
+        it 'converts a scheme-relative redirect to the same host when the request port differs' do
+          get "http://www.example.com:8080#{location_header_test_path(url: '//www.example.com/empty_test')}",
+              headers: { 'X-Inertia' => true }
+
+          expect(response.status).to eq 409
+        end
+
+        it 'does not convert a redirect without a location' do
+          get location_header_test_path, headers: { 'X-Inertia' => true }
+
+          expect(response.status).to eq 302
+        end
+      end
+
       context 'when the asset version is stale' do
         with_inertia_config version: '1.0'
 
@@ -219,6 +279,28 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
       threads.each(&:join)
 
       expect(statuses.uniq).to eq([303])
+    end
+  end
+
+  describe 'converting a bare Rack response' do
+    it 'moves the location into X-Inertia-Location, drops content headers, and closes the body' do
+      body = Class.new do
+        def each; end
+        def close = @closed = true
+        def closed? = @closed
+      end.new
+      headers = { 'Location' => 'http://external-website.com/some_path',
+                  'Content-Type' => 'text/html', 'Content-Length' => '42', 'Set-Cookie' => 'key=value', }
+      app = ->(_env) { [302, headers, body] }
+      env = Rack::MockRequest.env_for('http://www.example.com/articles', 'HTTP_X_INERTIA' => 'true')
+
+      status, response_headers, response_body = InertiaRails::Middleware.new(app).call(env)
+
+      expect(status).to eq 409
+      expect(response_headers).to eq('X-Inertia-Location' => 'http://external-website.com/some_path',
+                                     'Set-Cookie' => 'key=value')
+      expect(response_body).to eq []
+      expect(body.closed?).to be true
     end
   end
 end

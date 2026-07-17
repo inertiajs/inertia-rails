@@ -23,10 +23,8 @@ module InertiaRails
                                 else
                                   @app.call(@env)
                                 end
-        request = ActionDispatch::Request.new(@env)
 
-        conversion = LocationConversion.new(status, headers, request, configuration)
-        status, headers, body = conversion.convert!(body) if inertia_request? && conversion.convertible?
+        status, headers, body = convert_to_location_response(headers, body) if external_redirect?(status, headers)
 
         # Inertia session data is added via redirect_to
         # Guard with session.loaded? to avoid forcing session I/O (and unnecessary
@@ -43,13 +41,48 @@ module InertiaRails
 
         # A response with X-Inertia-Location is already a full page visit — nothing to refresh.
         if stale_inertia_get? && !headers['X-Inertia-Location']
-          force_refresh(request)
+          force_refresh
         else
           [status, headers, body]
         end
       end
 
       private
+
+      # XHR follows redirects transparently, so a cross-origin target is only
+      # reachable through a window.location visit (409 + X-Inertia-Location).
+      # 307/308 are excluded: a full page visit is always a GET.
+      def external_redirect?(status, headers)
+        inertia_request? &&
+          configuration.convert_external_redirects &&
+          [301, 302, 303].include?(status) &&
+          external_origin?(headers['Location'])
+      end
+
+      def external_origin?(location)
+        return false if location.blank?
+
+        uri = URI.parse(location)
+        return false if uri.host.blank?
+
+        scheme = uri.scheme || request.scheme
+        port = uri.port || (scheme == 'https' ? 443 : 80)
+
+        scheme != request.scheme || !uri.host.casecmp?(request.host) || port != request.port
+      rescue URI::InvalidURIError
+        false
+      end
+
+      # Mutates the headers in place to keep the rest of the response, notably
+      # Set-Cookie (which matters mid-OAuth).
+      def convert_to_location_response(headers, body)
+        headers['X-Inertia-Location'] = headers.delete('Location')
+        headers.delete('Content-Type')
+        headers.delete('Content-Length')
+        body.close if body.respond_to?(:close)
+
+        [409, headers, []]
+      end
 
       def keep_inertia_session_options?(status)
         redirect_status?(status) || stale_inertia_request?
@@ -87,6 +120,10 @@ module InertiaRails
         request_method == 'GET'
       end
 
+      def request
+        @request ||= ActionDispatch::Request.new(@env)
+      end
+
       def controller
         @env['action_controller.instance']
       end
@@ -119,7 +156,7 @@ module InertiaRails
         server_version.is_a?(Numeric) ? version.to_f : version
       end
 
-      def force_refresh(request)
+      def force_refresh
         request.flash.keep
         Rack::Response.new('', 409, { 'X-Inertia-Location' => request.original_url }).finish
       end

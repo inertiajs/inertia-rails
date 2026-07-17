@@ -212,7 +212,7 @@ module InertiaRails
 
     def validate_full_page_redirect_status!(response_options)
       status = Rack::Utils.status_code(response_options.fetch(:status, :found))
-      return if LocationConversion::STATUSES.include?(status)
+      return if [301, 302, 303].include?(status)
 
       raise ArgumentError, "`inertia: { full_page: true }` requires a 301, 302, or 303 redirect (got #{status}): " \
                            'a full page visit always issues a GET, so it cannot preserve the HTTP method.'
