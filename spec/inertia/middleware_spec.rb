@@ -292,7 +292,11 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
       headers = { 'Location' => 'http://external-website.com/some_path',
                   'Content-Type' => 'text/html', 'Content-Length' => '42', 'Set-Cookie' => 'key=value', }
       app = ->(_env) { [302, headers, body] }
-      env = Rack::MockRequest.env_for('http://www.example.com/articles', 'HTTP_X_INERTIA' => 'true')
+      # In a real stack the session middleware always runs above this one;
+      # Rails 6.1 has no graceful default for a sessionless bare env.
+      session = Class.new { def loaded? = false }.new
+      env = Rack::MockRequest.env_for('http://www.example.com/articles',
+                                      'HTTP_X_INERTIA' => 'true', 'rack.session' => session)
 
       status, response_headers, response_body = InertiaRails::Middleware.new(app).call(env)
 
