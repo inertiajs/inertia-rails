@@ -92,7 +92,15 @@ module InertiaRails
       end
 
       def inertia_request?
-        @env['HTTP_X_INERTIA'].present?
+        @env['HTTP_X_INERTIA'].present? && inertia_controller?
+      end
+
+      # The middleware is installed on every request, but Inertia's controller
+      # methods (e.g. inertia_configuration) are only mixed into Inertia-aware
+      # controllers. A stray X-Inertia header on a non-Inertia endpoint (such as
+      # an ActionController::API action) must not trigger version negotiation.
+      def inertia_controller?
+        controller.respond_to?(:inertia_configuration, true)
       end
 
       def version_stale?
