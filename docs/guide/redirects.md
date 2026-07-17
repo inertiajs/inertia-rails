@@ -86,7 +86,7 @@ Without the conversion, such a redirect can never succeed: the browser follows X
 
 The conversion applies to `301`, `302`, and `303` responses. Method-preserving `307` and `308` redirects are left untouched, since a `window.location` visit cannot preserve the HTTP method. It applies to all Inertia requests, including background ones such as polling and prefetching.
 
-You can disable this behavior with the [`convert_external_redirects`](/guide/configuration#convert_external_redirects) configuration option.
+You can disable this behavior with the [`convert_external_redirects`](/guide/configuration#convert-external-redirects) configuration option.
 
 ### Same-Origin Redirects
 
@@ -100,7 +100,7 @@ Mark such redirects explicitly with `inertia: { full_page: true }`:
 redirect_to admin_path, inertia: { full_page: true }
 ```
 
-For Inertia requests, the redirect is converted into an Inertia location response, even when `convert_external_redirects` is disabled. For non-Inertia requests, it stays a regular redirect. Think of it as [`inertia_location`](#inertia_location) with `redirect_to` ergonomics: URL helpers, records, flash options, and status codes all work as usual.
+For Inertia requests, the redirect is converted into an Inertia location response, even when `convert_external_redirects` is disabled. For non-Inertia requests, it stays a regular redirect. Think of it as [`inertia_location`](#inertia-location) with `redirect_to` ergonomics: URL helpers, records, flash options, and status codes all work as usual.
 
 > [!NOTE]
 > Don't combine the mark with `inertia: { errors: ... }` — a location response triggers a full page visit to a non-Inertia endpoint, so the errors would never reach an Inertia page and are discarded, like with `inertia_location`.
