@@ -27,7 +27,6 @@ module InertiaRails
       attribute = config.head_attribute
 
       meta_tags = meta_tag_data.map do |inertia_meta_tag|
-        # Already-rendered html_safe tags; anything else safe_join escapes.
         next inertia_meta_tag if inertia_meta_tag.is_a?(String)
 
         inertia_meta_tag.to_tag(tag, inertia_attribute: attribute)

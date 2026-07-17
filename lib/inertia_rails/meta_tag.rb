@@ -36,8 +36,7 @@ module InertiaRails
       end
     end
 
-    # Falls back to the global config: pass the controller-bound attribute
-    # or per-controller settings are ignored.
+    # inertia_attribute falls back to the global config; pass it to honor per-controller settings.
     def to_tag(tag_helper = nil, inertia_attribute: nil)
       tag_helper ||= ActionController::Base.helpers.tag
       inertia_attribute ||= InertiaRails.configuration.head_attribute
