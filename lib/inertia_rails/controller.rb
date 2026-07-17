@@ -17,11 +17,8 @@ module InertiaRails
 
       after_action do
         next unless protect_against_forgery?
-        # Only clients that can read the cookie and send it back need it: page
-        # loads and XHR (Inertia visits, `useHttp`). Setting it on anything else
-        # puts a `Set-Cookie` on responses that never asked for one — notably
-        # ActiveStorage's image controllers, which also inherit from
-        # ActionController::Base, and which CDNs then refuse to cache.
+        # Included into ActionController::Base, so this runs for non-Inertia
+        # responses too — ActiveStorage images, where it only breaks CDN caching.
         next unless request.format.html? || request.xhr?
         next if XsrfCookieRefreshPolicy.skip?(self)
 
