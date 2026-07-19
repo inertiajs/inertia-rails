@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-* Fix `NoMethodError` (500) when a request carrying the `X-Inertia` header reaches a non-Inertia controller such as an `ActionController::API` endpoint. The middleware now only applies version negotiation to controllers that include `InertiaRails::Controller` (@say)
+* Fix `NoMethodError` raised when a request carrying the `X-Inertia` header reaches a non-Inertia controller such as an `ActionController::API` endpoint (@SAY-5)
 
 ## [3.22.0] - 2026-07-17
 

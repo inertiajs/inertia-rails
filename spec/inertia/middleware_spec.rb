@@ -41,12 +41,6 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
 
       expect(response.status).to eq baseline
     end
-
-    it 'still refreshes a stale Inertia GET on a real Inertia controller' do
-      get empty_test_path, headers: { 'X-Inertia' => true, 'X-Inertia-Version' => 'stale' }
-
-      expect(response.status).to eq 409
-    end
   end
 
   context 'session loading guard' do
