@@ -44,30 +44,34 @@ module InertiaRails
     end
 
     def render
-      vary = @response.headers['Vary'].to_s.split(',').map(&:strip).reject(&:empty?)
-      vary << 'X-Inertia' if vary.none? { |value| value.casecmp?('X-Inertia') }
-      @response.headers['Vary'] = vary.join(', ')
-      if @request.inertia?
-        @response.set_header('X-Inertia', 'true')
-        @render_method.call json: page.to_json, status: @response.status, content_type: Mime[:json]
-      else
-        ssr = @configuration.ssr_enabled && ssr_render
-        if ssr
-          @controller.instance_variable_set('@_inertia_ssr_head', ssr['head'].join.html_safe)
-          @render_method.call(
-            html: ssr['body'].html_safe,
-            layout: layout,
-            locals: @view_data.merge(page: page),
-            formats: :html
-          )
+      ActiveSupport::Notifications.instrument('render.inertia_rails',
+                                              component: @component, partial: partial_reload?, ssr: false) do |payload|
+        vary = @response.headers['Vary'].to_s.split(',').map(&:strip).reject(&:empty?)
+        vary << 'X-Inertia' if vary.none? { |value| value.casecmp?('X-Inertia') }
+        @response.headers['Vary'] = vary.join(', ')
+        if @request.inertia?
+          @response.set_header('X-Inertia', 'true')
+          @render_method.call json: page.to_json, status: @response.status, content_type: Mime[:json]
         else
-          @controller.instance_variable_set('@_inertia_page', page)
-          @render_method.call(
-            template: 'inertia',
-            layout: layout,
-            locals: @view_data.merge(page: page),
-            formats: :html
-          )
+          ssr = @configuration.ssr_enabled && ssr_render
+          if ssr
+            payload[:ssr] = true
+            @controller.instance_variable_set('@_inertia_ssr_head', ssr['head'].join.html_safe)
+            @render_method.call(
+              html: ssr['body'].html_safe,
+              layout: layout,
+              locals: @view_data.merge(page: page),
+              formats: :html
+            )
+          else
+            @controller.instance_variable_set('@_inertia_page', page)
+            @render_method.call(
+              template: 'inertia',
+              layout: layout,
+              locals: @view_data.merge(page: page),
+              formats: :html
+            )
+          end
         end
       end
     end
@@ -107,6 +111,17 @@ module InertiaRails
     def page
       return @page if defined?(@page)
 
+      @page = ActiveSupport::Notifications.instrument('resolve_props.inertia_rails',
+                                                      component: @component, partial: partial_reload?) do
+        build_page
+      end
+    end
+
+    def partial_reload?
+      @request.headers['X-Inertia-Partial-Component'] == @component
+    end
+
+    def build_page
       wrap_errors_prop!(@props)
 
       resolver = PropsResolver.new(
@@ -114,7 +129,7 @@ module InertiaRails
         evaluator: PropEvaluator.new(@controller,
                                      scroll_intent: @request.headers['X-Inertia-Infinite-Scroll-Merge-Intent']),
         visit: {
-          component: @request.headers['X-Inertia-Partial-Component'] == @component,
+          component: partial_reload?,
           only: parse_header('X-Inertia-Partial-Data'),
           except: parse_header('X-Inertia-Partial-Except'),
           reset: parse_header('X-Inertia-Reset'),
@@ -128,7 +143,7 @@ module InertiaRails
       # Add meta tags (never transformed by prop_transformer)
       resolved_props[:_inertia_meta] = meta_tags if meta_tags.present?
 
-      @page = {
+      page = {
         component: @component,
         props: resolved_props,
         url: @request.original_fullpath,
@@ -138,14 +153,12 @@ module InertiaRails
       }
 
       flash_data = @controller.__send__(:inertia_collect_flash_data)
-      @page[:flash] = flash_data if flash_data.present?
+      page[:flash] = flash_data if flash_data.present?
 
-      @page[:sharedProps] = @shared_keys if @shared_keys&.any?
-      @page[:preserveFragment] = @preserve_fragment if @preserve_fragment
+      page[:sharedProps] = @shared_keys if @shared_keys&.any?
+      page[:preserveFragment] = @preserve_fragment if @preserve_fragment
 
-      @page.merge!(metadata)
-
-      @page
+      page.merge!(metadata)
     end
 
     def resolve_component(component)

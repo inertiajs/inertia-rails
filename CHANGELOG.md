@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Add `ActiveSupport::Notifications` instrumentation: `render.inertia_rails`, `resolve_props.inertia_rails`, and `ssr.inertia_rails` events for APM integration (OpenTelemetry, AppSignal) and custom subscribers (@skryukov)
+
 ## [3.22.0] - 2026-07-17
 
 * Only set the `XSRF-TOKEN` cookie on HTML and XHR responses. Other responses no longer carry a `Set-Cookie` that keeps CDNs from caching them — notably ActiveStorage's images, since its controllers also inherit from `ActionController::Base` (@acetinick)
