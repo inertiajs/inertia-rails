@@ -194,7 +194,7 @@ RSpec.describe 'Puma Inertia SSR plugin' do
 
       # Wait for it to come back
       wait_for_port_closed(ssr_port)
-      wait_for_port(ssr_port, timeout: 35)
+      wait_for_port(ssr_port, timeout: 15)
 
       response = Net::HTTP.get_response(URI("#{ssr_url}/health"))
       expect(response.code).to eq('200')

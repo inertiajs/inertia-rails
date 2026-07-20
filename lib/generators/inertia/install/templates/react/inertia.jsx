@@ -3,6 +3,8 @@ import { createInertiaApp } from '@inertiajs/react'
 createInertiaApp({
   pages: "../pages",
 
+  serverHead: true,
+
   strictMode: true,
 
   defaults: {

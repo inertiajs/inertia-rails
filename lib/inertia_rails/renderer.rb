@@ -123,6 +123,7 @@ module InertiaRails
 
     def build_page
       wrap_errors_prop!(@props)
+      validate_meta_prop!
 
       resolver = PropsResolver.new(
         @props,
@@ -141,7 +142,7 @@ module InertiaRails
       resolved_props = @configuration.prop_transformer(props: resolved_props)
 
       # Add meta tags (never transformed by prop_transformer)
-      resolved_props[:_inertia_meta] = meta_tags if meta_tags.present?
+      merge_meta_tags!(resolved_props)
 
       page = {
         component: @component,
@@ -171,6 +172,38 @@ module InertiaRails
 
     def meta_tags
       @controller.inertia_meta.meta_tags
+    end
+
+    def apply_title_template
+      return unless (template = @configuration.meta_title_template)
+
+      meta = @controller.inertia_meta
+      title = @controller.instance_exec(meta.title, &template)
+      meta.add(title: title) if title.present?
+    end
+
+    def merge_meta_tags!(props)
+      apply_title_template
+      return if meta_tags.blank?
+
+      props[@configuration.meta_prop] = serialized_meta_tags
+    end
+
+    def serialized_meta_tags
+      return meta_tags unless @configuration.server_head
+
+      attribute = @configuration.head_attribute
+      meta_tags.map { |tag| tag.to_tag(inertia_attribute: attribute) }
+    end
+
+    def validate_meta_prop!
+      return unless @configuration.server_head
+
+      prop = @configuration.meta_prop
+      return unless @props.key?(prop)
+
+      raise Error, "The `#{prop}` prop is reserved by `config.server_head`. " \
+                   'Rename the conflicting prop, or set `config.server_head` to a custom prop name.'
     end
 
     def wrap_errors_prop!(props)

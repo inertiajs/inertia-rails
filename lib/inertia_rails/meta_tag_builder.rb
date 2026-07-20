@@ -2,13 +2,16 @@
 
 module InertiaRails
   class MetaTagBuilder
-    def initialize(controller)
-      @controller = controller
+    def initialize
       @meta_tags = {}
     end
 
     def meta_tags
       @meta_tags.values
+    end
+
+    def title
+      @meta_tags['title']&.[](:inner_content)
     end
 
     def add(meta_tag)

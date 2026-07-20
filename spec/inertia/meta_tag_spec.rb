@@ -63,7 +63,7 @@ RSpec.describe InertiaRails::MetaTag do
   describe 'generated head keys' do
     it 'generates a headKey of the format {tag name}-{hexdigest of tag content}' do
       meta_tag = described_class.new(some_name: 'description', content: 'Inertia rules')
-      expected_head_key = "meta-#{Digest::MD5.hexdigest('content=Inertia rules&some_name=description')[0, 8]}"
+      expected_head_key = "meta-#{Digest::SHA256.hexdigest('content=Inertia rules&some_name=description')[0, 8]}"
 
       expect(meta_tag.as_json[:headKey]).to eq(expected_head_key)
     end
@@ -116,7 +116,7 @@ RSpec.describe InertiaRails::MetaTag do
     context 'with allow_duplicates set to true' do
       it 'generates a head key with a unique suffix' do
         meta_tag = described_class.new(name: 'description', content: 'Inertia rules', allow_duplicates: true)
-        expected_hash = Digest::MD5.hexdigest('content=Inertia rules&name=description')[0, 8]
+        expected_hash = Digest::SHA256.hexdigest('content=Inertia rules&name=description')[0, 8]
 
         expect(meta_tag.as_json[:headKey]).to eq("meta-name-description-#{expected_hash}")
       end
@@ -128,6 +128,27 @@ RSpec.describe InertiaRails::MetaTag do
       tag = meta_tag.to_tag(tag_helper)
       expect(tag).to be_a(String)
       expect(tag).to eq('<meta name="description" content="Inertia rules" inertia="meta-12345678">')
+    end
+
+    it 'defaults to a standalone tag builder when no helper is given' do
+      tag = meta_tag.to_tag
+      expect(tag).to eq('<meta name="description" content="Inertia rules" inertia="meta-12345678">')
+    end
+
+    context 'with an explicit inertia_attribute' do
+      it 'marks the tag with the given attribute' do
+        tag = meta_tag.to_tag(tag_helper, inertia_attribute: :'data-inertia')
+        expect(tag).to eq('<meta name="description" content="Inertia rules" data-inertia="meta-12345678">')
+      end
+
+      context 'when the global configuration says otherwise' do
+        with_inertia_config use_data_inertia_head_attribute: true
+
+        it 'takes precedence over the global configuration' do
+          tag = meta_tag.to_tag(tag_helper, inertia_attribute: :inertia)
+          expect(tag).to eq('<meta name="description" content="Inertia rules" inertia="meta-12345678">')
+        end
+      end
     end
 
     it 'renders kebab case' do

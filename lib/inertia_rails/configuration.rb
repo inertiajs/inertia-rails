@@ -61,6 +61,15 @@ module InertiaRails
       # Whether to use `data-inertia` attribute instead of `inertia` for meta tags.
       use_data_inertia_head_attribute: false,
 
+      # Whether to serialize meta tags as HTML strings for the `serverHead` option
+      # of `createInertiaApp` (Inertia.js v3.5+). A String sets a custom prop name.
+      server_head: false,
+
+      # Callable applied to the page `<title>` meta tag. Receives the current
+      # title (or nil when none is set) and returns the full title, so it can
+      # also provide a default for pages without one.
+      meta_title_template: nil,
+
       # DOM id to use for the root Inertia.js element.
       root_dom_id: 'app',
 
@@ -162,6 +171,28 @@ module InertiaRails
       raise ArgumentError,
             "Invalid xsrf_cookie_refresh: #{value.inspect}. " \
             "Expected one of: #{XSRF_COOKIE_REFRESH_OPTIONS.map(&:inspect).join(', ')}"
+    end
+
+    # Inertia.js v3's `serverHead` only recognizes `data-inertia`.
+    def head_attribute
+      server_head || use_data_inertia_head_attribute ? :'data-inertia' : :inertia
+    end
+
+    # `head` is the prop the client reads for `serverHead: true`.
+    def meta_prop
+      value = server_head
+      return :_inertia_meta unless value
+
+      value == true ? :head : value.to_sym
+    end
+
+    # Returned without evaluating — the callable takes the current title as an
+    # argument, so the renderer applies it instead of `evaluate_option`.
+    def meta_title_template
+      value = options[:meta_title_template]
+      return value if value.nil? || value.respond_to?(:call)
+
+      raise ArgumentError, "meta_title_template must be callable, got #{value.inspect}"
     end
 
     OPTION_NAMES.each do |option|

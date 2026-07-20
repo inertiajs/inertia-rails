@@ -161,20 +161,20 @@ export default () => (
 
 ## Lazy Data Evaluation
 
-For partial reloads to be most effective, be sure to also use lazy data evaluation when returning props from your server-side routes or controllers. This can be accomplished by wrapping all optional page data in a lambda.
+For partial reloads to be most effective, be sure to also use lazy data evaluation when returning props from your server-side routes or controllers. This can be accomplished by wrapping page data in a lambda.
 
 ```ruby
 class UsersController < ApplicationController
   def index
     render inertia: {
-      users: -> { User.all },
-      companies: -> { Company.all },
+      users: -> { User.all.as_json },
+      companies: -> { Company.all.as_json },
     }
   end
 end
 ```
 
-When Inertia performs a request, it will determine which data is required and only then will it evaluate the lambda. This can significantly increase the performance of pages that contain a lot of optional data.
+When Inertia performs a request, it will determine which data is required and only then will it evaluate the lambda. This can significantly increase the performance of pages that contain a lot of expensive data.
 
 Additionally, Inertia provides an `InertiaRails.optional` method to specify that a prop should never be included unless explicitly requested using the `only` option:
 
@@ -205,12 +205,15 @@ end
 
 Here's a summary of each approach:
 
-| Approach                                                                      | Standard Visits | Partial Reloads | Evaluated        |
-| :---------------------------------------------------------------------------- | :-------------- | :-------------- | :--------------- |
-| <span style="white-space: nowrap">`User.all`</span>                           | Always          | Optionally      | Always           |
-| <span style="white-space: nowrap">`-> { User.all }`</span>                    | Always          | Optionally      | Only when needed |
-| <span style="white-space: nowrap">`InertiaRails.optional { User.all }`</span> | Never           | Optionally      | Only when needed |
-| <span style="white-space: nowrap">`InertiaRails.always { User.all }`</span>   | Always          | Always          | Always           |
+| Approach                                                                              | Standard Visits | Partial Reloads | Evaluated        |
+| :------------------------------------------------------------------------------------ | :-------------- | :-------------- | :--------------- |
+| <span style="white-space: nowrap">`User.all.as_json`</span>                           | Always          | Optionally      | Always           |
+| <span style="white-space: nowrap">`-> { User.all.as_json }`</span>                    | Always          | Optionally      | Only when needed |
+| <span style="white-space: nowrap">`InertiaRails.optional { User.all.as_json }`</span> | Never           | Optionally      | Only when needed |
+| <span style="white-space: nowrap">`InertiaRails.always { User.all.as_json }`</span>   | Always          | Always          | Always           |
+
+> [!NOTE]
+> A lambda only helps when the block does real work. `User.all` on its own is lazy: the query doesn't run until the prop is serialized, so a skipped prop never hits the database. Wrap calls that execute immediately, like `.as_json`, `.count`, or `.pluck`.
 
 ## Preserving Errors
 
