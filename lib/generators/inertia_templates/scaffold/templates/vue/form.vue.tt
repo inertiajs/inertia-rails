@@ -1,6 +1,5 @@
 <template>
   <Form
-    :transform="data => ({ <%= singular_table_name %>: data })"
     v-slot="{ processing, errors }"
     v-bind="$attrs"
   >
