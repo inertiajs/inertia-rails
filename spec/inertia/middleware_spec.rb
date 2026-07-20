@@ -30,6 +30,19 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
     end
   end
 
+  context 'X-Inertia header on a non-Inertia controller' do
+    with_inertia_config version: '1.0'
+
+    it 'ignores the header on an ActionController::API endpoint' do
+      get api_test_path
+      baseline = response.status
+
+      get api_test_path, headers: { 'X-Inertia' => true, 'X-Inertia-Version' => 'stale' }
+
+      expect(response.status).to eq baseline
+    end
+  end
+
   context 'session loading guard' do
     it 'does not load the session when the request never accesses it' do
       get non_inertiafied_path
