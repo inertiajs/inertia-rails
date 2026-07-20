@@ -6,7 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Add `config.server_head` to serialize meta tags as HTML strings into the `head` prop for the `serverHead` option of `createInertiaApp` (Inertia.js v3.5+), replacing the client-side cookbook component (@skryukov)
+* Fix meta tags ignoring per-controller `use_data_inertia_head_attribute` set via `inertia_config` (@skryukov)
+* Use SHA256 instead of MD5 for meta tag head key digests, so they no longer raise on FIPS-enabled Rubies (@skryukov)
+* Restart the SSR server promptly in the Puma plugin when the process dies during boot, instead of polling a dead port for the full boot timeout (@skryukov)
 * Fix `NoMethodError` raised when a request carrying the `X-Inertia` header reaches a non-Inertia controller such as an `ActionController::API` endpoint (@SAY-5)
+* Fix stale flash notice and use idiomatic class in Vue scaffolds (@skryukov)
 
 ## [3.22.0] - 2026-07-17
 
@@ -20,7 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Raise a clear error when `parent_controller` does not inherit from `ActionController::Base` instead of an opaque `NoMethodError` (@skryukov)
 * Add static `props:` support to the `inertia` routes helper: `inertia 'about' => 'About', props: { title: 'About us' }` (@skryukov)
 * Deduplicate `X-Inertia` in the `Vary` response header (@skryukov)
-* Restart the SSR server promptly in the Puma plugin when the process dies during boot, instead of polling a dead port for the full boot timeout (@skryukov)
 
 ## [3.21.2] - 2026-06-09
 
