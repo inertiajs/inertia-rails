@@ -29,22 +29,24 @@ module InertiaRails
     end
 
     def request
-      uri = URI.parse(url)
-      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') do |http|
-        http.post(uri.request_uri, page_json, 'Content-Type' => 'application/json')
-      end
-
-      unless response.is_a?(Net::HTTPSuccess)
-        body = begin
-          JSON.parse(response.body)
-        rescue JSON::ParserError
-          {}
+      ActiveSupport::Notifications.instrument('ssr.inertia_rails', url: url, component: @page[:component]) do
+        uri = URI.parse(url)
+        response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') do |http|
+          http.post(uri.request_uri, page_json, 'Content-Type' => 'application/json')
         end
-        body['error'] ||= "SSR server returned #{response.code}"
-        raise InertiaRails::SSRError.from_response(body)
-      end
 
-      JSON.parse(response.body)
+        unless response.is_a?(Net::HTTPSuccess)
+          body = begin
+            JSON.parse(response.body)
+          rescue JSON::ParserError
+            {}
+          end
+          body['error'] ||= "SSR server returned #{response.code}"
+          raise InertiaRails::SSRError.from_response(body)
+        end
+
+        JSON.parse(response.body)
+      end
     end
 
     def handle_error(error)
