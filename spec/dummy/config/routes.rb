@@ -203,4 +203,7 @@ Rails.application.routes.draw do
   post 'precognition_double_module_level' => 'inertia_precognition_test#double_module_level'
   post 'precognition_mixed_non_bang_then_bang' => 'inertia_precognition_test#mixed_non_bang_then_bang'
   post 'precognition_mixed_bang_then_module_level' => 'inertia_precognition_test#mixed_bang_then_module_level'
+  post 'precognition_with_block_transform' => 'inertia_precognition_test#with_block_transform'
+  post 'precognition_non_bang_with_block_transform' => 'inertia_precognition_test#non_bang_with_block_transform'
+  post 'precognition_module_level_with_block_transform' => 'inertia_precognition_test#module_level_with_block_transform'
 end

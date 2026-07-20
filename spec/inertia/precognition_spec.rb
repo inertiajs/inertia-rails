@@ -197,6 +197,42 @@ RSpec.describe 'Precognition', type: :request do
     end
   end
 
+  describe 'block transform' do
+    shared_examples 'block transform behavior' do |path_helper|
+      context 'when validation fails' do
+        it 'transforms errors with the block' do
+          post send(path_helper), params: blank_user_params, headers: precognition_headers
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          body = JSON.parse(response.body)
+          expect(body['errors']).to have_key('user')
+          expect(body['errors']['user']).to include('name', 'email')
+        end
+      end
+
+      context 'when validation passes' do
+        it 'does not call the block and returns 204' do
+          post send(path_helper), params: valid_user_params, headers: precognition_headers
+
+          expect(response).to have_http_status(:no_content)
+        end
+      end
+
+      context 'when not a precognition request' do
+        it 'does not intercept the request' do
+          post send(path_helper), params: valid_user_params
+
+          expect(response).to have_http_status(:ok)
+          expect(JSON.parse(response.body)).to eq({ 'success' => true })
+        end
+      end
+    end
+
+    include_examples 'block transform behavior', :precognition_with_block_transform_path
+    include_examples 'block transform behavior', :precognition_non_bang_with_block_transform_path
+    include_examples 'block transform behavior', :precognition_module_level_with_block_transform_path
+  end
+
   describe 'custom validators' do
     it 'works with validators that return a hash' do
       post precognition_with_custom_validator_path, params: blank_user_params, headers: precognition_headers

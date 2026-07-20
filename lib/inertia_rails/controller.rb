@@ -97,14 +97,15 @@ module InertiaRails
 
     private
 
-    def precognition!(model_or_errors)
-      InertiaRails.precognition!(model_or_errors)
+    def precognition!(model_or_errors, &block)
+      InertiaRails.precognition!(model_or_errors, &block)
     end
 
-    def precognition(model_or_errors)
+    def precognition(model_or_errors, &block)
       errors = InertiaRails::Precognition.validate(model_or_errors)
       return if errors.nil?
 
+      errors = block.call(errors) if block && errors.any?
       render_precognition(errors)
       true
     end

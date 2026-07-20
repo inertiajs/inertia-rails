@@ -56,10 +56,11 @@ module InertiaRails
     end
   end
 
-  def self.precognition!(model_or_errors)
+  def self.precognition!(model_or_errors, &block)
     errors = Precognition.validate(model_or_errors)
     return false if errors.nil?
 
+    errors = block.call(errors) if block && errors.any?
     raise PrecognitionResponse, errors, []
   end
 end
