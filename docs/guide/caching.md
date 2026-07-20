@@ -29,7 +29,7 @@ Other prop types don't need it:
 
 Rails provides built-in HTTP caching via `stale?` and `fresh_when`, and it works with Inertia responses out of the box.
 
-@available_since rails=master
+@available_since rails=3.22.0
 
 The same URL answers with different bodies: an HTML document on the initial visit, an Inertia JSON page on client-side visits, and prop subsets on partial reloads. Inertia Rails folds the Inertia request headers into every ETag automatically, so each representation gets its own ETag and a conditional request never receives a `304 Not Modified` backed by a different representation's body. Plain (non-Inertia) requests are unaffected.
 

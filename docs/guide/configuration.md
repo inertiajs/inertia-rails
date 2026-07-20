@@ -172,7 +172,7 @@ The default value will be changed to `true` in the next major version.
 **Default**: `:always`
 **ENV**: `INERTIA_XSRF_COOKIE_REFRESH`
 
-@available_since rails=master
+@available_since rails=3.22.0
 
 Controls when the Rails adapter refreshes the `XSRF-TOKEN` cookie on protected requests.
 

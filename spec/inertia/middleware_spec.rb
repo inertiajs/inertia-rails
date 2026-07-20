@@ -30,6 +30,19 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
     end
   end
 
+  context 'X-Inertia header on a non-Inertia controller' do
+    with_inertia_config version: '1.0'
+
+    it 'ignores the header on an ActionController::API endpoint' do
+      get api_test_path
+      baseline = response.status
+
+      get api_test_path, headers: { 'X-Inertia' => true, 'X-Inertia-Version' => 'stale' }
+
+      expect(response.status).to eq baseline
+    end
+  end
+
   context 'session loading guard' do
     it 'does not load the session when the request never accesses it' do
       get non_inertiafied_path
@@ -92,6 +105,14 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
 
         expect(response.status).to eq 409
         expect(response.headers['X-Inertia-Location']).to eq 'http://external-website.com/some_path'
+      end
+
+      it 'leaves a non-Inertia controller alone even with the header set' do
+        get api_external_redirect_test_path, headers: { 'X-Inertia' => true }
+
+        expect(response.status).to eq 302
+        expect(response.headers['Location']).to eq 'http://external-website.com/some_path'
+        expect(response.headers['X-Inertia-Location']).to be_nil
       end
 
       it 'preserves other response headers such as Set-Cookie' do

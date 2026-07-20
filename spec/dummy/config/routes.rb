@@ -90,6 +90,8 @@ Rails.application.routes.draw do
   get 'cached_props' => 'inertia_render_test#cached_props'
   get 'cached_deferred_props' => 'inertia_render_test#cached_deferred_props'
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
+  get 'api_test' => 'inertia_api_test#index'
+  get 'api_external_redirect_test' => 'inertia_api_test#external_redirect'
   get 'deeply_nested_props' => 'inertia_render_test#deeply_nested_props'
 
   get 'instance_props_test' => 'inertia_rails_mimic#instance_props_test'
