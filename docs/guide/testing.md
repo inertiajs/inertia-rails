@@ -4,7 +4,78 @@ There are many different ways to test an Inertia application. This page provides
 
 ## End-to-end Tests
 
-One popular approach to testing your JavaScript page components is to use an end-to-end testing tool like [Cypress](https://www.cypress.io/) or [Pest](https://pestphp.com). These are browser automation tools that allow you to run real simulations of your app in the browser. These tests are known to be slower; however, since they test your application at the same layer as your end users, they can provide a lot of confidence that your app is working correctly. And, since these tests are run in the browser, your JavaScript code is actually executed and tested as well.
+One popular approach to testing your JavaScript page components is to use an end-to-end testing tool like [Capybara](https://github.com/teamcapybara/capybara) (the foundation of Rails system tests) or [Cypress](https://www.cypress.io/). These are browser automation tools that allow you to run real simulations of your app in the browser. These tests are known to be slower; however, since they test your application at the same layer as your end users, they can provide a lot of confidence that your app is working correctly. And, since these tests are run in the browser, your JavaScript code is actually executed and tested as well.
+
+### Capybara and the JavaScript driver
+
+Capybara's default `:rack_test` driver does not execute JavaScript. Since every Inertia page is rendered by JavaScript, this driver never mounts your app. Without SSR the page body stays an empty `<div id="app">`, so tests fail with `Capybara::ElementNotFound` on their first interaction. With SSR enabled the failure is subtler: the server-rendered markup is present, so Capybara finds the elements, but the Inertia client never mounts to handle them. A `<Link>` with a non-GET `method` renders as a plain `<button type="button">` that does nothing when clicked, and the `<Form>` component renders a native `<form>` whose `method` attribute holds the literal verb — so a `post` form still issues a real `POST`, but `patch`, `put`, and `delete` forms fall back to `GET` (an HTML form only understands `get` and `post`). Either way the interaction bypasses Inertia, and assertions fail in confusing ways instead of raising a clear error.
+
+To test an Inertia app with Capybara, use a JavaScript-capable driver such as [Cuprite](https://github.com/rubycdp/cuprite) (headless Chrome via CDP, no chromedriver needed) or Selenium:
+
+```ruby
+# Gemfile
+group :test do
+  gem 'capybara'
+  gem 'cuprite'
+end
+```
+
+> [!NOTE]
+> Cuprite drives your locally installed Chrome or Chromium, so make sure one is available on the machine running the tests, including CI. Freshly generated Rails apps already include `capybara` and `selenium-webdriver` in the `:test` group, so `cuprite` is usually the only new gem you need to add.
+
+:::tabs key:tests
+
+== RSpec
+
+System specs require [rspec-rails](https://github.com/rspec/rspec-rails) to be installed and configured first.
+
+```ruby
+# spec/rails_helper.rb (or a file in spec/support)
+require 'capybara/cuprite'
+
+Capybara.javascript_driver = :cuprite
+
+RSpec.configure do |config|
+  config.before(:each, type: :system) do
+    driven_by :cuprite
+  end
+end
+```
+
+== Minitest
+
+```ruby
+# test/application_system_test_case.rb
+require 'test_helper'
+require 'capybara/cuprite'
+
+class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
+  driven_by :cuprite
+end
+```
+
+:::
+
+With the driver in place, system tests (in `test/system/` or `spec/system/`) interact with Inertia pages the same way they do with classic Rails views:
+
+```ruby
+# test/system/posts_test.rb
+test 'creates a post' do
+  visit posts_url
+  click_on 'New post'
+
+  fill_in 'Content', with: 'Hello Inertia'
+  click_on 'Create Post'
+
+  assert_text 'Post was successfully created'
+end
+```
+
+A few things to keep in mind:
+
+- Vite must serve or build assets for the test environment. The default `config/vite.json` sets `autoBuild: true` for the test environment, which builds assets on demand. If you disabled it, run `RAILS_ENV=test bin/vite build` before the suite — otherwise the browser loads a page without JavaScript and you are back to the empty-shell symptom.
+- `<Link>` components with a non-GET `method` render as `<button>` elements, not `<a>` tags. Use `click_on` or `click_button` to interact with them — `click_link` won't find them.
+- Capybara's waiting matchers (`assert_text`, `have_text`) automatically wait for asynchronous Inertia visits to finish. Assert on visible page changes before asserting on side effects like database state.
 
 ## Client-Side Unit Tests
 
