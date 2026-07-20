@@ -97,6 +97,63 @@ RSpec.describe InertiaRails::Helper, type: :helper do
       end
     end
 
+    context 'with server_head serialization (HTML strings in the head prop)' do
+      with_inertia_config server_head: true
+
+      before do
+        controller.instance_variable_set(
+          :@_inertia_page,
+          {
+            props: {
+              head: [
+                '<meta name="description" content="Inertia rules" data-inertia="my_key">'.html_safe,
+                '<title data-inertia="title">Inertia Page Title</title>'.html_safe
+              ],
+            },
+          }
+        )
+      end
+
+      it 'renders the strings as-is' do
+        expect(helper.inertia_meta_tags).to eq(
+          "<meta name=\"description\" content=\"Inertia rules\" data-inertia=\"my_key\">\n" \
+          '<title data-inertia="title">Inertia Page Title</title>'
+        )
+      end
+
+      it 'returns html_safe output' do
+        expect(helper.inertia_meta_tags).to be_html_safe
+      end
+
+      context 'with a custom prop name' do
+        with_inertia_config server_head: 'custom_meta'
+
+        before do
+          controller.instance_variable_set(
+            :@_inertia_page,
+            { props: { custom_meta: ['<title data-inertia="title">Custom</title>'.html_safe] } }
+          )
+        end
+
+        it 'reads the configured prop' do
+          expect(helper.inertia_meta_tags).to eq('<title data-inertia="title">Custom</title>')
+        end
+      end
+    end
+
+    context 'with plain strings in the structured prop' do
+      before do
+        controller.instance_variable_set(
+          :@_inertia_page,
+          { props: { _inertia_meta: ['<script>alert("XSS")</script>'] } }
+        )
+      end
+
+      it 'escapes them' do
+        expect(helper.inertia_meta_tags).to eq('&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;')
+      end
+    end
+
     context 'with multiple meta tags' do
       before do
         controller.instance_variable_set(

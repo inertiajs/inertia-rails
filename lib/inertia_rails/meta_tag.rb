@@ -36,9 +36,11 @@ module InertiaRails
       end
     end
 
-    def to_tag(tag_helper)
-      inertia_attribute_name = InertiaRails.configuration.use_data_inertia_head_attribute ? :'data-inertia' : :inertia
-      data = @tag_data.merge(type: @tag_type, inertia_attribute_name => @head_key)
+    # inertia_attribute falls back to the global config; pass it to honor per-controller settings.
+    def to_tag(tag_helper = nil, inertia_attribute: nil)
+      tag_helper ||= ActionController::Base.helpers.tag
+      inertia_attribute ||= InertiaRails.configuration.head_attribute
+      data = @tag_data.merge(type: @tag_type, inertia_attribute => @head_key)
 
       inner_content =
         if @tag_name == :script
@@ -90,7 +92,7 @@ module InertiaRails
 
     def tag_digest
       signature = @tag_data.sort.map { |k, v| "#{k}=#{v}" }.join('&')
-      Digest::MD5.hexdigest(signature)[0, 8]
+      Digest::SHA256.hexdigest(signature)[0, 8]
     end
 
     def generate_meta_head_key

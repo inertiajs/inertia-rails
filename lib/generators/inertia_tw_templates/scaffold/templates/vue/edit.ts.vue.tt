@@ -1,7 +1,7 @@
 <template>
   <Head title="Editing <%= human_name.downcase %>" />
 
-  <div className="mx-auto md:w-2/3 w-full px-8 pt-8">
+  <div class="mx-auto md:w-2/3 w-full px-8 pt-8">
     <h1 class="font-bold text-4xl">Editing <%= human_name.downcase %></h1>
 
     <Form

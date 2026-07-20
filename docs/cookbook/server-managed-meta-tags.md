@@ -26,11 +26,44 @@ Simply add the `inertia_meta_tags` helper to your layout. This will render the m
 ```
 
 > [!NOTE]
-> Make sure to remove the `<title>` tag in your Rails layout if you plan to manage it with Inertia Rails. Otherwise you will end up with duplicate `<title>` tags.
+> Make sure to remove the `<title>` tag in your Rails layout if you plan to manage it with Inertia Rails. Otherwise you will end up with duplicate `<title>` tags. Since the layout no longer provides a fallback, a page that defines no meta tags renders without a `<title>` at all — configure a callable [title template](#title-template) to provide a default.
 
 ### Client Side
 
-Copy the following code into your application. It should be rendered **once** in your application, such as in a [layout component
+#### Inertia.js v3.5+
+
+@available_since rails=master core=3.5.0
+
+Since v3.5.0, Inertia.js natively supports [server-provided head elements](https://github.com/inertiajs/inertia/pull/3161) via the `serverHead` option of `createInertiaApp`. Apps generated with the `inertia_rails:install` generator have this preconfigured; in existing apps, enable HTML string serialization on the server:
+
+```ruby
+InertiaRails.configure do |config|
+  config.server_head = true
+end
+```
+
+Then enable the matching option on the client:
+
+```js
+createInertiaApp({
+  serverHead: true,
+  // ...
+})
+```
+
+That's it — no custom component is needed. This works in React, Vue, and Svelte (even though Svelte has no `<Head>` component), meta tags re-sync on every navigation including partial reloads, and page-level `<Head>` elements override server tags with a matching `head-key`.
+
+The meta tags travel in the `head` prop. If your app already uses a prop with that name, pick a custom one — Inertia Rails raises an error on the conflict — and pass it on both sides: `config.server_head = 'server_meta'` and `serverHead: 'server_meta'`. In tests, note that the prop contains rendered HTML strings rather than structured hashes.
+
+> [!WARNING]
+> Enable both sides together. With `serverHead` set on the client but `config.server_head` disabled (or vice versa), meta tags silently disappear: the client reads a prop the server doesn't send, and the cookbook component below cannot render HTML strings.
+
+> [!NOTE]
+> When using [SSR](/guide/server-side-rendering), pass the same `serverHead` option to `createInertiaApp` in your SSR entrypoint. The tags are then delivered through `inertia_ssr_head` instead. Keep both helpers in your layout: exactly one of them renders per response — `inertia_meta_tags` is empty on SSR-rendered responses, and `inertia_ssr_head` is empty when SSR is disabled or falls back — so the tags never duplicate.
+
+#### Older clients (cookbook component)
+
+For Inertia.js clients older than v3.5, copy the following code into your application instead. It should be rendered **once** in your application, such as in a [layout component
 ](/guide/pages#creating-layouts).
 
 :::tabs key:frameworks
@@ -261,6 +294,9 @@ inertia_meta.add([
   { tag_name: 'script', type: 'application/ld+json', inner_content: { '@context': 'https://schema.org', '@type': 'Event', name: 'My Event' } }
 ])
 
+# Read the current page title
+inertia_meta.title # => "A title for the page"
+
 # Remove a specific tag by head_key
 inertia_meta.remove("my_custom_head_key")
 
@@ -294,6 +330,23 @@ inertia_meta.add({
   }
 })
 ```
+
+## Title Template
+
+@available_since rails=master
+
+Instead of repeating an app-wide suffix in every action, configure a title template — the server-side counterpart of the [title callback](/guide/title-and-meta#title-callback). It receives the current title (or `nil` when the page sets none), runs in the controller context, and its result becomes the title:
+
+```ruby
+InertiaRails.configure do |config|
+  config.meta_title_template = ->(title) { title ? "#{title} - My App" : 'My App' }
+end
+```
+
+With this template, `inertia_meta.add({ title: 'Events' })` renders `<title>Events - My App</title>` — in the server-rendered HTML too, so crawlers and link previews see the full title without running JavaScript. Because the template runs even when no title is set, it doubles as a default title for pages that define no meta tags at all.
+
+> [!WARNING]
+> Don't combine a server-side title template with the client-side [title callback](/guide/title-and-meta#title-callback) — the client applies its callback on top of the server-provided title, so the suffix would appear twice. Use one or the other.
 
 ## Deduplication
 

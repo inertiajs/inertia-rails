@@ -99,6 +99,9 @@ createInertiaApp({
 
 After defining the `title` callback, the callback will automatically be invoked when you set a title using the `<Head>` component.
 
+> [!NOTE]
+> When using [server driven meta tags](/cookbook/server-managed-meta-tags), configure the [title template](/cookbook/server-managed-meta-tags#title-template) on the server instead — the client applies the `title` callback on top of server-provided titles, so combining the two would apply the suffix twice.
+
 :::tabs key:frameworks
 
 == Vue

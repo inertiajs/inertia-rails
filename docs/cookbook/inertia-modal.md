@@ -1,6 +1,6 @@
 # Inertia Modal
 
-[Inertia Modal](https://github.com/inertiaui/modal) is a powerful library that enables you to render any Inertia page
+[Inertia Modal](https://inertiaui.com/inertia-modal) is a powerful library that enables you to render any Inertia page
 as a modal dialog. It seamlessly integrates with your existing Inertia Rails application, allowing you to create modal
 workflows without the complexity of managing modal state manually.
 
@@ -17,6 +17,9 @@ Here's a summary of the features:
 - Multiple sizes and positions
 - Reload props in modals
 - Easy communication between nested/stacked modals
+- Prefetch support for faster modal loading
+- Native HTML dialog support for better accessibility
+- TypeScript type definitions included
 - Highly configurable
 
 While you can use Inertia Modal without changes on the backend, we recommend using the Rails gem
@@ -24,7 +27,16 @@ While you can use Inertia Modal without changes on the backend, we recommend usi
 SEO-friendly, and provide a better user experience.
 
 > [!NOTE]
-> Svelte 5 is not yet supported by Inertia Modal.
+> Svelte is not supported by Inertia Modal.
+
+## Requirements
+
+- React 19+ with `@inertiajs/react` 3.0+, or Vue 3.4+ with `@inertiajs/vue3` 3.0+ — Inertia Modal's major
+  version follows the Inertia.js version it supports, so on Inertia.js v2, install Inertia Modal 2.x and
+  follow the [2.x documentation](https://inertiaui.com/inertia-modal/docs/v2/introduction) instead
+- Tailwind CSS 4 for the default modal UI. If you're on Tailwind CSS 3 (or don't use Tailwind at all), you can
+  still use Inertia Modal in [headless mode](https://inertiaui.com/inertia-modal/docs/headless-mode) with your own UI.
+- For base URL support: [`inertia_rails-contrib`](https://github.com/skryukov/inertia_rails-contrib) 0.6+
 
 ## Installation
 
@@ -45,108 +57,110 @@ npm install @inertiaui/modal-react
 
 :::
 
+Inertia Modal 3.0+ comes with TypeScript support.
+
 ### 2. Configure Inertia
 
-Update your Inertia app setup to include the modal plugin:
+Update your Inertia app setup to mount the modal root component:
 
 :::tabs key:frameworks
 == Vue
 
 ```js
-// frontend/entrypoints/inertia.js
-import { createApp, h } from 'vue'
+// app/frontend/entrypoints/inertia.js
 import { createInertiaApp } from '@inertiajs/vue3'
-import { renderApp } from '@inertiaui/modal-vue' // [!code ++]
+import { withInertiaModal } from '@inertiaui/modal-vue' // [!code ++]
 
 createInertiaApp({
-  resolve: (name) => {
-    const pages = import.meta.glob('../pages/**/*.vue', { eager: true })
-    return pages[`../pages/${name}.vue`]
-  },
-  setup({ el, App, props, plugin }) {
-    createApp({ render: () => h(App, props) }) // [!code --]
-    createApp({ render: renderApp(App, props) }) // [!code ++]
-      .use(plugin)
-      .mount(el)
+  pages: '../pages',
+  // [!code ++:3]
+  withApp(app) {
+    withInertiaModal(app)
   },
 })
 ```
 
 == React
 
-```js
-// frontend/entrypoints/inertia.js
+```jsx
+// app/frontend/entrypoints/inertia.jsx
 import { createInertiaApp } from '@inertiajs/react'
-import { createElement } from 'react' // [!code --]
-import { renderApp } from '@inertiaui/modal-react' // [!code ++]
-import { createRoot } from 'react-dom/client'
+import { ModalStackProvider, ModalRoot } from '@inertiaui/modal-react' // [!code ++]
+
+// [!code ++:8]
+function ModalLayout({ children }) {
+  return (
+    <>
+      {children}
+      <ModalRoot />
+    </>
+  )
+}
 
 createInertiaApp({
-  resolve: (name) => {
-    const pages = import.meta.glob('../pages/**/*.jsx', { eager: true })
-    return pages[`../pages/${name}.jsx`]
-  },
-  setup({ el, App, props }) {
-    const root = createRoot(el)
-    root.render(createElement(App, props)) // [!code --]
-    root.render(renderApp(App, props)) // [!code ++]
-  },
+  pages: '../pages',
+  withApp: (app) => <ModalStackProvider>{app}</ModalStackProvider>, // [!code ++]
+  layout: () => ModalLayout, // [!code ++]
 })
 ```
 
 :::
+
+> [!NOTE]
+> If your app already defines a `setup` callback, per-page layouts, or a `layout` option in `createInertiaApp`,
+> render `<ModalRoot />` inside your existing layout component instead. See the
+> [Custom App Mounting](https://inertiaui.com/inertia-modal/docs/custom-app-mounting) documentation for details.
+
+> [!TIP]
+> In a TypeScript app, annotate the layout's `children` prop:
+> `function ModalLayout({ children }: { children: React.ReactNode })`.
 
 ### 3. Tailwind CSS Configuration
 
+The default modal UI is built for Tailwind CSS 4. Tell Tailwind to scan the package's source files by adding an
+`@source` directive to your CSS entrypoint:
+
 :::tabs key:frameworks
 == Vue
 
-For Tailwind CSS v4, add the modal styles to your CSS:
-
 ```css
-/* app/entrypoints/frontend/application.css */
-@source '../../../node_modules/@inertiaui/modal-vue';
-```
-
-For Tailwind CSS v3, update your `tailwind.config.js`:
-
-```js
-export default {
-  content: [
-    './node_modules/@inertiaui/modal-vue/src/**/*.{js,vue}',
-    // other paths...
-  ],
-}
+/* app/frontend/entrypoints/application.css */
+@source '../../../node_modules/@inertiaui/modal-vue/src';
 ```
 
 == React
 
-For Tailwind CSS v4, add the modal styles to your CSS:
-
 ```css
-/* app/entrypoints/frontend/application.css */
-@source '../../../node_modules/@inertiaui/modal-react';
-```
-
-For Tailwind CSS v3, update your `tailwind.config.js`:
-
-```js
-export default {
-  content: [
-    './node_modules/@inertiaui/modal-react/src/**/*.{js,jsx}',
-    // other paths...
-  ],
-}
+/* app/frontend/entrypoints/application.css */
+@source '../../../node_modules/@inertiaui/modal-react/src';
 ```
 
 :::
 
+> [!WARNING]
+> The path must point to the `src` directory inside the package and must be relative to the CSS file itself.
+> If your CSS entrypoint is located elsewhere, adjust the number of `../` segments accordingly, otherwise
+> the modal will render without styles.
+
+If you're on Tailwind CSS 3, the default UI is not supported — use
+[headless mode](https://inertiaui.com/inertia-modal/docs/headless-mode) and provide your own markup.
+
 ### 4. Add the Ruby Gem (optional but recommended)
 
-Install the [`inertia_rails-contrib`](https://github.com/skryukov/inertia_rails-contrib) gem to your Rails application to enable base URL support for modals:
+Install the [`inertia_rails-contrib`](https://github.com/skryukov/inertia_rails-contrib) gem to your Rails application
+to enable base URL support for modals:
 
 ```bash
 bundle add inertia_rails-contrib
+```
+
+Then, enable the InertiaUI Modal integration in an initializer:
+
+```ruby
+# config/initializers/inertia_rails_contrib.rb
+InertiaRailsContrib.configure do |config|
+  config.enable_inertia_ui_modal = true
+end
 ```
 
 ## Basic example
@@ -257,7 +271,6 @@ To define the base route for your modal, you need to use the `inertia_modal` ren
 `inertia` one. It accepts the same arguments as the `inertia` renderer:
 
 ```ruby
-
 class UsersController < ApplicationController
   def edit
     render inertia: { # [!code --]
@@ -272,14 +285,13 @@ end
 Then, you can pass the `base_url` parameter to the `inertia_modal` renderer to define the base route for your modal:
 
 ```ruby
-
 class UsersController < ApplicationController
   def edit
     render inertia_modal: {
       user:,
       roles: -> { Role.all },
     } # [!code --]
-    }, base_url : users_path # [!code ++]
+    }, base_url: users_path # [!code ++]
   end
 end
 ```

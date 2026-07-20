@@ -22,10 +22,14 @@ module InertiaRails
     end
 
     def inertia_meta_tags
-      meta_tag_data = (inertia_page || {}).dig(:props, :_inertia_meta) || []
+      config = controller.send(:inertia_configuration)
+      meta_tag_data = (inertia_page || {}).dig(:props, config.meta_prop) || []
+      attribute = config.head_attribute
 
       meta_tags = meta_tag_data.map do |inertia_meta_tag|
-        inertia_meta_tag.to_tag(tag)
+        next inertia_meta_tag if inertia_meta_tag.is_a?(String)
+
+        inertia_meta_tag.to_tag(tag, inertia_attribute: attribute)
       end
 
       safe_join(meta_tags, "\n")

@@ -171,6 +171,7 @@ export default withMermaid({
             { text: 'Configuration', link: '/guide/configuration' },
             { text: 'Error handling', link: '/guide/error-handling' },
             { text: 'Events', link: '/guide/events' },
+            { text: 'Instrumentation', link: '/guide/instrumentation' },
             { text: 'Progress indicators', link: '/guide/progress-indicators' },
             { text: 'Scroll management', link: '/guide/scroll-management' },
             {
