@@ -23,7 +23,8 @@ module InertiaRails
                                 else
                                   @app.call(@env)
                                 end
-        request = ActionDispatch::Request.new(@env)
+
+        status, headers, body = convert_to_location_response!(headers, body) if external_redirect?(status, headers)
 
         # Inertia session data is added via redirect_to
         # Guard with session.loaded? to avoid forcing session I/O (and unnecessary
@@ -38,10 +39,50 @@ module InertiaRails
 
         status = 303 if inertia_non_post_redirect?(status)
 
-        stale_inertia_get? ? force_refresh(request) : [status, headers, body]
+        # A response with X-Inertia-Location is already a full page visit — nothing to refresh.
+        if stale_inertia_get? && !headers['X-Inertia-Location']
+          force_refresh
+        else
+          [status, headers, body]
+        end
       end
 
       private
+
+      # XHR follows redirects transparently, so a cross-origin target is only
+      # reachable through a window.location visit (409 + X-Inertia-Location).
+      # 307/308 are excluded: a full page visit is always a GET.
+      def external_redirect?(status, headers)
+        inertia_request? &&
+          configuration.convert_external_redirects &&
+          [301, 302, 303].include?(status) &&
+          external_origin?(headers['Location'])
+      end
+
+      def external_origin?(location)
+        return false if location.blank?
+
+        uri = URI.parse(location)
+        return false if uri.host.blank?
+
+        scheme = uri.scheme || request.scheme
+        port = uri.port || (scheme == 'https' ? 443 : 80)
+
+        scheme != request.scheme || !uri.host.casecmp?(request.host) || port != request.port
+      rescue URI::InvalidURIError
+        false
+      end
+
+      # Mutates the headers in place to keep the rest of the response, notably
+      # Set-Cookie (which matters mid-OAuth).
+      def convert_to_location_response!(headers, body)
+        headers['X-Inertia-Location'] = headers.delete('Location')
+        headers.delete('Content-Type')
+        headers.delete('Content-Length')
+        body.close if body.respond_to?(:close)
+
+        [409, headers, []]
+      end
 
       def keep_inertia_session_options?(status)
         redirect_status?(status) || stale_inertia_request?
@@ -59,40 +100,39 @@ module InertiaRails
 
       # Only 301/302 are rewritten to 303: a 303 already forces a GET on
       # follow, and 307/308 preserve the request method by design.
-      def convertible_redirect_status?(status)
+      def rewritable_redirect_status?(status)
         [301, 302].include? status
       end
 
       def non_get_redirectable_method?
-        %w[PUT PATCH DELETE].include? request_method
+        %w[PUT PATCH DELETE].include? request.request_method
       end
 
       def inertia_non_post_redirect?(status)
-        inertia_request? && convertible_redirect_status?(status) && non_get_redirectable_method?
+        inertia_request? && rewritable_redirect_status?(status) && non_get_redirectable_method?
       end
 
       def stale_inertia_get?
-        get? && stale_inertia_request?
+        request.get? && stale_inertia_request?
       end
 
-      def get?
-        request_method == 'GET'
+      def request
+        @request ||= ActionDispatch::Request.new(@env)
       end
 
       def controller
         @env['action_controller.instance']
       end
 
-      def request_method
-        @env['REQUEST_METHOD']
-      end
-
       def client_version
         @env['HTTP_X_INERTIA_VERSION']
       end
 
+      # Controller-less endpoints (route-level redirects, mounted Rack apps)
+      # cannot carry the mixin, so only a present non-Inertia controller
+      # (e.g. ActionController::API) opts out of Inertia handling.
       def inertia_request?
-        @env['HTTP_X_INERTIA'].present? && inertia_controller?
+        request.inertia? && (controller.nil? || inertia_controller?)
       end
 
       def inertia_controller?
@@ -104,14 +144,18 @@ module InertiaRails
       end
 
       def server_version
-        (controller&.send(:inertia_configuration) || InertiaRails.configuration).version
+        configuration.version
+      end
+
+      def configuration
+        @configuration ||= controller&.send(:inertia_configuration) || InertiaRails.configuration
       end
 
       def coerce_version(version)
         server_version.is_a?(Numeric) ? version.to_f : version
       end
 
-      def force_refresh(request)
+      def force_refresh
         request.flash.keep
         Rack::Response.new('', 409, { 'X-Inertia-Location' => request.original_url }).finish
       end

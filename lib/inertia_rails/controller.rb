@@ -83,8 +83,12 @@ module InertiaRails
     end
 
     def redirect_to(options = {}, response_options = {})
+      full_page = response_options.dig(:inertia, :full_page)
+      validate_full_page_redirect_status!(response_options) if full_page
       capture_inertia_session_options(response_options)
-      super
+      super.tap do
+        convert_redirect_to_location_response! if full_page && request.inertia?
+      end
     end
 
     def inertia_meta
@@ -169,8 +173,12 @@ module InertiaRails
     end
 
     def inertia_location(url)
-      headers['X-Inertia-Location'] = url
-      head :conflict
+      if request.inertia?
+        headers['X-Inertia-Location'] = url
+        head :conflict
+      else
+        redirect_to url, allow_other_host: true
+      end
     end
 
     def inertia_collect_flash_data
@@ -200,6 +208,22 @@ module InertiaRails
 
       session[:inertia_clear_history] = inertia[:clear_history] if inertia[:clear_history]
       session[:inertia_preserve_fragment] = true if inertia[:preserve_fragment]
+    end
+
+    def validate_full_page_redirect_status!(response_options)
+      status = Rack::Utils.status_code(response_options.fetch(:status, :found))
+      return if [301, 302, 303].include?(status)
+
+      raise ArgumentError, "`inertia: { full_page: true }` requires a 301, 302, or 303 redirect (got #{status}): " \
+                           'a full page visit always issues a GET, so it cannot preserve the HTTP method.'
+    end
+
+    # Rewrites the redirect `super` just built into an Inertia location response,
+    # keeping everything else `redirect_to` did: URL resolution, flash, cookies.
+    def convert_redirect_to_location_response!
+      headers['X-Inertia-Location'] = headers.delete('Location')
+      self.status = 409
+      self.response_body = ''
     end
   end
 end

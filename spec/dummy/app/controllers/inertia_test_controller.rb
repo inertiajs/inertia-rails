@@ -27,6 +27,40 @@ class InertiaTestController < ApplicationController
     redirect_to :empty_test
   end
 
+  def external_redirect_test
+    redirect_to 'http://external-website.com/some_path', allow_other_host: true
+  end
+
+  def external_redirect_with_cookie_test
+    cookies['external_cookie'] = 'hello'
+    redirect_to 'http://external-website.com/some_path', allow_other_host: true
+  end
+
+  def same_origin_redirect_test
+    redirect_to empty_test_url
+  end
+
+  def external_redirect_with_inertia_errors_test
+    redirect_to 'http://external-website.com/some_path', allow_other_host: true, inertia: { errors: { uh: 'oh' } }
+  end
+
+  def full_page_redirect_test
+    redirect_to empty_test_path, inertia: { full_page: true }
+  end
+
+  def full_page_redirect_with_cookie_test
+    cookies['full_page_cookie'] = 'hello'
+    redirect_to empty_test_path, notice: 'converted', inertia: { full_page: true }
+  end
+
+  def invalid_full_page_redirect_test
+    redirect_to empty_test_path, status: 307, inertia: { full_page: true }
+  end
+
+  def location_header_test
+    head (params[:status] || 302).to_i, location: params[:url]
+  end
+
   def inertia_request_test
     if request.inertia?
       head 202
@@ -63,6 +97,10 @@ class InertiaTestController < ApplicationController
   # https://github.com/rails/rails/issues/28033
   def my_location
     inertia_location empty_test_path
+  end
+
+  def my_external_location
+    inertia_location 'http://external-website.com/some_path'
   end
 
   def redirect_with_inertia_errors
