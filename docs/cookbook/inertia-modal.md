@@ -26,18 +26,14 @@ While you can use Inertia Modal without changes on the backend, we recommend usi
 [`inertia_rails-contrib`](https://github.com/skryukov/inertia_rails-contrib) to enhance your modals with base URL support. This ensures that your modals are accessible,
 SEO-friendly, and provide a better user experience.
 
-> [!NOTE] Version compatibility
-> Inertia Modal's major version is aligned with the Inertia.js version it supports: Inertia Modal 3.x requires
-> Inertia.js v3, and Inertia Modal 2.x requires Inertia.js v2. This guide covers Inertia Modal 3.x. If you're still
-> on Inertia.js v2, install `@inertiaui/modal-react@^2.0.0` or `@inertiaui/modal-vue@^2.0.0` and follow the
-> [Inertia Modal 2.x documentation](https://inertiaui.com/inertia-modal/docs/v2/introduction) instead.
-
 > [!NOTE]
 > Svelte is not supported by Inertia Modal.
 
 ## Requirements
 
-- React 19+ with `@inertiajs/react` 3.0+, or Vue 3.4+ with `@inertiajs/vue3` 3.0+
+- React 19+ with `@inertiajs/react` 3.0+, or Vue 3.4+ with `@inertiajs/vue3` 3.0+ — Inertia Modal's major
+  version follows the Inertia.js version it supports, so on Inertia.js v2, install Inertia Modal 2.x and
+  follow the [2.x documentation](https://inertiaui.com/inertia-modal/docs/v2/introduction) instead
 - Tailwind CSS 4 for the default modal UI. If you're on Tailwind CSS 3 (or don't use Tailwind at all), you can
   still use Inertia Modal in [headless mode](https://inertiaui.com/inertia-modal/docs/headless-mode) with your own UI.
 - For base URL support: [`inertia_rails-contrib`](https://github.com/skryukov/inertia_rails-contrib) 0.6+
@@ -61,7 +57,7 @@ npm install @inertiaui/modal-react
 
 :::
 
-Both packages ship with TypeScript type definitions, so no additional `@types` packages are needed.
+Inertia Modal 3.0+ comes with TypeScript support.
 
 ### 2. Configure Inertia
 
