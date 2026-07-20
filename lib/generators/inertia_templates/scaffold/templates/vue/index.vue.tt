@@ -1,7 +1,7 @@
 <template>
   <Head title="<%= human_name.pluralize %>" />
 
-  <p v-if="flash.notice" class="notice">{{ flash.notice }}</p>
+  <p v-if="page.flash.notice" class="notice">{{ page.flash.notice }}</p>
 
   <h1><%= human_name.pluralize %></h1>
 
@@ -22,7 +22,7 @@ import { Head, Link, usePage } from '@inertiajs/vue3'
 import <%= inertia_component_name %> from './<%= singular_name %>.vue'
 
 defineProps(['<%= plural_table_name %>'])
-const { flash } = usePage()
+const page = usePage()
 </script>
 
 <style scoped>
