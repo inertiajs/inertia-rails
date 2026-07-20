@@ -16,7 +16,7 @@ Events fire on every Inertia render. When no subscribers are attached, the overh
 
 The payload keys:
 
-- `:component` — the resolved page component name, such as `"Users/Show"`.
+- `:component` — the resolved page component name, such as `"users/show"`.
 - `:partial` — `true` on [partial reloads](/guide/partial-reloads).
 - `:ssr` — `true` when the response body came from [SSR](/guide/server-side-rendering). It stays `false` for JSON responses, when SSR is disabled, and when a failed SSR call falls back to client-side rendering.
 - `:url` — the SSR server endpoint the request was sent to.
@@ -52,4 +52,4 @@ Each span carries the payload as attributes, so you can group latency by page co
 
 ## APMs
 
-AppSignal needs no wiring: its [Ruby agent](https://docs.appsignal.com/ruby/instrumentation/instrumentation.html) records ActiveSupport::Notifications events automatically, and they appear in the timeline of each performance sample grouped under `inertia_rails`. New Relic subscribes natively once you list the event names in [`active_support_custom_events_names`](https://docs.newrelic.com/docs/apm/agents/ruby-agent/configuration/ruby-agent-configuration/#active_support_custom_events_names). Other APMs consume the events through the OpenTelemetry setup above or their own tracing APIs.
+AppSignal needs no wiring: its [Ruby agent](https://docs.appsignal.com/ruby/instrumentation/instrumentation.html) records `ActiveSupport::Notifications` events automatically, and they appear in the timeline of each performance sample grouped under `inertia_rails`. New Relic subscribes natively once you list the event names in [`active_support_custom_events_names`](https://docs.newrelic.com/docs/apm/agents/ruby-agent/configuration/ruby-agent-configuration/#active_support_custom_events_names). Other APMs consume the events through the OpenTelemetry setup above or their own tracing APIs.
