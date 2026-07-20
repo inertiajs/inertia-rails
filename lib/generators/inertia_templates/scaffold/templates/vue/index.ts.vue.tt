@@ -1,7 +1,7 @@
 <template>
   <Head title="<%= human_name.pluralize %>" />
 
-  <p v-if="flash.notice" class="notice">{{ flash.notice }}</p>
+  <p v-if="page.flash.notice" class="notice">{{ page.flash.notice }}</p>
 
   <h1><%= human_name.pluralize %></h1>
 
@@ -25,7 +25,7 @@ import { <%= inertia_model_type %> } from './types'
 defineProps<{
   <%= plural_table_name %>: <%= inertia_model_type %>[]
 }>()
-const { flash } = usePage()
+const page = usePage()
 </script>
 
 <style scoped>

@@ -92,7 +92,11 @@ module InertiaRails
       end
 
       def inertia_request?
-        @env['HTTP_X_INERTIA'].present?
+        @env['HTTP_X_INERTIA'].present? && inertia_controller?
+      end
+
+      def inertia_controller?
+        controller.respond_to?(:inertia_configuration, true)
       end
 
       def version_stale?

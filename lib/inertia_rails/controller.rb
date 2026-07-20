@@ -17,6 +17,9 @@ module InertiaRails
 
       after_action do
         next unless protect_against_forgery?
+        # Included into ActionController::Base, so this runs for non-Inertia
+        # responses too — ActiveStorage images, where it only breaks CDN caching.
+        next unless request.format.html? || request.xhr?
         next if XsrfCookieRefreshPolicy.skip?(self)
 
         cookies['XSRF-TOKEN'] = form_authenticity_token

@@ -35,7 +35,7 @@ end
 
 You can also pass static props to the component:
 
-@available_since rails=master
+@available_since rails=3.22.0
 
 ```ruby
 inertia 'about' => 'About', props: { title: 'About us' }

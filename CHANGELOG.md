@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Add `config.server_head` to serialize meta tags as HTML strings into the `head` prop for the `serverHead` option of `createInertiaApp` (Inertia.js v3.5+), replacing the client-side cookbook component (@skryukov)
+* Fix meta tags ignoring per-controller `use_data_inertia_head_attribute` set via `inertia_config` (@skryukov)
+* Use SHA256 instead of MD5 for meta tag head key digests, so they no longer raise on FIPS-enabled Rubies (@skryukov)
+* Restart the SSR server promptly in the Puma plugin when the process dies during boot, instead of polling a dead port for the full boot timeout (@skryukov)
+* Fix `NoMethodError` raised when a request carrying the `X-Inertia` header reaches a non-Inertia controller such as an `ActionController::API` endpoint (@SAY-5)
+* Fix stale flash notice and use idiomatic class in Vue scaffolds (@skryukov)
+
+## [3.22.0] - 2026-07-17
+
+* Only set the `XSRF-TOKEN` cookie on HTML and XHR responses. Other responses no longer carry a `Set-Cookie` that keeps CDNs from caching them — notably ActiveStorage's images, since its controllers also inherit from `ActionController::Base` (@acetinick)
 * Add `xsrf_cookie_refresh` configuration option. Set to `:lazy` to skip rewriting the `XSRF-TOKEN` cookie on safe requests when a valid cookie is already present, keeping conditionally cached (`ETag`/`304`) responses free of `Set-Cookie` churn (@darkamenosa)
 * Fix `inertia: { errors: }` and `inertia: { clear_history: }` being discarded when `redirect_to` is given an explicit non-302 status such as `status: :see_other` (303/307/308) (@skryukov)
 * Fix cross-variant `304 Not Modified` responses under HTTP conditional caching (`fresh_when` / `stale?`) by folding the Inertia request headers into the ETag, so HTML, JSON, and partial-reload representations of the same URL no longer share a validator (@skryukov)
@@ -15,9 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Raise a clear error when `parent_controller` does not inherit from `ActionController::Base` instead of an opaque `NoMethodError` (@skryukov)
 * Add static `props:` support to the `inertia` routes helper: `inertia 'about' => 'About', props: { title: 'About us' }` (@skryukov)
 * Deduplicate `X-Inertia` in the `Vary` response header (@skryukov)
-* Add `config.server_head` to serialize meta tags as HTML strings into the `head` prop for the `serverHead` option of `createInertiaApp` (Inertia.js v3.5+), replacing the client-side cookbook component. Set it to a string for a custom prop name; new apps have it preconfigured (@skryukov)
-* Fix meta tags ignoring per-controller `use_data_inertia_head_attribute` set via `inertia_config` (@skryukov)
-* Use SHA256 instead of MD5 for meta tag head key digests, so they no longer raise on FIPS-enabled Rubies (@skryukov)
 
 ## [3.21.2] - 2026-06-09
 
