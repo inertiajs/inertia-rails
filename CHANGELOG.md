@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Raise a clear error when `parent_controller` does not inherit from `ActionController::Base` instead of an opaque `NoMethodError` (@skryukov)
 * Add static `props:` support to the `inertia` routes helper: `inertia 'about' => 'About', props: { title: 'About us' }` (@skryukov)
 * Deduplicate `X-Inertia` in the `Vary` response header (@skryukov)
+* Restart the SSR server promptly in the Puma plugin when the process dies during boot, instead of polling a dead port for the full boot timeout (@skryukov)
 
 ## [3.21.2] - 2026-06-09
 
