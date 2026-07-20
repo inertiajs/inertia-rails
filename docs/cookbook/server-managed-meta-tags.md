@@ -26,7 +26,7 @@ Simply add the `inertia_meta_tags` helper to your layout. This will render the m
 ```
 
 > [!NOTE]
-> Make sure to remove the `<title>` tag in your Rails layout if you plan to manage it with Inertia Rails. Otherwise you will end up with duplicate `<title>` tags. Since the layout no longer provides a fallback, a page that defines no meta tags renders without a `<title>` at all — set a default title in a shared `before_action` (see [Shared Meta Tags](#shared-meta-tags)).
+> Make sure to remove the `<title>` tag in your Rails layout if you plan to manage it with Inertia Rails. Otherwise you will end up with duplicate `<title>` tags. Since the layout no longer provides a fallback, a page that defines no meta tags renders without a `<title>` at all — configure a callable [title template](#title-template) to provide a default.
 
 ### Client Side
 
@@ -294,6 +294,9 @@ inertia_meta.add([
   { tag_name: 'script', type: 'application/ld+json', inner_content: { '@context': 'https://schema.org', '@type': 'Event', name: 'My Event' } }
 ])
 
+# Read the current page title
+inertia_meta.title # => "A title for the page"
+
 # Remove a specific tag by head_key
 inertia_meta.remove("my_custom_head_key")
 
@@ -327,6 +330,23 @@ inertia_meta.add({
   }
 })
 ```
+
+## Title Template
+
+@available_since rails=master
+
+Instead of repeating an app-wide suffix in every action, configure a title template — the server-side counterpart of the [title callback](/guide/title-and-meta#title-callback). It receives the current title (or `nil` when the page sets none), runs in the controller context, and its result becomes the title:
+
+```ruby
+InertiaRails.configure do |config|
+  config.meta_title_template = ->(title) { title ? "#{title} - My App" : 'My App' }
+end
+```
+
+With this template, `inertia_meta.add({ title: 'Events' })` renders `<title>Events - My App</title>` — in the server-rendered HTML too, so crawlers and link previews see the full title without running JavaScript. Because the template runs even when no title is set, it doubles as a default title for pages that define no meta tags at all.
+
+> [!WARNING]
+> Don't combine a server-side title template with the client-side [title callback](/guide/title-and-meta#title-callback) — the client applies its callback on top of the server-provided title, so the suffix would appear twice. Use one or the other.
 
 ## Deduplication
 

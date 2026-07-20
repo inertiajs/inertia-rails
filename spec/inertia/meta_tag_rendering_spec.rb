@@ -288,4 +288,59 @@ RSpec.describe 'rendering inertia meta tags', type: :request do
       )
     end
   end
+
+  describe 'with a title template' do
+    it 'runs in controller context with the current title' do
+      get title_template_meta_path, headers: headers
+
+      expect(response.parsed_body['props']['_inertia_meta']).to eq(
+        [
+          {
+            'tagName' => 'title',
+            'innerContent' => 'The Page - Inertia App',
+            'headKey' => 'title',
+          }
+        ]
+      )
+    end
+
+    it 'synthesizes a default title when the page defines none' do
+      get title_template_default_meta_path, headers: headers
+
+      expect(response.parsed_body['props']['_inertia_meta']).to eq(
+        [
+          {
+            'tagName' => 'title',
+            'innerContent' => 'Inertia App',
+            'headKey' => 'title',
+          }
+        ]
+      )
+    end
+
+    it 'raises when the template is not callable' do
+      expect do
+        get title_template_invalid_meta_path, headers: headers
+      end.to raise_error(ArgumentError, /meta_title_template must be callable/)
+    end
+
+    context 'with server_head enabled' do
+      it 'applies the template before serializing to HTML strings' do
+        get server_head_title_template_meta_path, headers: headers
+
+        expect(response.parsed_body['props']['head']).to eq(
+          [
+            '<title data-inertia="title">The Page - Inertia App</title>',
+            '<meta name="description" content="Inertia rules" data-inertia="desc_key">'
+          ]
+        )
+      end
+
+      it 'renders the default title into the layout on the initial load' do
+        get server_head_title_template_default_meta_path
+
+        expect(response.body).to include('<title data-inertia="title">Inertia App</title>')
+      end
+    end
+  end
 end

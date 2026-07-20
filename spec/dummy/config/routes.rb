@@ -170,6 +170,11 @@ Rails.application.routes.draw do
   get 'server_head_transformed_collision_meta' => 'inertia_server_head_transformed#collision'
   get 'server_head_custom_meta' => 'inertia_server_head_custom#basic'
   get 'server_head_ssr_meta' => 'inertia_server_head_ssr#basic'
+  get 'title_template_meta' => 'inertia_meta_title_template#with_title'
+  get 'title_template_default_meta' => 'inertia_meta_title_template#default_title'
+  get 'title_template_invalid_meta' => 'inertia_meta_title_template_invalid#basic'
+  get 'server_head_title_template_meta' => 'inertia_server_head_title_template#basic'
+  get 'server_head_title_template_default_meta' => 'inertia_server_head_title_template#default_title'
 
   post 'precognition_basic' => 'inertia_precognition_test#basic'
   post 'precognition_non_bang' => 'inertia_precognition_test#non_bang'

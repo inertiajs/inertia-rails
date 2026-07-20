@@ -161,7 +161,16 @@ module InertiaRails
       @controller.inertia_meta.meta_tags
     end
 
+    def apply_title_template
+      return unless (template = @configuration.meta_title_template)
+
+      meta = @controller.inertia_meta
+      title = @controller.instance_exec(meta.title, &template)
+      meta.add(title: title) if title.present?
+    end
+
     def merge_meta_tags!(props)
+      apply_title_template
       return if meta_tags.blank?
 
       props[@configuration.meta_prop] = serialized_meta_tags
