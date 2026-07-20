@@ -362,3 +362,19 @@ createInertiaApp({
 
 > [!NOTE]
 > With this option enabled, head elements are always marked with the `data-inertia` attribute regardless of the `use_data_inertia_head_attribute` setting, since Inertia.js v3 only recognizes `data-inertia`.
+
+### `meta_title_template`
+
+**Default**: `nil`
+
+@available_since rails=master
+
+A callable applied to the `<title>` tag of [server driven meta tags](/cookbook/server-managed-meta-tags). It receives the current title (or `nil` when the page sets none), runs in the controller context, and its result becomes the title — so it can also provide a default for pages without one:
+
+```ruby
+InertiaRails.configure do |config|
+  config.meta_title_template = ->(title) { title ? "#{title} - My App" : 'My App' }
+end
+```
+
+See [Title Template](/cookbook/server-managed-meta-tags#title-template) for details.

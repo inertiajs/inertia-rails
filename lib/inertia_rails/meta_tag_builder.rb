@@ -10,6 +10,10 @@ module InertiaRails
       @meta_tags.values
     end
 
+    def title
+      @meta_tags['title']&.[](:inner_content)
+    end
+
     def add(meta_tag)
       if meta_tag.is_a?(Array)
         meta_tag.each { |tag| add(tag) }
