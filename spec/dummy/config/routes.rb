@@ -54,6 +54,7 @@ Rails.application.routes.draw do
   delete 'redirect_with_status_and_inertia_errors' => 'inertia_test#redirect_with_status_and_inertia_errors'
   post 'redirect_with_inertia_error_object' => 'inertia_test#redirect_with_inertia_error_object'
   post 'redirect_with_non_hash_inertia_errors' => 'inertia_test#redirect_with_non_hash_inertia_errors'
+  post 'redirect_with_nested_inertia_errors' => 'inertia_test#redirect_with_nested_inertia_errors'
   post 'redirect_back_with_inertia_errors' => 'inertia_test#redirect_back_with_inertia_errors'
   post 'redirect_back_or_to_with_inertia_errors' => 'inertia_test#redirect_back_or_to_with_inertia_errors'
   get 'error_404' => 'inertia_test#error_404'

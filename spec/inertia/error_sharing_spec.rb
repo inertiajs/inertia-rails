@@ -72,6 +72,27 @@ RSpec.describe 'errors shared automatically', type: :request do
       expect(session[:inertia_errors]).not_to be
     end
 
+    it 'copies flattened dot-notated keys for nested errors' do
+      post redirect_with_nested_inertia_errors_path, headers: headers
+
+      expect(session[:inertia_errors]).to include(user: { name: 'is required', email: 'is invalid' })
+      expect(session[:inertia_errors]).to include('user.name' => 'is required', 'user.email' => 'is invalid')
+
+      get response.headers['Location'], headers: headers
+      body = JSON.parse(response.body)
+      errors = body['props']['errors']
+      expect(errors['user']).to eq({ 'name' => 'is required', 'email' => 'is invalid' })
+      expect(errors['user.name']).to eq('is required')
+      expect(errors['user.email']).to eq('is invalid')
+    end
+
+    it 'does not add duplicate keys for flat errors' do
+      post redirect_with_inertia_errors_path, headers: headers
+
+      errors = session[:inertia_errors]
+      expect(errors.keys).to eq([:uh])
+    end
+
     it 'accepts a non-hash error object' do
       expect { post redirect_with_non_hash_inertia_errors_path, headers: headers }
         .to output(/Object passed to `inertia: { errors: ... }` must respond to `to_hash`/).to_stderr

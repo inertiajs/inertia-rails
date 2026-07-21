@@ -197,7 +197,9 @@ module InertiaRails
 
       if (inertia_errors = inertia[:errors])
         if inertia_errors.respond_to?(:to_hash)
-          session[:inertia_errors] = inertia_errors.to_hash
+          errors = inertia_errors.to_hash
+          flat = flatten_nested_errors(errors)
+          session[:inertia_errors] = flat.any? ? errors.merge(flat) : errors
         else
           InertiaRails.deprecator.warn(
             'Object passed to `inertia: { errors: ... }` must respond to `to_hash`. Pass a hash-like object instead.'
@@ -208,6 +210,17 @@ module InertiaRails
 
       session[:inertia_clear_history] = inertia[:clear_history] if inertia[:clear_history]
       session[:inertia_preserve_fragment] = true if inertia[:preserve_fragment]
+    end
+
+    def flatten_nested_errors(hash, prefix = nil)
+      hash.each_with_object({}) do |(key, value), flat|
+        full_key = prefix ? "#{prefix}.#{key}" : key.to_s
+        if value.is_a?(Hash)
+          flat.merge!(flatten_nested_errors(value, full_key))
+        elsif prefix
+          flat[full_key] = value
+        end
+      end
     end
 
     def validate_full_page_redirect_status!(response_options)
