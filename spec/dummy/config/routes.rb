@@ -55,6 +55,7 @@ Rails.application.routes.draw do
   post 'redirect_with_inertia_error_object' => 'inertia_test#redirect_with_inertia_error_object'
   post 'redirect_with_non_hash_inertia_errors' => 'inertia_test#redirect_with_non_hash_inertia_errors'
   post 'redirect_with_nested_inertia_errors' => 'inertia_test#redirect_with_nested_inertia_errors'
+  post 'redirect_with_nested_inertia_errors_no_flatten' => 'inertia_test#redirect_with_nested_inertia_errors_no_flatten'
   post 'redirect_back_with_inertia_errors' => 'inertia_test#redirect_back_with_inertia_errors'
   post 'redirect_back_or_to_with_inertia_errors' => 'inertia_test#redirect_back_or_to_with_inertia_errors'
   get 'error_404' => 'inertia_test#error_404'
@@ -209,4 +210,6 @@ Rails.application.routes.draw do
   post 'precognition_with_block_key_rename' => 'inertia_precognition_test#with_block_key_rename'
   post 'precognition_non_bang_with_block_transform' => 'inertia_precognition_test#non_bang_with_block_transform'
   post 'precognition_module_level_with_block_transform' => 'inertia_precognition_test#module_level_with_block_transform'
+  post 'precognition_with_nested_errors_no_flatten' => 'inertia_precognition_test#with_nested_errors_no_flatten'
+  post 'precognition_with_block_transform_no_flatten' => 'inertia_precognition_test#with_block_transform_no_flatten'
 end

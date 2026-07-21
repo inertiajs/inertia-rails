@@ -97,12 +97,14 @@ module InertiaRails
 
     private
 
-    def precognition!(model_or_errors, &block)
-      InertiaRails.precognition!(model_or_errors, &block)
+    def precognition!(model_or_errors, flatten_errors: nil, &block)
+      should_flatten = flatten_errors.nil? ? inertia_configuration.flatten_errors : flatten_errors
+      InertiaRails.precognition!(model_or_errors, flatten_errors: should_flatten, &block)
     end
 
-    def precognition(model_or_errors, &block)
-      errors = InertiaRails::Precognition.validate(model_or_errors, &block)
+    def precognition(model_or_errors, flatten_errors: nil, &block)
+      should_flatten = flatten_errors.nil? ? inertia_configuration.flatten_errors : flatten_errors
+      errors = InertiaRails::Precognition.validate(model_or_errors, flatten_errors: should_flatten, &block)
       return if errors.nil?
 
       render_precognition(errors)
@@ -198,8 +200,14 @@ module InertiaRails
       if (inertia_errors = inertia[:errors])
         if inertia_errors.respond_to?(:to_hash)
           errors = inertia_errors.to_hash
-          flat = flatten_nested_errors(errors)
-          session[:inertia_errors] = flat.any? ? errors.merge(flat) : errors
+          per_call = inertia.key?(:flatten_errors) ? inertia[:flatten_errors] : nil
+          should_flatten = per_call.nil? ? inertia_configuration.flatten_errors : per_call
+          if should_flatten
+            flat = flatten_nested_errors(errors)
+            session[:inertia_errors] = flat.any? ? errors.merge(flat) : errors
+          else
+            session[:inertia_errors] = errors
+          end
         else
           InertiaRails.deprecator.warn(
             'Object passed to `inertia: { errors: ... }` must respond to `to_hash`. Pass a hash-like object instead.'

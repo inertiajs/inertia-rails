@@ -197,6 +197,53 @@ RSpec.describe 'Precognition', type: :request do
     end
   end
 
+  describe 'flatten_errors configuration' do
+    context 'disabled globally' do
+      with_inertia_config flatten_errors: false
+
+      it 'does not flatten nested errors' do
+        post precognition_with_nested_errors_path, params: blank_user_params, headers: precognition_headers
+
+        body = JSON.parse(response.body)
+        expect(body['errors']).to include('user')
+        expect(body['errors']).not_to include('user.name', 'user.email')
+      end
+
+      it 'does not flatten block transform output' do
+        post precognition_with_block_transform_path, params: blank_user_params, headers: precognition_headers
+
+        body = JSON.parse(response.body)
+        expect(body['errors']).to include('user')
+        expect(body['errors']).not_to include('user.name', 'user.email')
+      end
+    end
+
+    context 'disabled per-call' do
+      it 'does not flatten nested errors when flatten_errors: false' do
+        post precognition_with_nested_errors_no_flatten_path, params: blank_user_params, headers: precognition_headers
+
+        body = JSON.parse(response.body)
+        expect(body['errors']).to include('user')
+        expect(body['errors']).not_to include('user.name', 'user.email')
+      end
+
+      it 'does not flatten block output when flatten_errors: false' do
+        post precognition_with_block_transform_no_flatten_path, params: blank_user_params, headers: precognition_headers
+
+        body = JSON.parse(response.body)
+        expect(body['errors']).to include('user')
+        expect(body['errors']).not_to include('user.name', 'user.email')
+      end
+
+      it 'per-call false overrides global true' do
+        post precognition_with_nested_errors_no_flatten_path, params: blank_user_params, headers: precognition_headers
+
+        body = JSON.parse(response.body)
+        expect(body['errors'].keys).to eq(['user'])
+      end
+    end
+  end
+
   describe 'nested error flattening' do
     context 'without a block (nested hash passed directly)' do
       it 'flattens nested hash to dot-notated keys' do

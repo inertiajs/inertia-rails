@@ -35,7 +35,7 @@ Finally, since Inertia apps never generate `422` responses, Inertia needs anothe
 In order for your server-side validation errors to be available client-side, your server-side framework must share them via the `errors` prop. Inertia's Rails adapter does this automatically.
 
 > [!TIP]
-> Both flat errors (`inertia: { errors: user.errors }`) and nested/enveloped errors (`inertia: { errors: { user: user.errors } }`) are valid. When a nested hash of erroers is passed to the server response, Inertia automatically copies flat dot-notated keys alongside the original structure. This ensures that `errors['user.email_address']` and `invalid('user.email_address')` work consistently whether the error came from a [precognition](/guide/precognition) request or a full form submission. See [Forms and Envelopes](/cookbook/forms-and-envelopes) for a full walkthrough.
+> Both flat errors (`inertia: { errors: user.errors }`) and nested/enveloped errors (`inertia: { errors: { user: user.errors } }`) are valid. When a nested hash is passed, Inertia automatically copies flat dot-notated keys alongside the original structure. This ensures that `errors['user.email_address']` and `invalid('user.email_address')` work consistently whether the error came from a [precognition](/guide/precognition) request or a full form submission. This behavior is controlled by the [`flatten_errors`](/guide/configuration#flatten_errors) config option (default: `true`). See [Forms and Envelopes](/cookbook/forms-and-envelopes) for a full walkthrough.
 
 ## Displaying Errors
 
@@ -171,7 +171,7 @@ export default function Edit() {
 When using the Vue adapters, you may also access the errors via the `page.props.errors` object.
 
 > [!TIP]
-> If form data is wrapped in an envelope, you must access Precognition errors with flat, dot-notated keys, e.g. `invalid('user.name')` and `errors['user.name']`. If you display valiation errors only, either `errors.user.name` or `errors['user.name']` will work, as Inertia Rails copies and flattens error keys.
+> If form data is wrapped in an envelope, you must access Precognition errors with flat, dot-notated keys, e.g. `invalid('user.name')` and `errors['user.name']`. If you display validation errors only, either `errors.user.name` or `errors['user.name']` will work, as Inertia Rails copies and flattens error keys.
 
 ## Repopulating Input
 

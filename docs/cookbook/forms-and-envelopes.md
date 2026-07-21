@@ -103,7 +103,7 @@ end
 Here we see:
 1. Strong parameters include the `expect(:user)` syntax
 2. The `precognition!` call wraps errors in a `user` envelope — they are automatically flattened to `{ "user.email_address" => [...] }` before being sent to the client
-3. Validation errors in the redirect are also wrapped in a `user` envelope. Inertia automatically copies flat dot-notated keys from any nested errors hash, so `errors['user.email_address']` and `invalid('user.email_address')` work consistently for both precognition validation and full form submission.
+3. Validation errors in the redirect are also wrapped in a `user` envelope. Inertia automatically copies flat dot-notated keys from any nested errors hash, so `errors['user.email_address']` and `invalid('user.email_address')` work consistently for both precognition validation and full form submission (controlled by the [`flatten_errors`](/guide/configuration#flatten_errors) config option).
 
 The code is still explicit and consistent, although it is more verbose than our envelope-less example. There are a couple shortcuts worth exploring.
 

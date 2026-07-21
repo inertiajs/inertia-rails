@@ -113,6 +113,22 @@ class InertiaPrecognitionTestController < ApplicationController
     render json: { success: true }
   end
 
+  def with_nested_errors_no_flatten
+    errors = {}
+    errors[:name] = ["can't be blank"] if validator_params[:name].blank?
+    errors[:email] = ["can't be blank"] if validator_params[:email].blank?
+    precognition!({ user: errors }, flatten_errors: false)
+
+    render json: { success: true }
+  end
+
+  def with_block_transform_no_flatten
+    validator = TestValidator.new(validator_params)
+    precognition!(validator, flatten_errors: false) { |errors| { user: errors } }
+
+    render json: { success: true }
+  end
+
   def double_bang
     validator = TestValidator.new(validator_params)
     precognition!(validator)

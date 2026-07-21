@@ -143,6 +143,8 @@ Inertia's client-side form helper can request validation of specific fields usin
 
 ## Transforming error keys
 
+@available_since rails=master
+
 Both `precognition!` and `precognition` accept an optional block to transform the errors hash before it's sent to the client. This is useful when your form fields are wrapped in an envelope using `name="user.name"`, `name="user[name]`, or via the `transform` prop. In those cases, the server error keys need to match:
 
 ```ruby
@@ -163,6 +165,14 @@ Nested hashes are automatically flattened to dot-notated keys. `{ user: { name: 
 The block runs before field-level filtering, so `Precognition-Validate-Only: user.name` correctly finds the flattened key.
 
 When you pass nested errors to `redirect_to` with `inertia: { errors: ... }`, inertia adds a copy of the errors with flattened keys. The original nested structure is preserved alongside flat dot-notated copies. This means `{ user: @user.errors }` in the redirect produces both `errors.user.email_address` (nested) and `errors['user.email_address']` (flat) on the client, so `invalid('user.email_address')` works consistently whether the error came from a precognition request or a full form submission.
+
+Both behaviors are controlled by the [`flatten_errors`](/guide/configuration#flatten_errors) configuration option, which defaults to `true`. You can disable it globally in your Inertia config, per controller with `inertia_config`, or per call:
+
+```ruby
+precognition!(@user, flatten_errors: false) { |errors| { user: errors } }
+
+redirect_to new_user_path, inertia: { errors: { user: @user.errors }, flatten_errors: false }
+```
 
 ## Using `transform` with precognition
 

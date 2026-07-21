@@ -86,6 +86,32 @@ RSpec.describe 'errors shared automatically', type: :request do
       expect(errors['user.email']).to eq('is invalid')
     end
 
+    context 'flatten_errors configuration' do
+      it 'does not copy flat keys when disabled globally' do
+        InertiaRails.configure { |c| c.flatten_errors = false }
+        post redirect_with_nested_inertia_errors_path, headers: headers
+
+        errors = session[:inertia_errors]
+        expect(errors).to eq(user: { name: 'is required', email: 'is invalid' })
+        expect(errors.keys).not_to include('user.name')
+      ensure
+        InertiaRails.configure { |c| c.flatten_errors = true }
+      end
+
+      it 'does not copy flat keys when disabled per-call' do
+        post redirect_with_nested_inertia_errors_no_flatten_path, headers: headers
+
+        errors = session[:inertia_errors]
+        expect(errors).to eq(user: { name: 'is required' })
+        expect(errors.keys).not_to include('user.name')
+      end
+
+      it 'per-call flatten_errors: false overrides global true' do
+        post redirect_with_nested_inertia_errors_no_flatten_path, headers: headers
+        expect(session[:inertia_errors].keys).to eq([:user])
+      end
+    end
+
     it 'does not add duplicate keys for flat errors' do
       post redirect_with_inertia_errors_path, headers: headers
 
