@@ -158,9 +158,11 @@ def create
 end
 ```
 
-Nested hashes are automatically flattened to dot-notated keys — `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }` in the response, which is the format the client expects when looking up errors for a field named `user.name`. The block only runs when there are errors; on a successful validation, the 204 response is sent without calling the block.
+Nested hashes are automatically flattened to dot-notated keys. `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }` in the response, matching the format the client expects when looking up errors for a field named `user.name`. The block only runs when there are errors; on a successful validation, the 204 response is sent without calling the block.
 
 The block runs before field-level filtering, so `Precognition-Validate-Only: user.name` correctly finds the flattened key.
+
+When you pass nested errors to `redirect_to` with `inertia: { errors: ... }`, inertia adds a copy of the errors with flattened keys. The original nested structure is preserved alongside flat dot-notated copies. This means `{ user: @user.errors }` in the redirect produces both `errors.user.email_address` (nested) and `errors['user.email_address']` (flat) on the client, so `invalid('user.email_address')` works consistently whether the error came from a precognition request or a full form submission.
 
 ## Using `transform` with precognition
 
