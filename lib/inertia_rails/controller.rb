@@ -102,10 +102,9 @@ module InertiaRails
     end
 
     def precognition(model_or_errors, &block)
-      errors = InertiaRails::Precognition.validate(model_or_errors)
+      errors = InertiaRails::Precognition.validate(model_or_errors, &block)
       return if errors.nil?
 
-      errors = block.call(errors) if block && errors.any?
       render_precognition(errors)
       true
     end

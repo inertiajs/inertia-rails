@@ -76,9 +76,25 @@ class InertiaPrecognitionTestController < ApplicationController
     render json: { success: true }
   end
 
+  def with_nested_errors
+    errors = {}
+    errors[:name] = ["can't be blank"] if validator_params[:name].blank?
+    errors[:email] = ["can't be blank"] if validator_params[:email].blank?
+    precognition!({ user: errors })
+
+    render json: { success: true }
+  end
+
   def with_block_transform
     validator = TestValidator.new(validator_params)
     precognition!(validator) { |errors| { user: errors } }
+
+    render json: { success: true }
+  end
+
+  def with_block_key_rename
+    validator = TestValidator.new(validator_params)
+    precognition!(validator) { |errors| errors.transform_keys { |k| "user.#{k}" } }
 
     render json: { success: true }
   end
