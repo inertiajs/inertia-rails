@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Restart the SSR server promptly in the Puma plugin when the process dies during boot, instead of polling a dead port for the full boot timeout (@skryukov)
 * Fix `NoMethodError` raised when a request carrying the `X-Inertia` header reaches a non-Inertia controller such as an `ActionController::API` endpoint (@SAY-5)
 * Fix stale flash notice and use idiomatic class in Vue scaffolds (@skryukov)
+* Scaffold generator no longer produces enveloped requests using `transform` (@bknoles)
+* Automatically flatten error hashes to match Precognition dot-notated accessors for eneveloped forms (@bknoles)
 
 ## [3.22.0] - 2026-07-17
 
