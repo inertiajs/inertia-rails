@@ -153,6 +153,9 @@ Rails.application.routes.draw do
   post 'submit_form_to_test_csrf' => 'inertia_session_continuity_test#submit_form_to_test_csrf'
   delete 'clear_session' => 'inertia_session_continuity_test#clear_session'
 
+  get 'header_only_csrf_test' => 'inertia_header_only_csrf#request_test'
+  get 'legacy_token_csrf_test' => 'inertia_legacy_token_csrf#request_test'
+
   get 'conditional_share_index' => 'inertia_conditional_sharing#index'
   get 'conditional_share_show' => 'inertia_conditional_sharing#show'
   get 'conditional_share_edit' => 'inertia_conditional_sharing#edit'
