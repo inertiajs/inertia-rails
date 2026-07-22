@@ -20,6 +20,14 @@ module InertiaRails
         # Included into ActionController::Base, so this runs for non-Inertia
         # responses too — ActiveStorage images, where it only breaks CDN caching.
         next unless request.format.html? || request.xhr?
+
+        if forgery_protection_header_only?
+          # A cookie issued before the app moved to :header_only would otherwise
+          # be echoed back as X-XSRF-TOKEN indefinitely; expire it once.
+          cookies.delete('XSRF-TOKEN') if request.cookies['XSRF-TOKEN']
+          next
+        end
+
         next if XsrfCookieRefreshPolicy.skip?(self)
 
         cookies['XSRF-TOKEN'] = form_authenticity_token
@@ -124,6 +132,15 @@ module InertiaRails
       return {} unless @_inertia_instance_props
 
       view_assigns.except(*@_inertia_skip_props)
+    end
+
+    # Rails 8.2's :header_only forgery protection strategy verifies requests via
+    # the Sec-Fetch-Site header and never reads authenticity tokens, making the
+    # XSRF-TOKEN cookie pure overhead: a session write plus a cache-unfriendly
+    # Set-Cookie on every response. The accessor doesn't exist on earlier Rails.
+    def forgery_protection_header_only?
+      respond_to?(:forgery_protection_verification_strategy) &&
+        forgery_protection_verification_strategy == :header_only
     end
 
     # nil for plain requests — compacted out of the ETag, so non-Inertia ETags are unchanged.

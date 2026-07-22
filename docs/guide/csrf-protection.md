@@ -79,6 +79,31 @@ createInertiaApp({
 })
 ```
 
+## Header-Only CSRF Protection (Rails 8.2+)
+
+@available_since rails=master
+
+Rails 8.2 introduces a new default forgery protection strategy, `:header_only`, which verifies requests using the `Sec-Fetch-Site` header sent by modern browsers instead of authenticity tokens. Under this strategy Rails never reads a token, so there is nothing for the client to send back.
+
+The Rails adapter detects the strategy on each responding controller and stops issuing the `XSRF-TOKEN` cookie entirely — no token is generated or exchanged, and no `Set-Cookie` header is emitted. A leftover `XSRF-TOKEN` cookie from before the switch is expired automatically so clients stop echoing it as `X-XSRF-TOKEN`. Inertia's HTTP client only sends the header when the cookie exists, so no client-side configuration is required.
+
+This follows the strategy configured in Rails, per controller:
+
+```ruby
+# Application-wide, via the Rails 8.2 defaults (config.load_defaults 8.2)
+# or explicitly:
+config.action_controller.forgery_protection_verification_strategy = :header_only
+```
+
+```ruby
+# Or per controller:
+class ModernController < ApplicationController
+  protect_from_forgery using: :header_only
+end
+```
+
+Controllers using `:header_or_legacy_token` (the strategy Rails falls back to without the 8.2 defaults) still rely on authenticity tokens for browsers that don't send `Sec-Fetch-Site`, so the adapter keeps refreshing the `XSRF-TOKEN` cookie for them. On Rails versions without verification strategies, behavior is unchanged.
+
 ## Sessionless Controllers in Hybrid Applications
 
 When Inertia coexists with sessionless controllers in the same Rails application — such as token-authenticated API endpoints, webhook receivers, or any controller that does not rely on the session — it's important to configure CSRF protection correctly on those controllers.

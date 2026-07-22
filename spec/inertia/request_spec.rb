@@ -135,6 +135,34 @@ RSpec.describe 'Inertia::Request', type: :request do
       end
     end
 
+    describe 'when the forgery protection verification strategy is :header_only' do
+      it 'does not set the XSRF-TOKEN cookie' do
+        with_forgery_protection do
+          get header_only_csrf_test_path
+
+          expect(set_cookie_header).not_to include('XSRF-TOKEN')
+        end
+      end
+
+      it 'expires an XSRF-TOKEN cookie left over from a token-based strategy' do
+        with_forgery_protection do
+          cookies['XSRF-TOKEN'] = 'stale-token'
+
+          get header_only_csrf_test_path
+
+          expect(response.cookies).to include('XSRF-TOKEN' => nil)
+        end
+      end
+
+      it 'keeps setting the XSRF-TOKEN cookie for controllers on :header_or_legacy_token' do
+        with_forgery_protection do
+          get legacy_token_csrf_test_path
+
+          expect(response.cookies['XSRF-TOKEN']).to be_present
+        end
+      end
+    end
+
     describe 'xsrf_cookie_refresh configuration' do
       it 'continues setting the XSRF-TOKEN cookie on repeated safe requests by default' do
         with_forgery_protection do
