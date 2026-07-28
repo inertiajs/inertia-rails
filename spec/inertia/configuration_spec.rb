@@ -113,6 +113,17 @@ RSpec.describe 'Inertia configuration', type: :request do
         expect(config.meta_prop).to eq :custom_meta
       end
     end
+
+    describe 'DevTools defaults' do
+      it 'is disabled and unauthorized outside development with bounded, expiring storage' do
+        config = InertiaRails::Configuration.default
+
+        expect(config.devtools_enabled).to be(false)
+        expect(config.devtools_authorize.call(ActionDispatch::TestRequest.create)).to be(false)
+        expect(config.devtools_max_entries).to eq(500)
+        expect(config.devtools_entry_ttl).to eq(3600)
+      end
+    end
   end
 
   describe 'inertia_config' do

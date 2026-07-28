@@ -10,6 +10,7 @@ require_relative 'inertia_rails/version'
 require_relative 'inertia_rails/configuration'
 require_relative 'inertia_rails/current'
 require_relative 'inertia_rails/errors'
+require_relative 'inertia_rails/dev_tools'
 
 # props
 require_relative 'inertia_rails/raw_json'

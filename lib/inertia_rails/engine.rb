@@ -3,6 +3,9 @@
 module InertiaRails
   class Engine < ::Rails::Engine
     initializer 'inertia_rails.configure_rails_initialization', before: :build_middleware_stack do |app|
+      # Wrap conditional response handling so recorded status/headers match what
+      # the browser receives while retaining access to cookies and sessions.
+      app.middleware.insert_before ::Rack::ConditionalGet, ::InertiaRails::DevTools::Middleware
       app.middleware.use ::InertiaRails::Middleware
     end
 

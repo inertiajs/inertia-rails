@@ -91,6 +91,13 @@ module InertiaRails
       # Cache store for prop-level caching and SSR response caching.
       # Defaults to Rails.cache when nil.
       cache_store: nil,
+
+      # Inertia DevTools recorder options. Recording is development-only by
+      # default and entries are kept in a bounded, expiring in-memory store.
+      devtools_enabled: -> { Rails.env.development? },
+      devtools_max_entries: 500,
+      devtools_entry_ttl: 3600,
+      devtools_authorize: ->(_request) { Rails.env.development? },
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze
@@ -163,6 +170,11 @@ module InertiaRails
 
     def cache_store
       @options[:cache_store] || Rails.cache
+    end
+
+    # Returned without evaluating — the callable receives the current request.
+    def devtools_authorize
+      @options[:devtools_authorize]
     end
 
     # Normalized and validated at read time — ENV values arrive as strings, and callables are only evaluated here.

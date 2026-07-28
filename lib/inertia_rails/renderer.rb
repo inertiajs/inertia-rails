@@ -46,6 +46,8 @@ module InertiaRails
     def render
       ActiveSupport::Notifications.instrument('render.inertia_rails',
                                               component: @component, partial: partial_reload?, ssr: false) do |payload|
+        InertiaRails::DevTools.capture_page(@request, page)
+
         vary = @response.headers['Vary'].to_s.split(',').map(&:strip).reject(&:empty?)
         vary << 'X-Inertia' if vary.none? { |value| value.casecmp?('X-Inertia') }
         @response.headers['Vary'] = vary.join(', ')

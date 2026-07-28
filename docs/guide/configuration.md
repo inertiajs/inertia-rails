@@ -93,6 +93,23 @@ end
 When enabled, props will be deep merged with shared data, combining hashes
 with the same keys instead of replacing them.
 
+### Inertia DevTools
+
+Inertia Rails includes the server-side recorder used by the Inertia DevTools browser extension. It is enabled and authorized only in the Rails development environment by default. Recorded entries are held in the current process only, capped at 500 entries, and expire after one hour.
+
+```ruby
+InertiaRails.configure do |config|
+  config.devtools_enabled = Rails.env.development?
+  config.devtools_max_entries = 500
+  config.devtools_entry_ttl = 1.hour
+  config.devtools_authorize = ->(request) { Rails.env.development? }
+end
+```
+
+`devtools_authorize` is evaluated for both recording and reads from `/_inertia/devtools/entries`. If DevTools must be enabled outside development, replace it with an application-specific authorization check. Avoid enabling recording broadly in production because entries can include request bodies, response bodies, and page props.
+
+The recorder redacts common credential headers and body keys. Application-specific sensitive values should still be kept out of Inertia props and request payloads.
+
 ### `default_render`
 
 **Default**: `false`
