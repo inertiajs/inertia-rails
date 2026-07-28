@@ -4,9 +4,10 @@ module InertiaRails
   # Resolves props and collects metadata (deferred, merge, once, scroll)
   # for the Inertia page response.
   class PropsResolver
-    def initialize(props, evaluator:, visit: {})
+    def initialize(props, evaluator:, visit: {}, recorder: nil)
       @props = props
       @evaluator = evaluator
+      @recorder = recorder
       @partial_component = visit[:component] || false
       @partial_keys = visit[:only] || []
       @partial_except_keys = visit[:except] || []
@@ -86,6 +87,7 @@ module InertiaRails
         if prop.is_a?(Hash) && prop.any?
           next if !parent_was_resolved && excluded_by_partial_request?(path)
 
+          record_prop(prop, path)
           nested = deep_transform_props(prop, path, parent_was_resolved: parent_was_resolved)
           transformed_props[key] = nested unless nested.empty?
           next
@@ -94,6 +96,7 @@ module InertiaRails
         if prop.is_a?(Array)
           next if !parent_was_resolved && excluded_by_partial_request?(path)
 
+          record_prop(prop, path)
           transformed_props[key] = transform_array(prop, path, parent_was_resolved: parent_was_resolved)
           next
         end
@@ -101,6 +104,7 @@ module InertiaRails
         collect_metadata(prop, path)
         next unless keep_prop?(prop, path, parent_was_resolved: parent_was_resolved)
 
+        record_prop(prop, path)
         rescue_enabled = prop.try(:rescue?)
 
         begin
@@ -111,6 +115,7 @@ module InertiaRails
             collect_metadata(value, path)
             next unless keep_prop?(value, path, parent_was_resolved: parent_was_resolved)
 
+            record_prop(value, path)
             value = @evaluator.call(value)
           end
 
@@ -132,6 +137,7 @@ module InertiaRails
 
           report_rescued_error(e)
           @_rescued << path
+          record_prop(prop, path, rescued: true)
           next
         end
       end
@@ -157,6 +163,10 @@ module InertiaRails
       when Array then value.any? { |v| needs_transform?(v) }
       else value.respond_to?(:to_inertia)
       end
+    end
+
+    def record_prop(prop, path, rescued: false)
+      @recorder&.prop_resolved(path, prop, rescued: rescued)
     end
 
     def report_rescued_error(error)

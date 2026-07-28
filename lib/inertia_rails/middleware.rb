@@ -7,7 +7,11 @@ module InertiaRails
     end
 
     def call(env)
-      InertiaRailsRequest.new(@app, env).response
+      recorder = Devtools.start(env)
+      status, headers, body = InertiaRailsRequest.new(@app, env).response
+      return [status, headers, body] unless recorder
+
+      recorder.finish(status, headers, body)
     end
 
     class InertiaRailsRequest

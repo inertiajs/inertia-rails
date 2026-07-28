@@ -57,6 +57,20 @@ module InertiaRails
       end
     end
 
+    # Drawn unconditionally — routes are static, so enablement is enforced by the
+    # controller instead of by whether the app happened to boot with it on.
+    initializer 'inertia_rails.devtools' do |app|
+      app.routes.prepend do
+        # Left unnamed: these would otherwise claim `entries_path` in the host
+        # app's helpers and in anything that generates from the route table.
+        scope ::InertiaRails::Devtools::ROUTE_PREFIX, format: false, as: nil do
+          get 'entries', to: 'inertia_rails/devtools/entries#index', as: nil
+          get 'entries/:id', to: 'inertia_rails/devtools/entries#show', as: nil,
+                             constraints: { id: /[0-9A-HJKMNP-TV-Z]{26}/ }
+        end
+      end
+    end
+
     initializer 'inertia_rails.better_errors' do
       require_relative 'extensions/better_errors'
       BetterErrors::Middleware.include ::InertiaRails::InertiaBetterErrors if defined?(BetterErrors::Middleware)

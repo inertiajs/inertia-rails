@@ -402,3 +402,15 @@ end
 ```
 
 See [Title Template](/cookbook/server-managed-meta-tags#title-template) for details.
+
+### `devtools`
+
+**Default**: `nil`
+
+@available_since rails=master core=3.6.0
+
+Whether to record requests for the [Inertia DevTools](/guide/devtools) extension. `nil` records in development only; `true` or `false` force it on or off everywhere. Also settable with the `INERTIA_DEVTOOLS_ENABLED` environment variable.
+
+Unlike other options, this one is read globally rather than per controller.
+
+See [DevTools](/guide/devtools) for the rest of the `devtools_*` options.
