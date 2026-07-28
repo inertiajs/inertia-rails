@@ -91,6 +91,34 @@ module InertiaRails
       # Cache store for prop-level caching and SSR response caching.
       # Defaults to Rails.cache when nil.
       cache_store: nil,
+
+      # DevTools options. `devtools` is tri-state: nil enables recording in
+      # development only, true/false force it on or off everywhere.
+      devtools: -> { ENV.fetch('INERTIA_DEVTOOLS_ENABLED', nil) },
+      # Request paths never recorded. Strings are matched with File.fnmatch.
+      devtools_except: [].freeze,
+      # Where recorded entries are written. Defaults to tmp/inertia-devtools.
+      devtools_storage_path: nil,
+      # Hours an entry is kept, how often pruning runs (0 prunes every request),
+      # and how many entries a single browser tab may keep (0 disables the cap).
+      devtools_ttl: 24,
+      devtools_prune_interval: 300,
+      devtools_limit: 100,
+      # Callable evaluated in the read API controller outside development.
+      # Without one, the read API is unreachable in other environments.
+      devtools_authorize: nil,
+      # Exact, case-insensitive matches replaced with [REDACTED].
+      devtools_redact_keys: %w[
+        password password_confirmation current_password
+        token _token access_token refresh_token
+        secret client_secret api_key
+      ].freeze,
+      devtools_redact_headers: %w[
+        cookie set-cookie authorization proxy-authorization x-xsrf-token x-csrf-token
+      ].freeze,
+      # Directories searched for the page file backing a component. Auto-detected
+      # from the usual Vite/Webpacker locations when nil.
+      devtools_component_paths: nil,
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze
@@ -165,6 +193,11 @@ module InertiaRails
       @options[:cache_store] || Rails.cache
     end
 
+    # Returned without evaluating — instance_exec'd in the read API controller.
+    def devtools_authorize
+      @options[:devtools_authorize]
+    end
+
     # Normalized and validated at read time — ENV values arrive as strings, and callables are only evaluated here.
     def xsrf_cookie_refresh
       value = evaluate_option(options[:xsrf_cookie_refresh])
@@ -187,6 +220,15 @@ module InertiaRails
       return :_inertia_meta unless value
 
       value == true ? :head : value.to_sym
+    end
+
+    def devtools_enabled?
+      value = devtools
+      value = value.strip if value.is_a?(String)
+
+      return Rails.env.development? if value.nil? || value == ''
+
+      !%w[false 0 off no].include?(value.to_s.downcase)
     end
 
     # Returned without evaluating — the callable takes the current title as an

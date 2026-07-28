@@ -30,6 +30,9 @@ require_relative 'inertia_rails/scroll_prop'
 require_relative 'inertia_rails/prop_evaluator'
 require_relative 'inertia_rails/props_resolver'
 
+# devtools
+require_relative 'inertia_rails/devtools'
+
 # ssr
 require_relative 'inertia_rails/ssr'
 
