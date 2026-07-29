@@ -61,18 +61,23 @@ module InertiaRails
       end
 
       # The full body string when the body is safely bufferable, nil otherwise.
-      # Rails < 7.1's RackBody does not implement #to_ary; its #body returns the
-      # buffered string, but reading a Live streaming body would block, so those
-      # are excluded via the controller.
+      # #body and #to_ary both read an already buffered body without draining it;
+      # a file-backed or live streaming body would block, so those are skipped.
       def buffered_body(env, body)
-        return body.to_ary.join if body.respond_to?(:to_ary)
-        return unless body.respond_to?(:body)
-        return if body.respond_to?(:to_path)
+        return if body.respond_to?(:to_path) || live_stream?(env)
 
-        controller = env['action_controller.instance']
-        return if defined?(ActionController::Live) && controller.is_a?(ActionController::Live)
+        parts = if body.respond_to?(:body)
+                  body.body
+                elsif body.respond_to?(:to_ary)
+                  body.to_ary
+                end
 
-        body.body.dup
+        Array(parts).join if parts
+      end
+
+      def live_stream?(env)
+        defined?(ActionController::Live) &&
+          env['action_controller.instance'].is_a?(ActionController::Live)
       end
 
       def swallow
