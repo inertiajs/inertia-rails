@@ -46,8 +46,7 @@ module InertiaRails
 
           @suppressed_until = nil
         rescue StandardError => e
-          Devtools.report(e) if @suppressed_until.nil?
-          @suppressed_until = monotonic + SUPPRESS_SECONDS
+          suppress(e)
         end
       end
 
@@ -64,6 +63,7 @@ module InertiaRails
       end
 
       def prune_if_due
+        return if suppressed?
         return prune if @prune_interval <= 0
 
         ensure_directory
@@ -73,13 +73,20 @@ module InertiaRails
         prune
         write_atomically(File.join(@path, LAST_PRUNE_FILE), Time.now.to_i.to_s)
       rescue StandardError => e
-        Devtools.report(e)
+        suppress(e)
       end
 
       private
 
       def suppressed?
         @suppressed_until && monotonic < @suppressed_until
+      end
+
+      # Storage is broken often enough to be worth backing off: report the first
+      # failure and stop touching the filesystem until the window elapses.
+      def suppress(error)
+        Devtools.report(error) if @suppressed_until.nil?
+        @suppressed_until = monotonic + SUPPRESS_SECONDS
       end
 
       def monotonic
@@ -112,7 +119,9 @@ module InertiaRails
       def evicted_ids(index, tab_uuid:, limit:, max_entries:)
         ids = []
 
-        if tab_uuid && limit.positive?
+        # Entries with no tab header (initial document loads, curl, health checks)
+        # form their own group so they are capped rather than kept until the TTL.
+        if limit.positive?
           tab_metas = index.values.select { |meta| meta['tabUuid'] == tab_uuid }
           ids |= newest_first(tab_metas).drop(limit).map { |meta| meta['id'] }
         end
@@ -138,10 +147,14 @@ module InertiaRails
         end
       end
 
+      # Rebuild under the lock and reuse the index `mutate_index` already read there,
+      # so a concurrent write is not clobbered by a snapshot taken before it landed.
+      # An entry dropped that way would be invisible to `all` and, since `prune` only
+      # deletes ids listed in the index, would never be reclaimed.
       def rebuild_index_from_files
-        index = meta_from_files
-        mutate_index { index } unless index.empty?
-        index
+        rebuilt = {}
+        mutate_index { |index| rebuilt = normalize_index(index) }
+        rebuilt
       end
 
       def read_json(path)
