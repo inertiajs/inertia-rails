@@ -12,6 +12,9 @@ module InertiaRails
       return [status, headers, body] unless recorder
 
       recorder.finish(status, headers, body)
+    rescue StandardError => e
+      recorder&.record_exception(e)
+      raise
     end
 
     class InertiaRailsRequest

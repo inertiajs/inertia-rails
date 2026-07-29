@@ -5,6 +5,8 @@ module InertiaRails
     def inertia(*args, **options)
       defaults = options.delete(:defaults) || {}
       defaults = defaults.merge(props: options.delete(:props)) if options.key?(:props)
+      source = InertiaRails::Devtools::SourceLocator.caller_source(caller_locations(1, 30))
+      defaults = defaults.merge(InertiaRails::Devtools::RENDER_SOURCE_KEY => source) if source
 
       extract_routes(args, options).each do |route, component|
         get(route, to: StaticController.action(:static), defaults: defaults.merge(component: component), **options)

@@ -2,7 +2,6 @@
 
 module InertiaRails
   module Devtools
-    # Maps a prop wrapper to the metadata the DevTools panel badges it with.
     class PropClassifier
       def initialize(deferred_request:, reset_keys: [])
         @deferred_request = deferred_request
@@ -22,8 +21,6 @@ module InertiaRails
 
       private
 
-      # A DeferProp only counts as deferred when it is delivered by a deferred
-      # request. Resolved on a manual partial reload it behaves like a regular prop.
       def deferred_delivery?(prop)
         prop.is_a?(DeferProp) && @deferred_request
       end
@@ -46,16 +43,12 @@ module InertiaRails
         prop.try(:group)
       end
 
-      # Deep merge covers both `deep_merge` and `match_on`, which upserts array
-      # items on a key rather than blindly appending them.
       def deep_merge?(prop)
         return false unless prop.try(:merge?)
 
         prop.deep_merge? || prop.match_on.present?
       end
 
-      # Read from the wrapper rather than the page object, which records deep
-      # merges under `deepMergeProps` without a direction.
       def merge_direction(prop)
         return unless prop.try(:merge?)
 

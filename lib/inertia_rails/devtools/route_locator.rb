@@ -2,7 +2,6 @@
 
 module InertiaRails
   module Devtools
-    # Resolves the matched route into the name/uri/action the Route tab shows.
     module RouteLocator
       ROUTE_KEY = 'inertia_rails.devtools_route'
 
@@ -48,14 +47,15 @@ module InertiaRails
           SourceLocator.method_source(controller.class, controller.action_name)
         end
 
-        # Journey is the only place the route *name* is exposed; recognition is
-        # cached per request because both lookups need it.
         def journey_route(request)
-          return request.env[ROUTE_KEY] if request.env.key?(:__inertia_devtools_route)
+          return request.env[ROUTE_KEY] if request.env.key?(ROUTE_KEY)
 
           request.env[ROUTE_KEY] = begin
             found = nil
-            Rails.application.routes.router.recognize(request) { |route, _params| found ||= route }
+            # Recognize against a copy: on Rails < 8.1 it mutates PATH_INFO and
+            # SCRIPT_NAME in place when a mounted (unanchored) route matches.
+            probe = ActionDispatch::Request.new(request.env.dup)
+            Rails.application.routes.router.recognize(probe) { |route, _params| found ||= route }
             found
           rescue StandardError
             nil

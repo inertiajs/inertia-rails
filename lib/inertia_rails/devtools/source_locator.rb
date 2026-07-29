@@ -2,15 +2,12 @@
 
 module InertiaRails
   module Devtools
-    # Resolves the `{file, line}` pairs the DevTools panel turns into editor links.
     module SourceLocator
       MAX_SCAN_LINES = 100
       LIB_ROOT = File.expand_path('../..', __dir__)
       CACHE_KEY = :inertia_rails_devtools_source_lines
 
       class << self
-        # The frame that called into the gem — the user's `render inertia:` or
-        # `inertia_share` line, not the adapter's own plumbing.
         def caller_source(locations = caller_locations(1, 30))
           location = Array(locations).find { |candidate| app_frame?(candidate.absolute_path) }
           location && { file: location.absolute_path, line: location.lineno }
@@ -30,8 +27,6 @@ module InertiaRails
           nil
         end
 
-        # Narrows a call site to the line the individual prop key sits on, so a
-        # multi-key `render inertia:` links each prop to its own line.
         def prop_key_line(file, start_line, key)
           lines = source_lines(file)
           return unless lines
@@ -53,10 +48,6 @@ module InertiaRails
           line ? { file: source[:file], line: line } : source
         end
 
-        def clear_cache!
-          Thread.current[CACHE_KEY] = nil
-        end
-
         private
 
         def app_frame?(path)
@@ -67,14 +58,20 @@ module InertiaRails
           path.start_with?(Rails.root.to_s) && !path.include?('/vendor/bundle/')
         end
 
-        # Per-request, so an edit mid-session is never read from a stale cache.
         def source_lines(file)
-          cache = (Thread.current[CACHE_KEY] ||= {})
-          return cache[file] if cache.key?(file)
+          return nil unless file
 
-          cache[file] = (File.readlines(file) if file && File.file?(file))
+          cache = (Thread.current[CACHE_KEY] ||= {})
+          mtime = File.mtime(file)
+          cached_mtime, cached_lines = cache[file]
+          return cached_lines if cached_mtime == mtime
+
+          lines = File.readlines(file)
+          cache[file] = [mtime, lines]
+          lines
         rescue StandardError
-          cache[file] = nil
+          cache&.delete(file)
+          nil
         end
       end
     end

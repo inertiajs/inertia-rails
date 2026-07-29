@@ -4,23 +4,18 @@ require 'rack/body_proxy'
 
 module InertiaRails
   module Devtools
-    # Per-request observer. Everything it touches is guarded: a failure here
-    # drops the entry, it never changes the response the app produced.
     class Recorder
       ENV_KEY = 'inertia_rails.devtools'
       PREFETCH_HEADERS = %w[HTTP_PURPOSE HTTP_SEC_PURPOSE HTTP_X_MOZ].freeze
 
-      attr_reader :env, :id, :collector
+      attr_reader :env, :id, :collector, :exception
 
       def initialize(env)
         @env = env
         @id = Ulid.generate
         @started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         @collector = nil
-        # Shared props are declared in before_actions, so their call sites land
-        # here before the render creates a collector.
         @share_sources = {}
-        SourceLocator.clear_cache!
       end
 
       def batch_id
@@ -29,8 +24,6 @@ module InertiaRails
         Headers.read(@env, Headers::PARENT)
       end
 
-      # A prefetch returns its own id so the prefetched page's later requests
-      # start their own batch, while still recording under the originating one.
       def outgoing_parent_id
         return @id if prefetch?
 
@@ -50,9 +43,9 @@ module InertiaRails
           @collector = Collector.new(
             component: component,
             render_source: render_source,
-            share_sources: @share_sources
+            share_sources: @share_sources,
+            shared_keys: shared_keys
           )
-          @collector.shared_keys = shared_keys
         end
       end
 
@@ -78,35 +71,93 @@ module InertiaRails
         @collector.page = page
       end
 
-      def finish(status, headers, body)
-        headers[Headers::ID] = @id
-        headers[Headers::PARENT_OUT] = outgoing_parent_id
+      def finish(status, headers, body, error: nil)
+        Devtools.swallow do
+          id_key, parent_key = Headers.response_keys
+          headers[id_key] = @id
+          headers[parent_key] = outgoing_parent_id
+        end
 
-        entry = Devtools.swallow { EntryBuilder.new(self, status: status, headers: headers, body: body).build }
+        body = inject_devtools_tag(status, headers, body)
+
+        entry = Devtools.swallow do
+          EntryBuilder.new(self, status: status, headers: headers, body: body, error: error).build
+        end
         return [status, headers, body] unless entry
 
         [status, headers, Rack::BodyProxy.new(body) { persist(entry) }]
       end
 
+      def record_exception(error)
+        @exception = error
+        entry = Devtools.swallow do
+          EntryBuilder.new(self, status: 500, headers: {}, body: nil, error: error).build
+        end
+        persist(entry) if entry
+      end
+
       private
 
-      def persist(entry)
-        config = InertiaRails.configuration
-        repository = Devtools.repository
+      def inject_devtools_tag(status, headers, body)
+        Devtools.swallow do
+          next body unless status == 200 && @collector
+          next body if @env.key?('HTTP_X_INERTIA')
+          next body unless header_value(headers, 'content-type').to_s.include?('text/html')
+          next body unless body.respond_to?(:to_ary)
 
-        repository.record(
-          @id,
-          Redaction.redact_payload(entry),
-          tab_uuid: Headers.read(@env, Headers::TAB),
-          limit: config.devtools_limit.to_i
-        )
-        repository.prune_if_due
+          content = body.to_ary.join
+          insert_at = content.rindex(%r{</body\s*>}i) || content.length
+          content.insert(insert_at, devtools_tag)
+
+          replace_content_length(headers, content)
+          body.close if body.respond_to?(:close)
+          [content]
+        end || body
+      end
+
+      def devtools_tag
+        attributes = 'data-inertia-devtools-id="" type="application/json"'
+        nonce = content_security_policy_nonce
+        attributes = %(#{attributes} nonce="#{nonce}") if nonce
+
+        %(<script #{attributes}>#{@id.to_json}</script>)
+      end
+
+      def content_security_policy_nonce
+        request = ActionDispatch::Request.new(@env)
+        request.content_security_policy_nonce if request.respond_to?(:content_security_policy_nonce)
+      end
+
+      def header_value(headers, name)
+        key = headers.keys.find { |candidate| candidate.to_s.casecmp(name).zero? }
+        key && headers[key]
+      end
+
+      def replace_content_length(headers, content)
+        key = headers.keys.find { |candidate| candidate.to_s.casecmp('content-length').zero? }
+        headers[key] = content.bytesize.to_s if key
+      end
+
+      def persist(entry)
+        Devtools.swallow do
+          config = InertiaRails.configuration
+          repository = Devtools.repository
+
+          repository.record(
+            @id,
+            Redaction.redact_payload(entry),
+            tab_uuid: Headers.read(@env, Headers::TAB),
+            limit: config.devtools_limit.to_i,
+            max_entries: config.devtools_max_entries.to_i
+          )
+          repository.prune_if_due
+        end
       end
 
       def classifier
         @classifier ||= PropClassifier.new(
           deferred_request: !Headers.read(@env, Headers::DEFERRED).nil?,
-          reset_keys: @env['HTTP_X_INERTIA_RESET'].to_s.split(',').map(&:strip).reject(&:empty?)
+          reset_keys: Devtools.comma_list(@env['HTTP_X_INERTIA_RESET'])
         )
       end
     end

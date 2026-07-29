@@ -92,22 +92,21 @@ module InertiaRails
       # Defaults to Rails.cache when nil.
       cache_store: nil,
 
-      # DevTools options. `devtools` is tri-state: nil enables recording in
-      # development only, true/false force it on or off everywhere.
+      # DevTools recording and excluded paths.
       devtools: -> { ENV.fetch('INERTIA_DEVTOOLS_ENABLED', nil) },
-      # Request paths never recorded. Strings are matched with File.fnmatch.
       devtools_except: [].freeze,
-      # Where recorded entries are written. Defaults to tmp/inertia-devtools.
+
+      # Storage and retention.
       devtools_storage_path: nil,
-      # Hours an entry is kept, how often pruning runs (0 prunes every request),
-      # and how many entries a single browser tab may keep (0 disables the cap).
       devtools_ttl: 24,
       devtools_prune_interval: 300,
       devtools_limit: 100,
-      # Callable evaluated in the read API controller outside development.
-      # Without one, the read API is unreachable in other environments.
+      devtools_max_entries: 0,
+
+      # Read API authorization outside development.
       devtools_authorize: nil,
-      # Exact, case-insensitive matches replaced with [REDACTED].
+
+      # Key and header redaction.
       devtools_redact_keys: %w[
         password password_confirmation current_password
         token _token access_token refresh_token
@@ -116,12 +115,14 @@ module InertiaRails
       devtools_redact_headers: %w[
         cookie set-cookie authorization proxy-authorization x-xsrf-token x-csrf-token
       ].freeze,
-      # Directories searched for the page file backing a component. Auto-detected
-      # from the usual Vite/Webpacker locations when nil.
+
+      # Component source lookup.
       devtools_component_paths: nil,
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze
+
+    GLOBAL_OPTION_NAMES = OPTION_NAMES.select { |name| name.to_s.start_with?('devtools') }.freeze
 
     class << self
       def default
@@ -193,7 +194,6 @@ module InertiaRails
       @options[:cache_store] || Rails.cache
     end
 
-    # Returned without evaluating — instance_exec'd in the read API controller.
     def devtools_authorize
       @options[:devtools_authorize]
     end

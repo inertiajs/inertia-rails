@@ -2,9 +2,6 @@
 
 module InertiaRails
   module Devtools
-    # Read API for the DevTools extension. Deliberately not inheriting from the
-    # host app's ApplicationController: the panel must keep working when the app
-    # forces authentication, and the entries carry no app state of their own.
     class EntriesController < ActionController::Base
       protect_from_forgery with: :null_session
 
@@ -15,13 +12,16 @@ module InertiaRails
         entries = InertiaRails::Devtools.repository.all
         entries = entries.select { |entry| entry['component'] == params[:component] } if params[:component].present?
 
-        include_types = type_list(params[:type])
-        exclude_types = type_list(params[:exclude])
+        include_types = InertiaRails::Devtools.comma_list(params[:type])
+        exclude_types = InertiaRails::Devtools.comma_list(params[:exclude])
+
         entries = entries.select { |entry| include_types.include?(entry['requestType']) } if include_types.any?
         entries = entries.reject { |entry| exclude_types.include?(entry['requestType']) } if exclude_types.any?
+        offset = integer_param(params[:offset])
+        entries = entries.drop(offset.clamp(0, entries.length)) if offset
 
-        entries = entries.drop([params[:offset].to_i, 0].max)
-        entries = entries.first([params[:limit].to_i, 1].max) if params[:limit].present?
+        limit = integer_param(params[:limit])
+        entries = entries.first(entries.empty? ? 0 : limit.clamp(1, entries.length)) if limit
 
         render json: entries
       end
@@ -35,16 +35,14 @@ module InertiaRails
 
       private
 
-      def type_list(value)
-        value.to_s.split(',').map(&:strip).reject(&:empty?)
+      def integer_param(value)
+        Integer(value, exception: false) if value.is_a?(String) || value.is_a?(Integer)
       end
 
       def ensure_devtools_enabled!
         render(json: { message: 'Not found.' }, status: :not_found) unless InertiaRails::Devtools.enabled?
       end
 
-      # Development is always allowed: a failing gate would lock a developer out
-      # of their own devtools. Anywhere else access is the app's call.
       def authorize_devtools!
         return if Rails.env.development? || Rails.env.test?
 

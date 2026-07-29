@@ -3,11 +3,9 @@
 module InertiaRails
   module Devtools
     module Headers
-      # Response
       ID = 'X-Inertia-Devtools-Id'
       PARENT_OUT = 'X-Inertia-Devtools-Parent-Out'
 
-      # Request (Rack env keys)
       PARENT = 'HTTP_X_INERTIA_DEVTOOLS_PARENT'
       TAB = 'HTTP_X_INERTIA_DEVTOOLS_TAB'
       VISIT = 'HTTP_X_INERTIA_DEVTOOLS_VISIT'
@@ -17,6 +15,11 @@ module InertiaRails
       def self.read(env, key)
         value = env[key]
         value if value.is_a?(String) && !value.empty?
+      end
+
+      # Rack 3 requires lowercase response header names.
+      def self.response_keys
+        defined?(Rack::Headers) ? [ID.downcase, PARENT_OUT.downcase] : [ID, PARENT_OUT]
       end
     end
   end

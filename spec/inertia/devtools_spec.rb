@@ -29,10 +29,14 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
       expect(response.body).not_to include('data-inertia-devtools-id')
     end
 
-    it 'hides the read API' do
-      get '/_inertia/devtools/entries'
+    it 'does not claim the read API paths' do
+      expect { get '/_inertia/devtools/entries' }.to raise_error(ActionController::RoutingError)
+    end
 
-      expect(response.status).to eq 404
+    it 'rejects devtools options in inertia_config' do
+      expect do
+        Class.new(ApplicationController) { inertia_config(devtools: true) }
+      end.to raise_error(ArgumentError, /cannot be set per controller/)
     end
   end
 
@@ -66,6 +70,26 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         get devtools_props_path, headers: { 'X-Inertia' => true }
 
         expect(response.body).not_to include('data-inertia-devtools-id')
+      end
+
+      it 'leaves the tag out of plain HTML responses' do
+        app = ->(_env) { [200, { 'content-type' => 'text/html' }, ['<html><body>Plain</body></html>']] }
+        env = Rack::MockRequest.env_for('/plain')
+        _status, _headers, body = InertiaRails::Middleware.new(app).call(env)
+
+        expect(body.each.to_a.join).not_to include('data-inertia-devtools-id')
+        body.close
+      end
+
+      it 'skips configured path patterns without a leading slash' do
+        InertiaRails.configuration.devtools_except = ['devtools_plain']
+
+        get devtools_plain_path
+
+        expect(response.headers).not_to include('X-Inertia-Devtools-Id')
+        expect(entries).to be_empty
+      ensure
+        InertiaRails.configuration.devtools_except = []
       end
     end
 
@@ -161,8 +185,6 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(recorded['props']['nested']).to include('shared' => false)
       end
 
-      # Deferred and optional props are skipped before resolution on a first
-      # load, so they only show up on the request that actually delivers them.
       it 'badges a deferred prop on the request that delivers it' do
         get devtools_props_path, headers: {
           'X-Inertia' => true,
@@ -202,6 +224,18 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(recorded['propValues']).to include('name' => 'Brandon')
       end
 
+      it 'records the final keys after prop transformation' do
+        get prop_transformer_test_path, headers: { 'X-Inertia' => true }
+        transformed = entry
+
+        expect(transformed['props'].keys).to include('LOWER_PROP', 'PARENT_HASH')
+        expect(transformed['props'].keys).not_to include('lower_prop', 'parent_hash')
+        expect(transformed['propValues']).to include(
+          'LOWER_PROP' => 'lower_value',
+          'PARENT_HASH' => { 'LOWER_CHILD_PROP' => 'lower_child_value' }
+        )
+      end
+
       it 'resolves the route' do
         expect(recorded['route']).to include(
           'name' => 'devtools_props',
@@ -211,8 +245,47 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(recorded['route']['actionSource']['file']).to end_with('inertia_devtools_test_controller.rb')
       end
 
+      it 'links route-defined renders to the route definition' do
+        get inertia_route_path, headers: { 'X-Inertia' => true }
+        source = entry['renderSource']
+
+        expect(source['file']).to end_with('config/routes.rb')
+        expect(File.readlines(source['file'])[source['line'] - 1]).to include("inertia 'inertia_route'")
+      end
+
       it 'captures the page object as the response body' do
         expect(recorded['http']['responseBody']['value']).to include('component' => 'DevtoolsComponent')
+      end
+    end
+
+    describe 'prop pruning' do
+      it 'keeps one row per top-level prop regardless of nesting' do
+        get devtools_nested_share_path
+        paths = entry['props'].keys
+
+        expect(paths).to include('auth', 'auth.badge', 'plain_nested')
+        expect(paths).not_to include('auth.user', 'auth.user.profile.city', 'plain_nested.a.b.c')
+        expect(entry['props']['auth.badge']).to include('shared' => false, 'inertiaType' => 'always')
+      end
+
+      it 'duplicates only nested values that carry metadata' do
+        get devtools_nested_share_path
+
+        expect(entry['propValues']['auth']).to eq(
+          'badge' => 'A',
+          'user' => { 'id' => 1, 'profile' => { 'city' => 'Portland' } }
+        )
+        expect(entry['propValues'].slice('auth.badge')).to eq('auth.badge' => 'A')
+      end
+
+      it 'keys array paths by their index in the rendered array' do
+        get devtools_collection_path
+        recorded = entry
+        rows = recorded['http']['responseBody']['value']['props']['rows']
+
+        expect(rows.length).to eq 2
+        expect(recorded['propValues']['rows.0.tag']).to eq rows[0]['tag']
+        expect(recorded['propValues']['rows.1.tag']).to eq rows[1]['tag']
       end
     end
 
@@ -231,6 +304,79 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         get devtools_plain_path
         expect(entry['http']['responseBody']['value']).to eq('ok' => true, 'token' => '[REDACTED]')
       end
+
+      it 'honors the app filter_parameters list' do
+        get devtools_props_path
+
+        expect(entry['propValues']['ssn']).to eq '[REDACTED]'
+      end
+
+      it 'redacts nested values recorded under flattened dot paths' do
+        get devtools_props_path
+
+        expect(entry['props']['secrets.token']).to include('inertiaType' => 'always')
+        expect(entry['propValues']['secrets.token']).to eq '[REDACTED]'
+      end
+
+      it 'keeps metadata for props named like sensitive keys' do
+        get devtools_props_path
+
+        expect(entry['props']['password']).to include('shared' => false)
+      end
+
+      it 'drops an unparseable query instead of persisting it raw' do
+        expect(InertiaRails::Devtools::Redaction.redact_url('http://x/?token=%zz'))
+          .to eq 'http://x/?[REDACTED]'
+      end
+
+      it 'redacts sensitive keys nested in query parameters' do
+        get "#{devtools_props_path}?user[token]=leaked"
+
+        expect(entry['__meta']['url']).to include('user%5Btoken%5D=%5BREDACTED%5D')
+      end
+
+      it 'redacts the query of URLs carried in headers' do
+        post devtools_create_path, headers: { 'X-Inertia' => true, 'Referer' => 'http://ex.com/r?token=leaked' }
+        recorded = entry
+
+        expect(recorded['http']['requestHeaders']['referer']).to eq 'http://ex.com/r?token=%5BREDACTED%5D'
+        expect(recorded['http']['responseHeaders']['location']).to include('token=%5BREDACTED%5D')
+      end
+
+      it 'redacts a raw body Rails did not parse' do
+        post devtools_create_path, params: '{"password":"hunter2"}',
+                                   headers: { 'X-Inertia' => true, 'CONTENT_TYPE' => 'text/plain' }
+
+        expect(entry['http']['requestBody']).to eq(
+          'status' => 'present', 'value' => { 'password' => '[REDACTED]' }
+        )
+      end
+
+      it 'omits an unstructured body rather than storing it raw' do
+        post devtools_create_path, params: 'password=hunter2',
+                                   headers: { 'X-Inertia' => true, 'CONTENT_TYPE' => 'text/plain' }
+
+        expect(entry['http']['requestBody']).to eq('status' => 'omitted', 'reason' => 'unredactable')
+      end
+    end
+
+    describe 'unserializable values' do
+      it 'replaces a leaf instead of suppressing recording' do
+        get devtools_plain_path
+        get devtools_plain_path, headers: { 'X-Weird' => (+"caf\xE9").force_encoding('ASCII-8BIT') }
+        get devtools_plain_path
+
+        expect(entries.length).to eq 3
+      end
+
+      it 'replaces non-finite floats and invalid encodings' do
+        sanitized = InertiaRails::Devtools::Redaction.sanitize(
+          [Float::NAN, Float::INFINITY, (+"caf\xE9").force_encoding('UTF-8')]
+        )
+
+        expect(sanitized).to eq(['[UNSERIALIZABLE]'] * 3)
+        expect { JSON.generate(sanitized) }.not_to raise_error
+      end
     end
 
     describe 'redirects' do
@@ -238,7 +384,7 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         post devtools_create_path, headers: { 'X-Inertia' => true }
 
         expect(entries.first['status']).to eq 302
-        expect(entry['__meta']['redirectLocation']).to end_with('/devtools_props')
+        expect(entry['__meta']['redirectLocation']).to include('/devtools_props')
       end
 
       it 'omits a non-Inertia write body' do
@@ -271,6 +417,19 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(response.parsed_body.length).to eq 1
       end
 
+      it 'clamps numeric limits to at least one' do
+        get devtools_plain_path
+
+        get '/_inertia/devtools/entries', params: { limit: 1 }
+        expect(response.parsed_body.length).to eq 1
+
+        get '/_inertia/devtools/entries', params: { limit: 0 }
+        expect(response.parsed_body.length).to eq 1
+
+        get '/_inertia/devtools/entries', params: { limit: -1 }
+        expect(response.parsed_body.length).to eq 1
+      end
+
       it 'returns a single entry' do
         get "/_inertia/devtools/entries/#{entries.first['id']}"
 
@@ -299,6 +458,101 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
       ensure
         InertiaRails.configuration.devtools_limit = 100
       end
+
+      it 'caps total entries even without a tab header' do
+        InertiaRails.configuration.devtools_max_entries = 2
+        3.times { get devtools_props_path }
+
+        expect(entries.length).to eq 2
+      ensure
+        InertiaRails.configuration.devtools_max_entries = 0
+      end
+
+      it 'preserves large Inertia page and prop payloads' do
+        get devtools_oversized_path
+        recorded = entry
+
+        expect(recorded['http']['responseBody']['status']).to eq 'present'
+        expect(recorded.dig('http', 'responseBody', 'value', 'props', 'blob').length).to eq 300_000
+        expect(recorded['propValues']['blob'].length).to eq 300_000
+        expect(recorded['props']).to include('blob')
+      end
+
+      it 'honors a fractional ttl' do
+        InertiaRails.configuration.devtools_ttl = 0.5
+        InertiaRails.configuration.devtools_prune_interval = 0
+        2.times { get devtools_props_path }
+
+        expect(entries.length).to eq 2
+      ensure
+        InertiaRails.configuration.devtools_ttl = 24
+        InertiaRails.configuration.devtools_prune_interval = 300
+      end
+    end
+
+    describe 'exceptions' do
+      it 'records a request whose action raises' do
+        expect { get devtools_boom_path }.to raise_error(RuntimeError, 'devtools boom')
+
+        expect(entries.first['status']).to eq 500
+        expect(entry['__meta']['error']).to eq('class' => 'RuntimeError', 'message' => 'devtools boom')
+        expect(entry['http']['responseBody']).to eq('status' => 'omitted', 'reason' => 'exception')
+      end
+
+      it 'stamps the response rendered by Rails exception handling' do
+        env_config = Rails.application.env_config
+        original = env_config['action_dispatch.show_exceptions']
+        env_config['action_dispatch.show_exceptions'] = Rails.version < '7.1' ? true : :all
+
+        get devtools_boom_path
+
+        id = response.headers['X-Inertia-Devtools-Id']
+
+        expect(response).to have_http_status(:internal_server_error)
+        expect(id).to match(/\A[0-9A-HJKMNP-TV-Z]{26}\z/)
+        expect(InertiaRails::Devtools.repository.get(id).dig('__meta', 'error', 'message')).to eq 'devtools boom'
+      ensure
+        env_config['action_dispatch.show_exceptions'] = original
+      end
+    end
+
+    it 'emits an empty route object when no Rails route handled the response' do
+      app = ->(_env) { [401, { 'content-type' => 'text/plain' }, ['blocked']] }
+      env = Rack::MockRequest.env_for('/blocked')
+      _status, headers, body = InertiaRails::Middleware.new(app).call(env)
+      body.close
+
+      id = headers[InertiaRails::Devtools::Headers.response_keys.first]
+      expect(InertiaRails::Devtools.repository.get(id)['route']).to eq(
+        'name' => nil, 'uri' => '', 'action' => nil
+      )
+    end
+
+    it 'returns an absolute component path' do
+      root = File.join(storage_path, 'pages')
+      file = File.join(root, 'AbsoluteComponent.vue')
+      FileUtils.mkdir_p(root)
+      File.write(file, '')
+      InertiaRails.configuration.devtools_component_paths = [root]
+
+      expect(InertiaRails::Devtools::ComponentPathLocator.resolve('AbsoluteComponent')).to eq file
+    ensure
+      InertiaRails.configuration.devtools_component_paths = nil
+    end
+
+    it 'rebuilds a corrupt metadata index from entry files' do
+      get devtools_props_path
+      id = entries.first['id']
+      File.write(File.join(storage_path, '_meta.json'), '{ invalid json')
+
+      expect(entries.map { |meta| meta['id'] }).to include(id)
+      expect(JSON.parse(File.read(File.join(storage_path, '_meta.json')))).to have_key(id)
+    end
+
+    it 'rejects invalid storage entry ids' do
+      repository = InertiaRails::Devtools::EntriesRepository.new(path: storage_path)
+
+      expect { repository.record('../secret', {}) }.to raise_error(ArgumentError, /Invalid/)
     end
 
     it 'never breaks the response when recording fails' do

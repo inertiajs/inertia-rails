@@ -34,7 +34,10 @@ module InertiaRails
       def inertia_share(hash = nil, **props, &block)
         options = props.slice(:if, :unless, :only, :except)
         data = hash || props.except(:if, :unless, :only, :except)
-        source = InertiaRails::Devtools::SourceLocator.caller_source(caller_locations(1, 5))
+        locations = caller_locations(1, 5)
+        source = InertiaRails::Devtools.swallow do
+          InertiaRails::Devtools::SourceLocator.caller_source(locations)
+        end
 
         before_action(**options) do
           @_inertia_shared ||= []
@@ -46,6 +49,12 @@ module InertiaRails
       end
 
       def inertia_config(**attrs)
+        global = attrs.keys & Configuration::GLOBAL_OPTION_NAMES
+        if global.any?
+          raise ArgumentError,
+                "#{global.join(', ')} cannot be set per controller — set them via InertiaRails.configure instead."
+        end
+
         config = InertiaRails::Configuration.new(**attrs)
 
         if @inertia_config
@@ -76,8 +85,9 @@ module InertiaRails
       @_inertia_shared << props.freeze unless props.empty?
       @_inertia_shared << block if block
 
-      recorder = InertiaRails::Devtools.recorder(request)
-      recorder&.share_source(props.keys, InertiaRails::Devtools::SourceLocator.caller_source)
+      if (recorder = InertiaRails::Devtools.recorder(request))
+        recorder.share_source(props.keys, InertiaRails::Devtools::SourceLocator.caller_source)
+      end
     end
 
     def default_render

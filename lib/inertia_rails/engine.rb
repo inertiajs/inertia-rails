@@ -3,6 +3,9 @@
 module InertiaRails
   class Engine < ::Rails::Engine
     initializer 'inertia_rails.configure_rails_initialization', before: :build_middleware_stack do |app|
+      # Outermost so it sees the response ShowExceptions/DebugExceptions rendered
+      # for a recorded exception, without depending on either being in the stack.
+      app.middleware.unshift ::InertiaRails::Devtools::ExceptionMiddleware
       app.middleware.use ::InertiaRails::Middleware
     end
 
@@ -57,13 +60,11 @@ module InertiaRails
       end
     end
 
-    # Drawn unconditionally — routes are static, so enablement is enforced by the
-    # controller instead of by whether the app happened to boot with it on.
     initializer 'inertia_rails.devtools' do |app|
+      enabled = ->(*) { ::InertiaRails::Devtools.swallow { ::InertiaRails::Devtools.enabled? } || false }
+
       app.routes.prepend do
-        # Left unnamed: these would otherwise claim `entries_path` in the host
-        # app's helpers and in anything that generates from the route table.
-        scope ::InertiaRails::Devtools::ROUTE_PREFIX, format: false, as: nil do
+        scope ::InertiaRails::Devtools::ROUTE_PREFIX, format: false, as: nil, constraints: enabled do
           get 'entries', to: 'inertia_rails/devtools/entries#index', as: nil
           get 'entries/:id', to: 'inertia_rails/devtools/entries#show', as: nil,
                              constraints: { id: /[0-9A-HJKMNP-TV-Z]{26}/ }
