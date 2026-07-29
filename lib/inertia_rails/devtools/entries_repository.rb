@@ -53,12 +53,13 @@ module InertiaRails
 
       def prune
         cutoff = Time.now.to_f - (@ttl_hours * 3600)
-
         expired = []
+
         mutate_index do |index|
           expired = index.values.select { |meta| meta['utime'].to_f < cutoff }.map { |meta| meta['id'] }
           index.except(*expired)
         end
+
         remove_entry_files(expired)
       end
 
@@ -117,7 +118,6 @@ module InertiaRails
         end
 
         ids |= newest_first(index.values).drop(max_entries).map { |meta| meta['id'] } if max_entries.positive?
-
         ids
       end
 

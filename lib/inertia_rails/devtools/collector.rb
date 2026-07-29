@@ -57,6 +57,7 @@ module InertiaRails
         return unless props.is_a?(Hash)
 
         @props.reject! { |path| dig_path(props, path) == :__missing__ }
+
         props.each_key do |key|
           @props[key.to_s] ||= { shared: false, inertiaType: nil }
         end

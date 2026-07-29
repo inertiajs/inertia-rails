@@ -83,6 +83,7 @@ module InertiaRails
         entry = Devtools.swallow do
           EntryBuilder.new(self, status: status, headers: headers, body: body, error: error).build
         end
+
         return [status, headers, body] unless entry
 
         [status, headers, Rack::BodyProxy.new(body) { persist(entry) }]
@@ -90,9 +91,11 @@ module InertiaRails
 
       def record_exception(error)
         @exception = error
+
         entry = Devtools.swallow do
           EntryBuilder.new(self, status: 500, headers: {}, body: nil, error: error).build
         end
+
         persist(entry) if entry
       end
 
@@ -103,9 +106,10 @@ module InertiaRails
           next body unless status == 200 && @collector
           next body if @env.key?('HTTP_X_INERTIA')
           next body unless header_value(headers, 'content-type').to_s.include?('text/html')
-          next body unless body.respond_to?(:to_ary)
 
-          content = body.to_ary.join
+          content = Devtools.buffered_body(@env, body)
+          next body unless content
+
           insert_at = content.rindex(%r{</body\s*>}i) || content.length
           content.insert(insert_at, devtools_tag)
 
@@ -150,6 +154,7 @@ module InertiaRails
             limit: config.devtools_limit.to_i,
             max_entries: config.devtools_max_entries.to_i
           )
+
           repository.prune_if_due
         end
       end

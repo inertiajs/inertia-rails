@@ -39,6 +39,7 @@ module InertiaRails
 
       def repository
         config = InertiaRails.configuration
+
         key = [
           config.devtools_storage_path || Rails.root.join('tmp/inertia-devtools').to_s,
           config.devtools_ttl.to_f,
@@ -59,6 +60,21 @@ module InertiaRails
         value.to_s.split(',').map(&:strip).reject(&:empty?)
       end
 
+      # The full body string when the body is safely bufferable, nil otherwise.
+      # Rails < 7.1's RackBody does not implement #to_ary; its #body returns the
+      # buffered string, but reading a Live streaming body would block, so those
+      # are excluded via the controller.
+      def buffered_body(env, body)
+        return body.to_ary.join if body.respond_to?(:to_ary)
+        return unless body.respond_to?(:body)
+        return if body.respond_to?(:to_path)
+
+        controller = env['action_controller.instance']
+        return if defined?(ActionController::Live) && controller.is_a?(ActionController::Live)
+
+        body.body.dup
+      end
+
       def swallow
         yield
       rescue StandardError => e
@@ -76,6 +92,7 @@ module InertiaRails
         return true if path.start_with?(ROUTE_PREFIX)
 
         relative_path = path.delete_prefix('/')
+
         Array(InertiaRails.configuration.devtools_except).any? do |pattern|
           pattern.is_a?(Regexp) ? pattern.match?(path) : File.fnmatch?(pattern.to_s, relative_path)
         end
