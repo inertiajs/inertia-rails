@@ -501,6 +501,24 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(response.parsed_body.length).to eq 1
       end
 
+      it 'keeps its own polling out of the log' do
+        logged = capture_log { get '/_inertia/devtools/entries' }
+
+        expect(response.status).to eq 200
+        expect(logged).to be_empty
+        expect(capture_log { get devtools_props_path }).to include('Started GET')
+      end
+
+      it 'logs the request when quiet mode is off' do
+        InertiaRails.configuration.devtools_quiet = false
+
+        logged = capture_log { get '/_inertia/devtools/entries' }
+
+        expect(logged).to include('EntriesController#index')
+      ensure
+        InertiaRails.configuration.devtools_quiet = true
+      end
+
       it 'applies an offset' do
         get devtools_plain_path
 

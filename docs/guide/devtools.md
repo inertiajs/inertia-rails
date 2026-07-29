@@ -55,6 +55,8 @@ end
 
 The callable runs in the read API controller, so it can read `session`, `cookies`, and `request`.
 
+The extension polls the read API continuously, so those requests are kept out of the log. Set `config.devtools_quiet = false` if you are debugging the integration itself and want to see them. Only the `/_inertia/devtools` paths are silenced; your app's own requests log normally.
+
 ## Redaction
 
 Values under a sensitive key are replaced with `[REDACTED]` before anything is written to disk — in props, request and response bodies, and URL query parameters. Sensitive request and response headers are redacted too.
@@ -91,6 +93,7 @@ Recording never changes the response your app produced: if anything in the recor
 | `devtools_limit`           | `100`                       | Entries kept per browser tab, and per the tab-less group. `0` disables the cap.                            |
 | `devtools_max_entries`     | `0`                         | Optional total entry cap across all tabs. Disabled by default.                                             |
 | `devtools_authorize`       | `nil`                       | Callable gating the read API everywhere except development.                                                |
+| `devtools_quiet`           | `true`                      | Keep read API requests out of the log. `false` logs them like any other request.                           |
 | `devtools_redact_keys`     | passwords, tokens, secrets  | Prop, body, and query keys replaced with `[REDACTED]`.                                                     |
 | `devtools_redact_headers`  | cookie, authorization, CSRF | Header names replaced with `[REDACTED]`.                                                                   |
 | `devtools_component_paths` | `nil`                       | Directories searched for the page file backing a component. Auto-detected when `nil`.                      |

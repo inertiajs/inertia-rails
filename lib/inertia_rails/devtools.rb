@@ -11,7 +11,7 @@ require_relative 'devtools/collector'
 require_relative 'devtools/entry_builder'
 require_relative 'devtools/entries_repository'
 require_relative 'devtools/recorder'
-require_relative 'devtools/exception_middleware'
+require_relative 'devtools/middleware'
 
 module InertiaRails
   module Devtools

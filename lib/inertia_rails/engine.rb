@@ -3,9 +3,7 @@
 module InertiaRails
   class Engine < ::Rails::Engine
     initializer 'inertia_rails.configure_rails_initialization', before: :build_middleware_stack do |app|
-      # Outermost so it sees the response ShowExceptions/DebugExceptions rendered
-      # for a recorded exception, without depending on either being in the stack.
-      app.middleware.unshift ::InertiaRails::Devtools::ExceptionMiddleware
+      app.middleware.unshift ::InertiaRails::Devtools::Middleware
       app.middleware.use ::InertiaRails::Middleware
     end
 

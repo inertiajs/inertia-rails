@@ -103,8 +103,9 @@ module InertiaRails
       devtools_limit: 100,
       devtools_max_entries: 0,
 
-      # Read API authorization outside development.
+      # Read API authorization outside development, and its request logging.
       devtools_authorize: nil,
+      devtools_quiet: true,
 
       # Key and header redaction.
       devtools_redact_keys: %w[
