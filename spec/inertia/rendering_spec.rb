@@ -90,15 +90,11 @@ RSpec.describe 'rendering inertia views', type: :request do
       end
 
       it 'does not leak the route-to-component pair into the route defaults' do
-        expect(route_defaults('inertia_route')).to include(component: 'TestComponent')
-        expect(route_defaults('inertia_route')).not_to have_key(:props)
+        expect(route_defaults('inertia_route')).to eq(component: 'TestComponent')
       end
 
       it 'preserves the component when user defaults are given' do
-        expect(route_defaults('inertia_route_with_defaults')).to include(
-          category: 'static',
-          component: 'TestComponent'
-        )
+        expect(route_defaults('inertia_route_with_defaults')).to eq(category: 'static', component: 'TestComponent')
       end
     end
 

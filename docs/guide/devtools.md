@@ -19,7 +19,7 @@ Open Chrome DevTools on your app and pick the **Inertia** panel.
 
 ## What gets recorded
 
-Every response is recorded, whether or not it is an Inertia response, and stamped with an `X-Inertia-Devtools-Id` header. Successful initial Inertia HTML responses also get a `<script data-inertia-devtools-id>` tag injected before `</body>` so the extension can find the entry before any XHR happens.
+Every response is recorded, whether or not it is an Inertia response, and stamped with an `X-Inertia-Devtools-Id` header. Successful initial Inertia HTML responses also get a `<script data-inertia-devtools-id>` tag injected before `</body>` so the extension can find the entry before any XHR happens. Responses your app gave a validator (`fresh_when`, `stale?`) are left alone, since rewriting the body under a stale `ETag` would break conditional GET; those entries are still discoverable through the response header.
 
 Requests rendered by Rails exception handling are recorded with their final status and stamped with the same header. If exceptions are configured to propagate instead, DevTools retains a synthetic 500 entry, but there is no response to stamp.
 
@@ -44,7 +44,7 @@ end
 
 Unlike most options, the whole `devtools_*` family is read globally rather than per controller — recording runs in middleware and the read API runs outside any controller, so `inertia_config` rejects these options instead of silently ignoring an override. While devtools is off, the `/_inertia/devtools` paths are not claimed at all: requests to them fall through to your app's own routes.
 
-Outside development, the read API is unreachable until you name who may use it:
+Outside development — including the test environment — the read API is unreachable until you name who may use it:
 
 ```ruby
 InertiaRails.configure do |config|
@@ -69,11 +69,11 @@ end
 
 Your app's `config.filter_parameters` are honored too, with their standard Rails matching semantics — a key filtered from your logs is filtered from DevTools entries as well.
 
-Redaction is key-based, so it needs a structure to walk. A request body Rails has no parser for is parsed as JSON and redacted; if it isn't JSON, it is recorded as omitted rather than written out raw.
+Redaction is key-based, so it needs a structure to walk. A body Rails has no parser for is parsed as JSON and redacted; if it isn't JSON, it is recorded as omitted rather than written out raw. That applies in both directions — an HTML page or a text blob could embed a CSRF token or a secret under no key we can match, so non-Inertia responses are only stored when they are JSON.
 
 ## Storage
 
-Entries are written to `tmp/inertia-devtools` as one JSON file each, after the response has been sent. They are pruned after 24 hours, and each browser tab keeps at most 100 entries. A write failure is reported once and suppresses recording for 30 seconds rather than retrying on every request.
+Entries are written to `tmp/inertia-devtools` as one JSON file each, after the response has been sent. They are pruned after 24 hours, and at most 100 entries are kept per browser tab — requests that carry no tab header, such as initial document loads, form their own group under the same cap. A write failure is reported once and suppresses recording for 30 seconds rather than retrying on every request.
 
 Buffered non-Inertia response bodies and unparsed request bodies over 256 KB are recorded as omitted. Inertia pages retain their complete page and prop payloads so the panel sees the same data as the client.
 
@@ -88,9 +88,9 @@ Recording never changes the response your app produced: if anything in the recor
 | `devtools_storage_path`    | `tmp/inertia-devtools`      | Where entries are written.                                                                                 |
 | `devtools_ttl`             | `24`                        | Hours an entry is kept. Fractional values are allowed.                                                     |
 | `devtools_prune_interval`  | `300`                       | Seconds between prunes. `0` prunes on every request.                                                       |
-| `devtools_limit`           | `100`                       | Entries kept per browser tab. `0` disables the cap.                                                        |
+| `devtools_limit`           | `100`                       | Entries kept per browser tab, and per the tab-less group. `0` disables the cap.                            |
 | `devtools_max_entries`     | `0`                         | Optional total entry cap across all tabs. Disabled by default.                                             |
-| `devtools_authorize`       | `nil`                       | Callable gating the read API outside development.                                                          |
+| `devtools_authorize`       | `nil`                       | Callable gating the read API everywhere except development.                                                |
 | `devtools_redact_keys`     | passwords, tokens, secrets  | Prop, body, and query keys replaced with `[REDACTED]`.                                                     |
 | `devtools_redact_headers`  | cookie, authorization, CSRF | Header names replaced with `[REDACTED]`.                                                                   |
 | `devtools_component_paths` | `nil`                       | Directories searched for the page file backing a component. Auto-detected when `nil`.                      |

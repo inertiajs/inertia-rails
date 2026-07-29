@@ -16,7 +16,10 @@ module InertiaRails
         def resolve(component)
           return if component.blank?
 
-          cache[component] ||= find(component)
+          # Keyed on the roots too: reconfiguring the search paths must not keep
+          # serving a hit found under the old ones.
+          search_roots = roots
+          cache[[search_roots, component]] ||= find(search_roots, component)
         end
 
         private
@@ -25,8 +28,8 @@ module InertiaRails
           @cache ||= {}
         end
 
-        def find(component)
-          roots.each do |root|
+        def find(search_roots, component)
+          search_roots.each do |root|
             EXTENSIONS.each do |extension|
               path = File.join(root, "#{component}.#{extension}")
               return path if File.file?(path)
