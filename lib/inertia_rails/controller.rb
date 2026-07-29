@@ -34,7 +34,7 @@ module InertiaRails
       def inertia_share(hash = nil, **props, &block)
         options = props.slice(:if, :unless, :only, :except)
         data = hash || props.except(:if, :unless, :only, :except)
-        locations = caller_locations(1, 5)
+        locations = caller_locations(1, 30)
 
         source = InertiaRails::Devtools.swallow do
           InertiaRails::Devtools::SourceLocator.caller_source(locations)

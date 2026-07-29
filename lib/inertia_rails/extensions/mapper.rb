@@ -5,7 +5,7 @@ module InertiaRails
     def inertia(*args, **options)
       defaults = options.delete(:defaults) || {}
       defaults = defaults.merge(props: options.delete(:props)) if options.key?(:props)
-      source = InertiaRails::Devtools::SourceLocator.caller_source(caller_locations(1, 30))
+      source = devtools_render_source
       defaults = defaults.merge(InertiaRails::Devtools::RENDER_SOURCE_KEY => source) if source
 
       extract_routes(args, options).each do |route, component|
@@ -14,6 +14,16 @@ module InertiaRails
     end
 
     private
+
+    # Route defaults become path parameters, so this ends up in `params` and in the
+    # request log for every hit. Only pay that when DevTools will actually read it.
+    def devtools_render_source
+      InertiaRails::Devtools.swallow do
+        next unless InertiaRails::Devtools.enabled?
+
+        InertiaRails::Devtools::SourceLocator.caller_source(caller_locations(1, 30))
+      end
+    end
 
     # The first hash pair is the route; any further String-keyed pairs are
     # additional routes. Symbol-keyed leftovers are route options (`on:`, `as:`).
