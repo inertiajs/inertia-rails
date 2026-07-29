@@ -36,6 +36,7 @@ module InertiaRails
         options = props.slice(:if, :unless, :only, :except)
         data = hash || props.except(:if, :unless, :only, :except)
         locations = caller_locations(1, 5)
+
         source = InertiaRails::Devtools.swallow do
           InertiaRails::Devtools::SourceLocator.caller_source(locations)
         end
@@ -51,6 +52,7 @@ module InertiaRails
 
       def inertia_config(**attrs)
         global = attrs.keys & Configuration::GLOBAL_OPTION_NAMES
+
         if global.any?
           raise ArgumentError,
                 "#{global.join(', ')} cannot be set per controller — set them via InertiaRails.configure instead."
@@ -103,6 +105,7 @@ module InertiaRails
       full_page = response_options.dig(:inertia, :full_page)
       validate_full_page_redirect_status!(response_options) if full_page
       capture_inertia_session_options(response_options)
+
       super.tap do
         convert_redirect_to_location_response! if full_page && request.inertia?
       end
@@ -182,6 +185,7 @@ module InertiaRails
               'To disable this warning, set it to `false`.'
             )
           end
+
           {}
         end
 
@@ -209,12 +213,10 @@ module InertiaRails
 
     def inertia_collect_flash_data
       flash_data = flash.to_hash
-
       allowed_keys = inertia_configuration.flash_keys
+
       result = allowed_keys ? flash_data.slice(*allowed_keys.map(&:to_s)) : {}
-
       result.merge!(flash_data['inertia'].transform_keys(&:to_s)) if flash_data['inertia'].is_a?(Hash)
-
       result.symbolize_keys
     end
 

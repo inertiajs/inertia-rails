@@ -5,7 +5,6 @@ module InertiaRails
     module Headers
       ID = 'X-Inertia-Devtools-Id'
       PARENT_OUT = 'X-Inertia-Devtools-Parent-Out'
-
       PARENT = 'HTTP_X_INERTIA_DEVTOOLS_PARENT'
       TAB = 'HTTP_X_INERTIA_DEVTOOLS_TAB'
       VISIT = 'HTTP_X_INERTIA_DEVTOOLS_VISIT'

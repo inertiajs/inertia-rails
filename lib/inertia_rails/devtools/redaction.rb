@@ -79,6 +79,7 @@ module InertiaRails
             [key, sensitive_query_key?(key, filter) ? REDACTED : value]
           end
         )
+
         uri.to_s
       rescue StandardError
         # Fail closed when a query cannot be parsed.

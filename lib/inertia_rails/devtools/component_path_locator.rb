@@ -39,7 +39,6 @@ module InertiaRails
         def roots
           configured = InertiaRails.configuration.devtools_component_paths
           paths = configured ? Array(configured) : DEFAULT_ROOTS
-
           paths.map { |path| File.expand_path(path.to_s, Rails.root.to_s) }
         end
       end

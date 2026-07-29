@@ -23,7 +23,7 @@ module InertiaRails
           __meta: meta,
           http: {
             requestHeaders: Redaction.redact_headers(request_headers),
-            responseHeaders: Redaction.redact_headers(@headers.to_h),
+            responseHeaders: Redaction.redact_headers(downcased_headers),
             requestBody: request_body,
             responseBody: response_body,
           },
@@ -87,9 +87,14 @@ module InertiaRails
         header('location').presence
       end
 
-      def header(name)
+      # Downcased for lookups and storage — Rack 2 capitalizes response header
+      # names, Rack 3 requires them lowercase.
+      def downcased_headers
         @downcased_headers ||= @headers.to_h.transform_keys { |key| key.to_s.downcase }
-        value = @downcased_headers[name]
+      end
+
+      def header(name)
+        value = downcased_headers[name]
         value.is_a?(Array) ? value.first : value
       end
 
@@ -161,7 +166,7 @@ module InertiaRails
 
       # Do not drain streaming Rack bodies.
       def response_content
-        @body.to_ary.join if @body.respond_to?(:to_ary)
+        Devtools.buffered_body(@env, @body)
       end
 
       def body_value(value)
