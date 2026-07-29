@@ -16,8 +16,7 @@ module InertiaRails
         def resolve(component)
           return if component.blank?
 
-          # Keyed on the roots too: reconfiguring the search paths must not keep
-          # serving a hit found under the old ones.
+          # Keyed on the roots so reconfiguring the search paths cannot serve a stale hit.
           search_roots = roots
           cache[[search_roots, component]] ||= find(search_roots, component)
         end

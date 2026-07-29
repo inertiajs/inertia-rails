@@ -15,8 +15,8 @@ module InertiaRails
 
     private
 
-    # Route defaults become path parameters, so this ends up in `params` and in the
-    # request log for every hit. Only pay that when DevTools will actually read it.
+    # Route defaults become path parameters, so this lands in `params` and the request
+    # log on every hit — only pay that when DevTools will read it.
     def devtools_render_source
       InertiaRails::Devtools.swallow do
         next unless InertiaRails::Devtools.enabled?

@@ -82,8 +82,6 @@ module InertiaRails
         @suppressed_until && monotonic < @suppressed_until
       end
 
-      # Storage is broken often enough to be worth backing off: report the first
-      # failure and stop touching the filesystem until the window elapses.
       def suppress(error)
         Devtools.report(error) if @suppressed_until.nil?
         @suppressed_until = monotonic + SUPPRESS_SECONDS
@@ -119,8 +117,7 @@ module InertiaRails
       def evicted_ids(index, tab_uuid:, limit:, max_entries:)
         ids = []
 
-        # Entries with no tab header (initial document loads, curl, health checks)
-        # form their own group so they are capped rather than kept until the TTL.
+        # A nil tab_uuid groups the tab-less entries rather than exempting them.
         if limit.positive?
           tab_metas = index.values.select { |meta| meta['tabUuid'] == tab_uuid }
           ids |= newest_first(tab_metas).drop(limit).map { |meta| meta['id'] }
@@ -147,10 +144,9 @@ module InertiaRails
         end
       end
 
-      # Rebuild under the lock and reuse the index `mutate_index` already read there,
-      # so a concurrent write is not clobbered by a snapshot taken before it landed.
-      # An entry dropped that way would be invisible to `all` and, since `prune` only
-      # deletes ids listed in the index, would never be reclaimed.
+      # Rebuild from the index `mutate_index` already read under the lock: a snapshot
+      # taken outside it would clobber a concurrent write and orphan that entry file,
+      # which `prune` would then never reclaim.
       def rebuild_index_from_files
         rebuilt = {}
         mutate_index { |index| rebuilt = normalize_index(index) }

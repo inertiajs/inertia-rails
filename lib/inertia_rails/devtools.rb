@@ -60,9 +60,10 @@ module InertiaRails
         value.to_s.split(',').map(&:strip).reject(&:empty?)
       end
 
-      # The full body string when the body is safely bufferable, nil otherwise.
-      # #body and #to_ary both read an already buffered body without draining it;
-      # a file-backed or live streaming body would block, so those are skipped.
+      # #body and #to_ary read an already buffered body without draining it, but a
+      # file-backed or live streaming body would block. ActionDispatch::Response#body
+      # also hands back the raw stream when it is neither buffered nor #body-backed
+      # (`render stream:`), so only a String or Array is really a body.
       def buffered_body(env, body)
         return if body.respond_to?(:to_path) || live_stream?(env)
 
@@ -72,9 +73,6 @@ module InertiaRails
                   body.to_ary
                 end
 
-        # ActionDispatch::Response#body hands back the raw stream object when it is
-        # neither buffered nor #body-backed (`render stream:`, an assigned
-        # enumerator), so anything that is not a String or Array is not a body.
         case parts
         when String then parts
         when Array then parts.join

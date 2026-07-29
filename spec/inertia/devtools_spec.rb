@@ -81,8 +81,6 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         body.close
       end
 
-      # Rack::ETag will not recompute a digest the app set itself, so a mutated body
-      # would be served under a stale validator and revalidate to a 304 without the tag.
       it 'leaves a response carrying a validator alone' do
         get devtools_cached_path
 
@@ -91,9 +89,7 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(response.headers['X-Inertia-Devtools-Id']).to be_present
       end
 
-      # ActionDispatch::Response#body hands back the raw stream when it is neither
-      # to_ary- nor body-backed (`render stream:`, an assigned enumerator), so joining
-      # whatever it returns would record — and inject into — `#<Object:0x...>`.
+      # What ActionDispatch::Response#body returns for `render stream:` on Rails 7.1+.
       it 'does not mistake an unbuffered response stream for a body' do
         stream = Object.new
         stream.define_singleton_method(:each) { |&block| block.call('<html><body>real</body></html>') }
@@ -272,9 +268,8 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
       end
     end
 
-    # Route defaults are captured when the routes are drawn, so these need a redraw
-    # with recording on — and another one on the way out, so the key does not leak
-    # into the route defaults every later example sees.
+    # The source is captured when the routes are drawn, so this needs a redraw with
+    # recording on — and another on the way out, or every later example sees the key.
     describe 'routes drawn while recording' do
       around do |example|
         Rails.application.reload_routes!
