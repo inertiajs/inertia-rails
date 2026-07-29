@@ -511,14 +511,14 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(capture_log { get devtools_props_path }).to include('Started GET')
       end
 
-      it 'logs the request when quiet mode is off' do
-        InertiaRails.configuration.devtools_quiet = false
+      it 'logs the request when silencing is off' do
+        InertiaRails.configuration.devtools_silence_logs = false
 
         logged = capture_log { get '/_inertia/devtools/entries' }
 
         expect(logged).to include('EntriesController#index')
       ensure
-        InertiaRails.configuration.devtools_quiet = true
+        InertiaRails.configuration.devtools_silence_logs = true
       end
 
       it 'applies an offset' do

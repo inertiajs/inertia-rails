@@ -12,7 +12,7 @@ module InertiaRails
       end
 
       def call(env)
-        return respond(env) unless quiet?(env)
+        return respond(env) unless silence_logs?(env)
 
         Rails.logger.silence { respond(env) }
       end
@@ -28,11 +28,11 @@ module InertiaRails
         recorder.finish(status, headers, body, error: recorder.exception)
       end
 
-      def quiet?(env)
+      def silence_logs?(env)
         return false unless env['PATH_INFO'].to_s.start_with?(ROUTE_PREFIX)
         return false unless Rails.logger.respond_to?(:silence)
 
-        Devtools.swallow { Devtools.enabled? && InertiaRails.configuration.devtools_quiet } || false
+        Devtools.swallow { Devtools.enabled? && InertiaRails.configuration.devtools_silence_logs } || false
       end
     end
   end

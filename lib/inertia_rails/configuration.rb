@@ -105,7 +105,7 @@ module InertiaRails
 
       # Read API authorization outside development, and its request logging.
       devtools_authorize: nil,
-      devtools_quiet: true,
+      devtools_silence_logs: true,
 
       # Key and header redaction.
       devtools_redact_keys: %w[
