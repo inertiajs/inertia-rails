@@ -145,6 +145,8 @@ module InertiaRails
         body_value(Redaction.redact(page))
       end
 
+      # Unparsed bodies must be structured JSON to be safely redacted — an HTML page
+      # or a text blob can embed a CSRF token or a secret under no key we can match.
       def raw_response_body
         content_type = header('content-type').to_s.downcase
         return omitted('non-textual') unless TEXTUAL_CONTENT_TYPES.any? { |needle| content_type.include?(needle) }
@@ -153,15 +155,14 @@ module InertiaRails
         return omitted('streamed') if content.nil?
         return { status: 'empty' } if content.empty?
         return omitted('too-large') if content.bytesize > RAW_BODY_LIMIT
+        return omitted('unredactable') unless content_type.include?('json')
 
-        if content_type.include?('json')
-          decoded = JSON.parse(content)
-          return body_value(Redaction.redact(decoded)) if decoded.is_a?(Hash) || decoded.is_a?(Array)
-        end
+        decoded = JSON.parse(content)
+        return omitted('unredactable') unless decoded.is_a?(Hash) || decoded.is_a?(Array)
 
-        body_string(content)
+        body_value(Redaction.redact(decoded))
       rescue JSON::ParserError
-        body_string(response_content)
+        omitted('unredactable')
       end
 
       # Do not drain streaming Rack bodies.
@@ -171,15 +172,6 @@ module InertiaRails
 
       def body_value(value)
         { status: 'present', value: value }
-      end
-
-      def body_string(content)
-        return { status: 'empty' } if content.nil? || content.empty?
-
-        text = content.dup.force_encoding(Encoding::UTF_8)
-        return omitted('binary') unless text.valid_encoding?
-
-        { status: 'present', value: text }
       end
 
       def omitted(reason)

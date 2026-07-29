@@ -44,7 +44,7 @@ module InertiaRails
       end
 
       def authorize_devtools!
-        return if Rails.env.development? || Rails.env.test?
+        return if Rails.env.development?
 
         gate = InertiaRails.configuration.devtools_authorize
         return if gate && instance_exec(&gate)
