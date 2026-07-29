@@ -146,13 +146,19 @@ module InertiaRails
     def transform_array(array, path, parent_was_resolved:)
       return array unless needs_transform?(array)
 
-      array.each_with_index.filter_map do |item, i|
-        if item.is_a?(Hash)
-          nested = deep_transform_props(item, "#{path}.#{i}", parent_was_resolved: parent_was_resolved)
-          nested unless nested.empty?
-        else
-          @evaluator.call(item)
-        end
+      rendered_index = 0
+
+      array.filter_map do |item|
+        value =
+          if item.is_a?(Hash)
+            nested = deep_transform_props(item, "#{path}.#{rendered_index}", parent_was_resolved: parent_was_resolved)
+            nested unless nested.empty?
+          else
+            @evaluator.call(item)
+          end
+
+        rendered_index += 1 if value
+        value
       end
     end
 
@@ -170,13 +176,7 @@ module InertiaRails
     end
 
     def report_rescued_error(error)
-      # `Rails.error` (the Error Reporter) was introduced in Rails 7.0. Fall back
-      # to the logger on older versions so rescued errors are never silently lost.
-      if Rails.respond_to?(:error)
-        Rails.error.report(error, handled: true)
-      else
-        Rails.logger&.error("[inertia-rails] Rescued deferred prop error: #{error.class}: #{error.message}")
-      end
+      InertiaRails.report_handled_error(error, message: 'Rescued deferred prop error')
     end
 
     def collect_metadata(prop, path)

@@ -19,12 +19,14 @@ Open Chrome DevTools on your app and pick the **Inertia** panel.
 
 ## What gets recorded
 
-Every response is recorded, whether or not it is an Inertia response, and stamped with an `X-Inertia-Devtools-Id` header. On initial page loads, `inertia_root` also renders a `<script data-inertia-devtools-id>` tag so the extension can find the entry before any XHR happens.
+Every response is recorded, whether or not it is an Inertia response, and stamped with an `X-Inertia-Devtools-Id` header. Successful initial Inertia HTML responses also get a `<script data-inertia-devtools-id>` tag injected before `</body>` so the extension can find the entry before any XHR happens.
+
+Requests rendered by Rails exception handling are recorded with their final status and stamped with the same header. If exceptions are configured to propagate instead, DevTools retains a synthetic 500 entry, but there is no response to stamp.
 
 For Inertia renders, the entry also carries:
 
 - **Props** — every prop keyed by its dot path, badged with its type (`always`, `optional`, `defer`, `merge`, `scroll`, `once`), its defer group, merge direction, and whether it came from `inertia_share`.
-- **Editor links** — the file and line of the `render inertia:` call, of the `inertia_share` block each shared prop came from, and of the controller action.
+- **Editor links** — the file and line of the `render inertia:` call (or `inertia` route definition), of the `inertia_share` block each shared prop came from, and of the controller action.
 - **Route** — the matched route name, URI pattern, and `Controller#action`.
 - **Page** — the full page object the client received.
 
@@ -40,7 +42,7 @@ InertiaRails.configure do |config|
 end
 ```
 
-Unlike most options, `devtools` is read globally rather than per controller — the read API routes are drawn once, so a per-controller override could advertise entries the API refuses to serve.
+Unlike most options, the whole `devtools_*` family is read globally rather than per controller — recording runs in middleware and the read API runs outside any controller, so `inertia_config` rejects these options instead of silently ignoring an override. While devtools is off, the `/_inertia/devtools` paths are not claimed at all: requests to them fall through to your app's own routes.
 
 Outside development, the read API is unreachable until you name who may use it:
 
@@ -65,23 +67,30 @@ InertiaRails.configure do |config|
 end
 ```
 
+Your app's `config.filter_parameters` are honored too, with their standard Rails matching semantics — a key filtered from your logs is filtered from DevTools entries as well.
+
+Redaction is key-based, so it needs a structure to walk. A request body Rails has no parser for is parsed as JSON and redacted; if it isn't JSON, it is recorded as omitted rather than written out raw.
+
 ## Storage
 
 Entries are written to `tmp/inertia-devtools` as one JSON file each, after the response has been sent. They are pruned after 24 hours, and each browser tab keeps at most 100 entries. A write failure is reported once and suppresses recording for 30 seconds rather than retrying on every request.
+
+Buffered non-Inertia response bodies and unparsed request bodies over 256 KB are recorded as omitted. Inertia pages retain their complete page and prop payloads so the panel sees the same data as the client.
 
 Recording never changes the response your app produced: if anything in the recorder raises, the entry is dropped and the request is served as if DevTools were off.
 
 ## Configuration
 
-| Option                      | Default                       | Description                                                                          |
-| --------------------------- | ----------------------------- | ------------------------------------------------------------------------------------ |
-| `devtools`                  | `nil`                         | `nil` records in development only; `true` or `false` force it on or off.               |
-| `devtools_except`           | `[]`                          | Request paths never recorded. Strings are matched with `File.fnmatch`; regexps work too. |
-| `devtools_storage_path`     | `tmp/inertia-devtools`        | Where entries are written.                                                             |
-| `devtools_ttl`              | `24`                          | Hours an entry is kept.                                                                |
-| `devtools_prune_interval`   | `300`                         | Seconds between prunes. `0` prunes on every request.                                   |
-| `devtools_limit`            | `100`                         | Entries kept per browser tab. `0` disables the cap.                                    |
-| `devtools_authorize`        | `nil`                         | Callable gating the read API outside development.                                      |
-| `devtools_redact_keys`      | passwords, tokens, secrets    | Prop, body, and query keys replaced with `[REDACTED]`.                                 |
-| `devtools_redact_headers`   | cookie, authorization, CSRF   | Header names replaced with `[REDACTED]`.                                               |
-| `devtools_component_paths`  | `nil`                         | Directories searched for the page file backing a component. Auto-detected when `nil`.  |
+| Option                     | Default                     | Description                                                                                                |
+| -------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `devtools`                 | `nil`                       | `nil` records in development only; `true` or `false` force it on or off.                                   |
+| `devtools_except`          | `[]`                        | Request paths never recorded. Strings such as `admin/*` are matched with `File.fnmatch`; regexps work too. |
+| `devtools_storage_path`    | `tmp/inertia-devtools`      | Where entries are written.                                                                                 |
+| `devtools_ttl`             | `24`                        | Hours an entry is kept. Fractional values are allowed.                                                     |
+| `devtools_prune_interval`  | `300`                       | Seconds between prunes. `0` prunes on every request.                                                       |
+| `devtools_limit`           | `100`                       | Entries kept per browser tab. `0` disables the cap.                                                        |
+| `devtools_max_entries`     | `0`                         | Optional total entry cap across all tabs. Disabled by default.                                             |
+| `devtools_authorize`       | `nil`                       | Callable gating the read API outside development.                                                          |
+| `devtools_redact_keys`     | passwords, tokens, secrets  | Prop, body, and query keys replaced with `[REDACTED]`.                                                     |
+| `devtools_redact_headers`  | cookie, authorization, CSRF | Header names replaced with `[REDACTED]`.                                                                   |
+| `devtools_component_paths` | `nil`                       | Directories searched for the page file backing a component. Auto-detected when `nil`.                      |

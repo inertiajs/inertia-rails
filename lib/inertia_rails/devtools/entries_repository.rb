@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 require 'fileutils'
+require 'active_support/core_ext/file/atomic'
 
 module InertiaRails
   module Devtools
-    # One JSON file per entry plus an index of their `__meta`, so listing never
-    # reads the entry files.
     class EntriesRepository
       INDEX_FILE = '_meta.json'
+      LOCK_FILE = '_meta.lock'
       LAST_PRUNE_FILE = '_last_prune'
       SUPPRESS_SECONDS = 30
 
@@ -18,52 +18,48 @@ module InertiaRails
         @suppressed_until = nil
       end
 
-      def save(id, data)
-        raise ArgumentError, 'Invalid Inertia DevTools entry id.' unless Ulid.valid?(id)
-
-        ensure_directory
-        write_atomically(entry_path(id), JSON.generate(data))
-        mutate_index { |index| index.merge(id => index_meta(data['__meta'] || data[:__meta] || {})) }
-      end
-
       def get(id)
         return unless Ulid.valid?(id)
 
         read_json(entry_path(id))
       end
 
-      # Entry metadata, newest first. Ids are ULIDs, so they sort by time.
       def all
-        read_index.values.sort_by { |meta| meta['id'].to_s }.reverse
+        newest_first(read_index.values)
       end
 
-      # Called after the response is sent, so a slow disk never delays the app.
-      def record(id, data, tab_uuid: nil, limit: 100)
+      def record(id, data, tab_uuid: nil, limit: 100, max_entries: 0)
+        raise ArgumentError, 'Invalid Inertia DevTools entry id.' unless Ulid.valid?(id)
         return if suppressed?
 
-        save(id, data)
-        enforce_tab_limit(tab_uuid, limit) if tab_uuid && limit.positive?
-        @suppressed_until = nil
-      rescue StandardError => e
-        Devtools.report(e) if @suppressed_until.nil?
-        @suppressed_until = monotonic + SUPPRESS_SECONDS
+        begin
+          ensure_directory
+          write_atomically(entry_path(id), JSON.generate(data))
+
+          evicted = []
+          mutate_index do |index|
+            index = index.merge(id => index_meta(data['__meta'] || data[:__meta] || {}))
+            evicted = evicted_ids(index, tab_uuid: tab_uuid, limit: limit, max_entries: max_entries)
+            index.except(*evicted)
+          end
+          remove_entry_files(evicted)
+
+          @suppressed_until = nil
+        rescue StandardError => e
+          Devtools.report(e) if @suppressed_until.nil?
+          @suppressed_until = monotonic + SUPPRESS_SECONDS
+        end
       end
 
-      def enforce_tab_limit(tab_uuid, limit)
-        expired = read_index
-                  .values
-                  .select { |meta| meta['tabUuid'] == tab_uuid }
-                  .sort_by { |meta| meta['id'].to_s }
-                  .reverse
-                  .drop(limit)
-                  .map { |meta| meta['id'] }
+      def prune
+        cutoff = Time.now.to_f - (@ttl_hours * 3600)
 
-        delete(expired)
-      end
-
-      def prune(hours = @ttl_hours)
-        cutoff = Time.now.to_f - (hours * 3600)
-        delete(read_index.values.select { |meta| meta['utime'].to_f < cutoff }.map { |meta| meta['id'] })
+        expired = []
+        mutate_index do |index|
+          expired = index.values.select { |meta| meta['utime'].to_f < cutoff }.map { |meta| meta['id'] }
+          index.except(*expired)
+        end
+        remove_entry_files(expired)
       end
 
       def prune_if_due
@@ -108,48 +104,80 @@ module InertiaRails
         )
       end
 
-      def delete(ids)
-        return if ids.empty?
+      def newest_first(metas)
+        metas.sort_by { |meta| meta['id'].to_s }.reverse
+      end
 
+      def evicted_ids(index, tab_uuid:, limit:, max_entries:)
+        ids = []
+
+        if tab_uuid && limit.positive?
+          tab_metas = index.values.select { |meta| meta['tabUuid'] == tab_uuid }
+          ids |= newest_first(tab_metas).drop(limit).map { |meta| meta['id'] }
+        end
+
+        ids |= newest_first(index.values).drop(max_entries).map { |meta| meta['id'] } if max_entries.positive?
+
+        ids
+      end
+
+      def remove_entry_files(ids)
         ids.each { |id| FileUtils.rm_f(entry_path(id)) if Ulid.valid?(id) }
-        mutate_index { |index| index.except(*ids) }
       end
 
       def read_index
-        read_json(index_path) || {}
+        index = parse_index(read_raw_index)
+        return normalize_index(index) if index
+
+        rebuild_index_from_files
+      end
+
+      def normalize_index(index)
+        index.each_with_object({}) do |(id, meta), normalized|
+          normalized[id] = index_meta(meta) if meta.is_a?(Hash)
+        end
+      end
+
+      def rebuild_index_from_files
+        index = meta_from_files
+        mutate_index { index } unless index.empty?
+        index
       end
 
       def read_json(path)
-        JSON.parse(File.read(path))
-      rescue Errno::ENOENT, JSON::ParserError
+        parsed = JSON.parse(File.read(path))
+        parsed if parsed.is_a?(Hash)
+      rescue SystemCallError, JSON::ParserError
         nil
       end
 
       def read_last_pruned_at
         Integer(File.read(File.join(@path, LAST_PRUNE_FILE)), exception: false)
-      rescue Errno::ENOENT
+      rescue SystemCallError
         nil
       end
 
       def mutate_index
         ensure_directory
 
-        File.open(index_path, File::RDWR | File::CREAT, 0o600) do |file|
-          file.flock(File::LOCK_EX)
-          contents = file.read
-          # A corrupt index would otherwise read as empty and drop every prior
-          # entry's meta on the next write. Reseed from the entry files instead.
-          index = parse_index(contents) || meta_from_files
+        File.open(File.join(@path, LOCK_FILE), File::WRONLY | File::CREAT, 0o600) do |lock|
+          lock.flock(File::LOCK_EX)
+
+          index = parse_index(read_raw_index) || meta_from_files
           index = yield(index)
 
-          file.rewind
-          file.truncate(0)
-          file.write(JSON.generate(index))
+          write_atomically(index_path, JSON.generate(index))
         end
       end
 
+      def read_raw_index
+        File.read(index_path)
+      rescue SystemCallError
+        nil
+      end
+
       def parse_index(contents)
-        return {} if contents.nil? || contents.empty?
+        return if contents.nil? || contents.empty?
 
         parsed = JSON.parse(contents)
         parsed.is_a?(Hash) ? parsed : nil
@@ -167,15 +195,9 @@ module InertiaRails
       end
 
       def write_atomically(path, contents)
-        temp = "#{path}.#{Process.pid}.#{SecureRandom.hex(4)}.tmp"
-        File.binwrite(temp, contents)
-        File.rename(temp, path)
-      ensure
-        FileUtils.rm_f(temp) if temp && File.exist?(temp)
+        File.atomic_write(path) { |file| file.write(contents) }
       end
 
-      # Not memoized: the directory lives under tmp/, where anything from a
-      # `rails tmp:clear` to a stray `rm -rf` can remove it mid-process.
       def ensure_directory
         FileUtils.mkdir_p(@path, mode: 0o700)
         gitignore = File.join(@path, '.gitignore')

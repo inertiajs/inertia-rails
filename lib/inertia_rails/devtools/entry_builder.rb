@@ -2,20 +2,19 @@
 
 module InertiaRails
   module Devtools
-    # Turns a finished request/response pair plus the render collector into the
-    # entry envelope the DevTools extension reads.
     class EntryBuilder
       RAW_BODY_LIMIT = 256_000
       WRITE_METHODS = %w[POST PUT PATCH DELETE].freeze
       TEXTUAL_CONTENT_TYPES = %w[json text/ xml javascript].freeze
 
-      def initialize(recorder, status:, headers:, body:)
+      def initialize(recorder, status:, headers:, body:, error: nil)
         @recorder = recorder
         @env = recorder.env
         @request = ActionDispatch::Request.new(@env)
         @status = status
         @headers = headers
         @body = body
+        @error = error
         @collector = recorder.collector
       end
 
@@ -40,7 +39,7 @@ module InertiaRails
           id: @recorder.id,
           tabUuid: Headers.read(@env, Headers::TAB),
           batchId: @recorder.batch_id,
-          timestamp: Time.at(utime).utc.strftime('%Y-%m-%dT%H:%M:%S.%LZ'),
+          timestamp: Time.at(utime).utc.iso8601(3),
           utime: utime,
           method: @request.request_method,
           url: @request.original_url,
@@ -50,25 +49,25 @@ module InertiaRails
           redirectLocation: redirect_location,
           serverTimingMs: @recorder.elapsed_ms,
           visitId: Headers.read(@env, Headers::VISIT),
-        }
+        }.tap do |entry|
+          entry[:error] = { class: @error.class.name, message: @error.message.to_s } if @error
+        end
       end
 
       def page_payload
         {
           props: payload[:props] || {},
           propValues: payload[:propValues] || {},
-          route: RouteLocator.resolve(@request),
+          route: RouteLocator.resolve(@request) || { name: nil, uri: '', action: nil },
           renderSource: payload[:renderSource],
           componentPath: payload[:componentPath],
-        }.compact
+        }
       end
 
       def payload
         @payload ||= @collector&.build || {}
       end
 
-      # Order is significant: `deferred` and `poll` are client-declared, because
-      # they are indistinguishable from a partial reload on the wire.
       def request_type
         return 'precognition' if @env['HTTP_PRECOGNITION']
         return @collector ? 'initial' : 'http' unless @request.inertia?
@@ -112,16 +111,33 @@ module InertiaRails
         parameters = @request.request_parameters
         return body_value(Redaction.redact(summarize_uploads(parameters))) if parameters.present?
 
-        body_string(@request.raw_post)
+        raw_request_body
       rescue StandardError
         omitted('unserializable')
       end
 
+      # Unparsed bodies must be structured JSON to be safely redacted.
+      def raw_request_body
+        content = @request.raw_post
+        return { status: 'empty' } if content.nil? || content.empty?
+        return omitted('too-large') if content.bytesize > RAW_BODY_LIMIT
+
+        decoded = JSON.parse(content)
+        return omitted('unredactable') unless decoded.is_a?(Hash) || decoded.is_a?(Array)
+
+        body_value(Redaction.redact(decoded))
+      rescue JSON::ParserError
+        omitted('unredactable')
+      end
+
       def response_body
+        return omitted('exception') if @error
         return raw_response_body unless @collector
 
         page = payload[:responseBody]
-        page.nil? ? { status: 'empty' } : body_value(Redaction.redact(page))
+        return { status: 'empty' } if page.nil?
+
+        body_value(Redaction.redact(page))
       end
 
       def raw_response_body
@@ -143,14 +159,13 @@ module InertiaRails
         body_string(response_content)
       end
 
-      # `to_ary` is the Rack contract for a fully buffered body; a streaming body
-      # only responds to `each`, and draining it here would deliver it to nobody.
+      # Do not drain streaming Rack bodies.
       def response_content
         @body.to_ary.join if @body.respond_to?(:to_ary)
       end
 
       def body_value(value)
-        { status: 'present', value: Redaction.sanitize(value) }
+        { status: 'present', value: value }
       end
 
       def body_string(content)
@@ -166,13 +181,13 @@ module InertiaRails
         { status: 'omitted', reason: reason }
       end
 
-      def summarize_uploads(value)
-        case value
-        when Hash then value.transform_values { |nested| summarize_uploads(nested) }
-        when Array then value.map { |item| summarize_uploads(item) }
-        when ActionDispatch::Http::UploadedFile
-          { name: value.original_filename, size: value.size, mimeType: value.content_type }
-        else value
+      def summarize_uploads(parameters)
+        parameters.deep_transform_values do |value|
+          if value.is_a?(ActionDispatch::Http::UploadedFile)
+            { name: value.original_filename, size: value.size, mimeType: value.content_type }
+          else
+            value
+          end
         end
       end
     end

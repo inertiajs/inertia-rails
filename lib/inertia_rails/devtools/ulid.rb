@@ -4,9 +4,6 @@ require 'securerandom'
 
 module InertiaRails
   module Devtools
-    # Entry ids double as the sort key: every "newest first" listing and every
-    # eviction decision compares ids lexicographically, so they must be monotonic
-    # even for two requests landing in the same millisecond.
     module Ulid
       ENCODING = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'
       TIME_LENGTH = 10
@@ -37,8 +34,6 @@ module InertiaRails
               @last_time = milliseconds
               @last_random = SecureRandom.random_number(RANDOM_MAX)
             elsif @last_random >= RANDOM_MAX
-              # Incrementing would wrap the randomness and sort backwards, so
-              # borrow from the next millisecond instead.
               @last_time += 1
               @last_random = SecureRandom.random_number(RANDOM_MAX)
             else
