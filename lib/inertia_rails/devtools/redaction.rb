@@ -9,7 +9,7 @@ module InertiaRails
       REDACTED = '[REDACTED]'
       UNSERIALIZABLE = '[UNSERIALIZABLE]'
       URL_KEYS = %w[url redirectlocation].freeze
-      URL_HEADERS = %w[location content-location referer refresh].freeze
+      URL_HEADERS = %w[location content-location referer refresh x-inertia-location].freeze
       SENSITIVE_PROBE = 'inertia-devtools-probe'
 
       module_function
