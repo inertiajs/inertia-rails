@@ -145,8 +145,7 @@ module InertiaRails
         body_value(Redaction.redact(page))
       end
 
-      # Unparsed bodies must be structured JSON to be safely redacted — an HTML page
-      # or a text blob can embed a CSRF token or a secret under no key we can match.
+      # An HTML page or a text blob can hide a secret under no key we can match.
       def raw_response_body
         content_type = header('content-type').to_s.downcase
         return omitted('non-textual') unless TEXTUAL_CONTENT_TYPES.any? { |needle| content_type.include?(needle) }
@@ -165,7 +164,6 @@ module InertiaRails
         omitted('unredactable')
       end
 
-      # Do not drain streaming Rack bodies.
       def response_content
         Devtools.buffered_body(@env, @body)
       end

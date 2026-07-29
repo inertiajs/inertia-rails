@@ -273,8 +273,7 @@ RSpec.describe InertiaRails::PropsResolver do
     end
 
     # Array paths address the props passed in, not the elements that survived this
-    # render, so the path advertised on a first load still resolves on the follow-up
-    # even though the elements around it were dropped.
+    # render, so a path advertised on a first load still resolves on the follow-up.
     it 'delivers a deferred prop from an array whose earlier elements were dropped' do
       props = {
         foos: [

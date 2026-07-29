@@ -78,11 +78,10 @@ module InertiaRails
       metadata
     end
 
-    # `prefix` addresses props by their position in the props passed to the renderer,
-    # which is what partial-reload keys and the metadata paths sent to the client must
-    # use so they resolve identically on a follow-up request. `record_prefix` addresses
-    # them by their position in the payload actually rendered, which is what DevTools
-    # needs to line a prop up with its value. The two only diverge inside arrays.
+    # `prefix` addresses props by their position in what was passed to the renderer, so
+    # partial-reload keys and the metadata paths sent to the client resolve the same way
+    # on a follow-up. `record_prefix` addresses the rendered payload, which is what
+    # DevTools needs to line a prop up with its value. They only differ inside arrays.
     def deep_transform_props(props, prefix = '', parent_was_resolved: false, record_prefix: prefix)
       props.each_with_object({}) do |(key, prop), transformed_props|
         path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"

@@ -2,10 +2,9 @@
 
 module InertiaRails
   module Devtools
-    # The outermost DevTools frame. It sits above Rails::Rack::Logger so the
-    # extension's polling of the read API can be kept out of the development log,
-    # and above ShowExceptions/DebugExceptions so it sees the response they render
-    # for a recorded exception, without depending on either being in the stack.
+    # The outermost DevTools frame: above Rails::Rack::Logger so read API polling can
+    # be kept out of the log, and above ShowExceptions/DebugExceptions so it sees the
+    # response they render for a recorded exception without depending on either.
     class Middleware
       def initialize(app)
         @app = app

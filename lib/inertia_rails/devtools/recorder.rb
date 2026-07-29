@@ -139,10 +139,9 @@ module InertiaRails
         key && headers[key]
       end
 
-      # An app-set validator (`fresh_when`, `stale?`) stops Rack::ETag from recomputing
-      # the digest, so a mutated body would be served under a stale validator and the
-      # next revalidation would 304 without the tag. Leave the response untouched — it
-      # still carries the id in the response header.
+      # Rack::ETag will not recompute a digest the app set itself (`fresh_when`), so a
+      # mutated body would ship under a stale validator and revalidate to a 304 without
+      # the tag. Leave it alone; the id is still on the response header.
       def validated?(headers)
         VALIDATOR_HEADERS.any? { |name| header_value(headers, name).present? }
       end

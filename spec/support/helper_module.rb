@@ -20,8 +20,8 @@ module HelperModule
     response.headers['Vary'].to_s.split(/,\s*/).reject { |v| v == 'Sec-Fetch-Site' }.join(', ')
   end
 
-  # Rails::Rack::Logger writes through Rails.logger; the controller log subscriber
-  # writes through ActionController::Base.logger. Swap both to see a whole request.
+  # Rails::Rack::Logger writes through Rails.logger, the controller log subscriber
+  # through ActionController::Base.logger; both are needed to see a whole request.
   def capture_log
     io = StringIO.new
     original = [Rails.logger, ActionController::Base.logger]
