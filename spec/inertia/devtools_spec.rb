@@ -91,12 +91,14 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(response.headers['X-Inertia-Devtools-Id']).to be_present
       end
 
+      # ActionDispatch::Response#body hands back the raw stream when it is neither
+      # to_ary- nor body-backed (`render stream:`, an assigned enumerator), so joining
+      # whatever it returns would record — and inject into — `#<Object:0x...>`.
       it 'does not mistake an unbuffered response stream for a body' do
-        streamer = Object.new
-        streamer.define_singleton_method(:each) { |&block| block.call('<html><body>real</body></html>') }
-        rack_response = ActionDispatch::Response.new(200, { 'Content-Type' => 'text/html' })
-        rack_response.body = streamer
-        body = rack_response.to_a.last
+        stream = Object.new
+        stream.define_singleton_method(:each) { |&block| block.call('<html><body>real</body></html>') }
+        body = Object.new
+        body.define_singleton_method(:body) { stream }
 
         expect(InertiaRails::Devtools.buffered_body({}, body)).to be_nil
       end
