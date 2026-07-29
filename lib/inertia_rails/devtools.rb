@@ -72,7 +72,13 @@ module InertiaRails
                   body.to_ary
                 end
 
-        Array(parts).join if parts
+        # ActionDispatch::Response#body hands back the raw stream object when it is
+        # neither buffered nor #body-backed (`render stream:`, an assigned
+        # enumerator), so anything that is not a String or Array is not a body.
+        case parts
+        when String then parts
+        when Array then parts.join
+        end
       end
 
       def live_stream?(env)

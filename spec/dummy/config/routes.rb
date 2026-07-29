@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   get 'devtools_nested_share' => 'inertia_devtools_test#nested_share', as: :devtools_nested_share
   get 'devtools_collection' => 'inertia_devtools_test#collection', as: :devtools_collection
   get 'devtools_oversized' => 'inertia_devtools_test#oversized', as: :devtools_oversized
+  get 'devtools_cached' => 'inertia_devtools_test#cached', as: :devtools_cached
 
   get 'configuration' => 'inertia_config_test#configuration'
   get 'props' => 'inertia_render_test#props'

@@ -43,6 +43,13 @@ class InertiaDevtoolsTestController < ApplicationController
     render json: { ok: true, token: 'secret-value' }
   end
 
+  def cached
+    fresh_when(etag: 'devtools-stable', public: false)
+    return if performed?
+
+    render inertia: 'DevtoolsComponent', props: { name: 'Brandon' }
+  end
+
   def create
     redirect_to devtools_props_path(token: 'leaked')
   end

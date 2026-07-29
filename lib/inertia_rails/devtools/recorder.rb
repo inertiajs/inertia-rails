@@ -7,6 +7,7 @@ module InertiaRails
     class Recorder
       ENV_KEY = 'inertia_rails.devtools'
       PREFETCH_HEADERS = %w[HTTP_PURPOSE HTTP_SEC_PURPOSE HTTP_X_MOZ].freeze
+      VALIDATOR_HEADERS = %w[etag last-modified].freeze
 
       attr_reader :env, :id, :collector, :exception
 
@@ -106,6 +107,7 @@ module InertiaRails
           next body unless status == 200 && @collector
           next body if @env.key?('HTTP_X_INERTIA')
           next body unless header_value(headers, 'content-type').to_s.include?('text/html')
+          next body if validated?(headers)
 
           content = Devtools.buffered_body(@env, body)
           next body unless content
@@ -135,6 +137,14 @@ module InertiaRails
       def header_value(headers, name)
         key = headers.keys.find { |candidate| candidate.to_s.casecmp(name).zero? }
         key && headers[key]
+      end
+
+      # An app-set validator (`fresh_when`, `stale?`) stops Rack::ETag from recomputing
+      # the digest, so a mutated body would be served under a stale validator and the
+      # next revalidation would 304 without the tag. Leave the response untouched — it
+      # still carries the id in the response header.
+      def validated?(headers)
+        VALIDATOR_HEADERS.any? { |name| header_value(headers, name).present? }
       end
 
       def replace_content_length(headers, content)
