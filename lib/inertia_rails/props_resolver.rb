@@ -78,17 +78,24 @@ module InertiaRails
       metadata
     end
 
-    def deep_transform_props(props, prefix = '', parent_was_resolved: false)
+    # `prefix` addresses props by their position in the props passed to the renderer,
+    # which is what partial-reload keys and the metadata paths sent to the client must
+    # use so they resolve identically on a follow-up request. `record_prefix` addresses
+    # them by their position in the payload actually rendered, which is what DevTools
+    # needs to line a prop up with its value. The two only diverge inside arrays.
+    def deep_transform_props(props, prefix = '', parent_was_resolved: false, record_prefix: prefix)
       props.each_with_object({}) do |(key, prop), transformed_props|
         path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"
+        record_path = @recorder && (record_prefix.empty? ? key.to_s : "#{record_prefix}.#{key}")
 
         prop = prop.to_inertia if prop.respond_to?(:to_inertia)
 
         if prop.is_a?(Hash) && prop.any?
           next if !parent_was_resolved && excluded_by_partial_request?(path)
 
-          record_prop(prop, path)
-          nested = deep_transform_props(prop, path, parent_was_resolved: parent_was_resolved)
+          record_prop(prop, record_path)
+          nested = deep_transform_props(prop, path, parent_was_resolved: parent_was_resolved,
+                                                    record_prefix: record_path || path)
           transformed_props[key] = nested unless nested.empty?
           next
         end
@@ -96,15 +103,16 @@ module InertiaRails
         if prop.is_a?(Array)
           next if !parent_was_resolved && excluded_by_partial_request?(path)
 
-          record_prop(prop, path)
-          transformed_props[key] = transform_array(prop, path, parent_was_resolved: parent_was_resolved)
+          record_prop(prop, record_path)
+          transformed_props[key] = transform_array(prop, path, parent_was_resolved: parent_was_resolved,
+                                                               record_path: record_path || path)
           next
         end
 
         collect_metadata(prop, path)
         next unless keep_prop?(prop, path, parent_was_resolved: parent_was_resolved)
 
-        record_prop(prop, path)
+        record_prop(prop, record_path)
         rescue_enabled = prop.try(:rescue?)
 
         begin
@@ -115,18 +123,20 @@ module InertiaRails
             collect_metadata(value, path)
             next unless keep_prop?(value, path, parent_was_resolved: parent_was_resolved)
 
-            record_prop(value, path)
+            record_prop(value, record_path)
             value = @evaluator.call(value)
           end
 
           # A closure may return a Hash or Array containing prop types — recurse into it
           if prop.is_a?(Proc)
             if value.is_a?(Hash) && value.any?
-              nested = deep_transform_props(value, path, parent_was_resolved: true)
+              nested = deep_transform_props(value, path, parent_was_resolved: true,
+                                                         record_prefix: record_path || path)
               transformed_props[key] = nested unless nested.empty?
               next
             elsif value.is_a?(Array)
-              transformed_props[key] = transform_array(value, path, parent_was_resolved: true)
+              transformed_props[key] = transform_array(value, path, parent_was_resolved: true,
+                                                                    record_path: record_path || path)
               next
             end
           end
@@ -137,21 +147,22 @@ module InertiaRails
 
           report_rescued_error(e)
           @_rescued << path
-          record_prop(prop, path, rescued: true)
+          record_prop(prop, record_path, rescued: true)
           next
         end
       end
     end
 
-    def transform_array(array, path, parent_was_resolved:)
+    def transform_array(array, path, parent_was_resolved:, record_path: path)
       return array unless needs_transform?(array)
 
       rendered_index = 0
 
-      array.filter_map do |item|
+      array.each_with_index.filter_map do |item, index|
         value =
           if item.is_a?(Hash)
-            nested = deep_transform_props(item, "#{path}.#{rendered_index}", parent_was_resolved: parent_was_resolved)
+            nested = deep_transform_props(item, "#{path}.#{index}", parent_was_resolved: parent_was_resolved,
+                                                                    record_prefix: "#{record_path}.#{rendered_index}")
             nested unless nested.empty?
           else
             @evaluator.call(item)
