@@ -529,7 +529,44 @@ When SSR rendering fails, Inertia gracefully falls back to client-side rendering
 
 Common SSR errors are automatically classified. Browser API errors (such as referencing `window` or `document` in server-rendered code) include guidance on moving the code to a lifecycle hook. Component resolution errors suggest checking file paths and casing.
 
-The Rails adapter automatically logs SSR failures to `Rails.logger` at the `error` level. To customize error handling, set the `on_ssr_error` option in your `config/initializers/inertia_rails.rb` file.
+The Rails adapter always logs SSR failures to `Rails.logger` at the `error` level, so a failure is never silent. Beyond that, exactly one of the following applies:
+
+1. Your `on_ssr_error` callback is called, if you defined one.
+2. Otherwise, the error is reported to the Rails error reporter — unless `ssr_raise_on_error` is enabled, in which case the raised error is left to Rails' exception middleware.
+
+### Reporting to the Error Reporter
+
+@available_since rails=master
+
+When no `on_ssr_error` callback is configured, SSR failures are reported through `Rails.error`, so error trackers that subscribe to the Rails error reporter pick them up without any extra wiring. (Requires Rails 7.0 or newer; on older versions the log line above is the only output.)
+
+Reports are sent with `handled: true`, which implies a default severity of `:warning` — the request still succeeds by falling back to client-side rendering, so these are not request-level failures. They are tagged with `source: "inertia_rails"` and carry the following context, with any keys the error does not supply omitted:
+
+| Context key           | Description                                                                        |
+| --------------------- | ---------------------------------------------------------------------------------- |
+| `component`           | The Inertia component that failed to render                                        |
+| `ssr_type`            | Error classification from the SSR server, or `"connection"` for transport failures |
+| `ssr_hint`            | Remediation hint from the SSR server, when available                               |
+| `ssr_stack`           | The JavaScript stack trace from the SSR server                                     |
+| `ssr_source_location` | The originating file and line in your front-end code                               |
+
+Because subscribers receive the source, you can route or ignore these separately from the rest of your application's errors:
+
+```ruby
+class MySubscriber
+  def report(error, handled:, severity:, context:, source: nil)
+    return if source == 'inertia_rails'
+
+    # ...
+  end
+end
+```
+
+For connection failures, the `InertiaRails::SSRError` wraps the underlying exception as its `cause`, so trackers display the full chain — `Errno::ECONNREFUSED` and friends are not hidden behind the wrapper.
+
+### Customizing Error Handling
+
+To handle SSR failures yourself, set the `on_ssr_error` option in your `config/initializers/inertia_rails.rb` file.
 
 ```ruby
 # config/initializers/inertia_rails.rb
@@ -542,6 +579,9 @@ end
 ```
 
 The callback receives an `InertiaRails::SSRError` and the page hash, giving you access to the component name, props, and URL that failed.
+
+> [!NOTE]
+> Defining `on_ssr_error` **replaces** the automatic report to `Rails.error` — the callback becomes solely responsible for reporting. This applies even when your callback does something unrelated to reporting, such as incrementing a metric. To keep the automatic report as well, call `Rails.error.report(error, handled: true, source: 'inertia_rails')` from within your callback. Logging to `Rails.logger` is unaffected either way.
 
 ### Raising on Error
 

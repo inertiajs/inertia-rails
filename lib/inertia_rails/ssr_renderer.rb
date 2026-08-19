@@ -50,11 +50,34 @@ module InertiaRails
     end
 
     def handle_error(error)
-      Rails.logger.error("[inertia-rails] SSR render failed: #{error.message}")
-      @configuration.on_ssr_error&.call(error, @page)
+      Rails.logger&.error("[inertia-rails] SSR render failed: #{error.message}")
+
+      if @configuration.on_ssr_error
+        @configuration.on_ssr_error.call(error, @page)
+      elsif !@configuration.ssr_raise_on_error
+        report_error(error)
+      end
+
       raise error if @configuration.ssr_raise_on_error
 
       nil
+    end
+
+    def report_error(error)
+      return unless Rails.respond_to?(:error)
+
+      Rails.error.report(
+        error,
+        handled: true,
+        source: 'inertia_rails',
+        context: {
+          component: @page[:component],
+          ssr_type: error.type,
+          ssr_hint: error.hint,
+          ssr_stack: error.stack,
+          ssr_source_location: error.source_location,
+        }.compact
+      )
     end
 
     def cache_options_hash

@@ -171,6 +171,123 @@ RSpec.describe 'inertia ssr', type: :request do
       end
     end
 
+    context 'reporting to the Rails error reporter' do
+      before { skip('Requires Rails 7.0 or higher') if Rails.version < '7' }
+
+      context 'without an on_ssr_error callback' do
+        before do
+          allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
+        end
+
+        # `handled: true` makes the default severity :warning, which suits a
+        # failure the adapter recovers from by falling back to client-side rendering.
+        # Detail fields the error does not carry (hint, stack, source location on a
+        # transport failure) are omitted rather than reported as nil.
+        it 'reports the error as handled' do
+          expect(Rails.error).to receive(:report).with(
+            an_instance_of(InertiaRails::SSRError),
+            handled: true,
+            source: 'inertia_rails',
+            context: { component: 'TestComponent', ssr_type: 'connection' }
+          )
+
+          get props_path
+        end
+
+        it 'still falls back to client-side rendering' do
+          get props_path
+          expect(response.body).to include client_side_html
+        end
+      end
+
+      context 'with structured error details from the SSR server' do
+        before do
+          stub_ssr_response(
+            url: 'http://localhost:13714/render',
+            status: 500,
+            body: {
+              error: 'window is not defined',
+              type: 'browser-api',
+              hint: 'Use a polyfill',
+              stack: "Error: window is not defined\n    at render (app.js:5)",
+              sourceLocation: 'app/Pages/Home.jsx:5',
+            }
+          )
+        end
+
+        # The JS stack is the one thing the Ruby backtrace cannot supply, so it
+        # rides along by default — the fallback path is where nobody has opted
+        # into richer handling.
+        it 'passes the SSR details through as report context' do
+          expect(Rails.error).to receive(:report).with(
+            an_instance_of(InertiaRails::SSRError),
+            handled: true,
+            source: 'inertia_rails',
+            context: {
+              component: 'TestComponent',
+              ssr_type: 'browser-api',
+              ssr_hint: 'Use a polyfill',
+              ssr_stack: "Error: window is not defined\n    at render (app.js:5)",
+              ssr_source_location: 'app/Pages/Home.jsx:5',
+            }
+          )
+
+          get props_path
+        end
+      end
+
+      context 'with an on_ssr_error callback defined' do
+        reported = []
+
+        with_inertia_config(on_ssr_error: ->(error, page) { reported << [error, page] })
+
+        before do
+          reported.clear
+          allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
+        end
+
+        it 'does not report, leaving reporting to the callback' do
+          allow(Rails.error).to receive(:report).and_call_original
+
+          get props_path
+
+          expect(Rails.error).not_to have_received(:report)
+            .with(anything, hash_including(source: 'inertia_rails'))
+        end
+
+        it 'still calls the callback' do
+          get props_path
+          expect(reported.length).to eq 1
+        end
+
+        # The log line is unconditional, so opting into a callback never means silence.
+        it 'still logs the failure' do
+          expect(Rails.logger).to receive(:error).with(/\[inertia-rails\] SSR render failed/)
+          get props_path
+        end
+      end
+
+      context 'with ssr_raise_on_error enabled' do
+        with_inertia_config(ssr_raise_on_error: true)
+
+        before do
+          allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
+        end
+
+        # Rails' own exception middleware already reports the raised error with
+        # `handled: false`, so an additional handled report here would duplicate
+        # and mislabel it.
+        it 'does not report, leaving the raised error to the middleware' do
+          allow(Rails.error).to receive(:report).and_call_original
+
+          expect { get props_path }.to raise_error(InertiaRails::SSRError)
+
+          expect(Rails.error).not_to have_received(:report)
+            .with(anything, hash_including(source: 'inertia_rails'))
+        end
+      end
+    end
+
     context 'with ssr_raise_on_error enabled' do
       with_inertia_config(ssr_raise_on_error: true)
 
