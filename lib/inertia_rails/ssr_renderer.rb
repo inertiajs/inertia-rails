@@ -66,18 +66,20 @@ module InertiaRails
     def report_error(error)
       return unless Rails.respond_to?(:error)
 
-      Rails.error.report(
-        error,
+      options = {
         handled: true,
-        source: 'inertia_rails',
         context: {
           component: @page[:component],
           ssr_type: error.type,
           ssr_hint: error.hint,
           ssr_stack: error.stack,
           ssr_source_location: error.source_location,
-        }.compact
-      )
+        }.compact,
+      }
+      # `source:` was added to the error reporter in Rails 7.1.
+      options[:source] = 'inertia_rails' if Rails.gem_version >= Gem::Version.new('7.1')
+
+      Rails.error.report(error, **options)
     end
 
     def cache_options_hash

@@ -186,10 +186,20 @@ RSpec.describe 'inertia ssr', type: :request do
         it 'reports the error as handled' do
           expect(Rails.error).to receive(:report).with(
             an_instance_of(InertiaRails::SSRError),
-            handled: true,
-            source: 'inertia_rails',
-            context: { component: 'TestComponent', ssr_type: 'connection' }
+            hash_including(
+              handled: true,
+              context: { component: 'TestComponent', ssr_type: 'connection' }
+            )
           )
+
+          get props_path
+        end
+
+        it 'tags the report with the inertia_rails source' do
+          skip('`source:` was added to the error reporter in Rails 7.1') if Rails.gem_version < Gem::Version.new('7.1')
+
+          expect(Rails.error).to receive(:report)
+            .with(anything, hash_including(source: 'inertia_rails'))
 
           get props_path
         end
@@ -197,6 +207,23 @@ RSpec.describe 'inertia ssr', type: :request do
         it 'still falls back to client-side rendering' do
           get props_path
           expect(response.body).to include client_side_html
+        end
+      end
+
+      context 'on Rails 7.0, whose error reporter has no source: keyword' do
+        before do
+          allow(Rails).to receive(:gem_version).and_return(Gem::Version.new('7.0.8'))
+          allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
+        end
+
+        it 'reports without the source keyword' do
+          expect(Rails.error).to receive(:report).with(
+            an_instance_of(InertiaRails::SSRError),
+            handled: true,
+            context: { component: 'TestComponent', ssr_type: 'connection' }
+          )
+
+          get props_path
         end
       end
 
@@ -221,15 +248,16 @@ RSpec.describe 'inertia ssr', type: :request do
         it 'passes the SSR details through as report context' do
           expect(Rails.error).to receive(:report).with(
             an_instance_of(InertiaRails::SSRError),
-            handled: true,
-            source: 'inertia_rails',
-            context: {
-              component: 'TestComponent',
-              ssr_type: 'browser-api',
-              ssr_hint: 'Use a polyfill',
-              ssr_stack: "Error: window is not defined\n    at render (app.js:5)",
-              ssr_source_location: 'app/Pages/Home.jsx:5',
-            }
+            hash_including(
+              handled: true,
+              context: {
+                component: 'TestComponent',
+                ssr_type: 'browser-api',
+                ssr_hint: 'Use a polyfill',
+                ssr_stack: "Error: window is not defined\n    at render (app.js:5)",
+                ssr_source_location: 'app/Pages/Home.jsx:5',
+              }
+            )
           )
 
           get props_path

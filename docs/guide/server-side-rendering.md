@@ -540,7 +540,7 @@ The Rails adapter always logs SSR failures to `Rails.logger` at the `error` leve
 
 When no `on_ssr_error` callback is configured, SSR failures are reported through `Rails.error`, so error trackers that subscribe to the Rails error reporter pick them up without any extra wiring. (Requires Rails 7.0 or newer; on older versions the log line above is the only output.)
 
-Reports are sent with `handled: true`, which implies a default severity of `:warning` — the request still succeeds by falling back to client-side rendering, so these are not request-level failures. They are tagged with `source: "inertia_rails"` and carry the following context, with any keys the error does not supply omitted:
+Reports are sent with `handled: true`, which implies a default severity of `:warning` — the request still succeeds by falling back to client-side rendering, so these are not request-level failures. On Rails 7.1 and newer they are also tagged with `source: "inertia_rails"`. Every report carries the following context, with any keys the error does not supply omitted:
 
 | Context key           | Description                                                                        |
 | --------------------- | ---------------------------------------------------------------------------------- |
@@ -550,7 +550,7 @@ Reports are sent with `handled: true`, which implies a default severity of `:war
 | `ssr_stack`           | The JavaScript stack trace from the SSR server                                     |
 | `ssr_source_location` | The originating file and line in your front-end code                               |
 
-Because subscribers receive the source, you can route or ignore these separately from the rest of your application's errors:
+Because subscribers receive the source, you can route or ignore these separately from the rest of your application's errors (Rails 7.1+):
 
 ```ruby
 class MySubscriber
