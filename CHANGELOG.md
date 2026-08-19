@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add `config.server_head` to serialize meta tags as HTML strings into the `head` prop for the `serverHead` option of `createInertiaApp` (Inertia.js v3.5+), replacing the client-side cookbook component (@skryukov)
 * Add `meta_title_template` configuration option — a callable applied to the `<title>` tag of server driven meta tags; it receives the current title (or `nil`) and can provide a default for pages without one (@skryukov)
 * Add `ActiveSupport::Notifications` instrumentation: `render.inertia_rails`, `resolve_props.inertia_rails`, and `ssr.inertia_rails` events (@skryukov)
+* Report SSR failures to the Rails error reporter (`source: "inertia_rails"`, `handled: true`) with the component, error type, hint, JS stack, and source location as context; skipped when `on_ssr_error` is configured or `ssr_raise_on_error` is enabled (@bknoles)
+* Preserve the original exception as `cause` on `InertiaRails::SSRError`, so connection failures report the underlying error instead of only the wrapper (@bknoles)
 * Convert external (cross-origin) redirects to Inertia location responses automatically (disable with `config.convert_external_redirects = false`), and add `redirect_to url, inertia: { full_page: true }` for same-origin redirects to non-Inertia endpoints (@skryukov)
 * Fix `inertia_location` to redirect plain (non-Inertia) requests instead of responding `409 Conflict`, and stop stale asset versions from replacing location responses with a forced refresh (@skryukov)
 * Fix meta tags ignoring per-controller `use_data_inertia_head_attribute` set via `inertia_config` (@skryukov)
