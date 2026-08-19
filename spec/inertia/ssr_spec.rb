@@ -86,6 +86,16 @@ RSpec.describe 'inertia ssr', type: :request do
         expect(ssr_errors.first).to be_a(InertiaRails::SSRError)
         expect(ssr_errors.first.type).to eq 'connection'
       end
+
+      it 'exposes the original exception as cause' do
+        ssr_errors = []
+        allow_any_instance_of(InertiaRails::Configuration).to receive(:on_ssr_error)
+          .and_return(->(error, _page) { ssr_errors << error })
+
+        get props_path
+
+        expect(ssr_errors.first.cause).to be_a(Errno::ECONNREFUSED)
+      end
     end
 
     context 'the ssr server returns an error response' do
@@ -199,6 +209,13 @@ RSpec.describe 'inertia ssr', type: :request do
         it 'raises SSRError with connection type' do
           expect { get props_path }.to raise_error(InertiaRails::SSRError) do |error|
             expect(error.type).to eq 'connection'
+          end
+        end
+
+        # Parity with the fallback path: both should expose the original exception.
+        it 'exposes the original exception as cause' do
+          expect { get props_path }.to raise_error(InertiaRails::SSRError) do |error|
+            expect(error.cause).to be_a(Errno::ECONNREFUSED)
           end
         end
       end
@@ -731,6 +748,24 @@ RSpec.describe 'inertia ssr', type: :request do
       expect(error.message).to eq 'Connection refused'
       expect(error.type).to eq 'connection'
       expect(error.backtrace).to eq %w[line1 line2]
+    end
+
+    it 'preserves the original exception as cause when wrapping inside a rescue' do
+      error = begin
+        raise Errno::ECONNREFUSED, 'connect(2) for 127.0.0.1:13714'
+      rescue StandardError => e
+        InertiaRails::SSRError.from_exception(e)
+      end
+
+      expect(error.cause).to be_a(Errno::ECONNREFUSED)
+      expect(error.backtrace).to eq error.cause.backtrace
+    end
+
+    it 'has no cause when constructed outside a rescue block' do
+      original = StandardError.new('Connection refused')
+      original.set_backtrace(%w[line1 line2])
+
+      expect(InertiaRails::SSRError.from_exception(original).cause).to be_nil
     end
 
     it 'defaults to Unknown SSR error when no error message in response' do
