@@ -40,7 +40,7 @@ RSpec helpers are automatically available in all request specs. Minitest helpers
 
 Both RSpec and Minitest provide matchers/assertions for testing Inertia responses. In RSpec, negation is done with `not_to`.
 
-The `inertia` helper gives you direct access to `inertia.props`, `inertia.component`, `inertia.view_data`, `inertia.flash`, and `inertia.deferred_props`.
+The `inertia` helper gives you direct access to `inertia.props`, `inertia.component`, `inertia.view_data`, `inertia.flash`, `inertia.deferred_props`, `inertia.scroll_props`, and `inertia.once_props`.
 
 | Description               | RSpec                  | Minitest                                                            |
 | ------------------------- | ---------------------- | ------------------------------------------------------------------- |

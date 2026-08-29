@@ -491,6 +491,18 @@ RSpec.describe InertiaRails::RSpec, type: :request do
     end
   end
 
+  describe 'scroll_props and once_props direct access' do
+    it 'can retrieve scroll props directly' do
+      get scroll_test_path
+      expect(inertia.scroll_props[:users][:currentPage]).to eq 1
+    end
+
+    it 'can retrieve once props directly' do
+      get once_props_path
+      expect(inertia.once_props[:cached_data][:prop]).to eq 'cached_data'
+    end
+  end
+
   describe 'evaluate_optional_props setting' do
     context 'when enabled' do
       before do

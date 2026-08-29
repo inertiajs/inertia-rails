@@ -216,6 +216,18 @@ class InertiaMinitestTest < ActionDispatch::IntegrationTest
     assert_equal 'Brian', inertia.props[:name]
   end
 
+  # Scroll props and once props direct access
+
+  test 'inertia.scroll_props returns scroll props directly' do
+    get scroll_test_path
+    assert_equal 1, inertia.scroll_props[:users][:currentPage]
+  end
+
+  test 'inertia.once_props returns once props directly' do
+    get once_props_path
+    assert_equal 'cached_data', inertia.once_props[:cached_data][:prop]
+  end
+
   # Partial reload helpers
 
   test 'inertia_reload_only reloads only specified props' do
