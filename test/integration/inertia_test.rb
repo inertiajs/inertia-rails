@@ -216,11 +216,52 @@ class InertiaMinitestTest < ActionDispatch::IntegrationTest
     assert_equal 'Brian', inertia.props[:name]
   end
 
-  # Scroll props and once props direct access
+  # Scroll props assertions
+
+  test 'assert_inertia_scroll_props works with partial match' do
+    get scroll_test_path
+    assert_inertia_scroll_props(
+      users: { pageName: 'page', currentPage: 1, nextPage: 2, previousPage: nil, reset: false }
+    )
+  end
+
+  test 'assert_inertia_scroll_props checks a single metadata field via block form' do
+    get scroll_test_path
+    assert_inertia_scroll_props { |scroll_props| scroll_props[:users][:nextPage] == 2 }
+  end
+
+  test 'assert_inertia_scroll_props_equal works with exact match' do
+    get scroll_test_path
+    assert_inertia_scroll_props_equal(
+      users: { pageName: 'page', currentPage: 1, nextPage: 2, previousPage: nil, reset: false }
+    )
+  end
+
+  test 'assert_no_inertia_scroll_prop works for an untouched key' do
+    get scroll_test_path
+    assert_no_inertia_scroll_prop :nonexistent
+  end
 
   test 'inertia.scroll_props returns scroll props directly' do
     get scroll_test_path
     assert_equal 1, inertia.scroll_props[:users][:currentPage]
+  end
+
+  # Once props assertions
+
+  test 'assert_inertia_once_props works with partial match' do
+    get once_props_path
+    assert_inertia_once_props cached_data: { prop: 'cached_data' }
+  end
+
+  test 'assert_inertia_once_props_equal works with exact match' do
+    get once_props_path
+    assert_inertia_once_props_equal cached_data: { prop: 'cached_data' }
+  end
+
+  test 'assert_no_inertia_once_prop works for an untouched key' do
+    get once_props_path
+    assert_no_inertia_once_prop :nonexistent
   end
 
   test 'inertia.once_props returns once props directly' do

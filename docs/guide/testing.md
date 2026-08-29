@@ -56,6 +56,12 @@ The `inertia` helper gives you direct access to `inertia.props`, `inertia.compon
 | Flash (exact match)       | `have_exact_flash`     | `assert_inertia_flash_equal` / `refute_inertia_flash_equal`         |
 | Flash key absent          | `have_no_flash`        | `assert_no_inertia_flash`                                           |
 | Deferred props            | `have_deferred_props`  | `assert_inertia_deferred_props` / `refute_inertia_deferred_props`   |
+| Scroll props (partial match) | `have_scroll_props` | `assert_inertia_scroll_props` / `refute_inertia_scroll_props`       |
+| Scroll props (exact match)   | `have_exact_scroll_props` | `assert_inertia_scroll_props_equal` / `refute_inertia_scroll_props_equal` |
+| Scroll prop key absent     | `have_no_scroll_prop`  | `assert_no_inertia_scroll_prop`                                     |
+| Once props (partial match)   | `have_once_props`   | `assert_inertia_once_props` / `refute_inertia_once_props`           |
+| Once props (exact match)     | `have_exact_once_props` | `assert_inertia_once_props_equal` / `refute_inertia_once_props_equal` |
+| Once prop key absent       | `have_no_once_prop`    | `assert_no_inertia_once_prop`                                       |
 
 :::tabs key:tests
 
