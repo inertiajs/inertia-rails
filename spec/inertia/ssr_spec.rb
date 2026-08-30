@@ -12,11 +12,10 @@ RSpec.describe 'inertia ssr', type: :request do
     }.to_json
   end
 
-  # rubocop:disable Layout/LineLength
+  # rubocop:disable-next Layout/LineLength
   let(:client_side_html) do
     '<div id="app" data-page="{&quot;component&quot;:&quot;TestComponent&quot;,&quot;props&quot;:{&quot;name&quot;:&quot;Brandon&quot;,&quot;sport&quot;:&quot;hockey&quot;},&quot;url&quot;:&quot;/props&quot;,&quot;version&quot;:&quot;1.0&quot;,&quot;encryptHistory&quot;:false,&quot;clearHistory&quot;:false}"></div>'
   end
-  # rubocop:enable Layout/LineLength
 
   def stub_ssr_response(url:, body:, status: 200)
     http_response = instance_double(Net::HTTPOK, body: body.to_json, code: status.to_s)
