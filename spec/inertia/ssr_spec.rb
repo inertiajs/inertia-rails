@@ -85,6 +85,16 @@ RSpec.describe 'inertia ssr', type: :request do
         expect(ssr_errors.first).to be_a(InertiaRails::SSRError)
         expect(ssr_errors.first.type).to eq 'connection'
       end
+
+      it 'exposes the original exception as cause' do
+        ssr_errors = []
+        allow_any_instance_of(InertiaRails::Configuration).to receive(:on_ssr_error)
+          .and_return(->(error, _page) { ssr_errors << error })
+
+        get props_path
+
+        expect(ssr_errors.first.cause).to be_a(Errno::ECONNREFUSED)
+      end
     end
 
     context 'the ssr server returns an error response' do
@@ -160,6 +170,151 @@ RSpec.describe 'inertia ssr', type: :request do
       end
     end
 
+    context 'reporting to the Rails error reporter' do
+      before { skip('Requires Rails 7.0 or higher') if Rails.version < '7' }
+
+      context 'without an on_ssr_error callback' do
+        before do
+          allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
+        end
+
+        # `handled: true` makes the default severity :warning, which suits a
+        # failure the adapter recovers from by falling back to client-side rendering.
+        # Detail fields the error does not carry (hint, stack, source location on a
+        # transport failure) are omitted rather than reported as nil.
+        it 'reports the error as handled' do
+          expect(Rails.error).to receive(:report).with(
+            an_instance_of(InertiaRails::SSRError),
+            hash_including(
+              handled: true,
+              context: { component: 'TestComponent', ssr_type: 'connection' }
+            )
+          )
+
+          get props_path
+        end
+
+        it 'tags the report with the inertia_rails source' do
+          skip('`source:` was added to the error reporter in Rails 7.1') if Rails.gem_version < Gem::Version.new('7.1')
+
+          expect(Rails.error).to receive(:report)
+            .with(anything, hash_including(source: 'inertia_rails'))
+
+          get props_path
+        end
+
+        it 'still falls back to client-side rendering' do
+          get props_path
+          expect(response.body).to include client_side_html
+        end
+      end
+
+      context 'on Rails 7.0, whose error reporter has no source: keyword' do
+        before do
+          allow(Rails).to receive(:gem_version).and_return(Gem::Version.new('7.0.8'))
+          allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
+        end
+
+        it 'reports without the source keyword' do
+          expect(Rails.error).to receive(:report).with(
+            an_instance_of(InertiaRails::SSRError),
+            handled: true,
+            context: { component: 'TestComponent', ssr_type: 'connection' }
+          )
+
+          get props_path
+        end
+      end
+
+      context 'with structured error details from the SSR server' do
+        before do
+          stub_ssr_response(
+            url: 'http://localhost:13714/render',
+            status: 500,
+            body: {
+              error: 'window is not defined',
+              type: 'browser-api',
+              hint: 'Use a polyfill',
+              stack: "Error: window is not defined\n    at render (app.js:5)",
+              sourceLocation: 'app/Pages/Home.jsx:5',
+            }
+          )
+        end
+
+        # The JS stack is the one thing the Ruby backtrace cannot supply, so it
+        # rides along by default — the fallback path is where nobody has opted
+        # into richer handling.
+        it 'passes the SSR details through as report context' do
+          expect(Rails.error).to receive(:report).with(
+            an_instance_of(InertiaRails::SSRError),
+            hash_including(
+              handled: true,
+              context: {
+                component: 'TestComponent',
+                ssr_type: 'browser-api',
+                ssr_hint: 'Use a polyfill',
+                ssr_stack: "Error: window is not defined\n    at render (app.js:5)",
+                ssr_source_location: 'app/Pages/Home.jsx:5',
+              }
+            )
+          )
+
+          get props_path
+        end
+      end
+
+      context 'with an on_ssr_error callback defined' do
+        reported = []
+
+        with_inertia_config(on_ssr_error: ->(error, page) { reported << [error, page] })
+
+        before do
+          reported.clear
+          allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
+        end
+
+        it 'does not report, leaving reporting to the callback' do
+          allow(Rails.error).to receive(:report).and_call_original
+
+          get props_path
+
+          expect(Rails.error).not_to have_received(:report)
+            .with(anything, hash_including(source: 'inertia_rails'))
+        end
+
+        it 'still calls the callback' do
+          get props_path
+          expect(reported.length).to eq 1
+        end
+
+        # The log line is unconditional, so opting into a callback never means silence.
+        it 'still logs the failure' do
+          expect(Rails.logger).to receive(:error).with(/\[inertia-rails\] SSR render failed/)
+          get props_path
+        end
+      end
+
+      context 'with ssr_raise_on_error enabled' do
+        with_inertia_config(ssr_raise_on_error: true)
+
+        before do
+          allow(Net::HTTP).to receive(:start).and_raise(Errno::ECONNREFUSED)
+        end
+
+        # Rails' own exception middleware already reports the raised error with
+        # `handled: false`, so an additional handled report here would duplicate
+        # and mislabel it.
+        it 'does not report, leaving the raised error to the middleware' do
+          allow(Rails.error).to receive(:report).and_call_original
+
+          expect { get props_path }.to raise_error(InertiaRails::SSRError)
+
+          expect(Rails.error).not_to have_received(:report)
+            .with(anything, hash_including(source: 'inertia_rails'))
+        end
+      end
+    end
+
     context 'with ssr_raise_on_error enabled' do
       with_inertia_config(ssr_raise_on_error: true)
 
@@ -198,6 +353,13 @@ RSpec.describe 'inertia ssr', type: :request do
         it 'raises SSRError with connection type' do
           expect { get props_path }.to raise_error(InertiaRails::SSRError) do |error|
             expect(error.type).to eq 'connection'
+          end
+        end
+
+        # Parity with the fallback path: both should expose the original exception.
+        it 'exposes the original exception as cause' do
+          expect { get props_path }.to raise_error(InertiaRails::SSRError) do |error|
+            expect(error.cause).to be_a(Errno::ECONNREFUSED)
           end
         end
       end
@@ -730,6 +892,24 @@ RSpec.describe 'inertia ssr', type: :request do
       expect(error.message).to eq 'Connection refused'
       expect(error.type).to eq 'connection'
       expect(error.backtrace).to eq %w[line1 line2]
+    end
+
+    it 'preserves the original exception as cause when wrapping inside a rescue' do
+      error = begin
+        raise Errno::ECONNREFUSED, 'connect(2) for 127.0.0.1:13714'
+      rescue StandardError => e
+        InertiaRails::SSRError.from_exception(e)
+      end
+
+      expect(error.cause).to be_a(Errno::ECONNREFUSED)
+      expect(error.backtrace).to eq error.cause.backtrace
+    end
+
+    it 'has no cause when constructed outside a rescue block' do
+      original = StandardError.new('Connection refused')
+      original.set_backtrace(%w[line1 line2])
+
+      expect(InertiaRails::SSRError.from_exception(original).cause).to be_nil
     end
 
     it 'defaults to Unknown SSR error when no error message in response' do

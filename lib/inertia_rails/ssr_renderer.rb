@@ -50,11 +50,36 @@ module InertiaRails
     end
 
     def handle_error(error)
-      Rails.logger.error("[inertia-rails] SSR render failed: #{error.message}")
-      @configuration.on_ssr_error&.call(error, @page)
+      Rails.logger&.error("[inertia-rails] SSR render failed: #{error.message}")
+
+      if @configuration.on_ssr_error
+        @configuration.on_ssr_error.call(error, @page)
+      elsif !@configuration.ssr_raise_on_error
+        report_error(error)
+      end
+
       raise error if @configuration.ssr_raise_on_error
 
       nil
+    end
+
+    def report_error(error)
+      return unless Rails.respond_to?(:error)
+
+      options = {
+        handled: true,
+        context: {
+          component: @page[:component],
+          ssr_type: error.type,
+          ssr_hint: error.hint,
+          ssr_stack: error.stack,
+          ssr_source_location: error.source_location,
+        }.compact,
+      }
+      # `source:` was added to the error reporter in Rails 7.1.
+      options[:source] = 'inertia_rails' if Rails.gem_version >= Gem::Version.new('7.1')
+
+      Rails.error.report(error, **options)
     end
 
     def cache_options_hash
