@@ -2,6 +2,9 @@
 
 By default, Inertia Rails rewrites the `XSRF-TOKEN` cookie on every protected request. Each rewrite emits a `Set-Cookie` header — including on otherwise cacheable `GET` responses and even on `304 Not Modified` responses. If your app relies on HTTP caching for Inertia pages, that header can quietly defeat it. This page explains why it happens and how to opt into a less aggressive refresh policy. For the broader caching picture, see the [caching guide](/guide/caching).
 
+> [!NOTE]
+> On Rails 8.2+ with the `:header_only` forgery protection strategy (the 8.2 default), none of this applies: authenticity tokens are never read, so the adapter skips the `XSRF-TOKEN` cookie entirely and no `Set-Cookie` is emitted at all. See [Header-Only CSRF Protection](/guide/csrf-protection#header-only-csrf-protection-rails-8-2). The refresh policies below matter only for token-based strategies.
+
 ## Symptom
 
 The problem shows up in two places:

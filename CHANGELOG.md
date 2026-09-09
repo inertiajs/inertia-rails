@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Skip the `XSRF-TOKEN` cookie entirely (and expire a stale one) on controllers using Rails 8.2's `:header_only` forgery protection strategy, which verifies requests via `Sec-Fetch-Site` and never reads authenticity tokens (@mattwigham)
 * Add `config.server_head` to serialize meta tags as HTML strings into the `head` prop for the `serverHead` option of `createInertiaApp` (Inertia.js v3.5+), replacing the client-side cookbook component (@skryukov)
 * Add `meta_title_template` configuration option — a callable applied to the `<title>` tag of server driven meta tags; it receives the current title (or `nil`) and can provide a default for pages without one (@skryukov)
 * Add `ActiveSupport::Notifications` instrumentation: `render.inertia_rails`, `resolve_props.inertia_rails`, and `ssr.inertia_rails` events (@skryukov)
