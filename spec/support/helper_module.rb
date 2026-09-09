@@ -15,6 +15,18 @@ module HelperModule
     end
   end
 
+  # Rails::Rack::Logger writes through Rails.logger, the controller log subscriber
+  # through ActionController::Base.logger; both are needed to see a whole request.
+  def capture_log
+    io = StringIO.new
+    original = [Rails.logger, ActionController::Base.logger]
+    Rails.logger = ActionController::Base.logger = ActiveSupport::Logger.new(io, level: Logger::DEBUG)
+    yield
+    io.string
+  ensure
+    Rails.logger, ActionController::Base.logger = original
+  end
+
   def with_env(**env)
     orig = ENV.to_h
     begin

@@ -91,9 +91,39 @@ module InertiaRails
       # Cache store for prop-level caching and SSR response caching.
       # Defaults to Rails.cache when nil.
       cache_store: nil,
+
+      # DevTools recording and excluded paths.
+      devtools: -> { ENV.fetch('INERTIA_DEVTOOLS_ENABLED', nil) },
+      devtools_except: [].freeze,
+
+      # Storage and retention.
+      devtools_storage_path: nil,
+      devtools_ttl: 24,
+      devtools_prune_interval: 300,
+      devtools_limit: 100,
+      devtools_max_entries: 0,
+
+      # Read API authorization outside development, and its request logging.
+      devtools_authorize: nil,
+      devtools_silence_logs: true,
+
+      # Key and header redaction.
+      devtools_redact_keys: %w[
+        password password_confirmation current_password
+        token _token access_token refresh_token
+        secret client_secret api_key
+      ].freeze,
+      devtools_redact_headers: %w[
+        cookie set-cookie authorization proxy-authorization x-xsrf-token x-csrf-token
+      ].freeze,
+
+      # Component source lookup.
+      devtools_component_paths: nil,
     }.freeze
 
     OPTION_NAMES = DEFAULTS.keys.freeze
+
+    GLOBAL_OPTION_NAMES = OPTION_NAMES.select { |name| name.to_s.start_with?('devtools') }.freeze
 
     class << self
       def default
@@ -165,6 +195,10 @@ module InertiaRails
       @options[:cache_store] || Rails.cache
     end
 
+    def devtools_authorize
+      @options[:devtools_authorize]
+    end
+
     # Normalized and validated at read time — ENV values arrive as strings, and callables are only evaluated here.
     def xsrf_cookie_refresh
       value = evaluate_option(options[:xsrf_cookie_refresh])
@@ -187,6 +221,15 @@ module InertiaRails
       return :_inertia_meta unless value
 
       value == true ? :head : value.to_sym
+    end
+
+    def devtools_enabled?
+      value = devtools
+      value = value.strip if value.is_a?(String)
+
+      return Rails.env.development? if value.nil? || value == ''
+
+      !%w[false 0 off no].include?(value.to_s.downcase)
     end
 
     # Returned without evaluating — the callable takes the current title as an

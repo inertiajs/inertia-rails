@@ -272,6 +272,20 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:deferredProps]).to eq({ 'default' => ['foos.0.notifications'] })
     end
 
+    # Array paths address the props passed in, not the elements that survived this
+    # render, so a path advertised on a first load still resolves on the follow-up.
+    it 'delivers a deferred prop from an array whose earlier elements were dropped' do
+      props = {
+        foos: [
+          { name: 'First' },
+          { notifications: InertiaRails.defer { ['msg'] } }
+        ],
+      }
+
+      expect(resolve(props)[:deferredProps]).to eq({ 'default' => ['foos.1.notifications'] })
+      expect(resolve_partial(props, 'foos.1.notifications')[:props][:foos]).to eq([{ notifications: ['msg'] }])
+    end
+
     it 'merge prop inside indexed array uses indexed path in metadata' do
       page = resolve({
                        foos: [
