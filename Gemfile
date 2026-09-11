@@ -10,6 +10,7 @@ gem 'rails', "~> #{version}.0"
 
 gem 'debug'
 gem 'generator_spec', '~> 0.10'
+gem 'json', '< 3' if version.to_f <= 8.1
 gem 'puma', version.to_f < 7 ? '< 7' : '>= 7'
 gem 'rails-controller-testing'
 gem 'rake', '~> 13.0'
