@@ -40,22 +40,28 @@ RSpec helpers are automatically available in all request specs. Minitest helpers
 
 Both RSpec and Minitest provide matchers/assertions for testing Inertia responses. In RSpec, negation is done with `not_to`.
 
-The `inertia` helper gives you direct access to `inertia.props`, `inertia.component`, `inertia.view_data`, `inertia.flash`, and `inertia.deferred_props`.
+The `inertia` helper gives you direct access to `inertia.props`, `inertia.component`, `inertia.view_data`, `inertia.flash`, `inertia.deferred_props`, `inertia.scroll_props`, and `inertia.once_props`.
 
-| Description               | RSpec                  | Minitest                                                            |
-| ------------------------- | ---------------------- | ------------------------------------------------------------------- |
-| Inertia response          | `be_inertia_response`  | `assert_inertia_response` / `refute_inertia_response`               |
-| Component name            | `render_component`     | `assert_inertia_component` / `refute_inertia_component`             |
-| Props (partial match)     | `have_props`           | `assert_inertia_props` / `refute_inertia_props`                     |
-| Props (exact match)       | `have_exact_props`     | `assert_inertia_props_equal` / `refute_inertia_props_equal`         |
-| Prop key absent           | `have_no_prop`         | `assert_no_inertia_prop`                                            |
-| View data (partial match) | `have_view_data`       | `assert_inertia_view_data` / `refute_inertia_view_data`             |
-| View data (exact match)   | `have_exact_view_data` | `assert_inertia_view_data_equal` / `refute_inertia_view_data_equal` |
-| View data key absent      | `have_no_view_data`    | `assert_no_inertia_view_data`                                       |
-| Flash (partial match)     | `have_flash`           | `assert_inertia_flash` / `refute_inertia_flash`                     |
-| Flash (exact match)       | `have_exact_flash`     | `assert_inertia_flash_equal` / `refute_inertia_flash_equal`         |
-| Flash key absent          | `have_no_flash`        | `assert_no_inertia_flash`                                           |
-| Deferred props            | `have_deferred_props`  | `assert_inertia_deferred_props` / `refute_inertia_deferred_props`   |
+| Description                  | RSpec                     | Minitest                                                                  |
+| ---------------------------- | ------------------------- | ------------------------------------------------------------------------- |
+| Inertia response             | `be_inertia_response`     | `assert_inertia_response` / `refute_inertia_response`                     |
+| Component name               | `render_component`        | `assert_inertia_component` / `refute_inertia_component`                   |
+| Props (partial match)        | `have_props`              | `assert_inertia_props` / `refute_inertia_props`                           |
+| Props (exact match)          | `have_exact_props`        | `assert_inertia_props_equal` / `refute_inertia_props_equal`               |
+| Prop key absent              | `have_no_prop`            | `assert_no_inertia_prop`                                                  |
+| View data (partial match)    | `have_view_data`          | `assert_inertia_view_data` / `refute_inertia_view_data`                   |
+| View data (exact match)      | `have_exact_view_data`    | `assert_inertia_view_data_equal` / `refute_inertia_view_data_equal`       |
+| View data key absent         | `have_no_view_data`       | `assert_no_inertia_view_data`                                             |
+| Flash (partial match)        | `have_flash`              | `assert_inertia_flash` / `refute_inertia_flash`                           |
+| Flash (exact match)          | `have_exact_flash`        | `assert_inertia_flash_equal` / `refute_inertia_flash_equal`               |
+| Flash key absent             | `have_no_flash`           | `assert_no_inertia_flash`                                                 |
+| Deferred props               | `have_deferred_props`     | `assert_inertia_deferred_props` / `refute_inertia_deferred_props`         |
+| Scroll props (partial match) | `have_scroll_props`       | `assert_inertia_scroll_props` / `refute_inertia_scroll_props`             |
+| Scroll props (exact match)   | `have_exact_scroll_props` | `assert_inertia_scroll_props_equal` / `refute_inertia_scroll_props_equal` |
+| Scroll prop key absent       | `have_no_scroll_prop`     | `assert_no_inertia_scroll_prop`                                           |
+| Once props (partial match)   | `have_once_props`         | `assert_inertia_once_props` / `refute_inertia_once_props`                 |
+| Once props (exact match)     | `have_exact_once_props`   | `assert_inertia_once_props_equal` / `refute_inertia_once_props_equal`     |
+| Once prop key absent         | `have_no_once_prop`       | `assert_no_inertia_once_prop`                                             |
 
 :::tabs key:tests
 
