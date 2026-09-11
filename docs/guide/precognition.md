@@ -33,7 +33,7 @@ Two controller methods are available:
 - **`precognition!(model_or_errors)`** — raises an exception to halt the action on precognition requests. No `return if` needed — the action simply stops. For non-precognition requests, returns `false` and continues normally.
 - **`precognition(model_or_errors)`** — returns `true` if a precognition response was rendered, `false` otherwise. Use with `return if precognition(@user)` if you prefer the explicit return pattern.
 
-Both methods accept an ActiveModel-like object (calls `valid?` automatically) or an errors hash:
+Both methods accept an ActiveModel-like object (calls `valid?` automatically) or an errors hash, and optionally a block to [transform the errors](#transforming-error-keys) before they're sent:
 
 - For valid data, responds with `204 No Content` with `Precognition: true` and `Precognition-Success: true` headers
 - For invalid data, responds with `422 Unprocessable Entity` with errors as JSON and a `Precognition: true` header
@@ -141,6 +141,39 @@ You can also enable [`precognition_prevent_writes`](/guide/configuration#precogn
 
 Inertia's client-side form helper can request validation of specific fields using the `Precognition-Validate-Only` header. The server automatically filters the errors to only include the requested fields.
 
+## Transforming error keys
+
+@available_since rails=master
+
+Both `precognition!` and `precognition` accept an optional block to transform the errors hash before it's sent to the client. This is useful when your form fields are wrapped in an envelope using `name="user.name"`, `name="user[name]`, or via the `transform` prop. In those cases, the server error keys need to match:
+
+```ruby
+def create
+  @user = User.new(user_params)
+  precognition!(@user) { |errors| { user: errors } }
+
+  if @user.save
+    redirect_to @user
+  else
+    redirect_back_or_to new_user_path, inertia: { errors: { user: @user.errors } }
+  end
+end
+```
+
+Nested hashes are automatically flattened to dot-notated keys. `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }` in the response, matching the format the client expects when looking up errors for a field named `user.name`. The block only runs when there are errors; on a successful validation, the 204 response is sent without calling the block.
+
+The block runs before field-level filtering, so `Precognition-Validate-Only: user.name` correctly finds the flattened key.
+
+When you pass nested errors to `redirect_to` with `inertia: { errors: ... }`, inertia adds a copy of the errors with flattened keys. The original nested structure is preserved alongside flat dot-notated copies. This means `{ user: @user.errors }` in the redirect produces both `errors.user.email_address` (nested) and `errors['user.email_address']` (flat) on the client, so `invalid('user.email_address')` works consistently whether the error came from a precognition request or a full form submission.
+
+Both behaviors are controlled by the [`flatten_errors`](/guide/configuration#flatten_errors) configuration option, which defaults to `true`. You can disable it globally in your Inertia config, per controller with `inertia_config`, or per call:
+
+```ruby
+precognition!(@user, flatten_errors: false) { |errors| { user: errors } }
+
+redirect_to new_user_path, inertia: { errors: { user: @user.errors }, flatten_errors: false }
+```
+
 ## Using `transform` with precognition
 
 When using the `<Form>` component with a `transform` prop that wraps data under a key (e.g., `transform={(data) => ({ user: data })}`), the field names passed to `validate()` must match the keys in the **transformed** data structure, not the input `name` attributes.
@@ -151,7 +184,13 @@ To work around this, you have two options:
 
 **Option 1: Use dotted input names instead of a transform**
 
-Use `name="user.name"` (or `name="user[name]"`) input attributes. The `<Form>` component automatically converts these into a nested `{ user: { name: '...' } }` structure without needing a transform, so `validate('user.name')` will correctly find the value. Note that server error keys must match (e.g., `user.name`), so you may need to prefix errors in your precognition response.
+Use `name="user.name"` (or `name="user[name]"`) input attributes. The `<Form>` component automatically converts these into a nested `{ user: { name: '...' } }` structure without needing a transform, so `validate('user.name')` will correctly find the value. Server error keys must match (e.g., `user.name`) — use a block to prefix them:
+
+```ruby
+precognition!(@user) { |errors| { user: errors } }
+```
+
+See [Transforming error keys](#transforming-error-keys) for details.
 
 **Option 2: Use `useForm` with `withPrecognition` instead**
 

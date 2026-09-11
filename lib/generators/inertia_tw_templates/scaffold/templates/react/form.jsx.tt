@@ -3,7 +3,6 @@ import { Form as InertiaForm } from '@inertiajs/react'
 export default function Form({ <%= singular_table_name %>, submitText, ...formProps }) {
   return (
     <InertiaForm
-      transform={data => ({ <%= singular_table_name %>: data })}
       className="contents"
       {...formProps}
     >

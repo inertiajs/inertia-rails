@@ -85,6 +85,12 @@ module InertiaRails
       # will raise ActiveRecord::ReadOnlyError.
       precognition_prevent_writes: false,
 
+      # Whether to automatically flatten nested error hashes to dot-notated keys.
+      # For precognition responses, nested hashes are fully replaced with flat keys.
+      # For redirect errors, flat copies are added alongside the original nested structure.
+      # This ensures consistency between precognition and full form submission error shapes.
+      flatten_errors: true,
+
       # Whether to include shared prop keys in the page response metadata.
       expose_shared_prop_keys: true,
 

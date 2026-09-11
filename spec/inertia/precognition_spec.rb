@@ -197,6 +197,152 @@ RSpec.describe 'Precognition', type: :request do
     end
   end
 
+  describe 'flatten_errors configuration' do
+    context 'disabled globally' do
+      with_inertia_config flatten_errors: false
+
+      it 'does not flatten nested errors' do
+        post precognition_with_nested_errors_path, params: blank_user_params, headers: precognition_headers
+
+        body = JSON.parse(response.body)
+        expect(body['errors']).to include('user')
+        expect(body['errors']).not_to include('user.name', 'user.email')
+      end
+
+      it 'does not flatten block transform output' do
+        post precognition_with_block_transform_path, params: blank_user_params, headers: precognition_headers
+
+        body = JSON.parse(response.body)
+        expect(body['errors']).to include('user')
+        expect(body['errors']).not_to include('user.name', 'user.email')
+      end
+    end
+
+    context 'disabled per-call' do
+      it 'does not flatten nested errors when flatten_errors: false' do
+        post precognition_with_nested_errors_no_flatten_path, params: blank_user_params, headers: precognition_headers
+
+        body = JSON.parse(response.body)
+        expect(body['errors']).to include('user')
+        expect(body['errors']).not_to include('user.name', 'user.email')
+      end
+
+      it 'does not flatten block output when flatten_errors: false' do
+        post precognition_with_block_transform_no_flatten_path, params: blank_user_params, headers: precognition_headers
+
+        body = JSON.parse(response.body)
+        expect(body['errors']).to include('user')
+        expect(body['errors']).not_to include('user.name', 'user.email')
+      end
+
+      it 'per-call false overrides global true' do
+        post precognition_with_nested_errors_no_flatten_path, params: blank_user_params, headers: precognition_headers
+
+        body = JSON.parse(response.body)
+        expect(body['errors'].keys).to eq(['user'])
+      end
+    end
+  end
+
+  describe 'nested error flattening' do
+    context 'without a block (nested hash passed directly)' do
+      it 'flattens nested hash to dot-notated keys' do
+        post precognition_with_nested_errors_path, params: blank_user_params, headers: precognition_headers
+
+        body = JSON.parse(response.body)
+        expect(body['errors']).to include('user.name', 'user.email')
+      end
+
+      it 'filters on flattened keys' do
+        post precognition_with_nested_errors_path,
+             params: blank_user_params,
+             headers: validate_only_headers('user.name')
+
+        body = JSON.parse(response.body)
+        expect(body['errors'].keys).to eq(['user.name'])
+      end
+
+      it 'returns 204 when the filtered field is valid' do
+        post precognition_with_nested_errors_path,
+             params: { user: { name: 'Jane Doe', email: '' } },
+             headers: validate_only_headers('user.name')
+
+        expect(response).to have_http_status(:no_content)
+      end
+    end
+
+    context 'with a block returning a nested hash' do
+      shared_examples 'block transform behavior' do |path_helper|
+        context 'when validation fails' do
+          it 'flattens block output to dot-notated keys' do
+            post send(path_helper), params: blank_user_params, headers: precognition_headers
+
+            expect(response).to have_http_status(:unprocessable_entity)
+            body = JSON.parse(response.body)
+            expect(body['errors']).to include('user.name', 'user.email')
+          end
+        end
+
+        context 'when validation passes' do
+          it 'does not call the block and returns 204' do
+            post send(path_helper), params: valid_user_params, headers: precognition_headers
+
+            expect(response).to have_http_status(:no_content)
+          end
+        end
+
+        context 'when not a precognition request' do
+          it 'does not intercept the request' do
+            post send(path_helper), params: valid_user_params
+
+            expect(response).to have_http_status(:ok)
+            expect(JSON.parse(response.body)).to eq({ 'success' => true })
+          end
+        end
+      end
+
+      include_examples 'block transform behavior', :precognition_with_block_transform_path
+      include_examples 'block transform behavior', :precognition_non_bang_with_block_transform_path
+      include_examples 'block transform behavior', :precognition_module_level_with_block_transform_path
+
+      it 'filters on flattened keys' do
+        post precognition_with_block_transform_path,
+             params: blank_user_params,
+             headers: validate_only_headers('user.name')
+
+        body = JSON.parse(response.body)
+        expect(body['errors'].keys).to eq(['user.name'])
+      end
+
+      it 'returns 204 when the filtered field is valid' do
+        post precognition_with_block_transform_path,
+             params: { user: { name: 'Jane Doe', email: '' } },
+             headers: validate_only_headers('user.name')
+
+        expect(response).to have_http_status(:no_content)
+      end
+    end
+
+    context 'with a block using transform_keys' do
+      it 'filters on already-flat dotted keys' do
+        post precognition_with_block_key_rename_path,
+             params: blank_user_params,
+             headers: validate_only_headers('user.name')
+
+        body = JSON.parse(response.body)
+        expect(body['errors'].keys).to eq(['user.name'])
+      end
+
+      it 'returns 204 when the filtered field is valid' do
+        post precognition_with_block_key_rename_path,
+             params: { user: { name: 'Jane Doe', email: '' } },
+             headers: validate_only_headers('user.name')
+
+        expect(response).to have_http_status(:no_content)
+      end
+    end
+  end
+
   describe 'custom validators' do
     it 'works with validators that return a hash' do
       post precognition_with_custom_validator_path, params: blank_user_params, headers: precognition_headers

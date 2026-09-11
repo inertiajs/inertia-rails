@@ -309,6 +309,37 @@ When enabled, the HTML output looks like:
 > When using this option make sure your client-side Inertia setup is configured to read the page data from the `<script>` element.
 > See the [client side setup](/guide/client-side-setup#script-element-for-page-data) for more details.
 
+### `flatten_errors`
+
+**Default**: `true`
+**ENV**: `INERTIA_FLATTEN_ERRORS`
+
+@available_since rails=master
+
+When enabled, nested error hashes passed to `inertia: { errors: ... }` in a redirect or to `precognition!`/`precognition` are automatically given flat dot-notated key copies. This ensures that `invalid('user.email_address')` and `errors['user.email_address']` work consistently whether an error came from a precognition validation request or a full form submission.
+
+For precognition responses, nested hashes are fully replaced with flat keys — `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }`. For redirect errors, flat copies are added alongside the original nested structure so that existing code accessing `errors.user.email_address` continues to work.
+
+Disable globally when you need to manage error key shapes entirely yourself:
+
+```ruby
+InertiaRails.configure do |config|
+  config.flatten_errors = false
+end
+```
+
+Can also be overridden per controller with `inertia_config(flatten_errors: false)`, or per call:
+
+```ruby
+# precognition
+precognition!(@user, flatten_errors: false) { |errors| { user: errors } }
+
+# redirect
+redirect_to new_user_path, inertia: { errors: { user: @user.errors }, flatten_errors: false }
+```
+
+See [Transforming error keys](/guide/precognition#transforming-error-keys) for full details.
+
 ### `precognition_prevent_writes`
 
 **Default**: `false`
