@@ -31,17 +31,5 @@ module InertiaRails
         source_location: body['sourceLocation']
       )
     end
-
-    def self.from_exception(exception)
-      # Ruby has no `cause=`; `raise` is the only thing that sets it, from `$!`.
-      # Raising here — while the original exception is still being handled —
-      # lets the wrapper carry it, so error trackers can walk the chain on both
-      # the fallback and `ssr_raise_on_error` paths. Outside a rescue block
-      # `$!` is nil and `cause` is simply nil.
-      raise new(exception.message, type: 'connection')
-    rescue SSRError => e
-      e.set_backtrace(exception.backtrace)
-      e
-    end
   end
 end

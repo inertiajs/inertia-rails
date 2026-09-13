@@ -18,8 +18,6 @@ module InertiaRails
       end
     rescue InertiaRails::SSRError => e
       handle_error(e)
-    rescue StandardError => e
-      handle_error(InertiaRails::SSRError.from_exception(e))
     end
 
     private
@@ -30,10 +28,7 @@ module InertiaRails
 
     def request
       ActiveSupport::Notifications.instrument('ssr.inertia_rails', url: url, component: @page[:component]) do
-        uri = URI.parse(url)
-        response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') do |http|
-          http.post(uri.request_uri, page_json, 'Content-Type' => 'application/json')
-        end
+        response = post_page
 
         unless response.is_a?(Net::HTTPSuccess)
           body = begin
@@ -49,8 +44,17 @@ module InertiaRails
       end
     end
 
+    def post_page
+      uri = URI.parse(url)
+      Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') do |http|
+        http.post(uri.request_uri, page_json, 'Content-Type' => 'application/json')
+      end
+    rescue StandardError => e
+      raise InertiaRails::SSRError.new(e.message, type: 'connection')
+    end
+
     def handle_error(error)
-      Rails.logger&.error("[inertia-rails] SSR render failed: #{error.message}")
+      Rails.logger.error("[inertia-rails] SSR render failed: #{error.message}")
 
       if @configuration.on_ssr_error
         @configuration.on_ssr_error.call(error, @page)

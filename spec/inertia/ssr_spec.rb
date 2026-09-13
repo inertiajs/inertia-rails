@@ -883,35 +883,6 @@ RSpec.describe 'inertia ssr', type: :request do
       expect(error.source_location).to eq 'app/Pages/Home.jsx:5'
     end
 
-    it 'can be constructed from an exception' do
-      original = StandardError.new('Connection refused')
-      original.set_backtrace(%w[line1 line2])
-
-      error = InertiaRails::SSRError.from_exception(original)
-
-      expect(error.message).to eq 'Connection refused'
-      expect(error.type).to eq 'connection'
-      expect(error.backtrace).to eq %w[line1 line2]
-    end
-
-    it 'preserves the original exception as cause when wrapping inside a rescue' do
-      error = begin
-        raise Errno::ECONNREFUSED, 'connect(2) for 127.0.0.1:13714'
-      rescue StandardError => e
-        InertiaRails::SSRError.from_exception(e)
-      end
-
-      expect(error.cause).to be_a(Errno::ECONNREFUSED)
-      expect(error.backtrace).to eq error.cause.backtrace
-    end
-
-    it 'has no cause when constructed outside a rescue block' do
-      original = StandardError.new('Connection refused')
-      original.set_backtrace(%w[line1 line2])
-
-      expect(InertiaRails::SSRError.from_exception(original).cause).to be_nil
-    end
-
     it 'defaults to Unknown SSR error when no error message in response' do
       error = InertiaRails::SSRError.from_response({})
       expect(error.message).to eq 'Unknown SSR error'
