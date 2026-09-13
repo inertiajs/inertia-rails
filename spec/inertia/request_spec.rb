@@ -144,16 +144,6 @@ RSpec.describe 'Inertia::Request', type: :request do
         end
       end
 
-      it 'expires an XSRF-TOKEN cookie left over from a token-based strategy' do
-        with_forgery_protection do
-          cookies['XSRF-TOKEN'] = 'stale-token'
-
-          get header_only_csrf_test_path
-
-          expect(response.cookies).to include('XSRF-TOKEN' => nil)
-        end
-      end
-
       it 'keeps setting the XSRF-TOKEN cookie for controllers on :header_or_legacy_token' do
         with_forgery_protection do
           get legacy_token_csrf_test_path

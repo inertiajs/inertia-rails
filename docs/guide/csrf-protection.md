@@ -85,7 +85,7 @@ createInertiaApp({
 
 Rails 8.2 introduces a new default forgery protection strategy, `:header_only`, which verifies requests using the `Sec-Fetch-Site` header sent by modern browsers instead of authenticity tokens. Under this strategy Rails never reads a token, so there is nothing for the client to send back.
 
-The Rails adapter detects the strategy on each responding controller and stops issuing the `XSRF-TOKEN` cookie entirely — no token is generated or exchanged, and no `Set-Cookie` header is emitted. A leftover `XSRF-TOKEN` cookie from before the switch is expired automatically so clients stop echoing it as `X-XSRF-TOKEN`. Inertia's HTTP client only sends the header when the cookie exists, so no client-side configuration is required.
+The Rails adapter detects the strategy on each responding controller and stops issuing the `XSRF-TOKEN` cookie entirely — no token is generated or exchanged, and no `Set-Cookie` header is emitted. Inertia's HTTP client only sends `X-XSRF-TOKEN` when the cookie exists, so no client-side configuration is required.
 
 This follows the strategy configured in Rails, per controller:
 
