@@ -20,6 +20,7 @@ module InertiaRails
         # Included into ActionController::Base, so this runs for non-Inertia
         # responses too — ActiveStorage images, where it only breaks CDN caching.
         next unless request.format.html? || request.xhr?
+        next if forgery_protection_header_only?
         next if XsrfCookieRefreshPolicy.skip?(self)
 
         cookies['XSRF-TOKEN'] = form_authenticity_token
@@ -124,6 +125,11 @@ module InertiaRails
       return {} unless @_inertia_instance_props
 
       view_assigns.except(*@_inertia_skip_props)
+    end
+
+    def forgery_protection_header_only?
+      respond_to?(:forgery_protection_verification_strategy) &&
+        forgery_protection_verification_strategy == :header_only
     end
 
     # nil for plain requests — compacted out of the ETag, so non-Inertia ETags are unchanged.
