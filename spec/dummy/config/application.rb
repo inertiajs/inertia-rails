@@ -34,5 +34,11 @@ module Dummy
 
     # Required for Rails 5.0 and 5.1
     config.secret_key_base = SecureRandom.hex
+
+    # Rails 8.2 defaults to :header_only, which skips the XSRF-TOKEN cookie;
+    # keep tokens on so the cookie specs stay meaningful.
+    if Rails.gem_version >= Gem::Version.new('8.2.0.alpha')
+      config.action_controller.forgery_protection_verification_strategy = :header_or_legacy_token
+    end
   end
 end
