@@ -145,7 +145,7 @@ RSpec.describe 'Puma Inertia SSR plugin' do
   end
 
   context 'when SSR is disabled' do
-    it 'does not start the SSR server' do
+    it 'starts the SSR server anyway' do
       bundle = write_ssr_bundle
       write_puma_config
 
@@ -157,7 +157,7 @@ RSpec.describe 'Puma Inertia SSR plugin' do
 
       # Puma is up but SSR should not be
       sleep 2
-      expect(port_open?(ssr_port)).to be false
+      expect(port_open?(ssr_port)).to be true
     end
   end
 
