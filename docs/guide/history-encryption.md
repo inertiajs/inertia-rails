@@ -16,7 +16,7 @@ History encryption is an opt-in feature. There are several methods for enabling 
 
 ### Global Encryption
 
-If you'd like to enable history encryption globally, set the `history_encrypt` config value to `true`.
+If you'd like to enable history encryption globally, set the `encrypt_history` config value to `true`.
 
 You are able to opt out of encryption on specific pages by passing `false` to the `encrypt_history` option.
 
