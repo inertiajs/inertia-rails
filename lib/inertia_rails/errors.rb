@@ -31,11 +31,5 @@ module InertiaRails
         source_location: body['sourceLocation']
       )
     end
-
-    def self.from_exception(exception)
-      error = new(exception.message, type: 'connection')
-      error.set_backtrace(exception.backtrace)
-      error
-    end
   end
 end
