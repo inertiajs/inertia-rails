@@ -12,7 +12,6 @@
 </script>
 
 <Form
-  transform={(data) => ({ <%= singular_table_name %>: data })}
   {...restProps}
 >
   {#snippet children({
