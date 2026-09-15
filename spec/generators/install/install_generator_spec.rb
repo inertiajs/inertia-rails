@@ -237,10 +237,13 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
         else
           does_not_contain('<%= vite_react_refresh_tag %>')
         end
+        contains('<%= inertia_meta_tags %>')
+        does_not_contain('<title>')
       end
       file('config/initializers/inertia_rails.rb') do
         contains('config.version = ViteRuby.digest')
         contains('config.server_head = true')
+        contains('config.meta_title_template')
       end
 
       file('bin/dev') do

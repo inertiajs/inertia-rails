@@ -128,11 +128,12 @@ module Inertia
                              before: '<%= vite_client_tag %>'
           end
 
-          gsub_file application_layout.to_s, /<title>/, '<title data-inertia>' unless svelte?
+          say 'Adding inertia_meta_tags helper to the application layout'
+          gsub_file application_layout.to_s, %r{^(\s*)<title>.*</title>\s*\n}, "\\1<%= inertia_meta_tags %>\n"
         else
           say_error 'Could not find the application layout file. Please add the following tags manually:', :red
           say_error '-  <title>...</title>'
-          say_error '+  <title data-inertia>...</title>'
+          say_error '+  <%= inertia_meta_tags %>'
           say_error '+  <%= inertia_ssr_head %>'
           say_error '+  <%= vite_react_refresh_tag %>' if react?
           say_error "+  <%= #{vite_tag} %>"
