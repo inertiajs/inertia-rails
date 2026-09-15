@@ -12,6 +12,8 @@ Inertia Rails renders server defined meta tags into both the server rendered HTM
 
 Simply add the `inertia_meta_tags` helper to your layout. This will render the meta tags in the `<head>` section of your HTML.
 
+Apps generated with the `inertia_rails:install` generator have this preconfigured: the layout's `<title>` tag is replaced with `inertia_meta_tags`, and `config.meta_title_template` is set to fall back to the app name for pages that don't set a title.
+
 ```erb
 <!-- app/views/layouts/application.html.erb (or your custom layout) -->
 
