@@ -30,6 +30,9 @@ require_relative 'inertia_rails/scroll_prop'
 require_relative 'inertia_rails/prop_evaluator'
 require_relative 'inertia_rails/props_resolver'
 
+# devtools
+require_relative 'inertia_rails/devtools'
+
 # ssr
 require_relative 'inertia_rails/ssr'
 
@@ -64,6 +67,16 @@ module InertiaRails
 
     def deprecator # :nodoc:
       @deprecator ||= ActiveSupport::Deprecation.new
+    end
+
+    # `Rails.error` (the Error Reporter) was introduced in Rails 7.0. Fall back
+    # to the logger on older versions so errors are never silently lost.
+    def report_handled_error(error, message: 'Handled error')
+      if Rails.respond_to?(:error)
+        Rails.error.report(error, handled: true)
+      else
+        Rails.logger&.error("[inertia-rails] #{message}: #{error.class}: #{error.message}")
+      end
     end
 
     def lazy(value = nil, &block)
