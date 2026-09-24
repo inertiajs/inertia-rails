@@ -286,7 +286,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         {
           'X-Inertia' => true,
           'X-Inertia-Partial-Component' => 'TestComponent',
-          'X-Inertia-Partial-Data' => 'lazy,nested.deeply_nested',
+          'X-Inertia-Partial-Data' => 'optional,nested.deeply_nested',
           'X-Inertia-Partial-Except' => 'nested.deeply_nested.first',
         }
       end
@@ -296,14 +296,14 @@ RSpec.describe 'rendering inertia views', type: :request do
       it 'renders the partial data and excludes the excepted data' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
-          'lazy' => 'lazy param',
+          'optional' => 'optional param',
           'nested' => {
             'deeply_nested' => {
               'second' => false,
               'what_about_nil' => nil,
               'what_about_empty_hash' => {},
               'deeply_nested_always' => 'deeply nested always prop',
-              'deeply_nested_lazy' => 'deeply nested lazy prop',
+              'deeply_nested_optional' => 'deeply nested optional prop',
             },
           }
         )
@@ -315,8 +315,8 @@ RSpec.describe 'rendering inertia views', type: :request do
         {
           'X-Inertia' => true,
           'X-Inertia-Partial-Component' => 'TestComponent',
-          'X-Inertia-Partial-Data' => 'lazy',
-          'X-Inertia-Partial-Except' => 'lazy,always',
+          'X-Inertia-Partial-Data' => 'optional',
+          'X-Inertia-Partial-Except' => 'optional,always',
         }
       end
 
@@ -368,8 +368,8 @@ RSpec.describe 'rendering inertia views', type: :request do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
           'flat' => 'flat param',
-          'lazy' => 'lazy param',
-          'nested_lazy' => { 'first' => 'first nested lazy param' },
+          'optional' => 'optional param',
+          'nested_optional' => { 'first' => 'first nested optional param' },
           'nested' => {
             'first' => 'first nested param',
             'second' => 'second nested param',
@@ -383,7 +383,7 @@ RSpec.describe 'rendering inertia views', type: :request do
               'what_about_nil' => nil,
               'what_about_empty_hash' => {},
               'deeply_nested_always' => 'deeply nested always prop',
-              'deeply_nested_lazy' => 'deeply nested lazy prop',
+              'deeply_nested_optional' => 'deeply nested optional prop',
             },
           }
         )
