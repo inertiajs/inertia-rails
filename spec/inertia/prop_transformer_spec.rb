@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../../lib/inertia_rails/rspec'
-RSpec.describe 'props can be transformed', type: :request, inertia: true do
+RSpec.describe 'props can be transformed', type: :request do
   let(:headers) do
     {
       'X-Inertia' => true,
