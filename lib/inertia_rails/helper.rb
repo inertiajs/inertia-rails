@@ -22,6 +22,9 @@ module InertiaRails
     end
 
     def inertia_meta_tags
+      # SSR responses deliver the meta tags through inertia_ssr_head instead.
+      return ''.html_safe unless inertia_ssr_head.nil?
+
       config = controller.send(:inertia_configuration)
       meta_tag_data = (inertia_page || {}).dig(:props, config.meta_prop) || []
       attribute = config.head_attribute

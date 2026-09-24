@@ -36,6 +36,11 @@ RSpec.describe 'rendering inertia views', type: :request do
       expect(response.status).to eq 200
     end
 
+    it 'exposes the component name to the layout' do
+      get component_path
+      expect(response.body).to include('<meta name="inertia-component" content="TestComponent">')
+    end
+
     describe 'headers' do
       context 'when no other Vary header is present' do
         it 'has the proper headers' do

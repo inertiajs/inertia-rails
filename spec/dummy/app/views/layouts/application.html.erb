@@ -1,3 +1,4 @@
 <%= inertia_ssr_head %>
+<%= tag.meta(name: 'inertia-component', content: inertia_page[:component]) if inertia_page %>
 <%= yield %>
 <%= local_assigns.except(:page, :inertia_ssr_head).to_json.html_safe %>
