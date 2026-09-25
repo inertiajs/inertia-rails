@@ -67,6 +67,42 @@ RSpec.describe InertiaRails::Helper, type: :helper do
   end
 
   describe '#inertia_meta_tags' do
+    context 'when the response was server-side rendered' do
+      before do
+        controller.instance_variable_set(
+          :@_inertia_page,
+          {
+            props: {
+              _inertia_meta: [
+                InertiaRails::MetaTag.new(name: 'description', content: 'Inertia rules',
+                                          head_key: 'my_key')
+              ],
+            },
+          }
+        )
+      end
+
+      context 'with a non-empty SSR head' do
+        before do
+          controller.instance_variable_set(:@_inertia_ssr_head, '<title inertia="title">SSR Title</title>'.html_safe)
+        end
+
+        it 'renders nothing, because the tags are delivered through inertia_ssr_head' do
+          expect(helper.inertia_meta_tags).to eq('')
+        end
+      end
+
+      context 'with an empty SSR head' do
+        before do
+          controller.instance_variable_set(:@_inertia_ssr_head, ''.html_safe)
+        end
+
+        it 'renders nothing, because SSR is the authority for head content' do
+          expect(helper.inertia_meta_tags).to eq('')
+        end
+      end
+    end
+
     context 'basic rendering' do
       before do
         controller.instance_variable_set(
