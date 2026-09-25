@@ -187,7 +187,11 @@ RSpec.describe InertiaRails::RSpec, type: :request do
     before { get non_inertiafied_path }
 
     it 'does not complain about test helpers' do
+      original_stderr = $stderr
+      $stderr = FakeStdErr.new
       expect { expect_inertia }.not_to raise_error
+    ensure
+      $stderr = original_stderr
     end
 
     # h/t for this technique:

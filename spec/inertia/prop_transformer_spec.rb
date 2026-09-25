@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../../lib/inertia_rails/rspec'
-RSpec.describe 'props can be transformed', type: :request, inertia: true do
+RSpec.describe 'props can be transformed', type: :request do
   let(:headers) do
     {
       'X-Inertia' => true,
@@ -28,9 +28,9 @@ RSpec.describe 'props can be transformed', type: :request, inertia: true do
       get prop_transformer_with_meta_test_path, headers: headers
 
       expect_inertia.to render_component('TestComponent')
-        .and include_props({
-                             'LOWER_PROP' => 'lower_value',
-                           })
+        .and have_props({
+                          'LOWER_PROP' => 'lower_value',
+                        })
     end
 
     it 'does not transform the meta' do
