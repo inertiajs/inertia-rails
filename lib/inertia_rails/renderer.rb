@@ -38,6 +38,7 @@ module InertiaRails
       @props = merge_props(shared, passed_props, deep_merge)
 
       @component = resolve_component(component)
+      start_devtools_render(shared)
 
       @controller.instance_variable_set('@_inertia_rendering', true)
       controller.inertia_meta.add(options[:meta]) if options[:meta]
@@ -77,6 +78,24 @@ module InertiaRails
     end
 
     private
+
+    def devtools
+      @devtools = Devtools.recorder(@request) unless defined?(@devtools)
+      @devtools
+    end
+
+    def start_devtools_render(shared)
+      devtools&.render_started(
+        component: @component,
+        render_source: route_render_source || Devtools::SourceLocator.caller_source(caller_locations(1, 40)),
+        shared_keys: extract_shared_keys(shared)
+      )
+    end
+
+    def route_render_source
+      source = @request.path_parameters[Devtools::RENDER_SOURCE_KEY]
+      source if source.is_a?(Hash) && source[:file] && source[:line]
+    end
 
     def ssr_render
       SSRRenderer.new(@configuration, page: page, cache: @ssr_cache).render
@@ -135,7 +154,8 @@ module InertiaRails
           except: parse_header('X-Inertia-Partial-Except'),
           reset: parse_header('X-Inertia-Reset'),
           except_once: parse_header('X-Inertia-Except-Once-Props'),
-        }
+        },
+        recorder: devtools
       )
       resolved_props, metadata = resolver.resolve
 
@@ -160,6 +180,8 @@ module InertiaRails
       page[:preserveFragment] = @preserve_fragment if @preserve_fragment
 
       page.merge!(metadata)
+      devtools&.page_rendered(page)
+      page
     end
 
     def resolve_component(component)

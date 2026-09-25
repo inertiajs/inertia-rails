@@ -98,6 +98,7 @@ Full walkthrough: **[Server-side setup](https://inertia-rails.dev/guide/server-s
 | **[Deferred props](https://inertia-rails.dev/guide/deferred-props)** | Load the page fast, fetch expensive data after, with built-in loading states. |
 | **[Rails generators](https://inertia-rails.dev/guide/server-side-setup)** | Scaffold entire CRUD interfaces — controllers with matching components. |
 | **[History encryption](https://inertia-rails.dev/guide/history-encryption)** | Keep sensitive data private, even in browser history. Toggle per page. |
+| **[DevTools](https://inertia-rails.dev/guide/devtools)** | Inspect every request's props, headers, and route in Chrome DevTools. On by default in development. |
 
 ## Why Inertia?
 
@@ -126,6 +127,7 @@ Everything lives at **[inertia-rails.dev](https://inertia-rails.dev)**:
 - [Shared data](https://inertia-rails.dev/guide/shared-data) · [Partial reloads](https://inertia-rails.dev/guide/partial-reloads) · [Deferred props](https://inertia-rails.dev/guide/deferred-props)
 - [Server-side rendering](https://inertia-rails.dev/guide/server-side-rendering)
 - [Testing](https://inertia-rails.dev/guide/testing)
+- [DevTools](https://inertia-rails.dev/guide/devtools)
 - [Configuration reference](https://inertia-rails.dev/guide/configuration)
 
 ## Community
