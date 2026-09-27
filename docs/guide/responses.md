@@ -165,6 +165,14 @@ Renders meta tags that were defined server-side using the `inertia_meta` configu
 </head>
 ```
 
+Pass `default_title:` to render a plain `<title>` when no server-side title is set, for example on non-Inertia pages:
+
+```erb
+<head>
+  <%= inertia_meta_tags(default_title: content_for(:title) || "My App") %>
+</head>
+```
+
 ### Passing Additional Data to the View
 
 Sometimes you may want to provide data to the root template that will not be sent to your JavaScript page / component. This can be accomplished by passing the `view_data` option.

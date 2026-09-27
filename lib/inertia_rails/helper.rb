@@ -21,7 +21,7 @@ module InertiaRails
       controller.instance_variable_get('@_inertia_page')
     end
 
-    def inertia_meta_tags
+    def inertia_meta_tags(default_title: nil)
       config = controller.send(:inertia_configuration)
       meta_tag_data = (inertia_page || {}).dig(:props, config.meta_prop) || []
       attribute = config.head_attribute
@@ -31,6 +31,8 @@ module InertiaRails
 
         inertia_meta_tag.to_tag(tag, inertia_attribute: attribute)
       end
+
+      meta_tags << tag.title(default_title) if default_title && !page_has_title?
 
       safe_join(meta_tags, "\n")
     end
@@ -53,6 +55,12 @@ module InertiaRails
       else
         tag.div(id: id, 'data-page': page.to_json)
       end
+    end
+
+    private
+
+    def page_has_title?
+      inertia_page && controller.inertia_meta.title
     end
   end
 end
