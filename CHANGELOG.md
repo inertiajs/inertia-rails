@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Restart the SSR server promptly in the Puma plugin when the process dies during boot, instead of polling a dead port for the full boot timeout (@skryukov)
 * Fix `NoMethodError` raised when a request carrying the `X-Inertia` header reaches a non-Inertia controller such as an `ActionController::API` endpoint (@SAY-5)
 * Fix stale flash notice and use idiomatic class in Vue scaffolds (@skryukov)
-* Remove ssr_enabled? guard clause from Puma plugin since SSR can be enabled dynamically at runtime (@bknoles)
+* Start the SSR server in the Puma plugin regardless of the global `ssr_enabled`, so SSR enabled per controller with `inertia_config` works (@bknoles)
 
 ## [3.22.0] - 2026-07-17
 

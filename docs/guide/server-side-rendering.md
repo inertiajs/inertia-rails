@@ -420,7 +420,7 @@ plugin :inertia_ssr
 
 The plugin automatically starts and stops the SSR Node.js process alongside Puma. It handles health checks, automatic restarts on crashes, and graceful shutdown. No separate process management (systemd, Procfile, etc.) is needed.
 
-The plugin is a no-op when `ssr_enabled` is `false` or the SSR bundle is not found, so it is safe to add unconditionally.
+The plugin starts the SSR server whenever the SSR bundle is found, even if `ssr_enabled` is `false` globally, so SSR enabled per controller with `inertia_config` works. It is a no-op when the bundle is not found or the Vite dev server is running, so it is safe to add unconditionally.
 
 #### Bundle Resolution
 
