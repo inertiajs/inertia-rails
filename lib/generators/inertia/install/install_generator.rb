@@ -103,7 +103,10 @@ module Inertia
         end
 
         say "Copying #{inertia_entrypoint} entrypoint"
-        copy_file "#{framework}/#{inertia_entrypoint}", js_file_path("entrypoints/#{inertia_entrypoint}")
+        entrypoint_path = js_file_path("entrypoints/#{inertia_entrypoint}")
+        copy_file "#{framework}/#{inertia_entrypoint}", entrypoint_path
+        insert_into_file entrypoint_path, "\n  title: (title) => title || #{app_title.to_json},\n",
+                         after: "serverHead: true,\n"
 
         # Copy framework-specific config files
         if svelte?
@@ -128,11 +131,12 @@ module Inertia
                              before: '<%= vite_client_tag %>'
           end
 
-          gsub_file application_layout.to_s, /<title>/, '<title data-inertia>' unless svelte?
+          say 'Replacing the <title> tag with the inertia_meta_tags helper in the application layout'
+          gsub_file application_layout.to_s, %r{^(\s*)<title>.*</title>\s*\n}, "\\1#{inertia_meta_tags_line}\n"
         else
           say_error 'Could not find the application layout file. Please add the following tags manually:', :red
           say_error '-  <title>...</title>'
-          say_error '+  <title data-inertia>...</title>'
+          say_error "+  #{inertia_meta_tags_line}"
           say_error '+  <%= inertia_ssr_head %>'
           say_error '+  <%= vite_react_refresh_tag %>' if react?
           say_error "+  <%= #{vite_tag} %>"
@@ -335,6 +339,14 @@ module Inertia
 
       def verbose?
         options[:verbose]
+      end
+
+      def inertia_meta_tags_line
+        "<%= inertia_meta_tags(default_title: content_for(:title) || #{app_title.inspect}) %>"
+      end
+
+      def app_title
+        Rails.application.class.module_parent_name.titleize
       end
 
       def svelte?

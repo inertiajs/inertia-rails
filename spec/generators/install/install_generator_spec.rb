@@ -199,6 +199,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
         file("app/frontend/entrypoints/inertia.#{ext}x") do
           contains("from '@inertiajs/react'")
           contains('serverHead: true')
+          contains('title: (title) => title || "Dummy",')
         end
       when :vue
         file('vite.config.ts') do
@@ -207,6 +208,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
         file("app/frontend/entrypoints/inertia.#{ext}") do
           contains("from '@inertiajs/vue3'")
           contains('serverHead: true')
+          contains('title: (title) => title || "Dummy",')
         end
       when :svelte
         file('svelte.config.js') do
@@ -219,6 +221,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
           contains("from '@inertiajs/svelte'")
           contains('createInertiaApp(')
           contains('serverHead: true')
+          contains('title: (title) => title || "Dummy",')
         end
       end
       file('app/views/layouts/application.html.erb') do
@@ -237,6 +240,8 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
         else
           does_not_contain('<%= vite_react_refresh_tag %>')
         end
+        contains('<%= inertia_meta_tags(default_title: content_for(:title) || "Dummy") %>')
+        does_not_contain('<title>')
       end
       file('config/initializers/inertia_rails.rb') do
         contains('config.version = ViteRuby.digest')

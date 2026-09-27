@@ -12,6 +12,8 @@ Inertia Rails renders server defined meta tags into both the server rendered HTM
 
 Simply add the `inertia_meta_tags` helper to your layout. This will render the meta tags in the `<head>` section of your HTML.
 
+Apps generated with the `inertia_rails:install` generator have this preconfigured: the layout's `<title>` tag is replaced with `inertia_meta_tags(default_title: content_for(:title) || "My App")`, which renders `default_title` when no server-side title is set, including on non-Inertia pages. For client-side visits, the generated entrypoint falls back to the same name with `title: (title) => title || "My App"`.
+
 ```erb
 <!-- app/views/layouts/application.html.erb (or your custom layout) -->
 
@@ -344,6 +346,8 @@ end
 ```
 
 With this template, `inertia_meta.add({ title: 'Events' })` renders `<title>Events - My App</title>` — in the server-rendered HTML too, so crawlers and link previews see the full title without running JavaScript. Because the template runs even when no title is set, it doubles as a default title for pages that define no meta tags at all.
+
+The template only sees titles set on the server: titles set with `<Head>` in components skip it. The template also only applies to Inertia responses, so `default_title` on the `inertia_meta_tags` helper still covers non-Inertia pages.
 
 > [!WARNING]
 > Don't combine a server-side title template with the client-side [title callback](/guide/title-and-meta#title-callback) — the client applies its callback on top of the server-provided title, so the suffix would appear twice. Use one or the other.
