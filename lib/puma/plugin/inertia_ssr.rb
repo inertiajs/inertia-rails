@@ -31,7 +31,6 @@ Puma::Plugin.create do
   private
 
   def run_ssr_loop
-    return unless ssr_enabled?
     return if vite_dev_server_running?
 
     bundle = resolve_bundle
@@ -118,10 +117,6 @@ Puma::Plugin.create do
       end
     end
     [:timeout, nil]
-  end
-
-  def ssr_enabled?
-    InertiaRails.configuration.ssr_enabled
   end
 
   def resolve_runtime
