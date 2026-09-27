@@ -176,6 +176,8 @@ export default () => (
 
 :::
 
+Without [SSR](/guide/server-side-rendering), the callback only runs in the browser. Link previews (like in Slack) don't run JavaScript, so they show the `<title>` from your Rails layout instead. To set that title, see [Default Title](/guide/responses#default-title).
+
 ## Multiple Head Instances
 
 It's possible to have multiple instances of the `<Head>` component throughout your application. For example, your layout can set some default `<Head>` elements, and then your individual pages can override those defaults.
