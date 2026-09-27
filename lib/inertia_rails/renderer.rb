@@ -53,6 +53,7 @@ module InertiaRails
           @response.set_header('X-Inertia', 'true')
           @render_method.call json: page.to_json, status: @response.status, content_type: Mime[:json]
         else
+          @controller.instance_variable_set('@_inertia_page', page)
           ssr = @configuration.ssr_enabled && ssr_render
           if ssr
             payload[:ssr] = true
@@ -64,7 +65,6 @@ module InertiaRails
               formats: :html
             )
           else
-            @controller.instance_variable_set('@_inertia_page', page)
             @render_method.call(
               template: 'inertia',
               layout: layout,

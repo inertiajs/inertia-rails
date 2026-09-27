@@ -111,7 +111,8 @@ RSpec.describe 'inertia instrumentation', type: :request do
         end
 
         expect(ssr_events.size).to eq(1)
-        expect(ssr_events.first.payload[:exception_object]).to be_a(Errno::ECONNREFUSED)
+        expect(ssr_events.first.payload[:exception_object]).to be_a(InertiaRails::SSRError)
+        expect(ssr_events.first.payload[:exception_object].cause).to be_a(Errno::ECONNREFUSED)
         expect(render_events.first.payload).to include(ssr: false)
       end
     end
