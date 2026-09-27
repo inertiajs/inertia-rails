@@ -1,0 +1,54 @@
+# See https://lefthook.dev/configuration/ for the full reference.
+#
+# Mirrors the checks in .github/workflows/:
+# - push.yml (lint + test jobs)      -> rubocop, rspec, minitest
+# - generators.yml                    -> generator specs (slow, so path-gated)
+# - docs.yml                          -> docs formatting (path-gated)
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: rubocop
+      glob: "*.rb"
+      run: bundle exec rubocop --force-exclusion -a {staged_files}
+      stage_fixed: true
+
+    - name: docs-format
+      root: "docs/"
+      glob: "**/*"
+      run: npx prettier --write {staged_files}
+      stage_fixed: true
+
+pre-push:
+  parallel: true
+  jobs:
+    - name: rubocop
+      run: bundle exec rubocop
+
+    - name: docs-format
+      root: "docs/"
+      glob: "**/*"
+      run: npm run format:check
+
+    # rspec, minitest, and generator-specs all boot the same dummy Rails app
+    # against the same SQLite test db (spec/dummy/db/test.sqlite3) and can
+    # each rewrite its schema on boot, so they run serially against each
+    # other to avoid concurrent-write flakiness.
+    - name: tests
+      group:
+        parallel: false
+        jobs:
+          - name: rspec
+            run: bundle exec rspec --tag ~type:generator
+
+          - name: minitest
+            run: bundle exec rake test
+
+          # Generator specs spin up real Rails apps and are slow, so they
+          # only run when generator code actually changed in the push.
+          - name: generator-specs
+            glob:
+              - "lib/generators/**"
+              - "lib/inertia_rails/generators/**"
+              - ".github/workflows/generators.yml"
+            run: bundle exec rspec --tag type:generator

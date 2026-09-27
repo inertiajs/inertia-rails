@@ -2,7 +2,7 @@
 
 require_relative '../../lib/inertia_rails/rspec'
 
-RSpec.describe 'rendering when mimicking rails behavior', type: :request, inertia: true do
+RSpec.describe 'rendering when mimicking rails behavior', type: :request do
   context 'the props are provided by instance variables' do
     it 'has the props' do
       get instance_props_test_path
@@ -45,7 +45,7 @@ RSpec.describe 'rendering when mimicking rails behavior', type: :request, inerti
       get default_render_test_path
 
       expect_inertia.to render_component('inertia_rails_mimic/default_render_test')
-      expect_inertia.to include_props({ name: 'Brian' })
+      expect_inertia.to have_props({ name: 'Brian' })
     end
 
     context 'a rendering transformation is provided' do
