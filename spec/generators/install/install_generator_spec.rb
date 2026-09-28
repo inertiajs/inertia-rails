@@ -241,6 +241,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
       file('config/initializers/inertia_rails.rb') do
         contains('config.version = ViteRuby.digest')
         contains('config.server_head = true')
+        contains('config.flatten_errors = true')
       end
 
       file('bin/dev') do

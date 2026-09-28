@@ -311,6 +311,25 @@ When enabled, the HTML output looks like:
 > When using this option make sure your client-side Inertia setup is configured to read the page data from the `<script>` element.
 > See the [client side setup](/guide/client-side-setup#script-element-for-page-data) for more details.
 
+### `flatten_errors`
+
+**Default**: `false`
+**ENV**: `INERTIA_FLATTEN_ERRORS`
+
+@available_since rails=master
+
+When enabled, nested error hashes passed to `inertia: { errors: ... }` in a redirect or to `precognition!`/`precognition` are flattened to dot-notated keys: `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }`. That is the key the Inertia client looks up for a field named `user.name`, so `errors['user.name']` and `invalid('user.name')` work the same whether the error came from a precognition request or a full form submission. Flat errors are left untouched. The result of a [precognition block](/guide/precognition#transforming-error-keys) is flattened regardless of this option.
+
+The `inertia_rails:install` generator enables it in new apps. To enable it in an existing app:
+
+```ruby
+InertiaRails.configure do |config|
+  config.flatten_errors = true
+end
+```
+
+Can also be set per controller with `inertia_config(flatten_errors: true)`. See [Transforming error keys](/guide/precognition#transforming-error-keys) for details.
+
 ### `precognition_prevent_writes`
 
 **Default**: `false`

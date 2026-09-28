@@ -34,6 +34,9 @@ Finally, since Inertia apps never generate `422` responses, Inertia needs anothe
 
 In order for your server-side validation errors to be available client-side, your server-side framework must share them via the `errors` prop. Inertia's Rails adapter does this automatically.
 
+> [!TIP]
+> Both flat errors (`inertia: { errors: user.errors }`) and nested/enveloped errors (`inertia: { errors: { user: user.errors } }`) are valid. Nested errors are flattened to dot-notated keys, so the client receives `errors['user.email_address']` either way, matching what [precognition](/guide/precognition) returns and what `invalid('user.email_address')` looks up. This requires the [`flatten_errors`](/guide/configuration#flatten_errors) config option, enabled in apps set up with the installer. See [Forms and Envelopes](/cookbook/forms-and-envelopes) for a full walkthrough.
+
 ## Displaying Errors
 
 Since validation errors are made available client-side as page component props, you can conditionally display them based on their existence. Remember, when using Rails server adapter, the `errors` prop will automatically be available to your page.
@@ -166,6 +169,9 @@ export default function Edit() {
 :::
 
 When using the Vue adapters, you may also access the errors via the `page.props.errors` object.
+
+> [!TIP]
+> If form data is wrapped in an envelope, you must access Precognition errors with flat, dot-notated keys, e.g. `invalid('user.name')` and `errors['user.name']`. With [`flatten_errors`](/guide/configuration#flatten_errors) enabled, full form submissions return the same flat keys.
 
 ## Repopulating Input
 

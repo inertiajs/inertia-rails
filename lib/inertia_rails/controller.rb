@@ -98,12 +98,14 @@ module InertiaRails
 
     private
 
-    def precognition!(model_or_errors)
-      InertiaRails.precognition!(model_or_errors)
+    def precognition!(model_or_errors, &block)
+      InertiaRails.precognition!(model_or_errors, flatten_errors: inertia_configuration.flatten_errors, &block)
     end
 
-    def precognition(model_or_errors)
-      errors = InertiaRails::Precognition.validate(model_or_errors)
+    def precognition(model_or_errors, &block)
+      errors = InertiaRails::Precognition.validate(
+        model_or_errors, flatten_errors: inertia_configuration.flatten_errors, &block
+      )
       return if errors.nil?
 
       render_precognition(errors)
@@ -203,7 +205,9 @@ module InertiaRails
 
       if (inertia_errors = inertia[:errors])
         if inertia_errors.respond_to?(:to_hash)
-          session[:inertia_errors] = inertia_errors.to_hash
+          errors = inertia_errors.to_hash
+          errors = ValidationErrors.flatten(errors) if inertia_configuration.flatten_errors
+          session[:inertia_errors] = errors
         else
           InertiaRails.deprecator.warn(
             'Object passed to `inertia: { errors: ... }` must respond to `to_hash`. Pass a hash-like object instead.'
