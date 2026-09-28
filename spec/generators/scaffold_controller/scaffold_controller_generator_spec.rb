@@ -19,10 +19,20 @@ RSpec.describe Inertia::Generators::ScaffoldControllerGenerator, type: :generato
       expect(content).not_to include('params.require')
     end
 
-    it 'does not add wrap_parameters for namespaced controllers' do
+    it 'disables JSON params wrapping when the app wraps params' do
       run_generator %w[Admin::Ticket name:string --orm=active_record --frontend-framework=react]
 
       content = File.read(File.join(destination_root, 'app/controllers/admin/tickets_controller.rb'))
+      expect(content).to include('wrap_parameters false')
+    end
+
+    it 'omits wrap_parameters when the app does not wrap params' do
+      allow(ApplicationController).to receive(:_wrapper_options)
+        .and_return(ActionController::ParamsWrapper::Options.from_hash(format: []))
+
+      run_generator %w[Ticket name:string --orm=active_record --frontend-framework=react]
+
+      content = File.read(File.join(destination_root, 'app/controllers/tickets_controller.rb'))
       expect(content).not_to include('wrap_parameters')
     end
   end

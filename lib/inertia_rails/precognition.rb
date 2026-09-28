@@ -22,7 +22,7 @@ module InertiaRails
 
         errors = normalize_errors(model_or_errors)
         errors = block.call(errors) if block && errors.any?
-        errors = flatten_errors_hash(errors) if flatten_errors
+        errors = ValidationErrors.flatten(errors) if block || flatten_errors
         filter_errors(errors, request)
       end
 
@@ -43,17 +43,6 @@ module InertiaRails
               "Expected a Hash or an object responding to :valid? and :errors, :to_hash, or :to_h, got #{errors.class}"
       end
 
-      def flatten_errors_hash(errors, prefix = nil)
-        errors.each_with_object({}) do |(key, value), flat|
-          full_key = prefix ? "#{prefix}.#{key}" : key.to_s
-          if value.is_a?(Hash)
-            flat.merge!(flatten_errors_hash(value, full_key))
-          else
-            flat[full_key] = value
-          end
-        end
-      end
-
       def filter_errors(errors, request)
         only_keys = request.inertia_precognitive_validate_only
         return errors unless only_keys&.any?
@@ -69,9 +58,8 @@ module InertiaRails
     end
   end
 
-  def self.precognition!(model_or_errors, flatten_errors: nil, &block)
-    should_flatten = flatten_errors.nil? ? InertiaRails.configuration.flatten_errors : flatten_errors
-    errors = Precognition.validate(model_or_errors, flatten_errors: should_flatten, &block)
+  def self.precognition!(model_or_errors, flatten_errors: InertiaRails.configuration.flatten_errors, &block)
+    errors = Precognition.validate(model_or_errors, flatten_errors: flatten_errors, &block)
     return false if errors.nil?
 
     raise PrecognitionResponse, errors, []

@@ -311,34 +311,22 @@ When enabled, the HTML output looks like:
 
 ### `flatten_errors`
 
-**Default**: `true`
+**Default**: `false`
 **ENV**: `INERTIA_FLATTEN_ERRORS`
 
 @available_since rails=master
 
-When enabled, nested error hashes passed to `inertia: { errors: ... }` in a redirect or to `precognition!`/`precognition` are automatically given flat dot-notated key copies. This ensures that `invalid('user.email_address')` and `errors['user.email_address']` work consistently whether an error came from a precognition validation request or a full form submission.
+When enabled, nested error hashes passed to `inertia: { errors: ... }` in a redirect or to `precognition!`/`precognition` are flattened to dot-notated keys: `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }`. That is the key the Inertia client looks up for a field named `user.name`, so `errors['user.name']` and `invalid('user.name')` work the same whether the error came from a precognition request or a full form submission. Flat errors are left untouched. The result of a [precognition block](/guide/precognition#transforming-error-keys) is flattened regardless of this option.
 
-For precognition responses, nested hashes are fully replaced with flat keys — `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }`. For redirect errors, flat copies are added alongside the original nested structure so that existing code accessing `errors.user.email_address` continues to work.
-
-Disable globally when you need to manage error key shapes entirely yourself:
+The `inertia_rails:install` generator enables it in new apps. To enable it in an existing app:
 
 ```ruby
 InertiaRails.configure do |config|
-  config.flatten_errors = false
+  config.flatten_errors = true
 end
 ```
 
-Can also be overridden per controller with `inertia_config(flatten_errors: false)`, or per call:
-
-```ruby
-# precognition
-precognition!(@user, flatten_errors: false) { |errors| { user: errors } }
-
-# redirect
-redirect_to new_user_path, inertia: { errors: { user: @user.errors }, flatten_errors: false }
-```
-
-See [Transforming error keys](/guide/precognition#transforming-error-keys) for full details.
+Can also be set per controller with `inertia_config(flatten_errors: true)`. See [Transforming error keys](/guide/precognition#transforming-error-keys) for details.
 
 ### `precognition_prevent_writes`
 

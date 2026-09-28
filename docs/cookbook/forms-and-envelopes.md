@@ -68,9 +68,12 @@ end
 
 Since there is no `user` envelope on the submitted data, this controller:
 
-1. Uses `params.permit(...)` instead of `params.expect(:user).permit(...)`
+1. Uses `params.permit(...)` instead of `params.expect(user: [...])`
 2. Passes `@user.errors` directly to the `inertia.errors` option in the redirect when there are validation errors
 3. Requires no [additional formatting](/guide/precognition#transforming-error-keys) of the errors returned from the `precognition!` call.
+
+> [!NOTE]
+> `params.permit(...)` checks every request parameter, including the `id` from the URL on `update`. With the default `action_on_unpermitted_parameters` setting, that only adds an "Unpermitted parameter" line to the development log. If your app sets it to `:raise`, use an [envelope](#enveloped-inertia-forms) instead.
 
 What would it take to wrap the form data in an envelope?
 
@@ -108,15 +111,15 @@ def create
 end
 
 def user_params
-  params.expect(:user).permit(:email_address, :password, ...)
+  params.expect(user: [:email_address, :password, ...])
 end
 ```
 
 Here we see:
 
-1. Strong parameters include the `expect(:user)` syntax
-2. The `precognition!` call wraps errors in a `user` envelope — they are automatically flattened to `{ "user.email_address" => [...] }` before being sent to the client
-3. Validation errors in the redirect are also wrapped in a `user` envelope. Inertia automatically copies flat dot-notated keys from any nested errors hash, so `errors['user.email_address']` and `invalid('user.email_address')` work consistently for both precognition validation and full form submission (controlled by the [`flatten_errors`](/guide/configuration#flatten_errors) config option).
+1. Strong parameters include the `expect(user: [...])` syntax
+2. The `precognition!` call wraps errors in a `user` envelope — they are flattened to `{ "user.email_address" => [...] }` before being sent to the client
+3. Validation errors in the redirect are also wrapped in a `user` envelope. Inertia flattens nested errors to dot-notated keys, so `errors['user.email_address']` and `invalid('user.email_address')` work the same for both precognition validation and full form submission (controlled by the [`flatten_errors`](/guide/configuration#flatten_errors) config option, enabled in apps set up with the installer).
 
 The code is still explicit and consistent, although it is more verbose than our envelope-less example. There are a couple shortcuts worth exploring.
 
@@ -139,7 +142,7 @@ The `<Form />` component includes a `transform` prop that allows us to write fla
 </Form>
 ```
 
-Precognition sends _transformed_ data to the server, so `validate()` must use the same dot-notated key that we had in the _Enveloped Inertia Forms_ section. And this same key will look up the errors returned by the server, so the controller still needs to wrap the errors in an envelope. Inertia copies and flattens the error keys, ensuring `errors['user.email_address']` and `invalid('user.email_address')` work after both precognition validation and full form submission.
+Precognition sends _transformed_ data to the server, so `validate()` must use the same dot-notated key that we had in the _Enveloped Inertia Forms_ section. And this same key will look up the errors returned by the server, so the controller still needs to wrap the errors in an envelope. With `flatten_errors` enabled, Inertia flattens the error keys, ensuring `errors['user.email_address']` and `invalid('user.email_address')` work after both precognition validation and full form submission.
 
 We've made the `name` attributes more concise, but the rest of the verbose code remains. In fact, the controller hasn't changed at all. Additionally, we've created a mismatch between the `name` attributes and the shape of the data that's used both on the server and in the `validate()`, `invalid()`, and `errors` calls.
 
@@ -170,7 +173,7 @@ end
 
 # `.expect` works because `wrap_parameters` created a `user` envelope
 def user_params
-  params.expect(:user).permit(:email_address, :password, ...)
+  params.expect(user: [:email_address, :password, ...])
 end
 ```
 

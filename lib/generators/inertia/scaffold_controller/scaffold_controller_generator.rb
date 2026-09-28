@@ -59,6 +59,11 @@ module Inertia
       def parent_controller
         defined?(InertiaController) ? 'InertiaController' : 'ApplicationController'
       end
+
+      def wraps_json_params?
+        controller = parent_controller.safe_constantize || ActionController::Base
+        controller._wrapper_options.format.include?(:json)
+      end
     end
   end
 end

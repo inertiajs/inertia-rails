@@ -72,47 +72,33 @@ RSpec.describe 'errors shared automatically', type: :request do
       expect(session[:inertia_errors]).not_to be
     end
 
-    it 'copies flattened dot-notated keys for nested errors' do
+    it 'leaves nested errors untouched by default' do
       post redirect_with_nested_inertia_errors_path, headers: headers
 
-      expect(session[:inertia_errors]).to include(user: { name: 'is required', email: 'is invalid' })
-      expect(session[:inertia_errors]).to include('user.name' => 'is required', 'user.email' => 'is invalid')
-
-      get response.headers['Location'], headers: headers
-      body = JSON.parse(response.body)
-      errors = body['props']['errors']
-      expect(errors['user']).to eq({ 'name' => 'is required', 'email' => 'is invalid' })
-      expect(errors['user.name']).to eq('is required')
-      expect(errors['user.email']).to eq('is invalid')
+      expect(session[:inertia_errors]).to eq(user: { name: 'is required', email: 'is invalid' })
     end
 
-    context 'flatten_errors configuration' do
-      it 'does not copy flat keys when disabled globally' do
-        InertiaRails.configure { |c| c.flatten_errors = false }
+    context 'with flatten_errors enabled' do
+      with_inertia_config flatten_errors: true
+
+      it 'flattens nested errors to dot-notated keys' do
         post redirect_with_nested_inertia_errors_path, headers: headers
 
-        errors = session[:inertia_errors]
-        expect(errors).to eq(user: { name: 'is required', email: 'is invalid' })
-        expect(errors.keys).not_to include('user.name')
-      ensure
-        InertiaRails.configure { |c| c.flatten_errors = true }
+        expect(session[:inertia_errors]).to eq('user.name' => 'is required', 'user.email' => 'is invalid')
+
+        get response.headers['Location'], headers: headers
+        errors = JSON.parse(response.body)['props']['errors']
+        expect(errors).to eq('user.name' => 'is required', 'user.email' => 'is invalid')
       end
 
-      it 'does not copy flat keys when disabled per-call' do
-        post redirect_with_nested_inertia_errors_no_flatten_path, headers: headers
+      it 'flattens nested ActiveModel::Errors' do
+        post redirect_with_nested_model_errors_path, headers: headers
 
-        errors = session[:inertia_errors]
-        expect(errors).to eq(user: { name: 'is required' })
-        expect(errors.keys).not_to include('user.name')
-      end
-
-      it 'per-call flatten_errors: false overrides global true' do
-        post redirect_with_nested_inertia_errors_no_flatten_path, headers: headers
-        expect(session[:inertia_errors].keys).to eq([:user])
+        expect(session[:inertia_errors].keys).to contain_exactly('user.name', 'user.email')
       end
     end
 
-    it 'does not add duplicate keys for flat errors' do
+    it 'leaves flat errors untouched' do
       post redirect_with_inertia_errors_path, headers: headers
 
       errors = session[:inertia_errors]
