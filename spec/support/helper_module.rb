@@ -15,6 +15,11 @@ module HelperModule
     end
   end
 
+  # Rails 8.2+ appends Sec-Fetch-Site in its own after_action.
+  def vary_header_without_sec_fetch_site
+    response.headers['Vary'].to_s.split(/,\s*/).reject { |v| v == 'Sec-Fetch-Site' }.join(', ')
+  end
+
   def with_env(**env)
     orig = ENV.to_h
     begin

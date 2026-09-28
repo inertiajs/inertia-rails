@@ -187,7 +187,11 @@ RSpec.describe InertiaRails::RSpec, type: :request do
     before { get non_inertiafied_path }
 
     it 'does not complain about test helpers' do
+      original_stderr = $stderr
+      $stderr = FakeStdErr.new
       expect { expect_inertia }.not_to raise_error
+    ensure
+      $stderr = original_stderr
     end
 
     # h/t for this technique:
@@ -487,6 +491,74 @@ RSpec.describe InertiaRails::RSpec, type: :request do
       it 'does not include deferred props in regular props on first load' do
         expect(inertia.props[:sport]).to be_nil
         expect(inertia.props[:level]).to be_nil
+      end
+    end
+  end
+
+  describe 'scroll props matchers' do
+    context 'with scroll props' do
+      before { get scroll_test_path }
+
+      it 'has scroll props' do
+        expect(inertia).to have_scroll_props(
+          users: { pageName: 'page', currentPage: 1, nextPage: 2, previousPage: nil, reset: false }
+        )
+      end
+
+      it 'checks a single metadata field via block form' do
+        expect(inertia).to(have_scroll_props { |scroll_props| scroll_props[:users][:nextPage] == 2 })
+      end
+
+      it 'has exact scroll props' do
+        expect(inertia).to have_exact_scroll_props(
+          users: { pageName: 'page', currentPage: 1, nextPage: 2, previousPage: nil, reset: false }
+        )
+      end
+
+      it 'has no scroll prop for an untouched key' do
+        expect(inertia).to have_no_scroll_prop(:nonexistent)
+      end
+
+      it 'can retrieve scroll props directly' do
+        expect(inertia.scroll_props[:users][:currentPage]).to eq 1
+      end
+    end
+
+    context 'without scroll props' do
+      before { get props_path }
+
+      it 'has no scroll props' do
+        expect(inertia.scroll_props).to be_empty
+      end
+    end
+  end
+
+  describe 'once props matchers' do
+    context 'with once props' do
+      before { get once_props_path }
+
+      it 'has once props' do
+        expect(inertia).to have_once_props(cached_data: { prop: 'cached_data' })
+      end
+
+      it 'has exact once props' do
+        expect(inertia).to have_exact_once_props(cached_data: { prop: 'cached_data' })
+      end
+
+      it 'has no once prop for an untouched key' do
+        expect(inertia).to have_no_once_prop(:nonexistent)
+      end
+
+      it 'can retrieve once props directly' do
+        expect(inertia.once_props[:cached_data][:prop]).to eq 'cached_data'
+      end
+    end
+
+    context 'without once props' do
+      before { get props_path }
+
+      it 'has no once props' do
+        expect(inertia.once_props).to be_empty
       end
     end
   end

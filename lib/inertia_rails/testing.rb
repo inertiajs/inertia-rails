@@ -34,7 +34,7 @@ module InertiaRails
     end
 
     class TestResponse
-      attr_reader :view_data, :props, :component, :flash, :deferred_props
+      attr_reader :view_data, :props, :component, :flash, :deferred_props, :scroll_props, :once_props
 
       def call(params)
         assign_locals(params)
@@ -63,6 +63,8 @@ module InertiaRails
         @component = page[:component]
         @flash = (page[:flash] || {}).with_indifferent_access
         @deferred_props = (page[:deferredProps] || {}).with_indifferent_access
+        @scroll_props = (page[:scrollProps] || {}).with_indifferent_access
+        @once_props = (page[:onceProps] || {}).with_indifferent_access
       end
     end
 

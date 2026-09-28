@@ -136,10 +136,16 @@ Everything lives at **[inertia-rails.dev](https://inertia-rails.dev)**:
 
 ## Contributing
 
-Bug reports and pull requests are welcome. To run the test suite:
+Bug reports and pull requests are welcome. To set up your environment (this
+also installs [lefthook](https://lefthook.dev) git hooks that mirror our CI checks):
 
 ```bash
-bundle install
+bin/setup
+```
+
+To run the test suite:
+
+```bash
 bundle exec rspec
 ```
 
@@ -150,6 +156,6 @@ project is expected to follow it.
 
 Inertia Rails is part of the official [Inertia.js](https://inertiajs.com)
 organization. It was originally created by the team at
-[bellaWatt](https://bellawatt.com) and is maintained by the Inertia.js community.
+[Bellawatt](https://bellawatt.com) and is maintained by the Inertia.js community.
 
 Released under the [MIT License](LICENSE.txt).

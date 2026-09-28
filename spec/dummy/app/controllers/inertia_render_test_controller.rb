@@ -35,10 +35,10 @@ class InertiaRenderTestController < ApplicationController
   def deeply_nested_props
     render inertia: 'TestComponent', props: {
       flat: 'flat param',
-      lazy: InertiaRails.lazy('lazy param'),
-      nested_lazy: InertiaRails.lazy do
+      optional: InertiaRails.optional { 'optional param' },
+      nested_optional: InertiaRails.optional do
         {
-          first: 'first nested lazy param',
+          first: 'first nested optional param',
         }
       end,
       nested: {
@@ -56,7 +56,7 @@ class InertiaRenderTestController < ApplicationController
           what_about_nil: nil,
           what_about_empty_hash: {},
           deeply_nested_always: InertiaRails.always { 'deeply nested always prop' },
-          deeply_nested_lazy: InertiaRails.lazy { 'deeply nested lazy prop' },
+          deeply_nested_optional: InertiaRails.optional { 'deeply nested optional prop' },
         },
       },
       always: InertiaRails.always { 'always prop' },

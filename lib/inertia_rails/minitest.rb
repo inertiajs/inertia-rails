@@ -108,6 +108,14 @@ module InertiaRails
     AssertionFactory.define_exact_assertion(Helpers, :flash, :flash)
     AssertionFactory.define_key_absent_assertion(Helpers, :flash, :flash)
 
+    AssertionFactory.define_partial_assertion(Helpers, :scroll_props, :scroll_props)
+    AssertionFactory.define_exact_assertion(Helpers, :scroll_props, :scroll_props)
+    AssertionFactory.define_key_absent_assertion(Helpers, :scroll_prop, :scroll_props)
+
+    AssertionFactory.define_partial_assertion(Helpers, :once_props, :once_props)
+    AssertionFactory.define_exact_assertion(Helpers, :once_props, :once_props)
+    AssertionFactory.define_key_absent_assertion(Helpers, :once_prop, :once_props)
+
     AssertionFactory.define_component_assertion(Helpers)
     AssertionFactory.define_response_assertion(Helpers)
     AssertionFactory.define_deferred_props_assertion(Helpers)
