@@ -20,8 +20,7 @@ module HelperModule
     response.headers['Vary'].to_s.split(/,\s*/).reject { |v| v == 'Sec-Fetch-Site' }.join(', ')
   end
 
-  # Rails::Rack::Logger writes through Rails.logger, the controller log subscriber
-  # through ActionController::Base.logger; both are needed to see a whole request.
+  # Rails' request log and the controller log use different loggers.
   def capture_log
     io = StringIO.new
     original = [Rails.logger, ActionController::Base.logger]
@@ -43,6 +42,17 @@ module HelperModule
   end
 
   module ClassMethods
+    def with_devtools_config(**settings)
+      around do |example|
+        config = InertiaRails::Devtools.config
+        original = settings.keys.to_h { |name| [name, config.public_send(name)] }
+        settings.each { |name, value| config.public_send(:"#{name}=", value) }
+        example.run
+      ensure
+        original.each { |name, value| config.public_send(:"#{name}=", value) }
+      end
+    end
+
     def with_inertia_config(**props)
       around do |example|
         config = InertiaRails.configuration

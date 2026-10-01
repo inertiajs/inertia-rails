@@ -3,123 +3,125 @@
 module InertiaRails
   module Devtools
     class Collector
+      PLAIN_ROW = { shared: false, inertiaType: nil }.freeze
+      COMPONENT_EXTENSIONS = %w[jsx tsx vue svelte js ts].freeze
+      MISSING = Object.new.freeze
+      private_constant :MISSING
+
       attr_reader :component
       attr_accessor :page
 
-      def initialize(component:, render_source: nil, share_sources: {}, shared_keys: [])
+      def initialize(component:, render_source:, share_sources:, shared_keys:)
         @component = component
         @render_source = render_source
         @share_sources = share_sources
         @shared_keys = shared_keys
-        @props = {}
+        @rows = {}
         @page = nil
       end
 
-      def add_prop(path, metadata, rescued: false)
-        info = {
-          shared: shared?(path),
-          inertiaType: metadata[:inertiaType],
-        }
+      def add_prop(path, badges, reset: false)
+        row = { shared: @shared_keys.include?(path), inertiaType: badges[:inertiaType] }
+        row.merge!(badges.except(:inertiaType).select { |_, value| value })
+        row[:reset] = true if reset
 
-        share_source = @share_sources[path]
-        info[:deferGroup] = metadata[:deferGroup] if metadata[:deferGroup]
-        info[:shareSource] = share_source if share_source
-        info[:reset] = true if metadata[:reset]
-        info[:once] = true if metadata[:once]
-        info[:mergeDirection] = metadata[:mergeDirection] if metadata[:mergeDirection]
-        info[:deepMerge] = true if metadata[:deepMerge]
-        info[:rescued] = true if rescued
-
-        @props[path] = info
+        @rows[path] = row
       end
 
       def build
-        @build ||= begin
-          synchronize_props
-          resolve_render_prop_lines
-          props = prune_props
+        rows = @rows.filter_map do |path, row|
+          if rescued?(path) then [path, row.merge(rescued: true)]
+          elsif listed?(path, row) && found?(page_json['props'], path) then [path, row]
+          end
+        end.to_h
+        link_sources(rows)
+        # Keys the resolver never saw, such as `errors`, get a plain row with no link.
+        page_json['props'].each_key { |key| rows[key] ||= PLAIN_ROW }
 
-          {
-            component: @component,
-            props: props,
-            propValues: prop_values(props.keys),
-            renderSource: @render_source,
-            componentPath: ComponentPathLocator.resolve(@component),
-            responseBody: normalized_page,
-          }
-        end
+        {
+          props: rows,
+          propValues: values_at(stored_page['props'], rows.keys),
+          renderSource: @render_source,
+          componentPath: component_path,
+        }
+      end
+
+      def stored_page
+        @stored_page ||=
+          Redaction.redact_exact_keys(page_json).merge('url' => Redaction.redact_url(page_json['url']))
       end
 
       private
 
-      def synchronize_props
-        props = normalized_page&.fetch('props', nil)
-        return unless props.is_a?(Hash)
+      def page_json
+        @page_json ||= @page.as_json
+      end
 
-        @props.reject! { |path| dig_path(props, path) == :__missing__ }
+      def component_path
+        return if @component.blank?
 
-        props.each_key do |key|
-          @props[key.to_s] ||= { shared: false, inertiaType: nil }
+        candidates = Array(Devtools.config.component_paths).product(COMPONENT_EXTENSIONS).map do |root, extension|
+          File.expand_path("#{root}/#{@component}.#{extension}", Rails.root)
         end
+        candidates.find { |path| File.file?(path) }
+      end
+
+      # Nested props get a row of their own only when they carry a badge.
+      def listed?(path, row)
+        !path.include?('.') || row != PLAIN_ROW
+      end
+
+      def rescued?(path)
+        page_json.fetch('rescuedProps', []).include?(path)
       end
 
       def shared?(path)
-        @shared_keys.include?(path)
+        @shared_keys.include?(top_key(path))
       end
 
-      def resolve_render_prop_lines
+      def top_key(path)
+        path.split('.', 2).first
+      end
+
+      # A prop under a shared key links to its share; any other prop to the render call.
+      def link_sources(rows)
+        shared, rendered = rows.keys.partition { |path| shared?(path) }
+        shared.each do |path|
+          source = @share_sources[top_key(path)]
+          rows[path] = rows[path].merge(shareSource: source) if source
+        end
         return unless @render_source
 
-        @props.each do |path, info|
-          next if info[:shared] || info[:shareSource]
-
-          line = SourceLocator.prop_key_line(@render_source[:file], @render_source[:line], path)
-          info[:renderSource] = { file: @render_source[:file], line: line } if line
+        SourceLocator.key_sources(@render_source, rendered).each do |path, source|
+          rows[path] = rows[path].merge(renderSource: source)
         end
       end
 
-      def prune_props
-        @props.select { |path, info| !path.include?('.') || metadata?(info) }
+      def found?(props, path)
+        !dig(props, path).equal?(MISSING)
       end
 
-      def metadata?(info)
-        info[:shared] || !info[:inertiaType].nil? || info.keys.length > 2
-      end
-
-      def normalized_page
-        return @normalized_page if defined?(@normalized_page)
-
-        @normalized_page = @page && JSON.parse(JSON.generate(@page.as_json))
-      rescue StandardError
-        @normalized_page = nil
-      end
-
-      def prop_values(paths)
-        props = normalized_page && normalized_page['props']
-        return {} unless props.is_a?(Hash)
-
-        props = Redaction.redact(props)
-
+      def values_at(props, paths)
         paths.each_with_object({}) do |path, values|
-          value = dig_path(props, path)
-          values[path] = value unless value == :__missing__
+          value = dig(props, path)
+          values[path] = value unless value.equal?(MISSING)
         end
       end
 
-      def dig_path(props, path)
+      def dig(props, path)
         path.split('.').reduce(props) do |current, segment|
           case current
           when Hash
-            return :__missing__ unless current.key?(segment)
+            return MISSING unless current.key?(segment)
 
             current[segment]
           when Array
             index = Integer(segment, exception: false)
-            return :__missing__ unless index && index < current.length
+            return MISSING unless index && index < current.length
 
             current[index]
           else
-            return :__missing__
+            return MISSING
           end
         end
       end

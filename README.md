@@ -98,7 +98,7 @@ Full walkthrough: **[Server-side setup](https://inertia-rails.dev/guide/server-s
 | **[Deferred props](https://inertia-rails.dev/guide/deferred-props)** | Load the page fast, fetch expensive data after, with built-in loading states. |
 | **[Rails generators](https://inertia-rails.dev/guide/server-side-setup)** | Scaffold entire CRUD interfaces — controllers with matching components. |
 | **[History encryption](https://inertia-rails.dev/guide/history-encryption)** | Keep sensitive data private, even in browser history. Toggle per page. |
-| **[DevTools](https://inertia-rails.dev/guide/devtools)** | Inspect every request's props, headers, and route in Chrome DevTools. On by default in development. |
+| **[DevTools](https://inertia-rails.dev/guide/devtools)** | Inspect every request's props, headers, and route in your browser's DevTools (Chrome or Firefox). On by default in development. |
 
 ## Why Inertia?
 

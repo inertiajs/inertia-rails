@@ -22,6 +22,8 @@ module InertiaRails
       @configuration = controller.__send__(:inertia_configuration)
       @request = request
       @response = response
+      recorder = Devtools.recorder(request)
+      @recorder = recorder if recorder&.authorized?
       @render_method = render_method
       @view_data = options.fetch(:view_data, {})
       @encrypt_history = options.fetch(:encrypt_history, @configuration.encrypt_history)
@@ -38,7 +40,7 @@ module InertiaRails
       @props = merge_props(shared, passed_props, deep_merge)
 
       @component = resolve_component(component)
-      start_devtools_render(shared)
+      start_recording(shared, passed_props, deep_merge)
 
       @controller.instance_variable_set('@_inertia_rendering', true)
       controller.inertia_meta.add(options[:meta]) if options[:meta]
@@ -60,7 +62,7 @@ module InertiaRails
             payload[:ssr] = true
             @controller.instance_variable_set('@_inertia_ssr_head', ssr['head'].join.html_safe)
             @render_method.call(
-              html: ssr['body'].html_safe,
+              html: "#{ssr['body']}#{@recorder&.discovery_tag}".html_safe,
               layout: layout,
               locals: @view_data.merge(page: page),
               formats: :html
@@ -79,22 +81,17 @@ module InertiaRails
 
     private
 
-    def devtools
-      @devtools = Devtools.recorder(@request) unless defined?(@devtools)
-      @devtools
-    end
+    def start_recording(shared, passed_props, deep_merge)
+      return unless @recorder
 
-    def start_devtools_render(shared)
-      devtools&.render_started(
+      shared_keys = @shared_keys || extract_shared_keys(shared)
+      # A prop passed to the render replaces a shared one, unless the two are deep merged.
+      shared_keys -= extract_shared_keys(passed_props) unless deep_merge
+      @recorder.render_started(
         component: @component,
-        render_source: route_render_source || Devtools::SourceLocator.caller_source(caller_locations(1, 40)),
-        shared_keys: extract_shared_keys(shared)
+        render_source: Devtools::SourceLocator.render_source(caller_locations(1, 40), @controller),
+        shared_keys: shared_keys
       )
-    end
-
-    def route_render_source
-      source = @request.path_parameters[Devtools::RENDER_SOURCE_KEY]
-      source if source.is_a?(Hash) && source[:file] && source[:line]
     end
 
     def ssr_render
@@ -155,7 +152,7 @@ module InertiaRails
           reset: parse_header('X-Inertia-Reset'),
           except_once: parse_header('X-Inertia-Except-Once-Props'),
         },
-        recorder: devtools
+        recorder: @recorder
       )
       resolved_props, metadata = resolver.resolve
 
@@ -180,7 +177,7 @@ module InertiaRails
       page[:preserveFragment] = @preserve_fragment if @preserve_fragment
 
       page.merge!(metadata)
-      devtools&.page_rendered(page)
+      @recorder&.page_rendered(page)
       page
     end
 

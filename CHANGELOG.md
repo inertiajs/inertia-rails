@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 * Expose `@_inertia_page` to views on SSR responses (@onk)
-* Add [Inertia DevTools](https://inertiajs.com/docs/v3/advanced/devtools) support: record every request, expose the read API the Chrome extension reads, and configure it with the `devtools*` options (@mattwigham)
+* Add [Inertia DevTools](https://inertiajs.com/docs/v3/advanced/devtools) support: record requests in development (or those `config.devtools.authorize` approves elsewhere), expose the read API the browser extension reads, and configure it under `config.devtools` (@mattwigham and @skryukov)
 * Add testing helpers for scroll props and once props (@onk)
 * Skip the `XSRF-TOKEN` cookie entirely (and expire a stale one) on controllers using Rails 8.2's `:header_only` forgery protection strategy, which verifies requests via `Sec-Fetch-Site` and never reads authenticity tokens (@mattwigham)
 * Skip setting `XSRF-TOKEN` cookie when Rails 8.2's `:header_only` CSRF strategy is on (@mattwigham)

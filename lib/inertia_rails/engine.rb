@@ -3,7 +3,7 @@
 module InertiaRails
   class Engine < ::Rails::Engine
     initializer 'inertia_rails.configure_rails_initialization', before: :build_middleware_stack do |app|
-      app.middleware.unshift ::InertiaRails::Devtools::Middleware
+      app.middleware.insert_after ::ActionDispatch::Executor, ::InertiaRails::Devtools::Middleware
       app.middleware.use ::InertiaRails::Middleware
     end
 
@@ -49,6 +49,12 @@ module InertiaRails
     initializer 'inertia_rails.mapper' do
       require_relative 'extensions/mapper'
       ActionDispatch::Routing::Mapper.include ::InertiaRails::InertiaMapper
+      # Rails 7.1.5+ records where routes are drawn; for `inertia` routes, skip this gem's frame.
+      if ActionDispatch::Routing::Mapper.respond_to?(:backtrace_cleaner)
+        ActionDispatch::Routing::Mapper.backtrace_cleaner.add_silencer do |path|
+          path.end_with?('inertia_rails/extensions/mapper.rb')
+        end
+      end
     end
 
     initializer 'inertia_rails.debug_exceptions' do
@@ -59,13 +65,13 @@ module InertiaRails
     end
 
     initializer 'inertia_rails.devtools' do |app|
-      enabled = ->(*) { ::InertiaRails::Devtools.swallow { ::InertiaRails::Devtools.enabled? } || false }
+      enabled = -> { ::InertiaRails::Devtools.enabled? }
 
       app.routes.prepend do
-        scope ::InertiaRails::Devtools::ROUTE_PREFIX, format: false, as: nil, constraints: enabled do
-          get 'entries', to: 'inertia_rails/devtools/entries#index', as: nil
-          get 'entries/:id', to: 'inertia_rails/devtools/entries#show', as: nil,
-                             constraints: { id: /[0-9A-HJKMNP-TV-Z]{26}/ }
+        scope ::InertiaRails::Devtools::ROUTE_PREFIX,
+              format: false, defaults: { format: :json }, constraints: enabled do
+          get 'entries', to: 'inertia_rails/devtools/entries#index', as: nil, internal: true
+          get 'entries/:id', to: 'inertia_rails/devtools/entries#show', as: nil, internal: true
         end
       end
     end

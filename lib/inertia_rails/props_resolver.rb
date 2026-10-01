@@ -81,7 +81,8 @@ module InertiaRails
     # `prefix` addresses props by their position in what was passed to the renderer, so
     # partial-reload keys and the metadata paths sent to the client resolve the same way
     # on a follow-up. `record_prefix` addresses the rendered payload, which is what
-    # DevTools needs to line a prop up with its value. They only differ inside arrays.
+    # DevTools needs to line a prop up with its value; nil without a recorder. They only
+    # differ inside arrays.
     def deep_transform_props(props, prefix = '', parent_was_resolved: false, record_prefix: prefix)
       props.each_with_object({}) do |(key, prop), transformed_props|
         path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"
@@ -92,9 +93,9 @@ module InertiaRails
         if prop.is_a?(Hash) && prop.any?
           next if !parent_was_resolved && excluded_by_partial_request?(path)
 
-          record_prop(prop, record_path)
+          record_prop(prop, path, record_path)
           nested = deep_transform_props(prop, path, parent_was_resolved: parent_was_resolved,
-                                                    record_prefix: record_path || path)
+                                                    record_prefix: record_path)
           transformed_props[key] = nested unless nested.empty?
           next
         end
@@ -102,16 +103,16 @@ module InertiaRails
         if prop.is_a?(Array)
           next if !parent_was_resolved && excluded_by_partial_request?(path)
 
-          record_prop(prop, record_path)
+          record_prop(prop, path, record_path)
           transformed_props[key] = transform_array(prop, path, parent_was_resolved: parent_was_resolved,
-                                                               record_path: record_path || path)
+                                                               record_path: record_path)
           next
         end
 
         collect_metadata(prop, path)
         next unless keep_prop?(prop, path, parent_was_resolved: parent_was_resolved)
 
-        record_prop(prop, record_path)
+        record_prop(prop, path, record_path)
         rescue_enabled = prop.try(:rescue?)
 
         begin
@@ -122,7 +123,7 @@ module InertiaRails
             collect_metadata(value, path)
             next unless keep_prop?(value, path, parent_was_resolved: parent_was_resolved)
 
-            record_prop(value, record_path)
+            record_prop(value, path, record_path)
             value = @evaluator.call(value)
           end
 
@@ -130,12 +131,12 @@ module InertiaRails
           if prop.is_a?(Proc)
             if value.is_a?(Hash) && value.any?
               nested = deep_transform_props(value, path, parent_was_resolved: true,
-                                                         record_prefix: record_path || path)
+                                                         record_prefix: record_path)
               transformed_props[key] = nested unless nested.empty?
               next
             elsif value.is_a?(Array)
               transformed_props[key] = transform_array(value, path, parent_was_resolved: true,
-                                                                    record_path: record_path || path)
+                                                                    record_path: record_path)
               next
             end
           end
@@ -146,7 +147,6 @@ module InertiaRails
 
           report_rescued_error(e)
           @_rescued << path
-          record_prop(prop, record_path, rescued: true)
           next
         end
       end
@@ -160,8 +160,9 @@ module InertiaRails
       array.each_with_index.filter_map do |item, index|
         value =
           if item.is_a?(Hash)
+            record_prefix = @recorder && "#{record_path}.#{rendered_index}"
             nested = deep_transform_props(item, "#{path}.#{index}", parent_was_resolved: parent_was_resolved,
-                                                                    record_prefix: "#{record_path}.#{rendered_index}")
+                                                                    record_prefix: record_prefix)
             nested unless nested.empty?
           else
             @evaluator.call(item)
@@ -181,12 +182,18 @@ module InertiaRails
       end
     end
 
-    def record_prop(prop, path, rescued: false)
-      @recorder&.prop_resolved(path, prop, rescued: rescued)
+    def record_prop(prop, path, record_path)
+      @recorder&.prop_resolved(record_path, prop, reset: reset_keys.include?(path))
     end
 
     def report_rescued_error(error)
-      InertiaRails.report_handled_error(error, message: 'Rescued deferred prop error')
+      # `Rails.error` (the Error Reporter) was introduced in Rails 7.0. Fall back
+      # to the logger on older versions so rescued errors are never silently lost.
+      if Rails.respond_to?(:error)
+        Rails.error.report(error, handled: true)
+      else
+        Rails.logger&.error("[inertia-rails] Rescued deferred prop error: #{error.class}: #{error.message}")
+      end
     end
 
     def collect_metadata(prop, path)

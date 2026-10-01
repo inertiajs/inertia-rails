@@ -3,14 +3,17 @@
 Rails.application.routes.draw do
   mount InertiaRails::Engine => '/inertia-rails'
 
-  get 'devtools_props' => 'inertia_devtools_test#props', as: :devtools_props
-  get 'devtools_plain' => 'inertia_devtools_test#plain', as: :devtools_plain
-  post 'devtools_create' => 'inertia_devtools_test#create', as: :devtools_create
-  get 'devtools_boom' => 'inertia_devtools_test#boom', as: :devtools_boom
-  get 'devtools_nested_share' => 'inertia_devtools_test#nested_share', as: :devtools_nested_share
-  get 'devtools_collection' => 'inertia_devtools_test#collection', as: :devtools_collection
-  get 'devtools_oversized' => 'inertia_devtools_test#oversized', as: :devtools_oversized
-  get 'devtools_cached' => 'inertia_devtools_test#cached', as: :devtools_cached
+  get 'devtools_props' => 'inertia_devtools_test#props'
+  get 'devtools_plain' => 'inertia_devtools_test#plain'
+  get 'devtools_invalid_json' => 'inertia_devtools_test#invalid_json'
+  post 'devtools_create' => 'inertia_devtools_test#create'
+  get 'devtools_boom' => 'inertia_devtools_test#boom'
+  get 'devtools_nested_share' => 'inertia_devtools_test#nested_share'
+  get 'devtools_collection' => 'inertia_devtools_test#collection'
+  get 'devtools_oversized' => 'inertia_devtools_test#oversized'
+  get 'devtools_rescued' => 'inertia_devtools_test#rescued'
+  get 'devtools_kinds' => 'inertia_devtools_test#kinds'
+  get 'devtools_implicit' => 'inertia_devtools_implicit#show'
 
   get 'configuration' => 'inertia_config_test#configuration'
   get 'props' => 'inertia_render_test#props'

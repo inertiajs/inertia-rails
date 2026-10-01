@@ -1,28 +1,133 @@
 # frozen_string_literal: true
 
-require 'rack/body_proxy'
-
 module InertiaRails
   module Devtools
     class Recorder
       ENV_KEY = 'inertia_rails.devtools'
-      PREFETCH_HEADERS = %w[HTTP_PURPOSE HTTP_SEC_PURPOSE HTTP_X_MOZ].freeze
-      VALIDATOR_HEADERS = %w[etag last-modified].freeze
+      PREFETCH_HEADERS = %w[Purpose Sec-Purpose X-Moz].freeze
 
-      attr_reader :env, :id, :collector, :exception
+      attr_reader :request, :id
 
       def initialize(env)
-        @env = env
-        @id = Ulid.generate
+        @request = ActionDispatch::Request.new(env)
+        @id = EntryStore.generate_id
         @started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         @collector = nil
         @share_sources = {}
+        # Keyed by object, so identical hashes shared in different places keep their own links.
+        @share_declarations = {}.compare_by_identity
+        # Read now: Rails changes it while routing into a mounted engine.
+        @base_path = env['SCRIPT_NAME'].chomp('/').presence
+      end
+
+      # Runs the app with this recorder in reach of the hooks, then stamps and saves the entry.
+      def record
+        @request.env[ENV_KEY] = self
+        status, headers, body = yield
+        finish(status, headers)
+        [status, headers, body]
+      end
+
+      # Runs after the controller's filters, so `current_user` is already set.
+      def authorized?
+        return @authorized if defined?(@authorized)
+
+        @authorized = !!Devtools.swallow { Devtools.config.allows?(controller) }
+      end
+
+      def discovery_tag
+        return unless collector
+
+        ActionController::Base.helpers.tag.script(
+          @id.to_json.html_safe,
+          data: { inertia_devtools_id: '', inertia_devtools_base_path: @base_path }, type: 'application/json'
+        )
+      end
+
+      def render_started(component:, render_source:, shared_keys:)
+        @collector = Collector.new(
+          component: component,
+          render_source: render_source,
+          share_sources: @share_sources,
+          shared_keys: shared_keys
+        )
+      end
+
+      def prop_resolved(path, prop, reset: false)
+        @collector.add_prop(path, classifier.classify(prop), reset: reset)
+      end
+
+      def page_rendered(page)
+        @collector.page = page
+      end
+
+      # Remembers where an `inertia_share` hash was written.
+      def share_declared(data, source)
+        @share_declarations[data] = source if source
+      end
+
+      # Called in merge order, so a key shared twice links to the share that wins.
+      def share_resolved(data, result)
+        return unless result.is_a?(Hash) && authorized?
+
+        source = data.respond_to?(:call) ? SourceLocator.block_source(data) : @share_declarations[data]
+        keys = result.keys.map(&:to_s)
+        @share_sources.merge!(source ? SourceLocator.key_sources(source, keys) : keys.index_with(nil))
+      end
+
+      def collector
+        @collector if @collector&.page
+      end
+
+      def controller
+        @request.env['action_controller.instance']
+      end
+
+      def elapsed_ms
+        ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - @started_at) * 1000).round(3)
       end
 
       def batch_id
-        return unless @env.key?('HTTP_X_INERTIA')
+        return unless @request.inertia?
 
-        Headers.read(@env, Headers::PARENT)
+        @request.headers['X-Inertia-Devtools-Parent'].presence
+      end
+
+      def tab_uuid
+        @request.headers['X-Inertia-Devtools-Tab'].presence
+      end
+
+      def visit_id
+        @request.headers['X-Inertia-Devtools-Visit'].presence
+      end
+
+      def deferred?
+        @request.headers['X-Inertia-Devtools-Deferred'].present?
+      end
+
+      def poll?
+        @request.headers['X-Inertia-Devtools-Poll'].present?
+      end
+
+      def prefetch?
+        PREFETCH_HEADERS.any? { |header| @request.headers[header].to_s.downcase.include?('prefetch') }
+      end
+
+      private
+
+      def finish(status, headers)
+        # A plain Rack app may return frozen headers.
+        return if headers.frozen? || !authorized?
+
+        headers['x-inertia-devtools-id'] = @id
+        headers['x-inertia-devtools-parent-out'] = outgoing_parent_id
+        headers['x-inertia-devtools-base-path'] = @base_path if @base_path
+
+        # Saved before the response goes out: the extension asks for it as soon as it sees the headers.
+        Devtools.swallow do
+          entry = EntryBuilder.new(self, status: status, headers: headers).build
+          Devtools.store.write(@id, entry, tab_uuid: tab_uuid)
+        end
       end
 
       def outgoing_parent_id
@@ -31,148 +136,8 @@ module InertiaRails
         batch_id || @id
       end
 
-      def prefetch?
-        PREFETCH_HEADERS.any? { |header| @env[header].to_s.include?('prefetch') }
-      end
-
-      def elapsed_ms
-        ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - @started_at) * 1000).round(3)
-      end
-
-      def render_started(component:, render_source:, shared_keys:)
-        Devtools.swallow do
-          @collector = Collector.new(
-            component: component,
-            render_source: render_source,
-            share_sources: @share_sources,
-            shared_keys: shared_keys
-          )
-        end
-      end
-
-      def share_source(keys, source)
-        return unless source
-
-        Devtools.swallow do
-          keys.each { |key| @share_sources[key.to_s] ||= SourceLocator.refine(source, key) }
-        end
-      end
-
-      def prop_resolved(path, prop, rescued: false)
-        return unless @collector
-
-        Devtools.swallow do
-          @collector.add_prop(path, classifier.classify(path, prop), rescued: rescued)
-        end
-      end
-
-      def page_rendered(page)
-        return unless @collector
-
-        @collector.page = page
-      end
-
-      def finish(status, headers, body, error: nil)
-        Devtools.swallow do
-          id_key, parent_key = Headers.response_keys
-          headers[id_key] = @id
-          headers[parent_key] = outgoing_parent_id
-        end
-
-        body = inject_devtools_tag(status, headers, body)
-
-        entry = Devtools.swallow do
-          EntryBuilder.new(self, status: status, headers: headers, body: body, error: error).build
-        end
-
-        return [status, headers, body] unless entry
-
-        [status, headers, Rack::BodyProxy.new(body) { persist(entry) }]
-      end
-
-      def record_exception(error)
-        @exception = error
-
-        entry = Devtools.swallow do
-          EntryBuilder.new(self, status: 500, headers: {}, body: nil, error: error).build
-        end
-
-        persist(entry) if entry
-      end
-
-      private
-
-      def inject_devtools_tag(status, headers, body)
-        Devtools.swallow do
-          next body unless status == 200 && @collector
-          next body if @env.key?('HTTP_X_INERTIA')
-          next body unless header_value(headers, 'content-type').to_s.include?('text/html')
-          next body if validated?(headers)
-
-          content = Devtools.buffered_body(@env, body)
-          next body unless content
-
-          insert_at = content.rindex(%r{</body\s*>}i) || content.length
-          content.insert(insert_at, devtools_tag)
-
-          replace_content_length(headers, content)
-          body.close if body.respond_to?(:close)
-          [content]
-        end || body
-      end
-
-      def devtools_tag
-        attributes = 'data-inertia-devtools-id="" type="application/json"'
-        nonce = content_security_policy_nonce
-        attributes = %(#{attributes} nonce="#{nonce}") if nonce
-
-        %(<script #{attributes}>#{@id.to_json}</script>)
-      end
-
-      def content_security_policy_nonce
-        request = ActionDispatch::Request.new(@env)
-        request.content_security_policy_nonce if request.respond_to?(:content_security_policy_nonce)
-      end
-
-      def header_value(headers, name)
-        key = headers.keys.find { |candidate| candidate.to_s.casecmp(name).zero? }
-        key && headers[key]
-      end
-
-      # Rack::ETag will not recompute a digest the app set itself (`fresh_when`), so a
-      # mutated body would ship under a stale validator and revalidate to a 304 without
-      # the tag. Leave it alone; the id is still on the response header.
-      def validated?(headers)
-        VALIDATOR_HEADERS.any? { |name| header_value(headers, name).present? }
-      end
-
-      def replace_content_length(headers, content)
-        key = headers.keys.find { |candidate| candidate.to_s.casecmp('content-length').zero? }
-        headers[key] = content.bytesize.to_s if key
-      end
-
-      def persist(entry)
-        Devtools.swallow do
-          config = InertiaRails.configuration
-          repository = Devtools.repository
-
-          repository.record(
-            @id,
-            Redaction.redact_payload(entry),
-            tab_uuid: Headers.read(@env, Headers::TAB),
-            limit: config.devtools_limit.to_i,
-            max_entries: config.devtools_max_entries.to_i
-          )
-
-          repository.prune_if_due
-        end
-      end
-
       def classifier
-        @classifier ||= PropClassifier.new(
-          deferred_request: !Headers.read(@env, Headers::DEFERRED).nil?,
-          reset_keys: Devtools.comma_list(@env['HTTP_X_INERTIA_RESET'])
-        )
+        @classifier ||= PropClassifier.new(deferred_request: deferred?)
       end
     end
   end

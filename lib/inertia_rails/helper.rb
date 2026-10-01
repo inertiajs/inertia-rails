@@ -42,20 +42,29 @@ module InertiaRails
       config = controller.send(:inertia_configuration)
       id ||= config.root_dom_id
 
-      if config.use_script_element_for_initial_page
-        script_options = { 'data-page': id, type: 'application/json' }
-        if respond_to?(:content_security_policy_nonce, true)
-          nonce = content_security_policy_nonce
-          script_options[:nonce] = nonce if nonce.present?
+      root =
+        if config.use_script_element_for_initial_page
+          script_options = { 'data-page': id, type: 'application/json' }
+          if respond_to?(:content_security_policy_nonce, true)
+            nonce = content_security_policy_nonce
+            script_options[:nonce] = nonce if nonce.present?
+          end
+
+          safe_join([
+                      tag.script(page.to_json.html_safe, **script_options),
+                      tag.div(id: id)
+                    ], "\n")
+        else
+          tag.div(id: id, 'data-page': page.to_json)
         end
 
-        safe_join([
-                    tag.script(page.to_json.html_safe, **script_options),
-                    tag.div(id: id)
-                  ], "\n")
-      else
-        tag.div(id: id, 'data-page': page.to_json)
-      end
+      devtools_tag = inertia_devtools_tag
+      devtools_tag ? safe_join([root, devtools_tag], "\n") : root
+    end
+
+    # Rendered by `inertia_root`; call it yourself if your layout builds the root element.
+    def inertia_devtools_tag
+      InertiaRails::Devtools.recorder(request)&.discovery_tag
     end
   end
 end

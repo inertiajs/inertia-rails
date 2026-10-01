@@ -3,17 +3,17 @@
 module InertiaRails
   module Devtools
     class PropClassifier
-      def initialize(deferred_request:, reset_keys: [])
+      def initialize(deferred_request:)
         @deferred_request = deferred_request
-        @reset_keys = reset_keys
       end
 
-      def classify(path, prop)
+      def classify(prop)
+        return { inertiaType: nil } unless prop.is_a?(BaseProp)
+
         {
           inertiaType: inertia_type(prop),
           deferGroup: defer_group(prop),
-          reset: @reset_keys.include?(path),
-          once: prop.try(:once?) || false,
+          once: prop.try(:once?),
           mergeDirection: merge_direction(prop),
           deepMerge: deep_merge?(prop),
         }
@@ -21,14 +21,10 @@ module InertiaRails
 
       private
 
-      def deferred_delivery?(prop)
-        prop.is_a?(DeferProp) && @deferred_request
-      end
-
       def inertia_type(prop)
         case prop
         when AlwaysProp then 'always'
-        when DeferProp then deferred_delivery?(prop) ? 'defer' : nil
+        when DeferProp then 'defer' unless reloaded_by_hand?(prop)
         when ScrollProp then 'scroll'
         when OptionalProp, LazyProp then 'optional'
         when MergeProp then 'merge'
@@ -38,11 +34,17 @@ module InertiaRails
 
       def defer_group(prop)
         return unless prop.try(:deferred?)
-        return if prop.is_a?(DeferProp) && !deferred_delivery?(prop)
+        return if reloaded_by_hand?(prop)
 
-        prop.try(:group)
+        prop.group
       end
 
+      # A deferred prop reloaded by hand, not by the client's deferred fetch, counts as plain.
+      def reloaded_by_hand?(prop)
+        prop.is_a?(DeferProp) && !@deferred_request
+      end
+
+      # Matching items on a key updates them in place, so it counts as a deep merge, as in Laravel.
       def deep_merge?(prop)
         return false unless prop.try(:merge?)
 
@@ -52,10 +54,8 @@ module InertiaRails
       def merge_direction(prop)
         return unless prop.try(:merge?)
 
-        prepends = prop.prepends_at_paths.any?
-        appends = prop.appends_at_paths.any?
-
-        prop.prepends_at_root? || (prepends && !appends) ? 'prepend' : 'append'
+        prepend = prop.prepends_at_root? || (prop.prepends_at_paths.any? && prop.appends_at_paths.none?)
+        prepend ? 'prepend' : 'append'
       end
     end
   end

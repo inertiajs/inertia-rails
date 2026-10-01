@@ -35,29 +35,19 @@ module InertiaRails
       def inertia_share(hash = nil, **props, &block)
         options = props.slice(:if, :unless, :only, :except)
         data = hash || props.except(:if, :unless, :only, :except)
-        locations = caller_locations(1, 30)
-
-        source = InertiaRails::Devtools.swallow do
-          InertiaRails::Devtools::SourceLocator.caller_source(locations)
-        end
+        source = InertiaRails::Devtools::SourceLocator.caller_source
 
         before_action(**options) do
           @_inertia_shared ||= []
-          @_inertia_shared << data.freeze if data.any?
+          if data.any?
+            @_inertia_shared << data.freeze
+            InertiaRails::Devtools.recorder(request)&.share_declared(data, source)
+          end
           @_inertia_shared << block if block
-
-          InertiaRails::Devtools.recorder(request)&.share_source(data.keys, source) if data.any?
         end
       end
 
       def inertia_config(**attrs)
-        global = attrs.keys & Configuration::GLOBAL_OPTION_NAMES
-
-        if global.any?
-          raise ArgumentError,
-                "#{global.join(', ')} cannot be set per controller — set them via InertiaRails.configure instead."
-        end
-
         config = InertiaRails::Configuration.new(**attrs)
 
         if @inertia_config
@@ -85,12 +75,11 @@ module InertiaRails
     # Instance-level inertia_share for use in before_action callbacks
     def inertia_share(**props, &block)
       @_inertia_shared ||= []
-      @_inertia_shared << props.freeze unless props.empty?
-      @_inertia_shared << block if block
-
-      if (recorder = InertiaRails::Devtools.recorder(request))
-        recorder.share_source(props.keys, InertiaRails::Devtools::SourceLocator.caller_source)
+      unless props.empty?
+        @_inertia_shared << props.freeze
+        InertiaRails::Devtools.recorder(request)&.share_declared(props, InertiaRails::Devtools::SourceLocator.caller_source)
       end
+      @_inertia_shared << block if block
     end
 
     def default_render
@@ -192,13 +181,9 @@ module InertiaRails
       recorder = InertiaRails::Devtools.recorder(request)
 
       (@_inertia_shared || []).filter_map do |shared_data|
-        next shared_data unless shared_data.respond_to?(:call)
-
-        instance_exec(&shared_data).tap do |result|
-          next unless recorder && result.respond_to?(:keys)
-
-          recorder.share_source(result.keys, InertiaRails::Devtools::SourceLocator.block_source(shared_data))
-        end
+        result = shared_data.respond_to?(:call) ? instance_exec(&shared_data) : shared_data
+        recorder&.share_resolved(shared_data, result)
+        result
       end.reduce(initial_data, &:merge)
     end
 

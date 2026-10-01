@@ -7,14 +7,7 @@ module InertiaRails
     end
 
     def call(env)
-      recorder = Devtools.start(env)
-      status, headers, body = InertiaRailsRequest.new(@app, env).response
-      return [status, headers, body] unless recorder
-
-      recorder.finish(status, headers, body)
-    rescue StandardError => e
-      recorder&.record_exception(e)
-      raise
+      InertiaRailsRequest.new(@app, env).response
     end
 
     class InertiaRailsRequest
@@ -38,7 +31,7 @@ module InertiaRails
         # database writes) on requests that never accessed the session, e.g. sessionless
         # controllers. If the session was never loaded the Inertia keys cannot have been
         # set, so the cleanup would be a no-op anyway.
-        unless keep_inertia_session_options?(status) || !session_loaded?
+        unless keep_inertia_session_options?(status) || !request.session.loaded?
           request.session.delete(:inertia_errors)
           request.session.delete(:inertia_clear_history)
           request.session.delete(:inertia_preserve_fragment)
@@ -89,13 +82,6 @@ module InertiaRails
         body.close if body.respond_to?(:close)
 
         [409, headers, []]
-      end
-
-      # A request that never reached the session middleware gets a plain Hash back,
-      # which has no #loaded?. Deleting from it cannot trigger I/O, so treat it as loaded.
-      def session_loaded?
-        session = request.session
-        !session.respond_to?(:loaded?) || session.loaded?
       end
 
       def keep_inertia_session_options?(status)

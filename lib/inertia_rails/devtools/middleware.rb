@@ -2,36 +2,41 @@
 
 module InertiaRails
   module Devtools
-    # The outermost DevTools frame: above Rails::Rack::Logger so read API polling can
-    # be kept out of the log, and above ShowExceptions/DebugExceptions so it sees the
-    # response they render for a recorded exception without depending on either.
+    # Runs before Rails logs the request and handles errors, so entries get the final status
+    # and error page, and the extension's own requests stay out of the log.
     class Middleware
+      # Sec-Fetch-Dest values worth recording; "empty" means fetch/XHR.
+      RECORDED_DESTINATIONS = %w[document empty frame iframe].freeze
+
       def initialize(app)
         @app = app
       end
 
       def call(env)
-        return respond(env) unless silence_logs?(env)
+        return @app.call(env) unless Devtools.enabled?
+        return Rails.logger.silence { @app.call(env) } if read_api?(env)
+        return @app.call(env) if subresource?(env) || skipped?(env['PATH_INFO'])
 
-        Rails.logger.silence { respond(env) }
+        Recorder.new(env).record { @app.call(env) }
       end
 
       private
 
-      def respond(env)
-        status, headers, body = @app.call(env)
-        recorder = env[Recorder::ENV_KEY]
-
-        return [status, headers, body] unless recorder&.exception
-
-        recorder.finish(status, headers, body, error: recorder.exception)
+      def read_api?(env)
+        env['PATH_INFO'].start_with?("#{ROUTE_PREFIX}/")
       end
 
-      def silence_logs?(env)
-        return false unless env['PATH_INFO'].to_s.start_with?(ROUTE_PREFIX)
-        return false unless Rails.logger.respond_to?(:silence)
+      def subresource?(env)
+        destination = env['HTTP_SEC_FETCH_DEST']
+        destination && !RECORDED_DESTINATIONS.include?(destination)
+      end
 
-        Devtools.swallow { Devtools.enabled? && InertiaRails.configuration.devtools_silence_logs } || false
+      def skipped?(path)
+        relative_path = path.delete_prefix('/')
+
+        Array(Devtools.config.except).any? do |pattern|
+          pattern.is_a?(Regexp) ? pattern.match?(path) : File.fnmatch?(pattern.to_s, relative_path)
+        end
       end
     end
   end
