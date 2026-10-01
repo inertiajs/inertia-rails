@@ -272,9 +272,7 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:deferredProps]).to eq({ 'default' => ['foos.0.notifications'] })
     end
 
-    # Array paths address the props passed in, not the elements that survived this
-    # render, so a path advertised on a first load still resolves on the follow-up.
-    it 'delivers a deferred prop from an array whose earlier elements were dropped' do
+    it 'delivers a deferred prop at the array index it was announced under' do
       props = {
         foos: [
           { name: 'First' },
@@ -283,7 +281,7 @@ RSpec.describe InertiaRails::PropsResolver do
       }
 
       expect(resolve(props)[:deferredProps]).to eq({ 'default' => ['foos.1.notifications'] })
-      expect(resolve_partial(props, 'foos.1.notifications')[:props][:foos]).to eq([{ notifications: ['msg'] }])
+      expect(resolve_partial(props, 'foos.1.notifications')[:props][:foos]).to eq([{}, { notifications: ['msg'] }])
     end
 
     it 'merge prop inside indexed array uses indexed path in metadata' do
@@ -322,9 +320,10 @@ RSpec.describe InertiaRails::PropsResolver do
         'foos.0.bar'
       )
 
-      expect(page[:props][:foos].length).to eq(1)
+      expect(page[:props][:foos].length).to eq(2)
       expect(page[:props][:foos][0][:bar]).to eq('expensive-1')
       expect(page[:props][:foos][0]).not_to have_key(:name)
+      expect(page[:props][:foos][1]).to eq({})
     end
 
     it 'non-indexed field path does not match inside indexed array' do
@@ -337,7 +336,7 @@ RSpec.describe InertiaRails::PropsResolver do
         'foos.bar'
       )
 
-      expect(page[:props][:foos]).to eq([])
+      expect(page[:props][:foos]).to eq([{}])
     end
 
     it 'closure returning array with optional prop excludes it on initial load' do
@@ -405,6 +404,68 @@ RSpec.describe InertiaRails::PropsResolver do
 
       expect(page[:props][:foos][:items][0][:name]).to eq('First')
       expect(page[:props][:foos][:items][0][:bar]).to eq('expensive')
+    end
+  end
+
+  describe 'array slots' do
+    it 'keeps an unrequested hash element as an empty hash and filters the requested one' do
+      page = resolve_partial(
+        { rows: [{ name: 'First', secret: 's' }, { name: 'Second', secret: 's' }] },
+        'rows.1.name'
+      )
+
+      expect(page[:props][:rows]).to eq([{}, { name: 'Second' }])
+    end
+
+    it 'does not evaluate a closure at an unrequested index and keeps its slot as nil' do
+      executed = false
+      page = resolve_partial(
+        { rows: [{ name: 'First' }, -> { executed = true }] },
+        'rows.0.name'
+      )
+
+      expect(executed).to be false
+      expect(page[:props][:rows]).to eq([{ name: 'First' }, nil])
+    end
+
+    it 'does not evaluate a closure at an except-ed index and keeps its slot as nil' do
+      executed = false
+      page = resolve(
+        { rows: [{ name: 'First' }, -> { executed = true }, { name: 'Third' }] },
+        visit: { component: true, only: ['rows'], except: ['rows.1'] }
+      )
+
+      expect(executed).to be false
+      expect(page[:props][:rows]).to eq([{ name: 'First' }, nil, { name: 'Third' }])
+    end
+
+    it 'evaluates a closure at a requested index' do
+      page = resolve_partial({ rows: ['zero', -> { 'one' }] }, 'rows.1')
+
+      expect(page[:props][:rows]).to eq([nil, 'one'])
+    end
+
+    it 'applies an indexed except path to an array of plain hashes' do
+      props = { rows: [{ name: 'n', secret: 's' }] }
+
+      page = resolve(props, visit: { component: true, except: ['rows.0.secret'] })
+
+      expect(page[:props][:rows]).to eq([{ name: 'n' }])
+    end
+
+    it 'keeps filtering below a second array level' do
+      props = { rows: [[{ name: 'n', secret: 's' }]] }
+
+      expect(resolve(props, visit: { component: true, except: ['rows.0.0.secret'] })[:props][:rows])
+        .to eq([[{ name: 'n' }]])
+      expect(resolve(props, visit: { component: true, only: ['rows.0.0.name'] })[:props][:rows])
+        .to eq([[{ name: 'n' }]])
+    end
+
+    it 'leaves an array alone on a full load' do
+      props = { rows: [{ name: 'n' }, 'plain', nil] }
+
+      expect(resolve(props)[:props][:rows]).to eq([{ name: 'n' }, 'plain', nil])
     end
   end
 

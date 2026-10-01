@@ -83,6 +83,27 @@ router.visit(url, {
 
 :::
 
+### Filtering Inside Arrays
+
+@available_since rails=master
+
+Dot-notation keys address array elements by index: `rows.0.name` selects one key of one element. The response still replaces the whole array on the client, so this saves server work, not client state. Elements you did not ask for are never evaluated and arrive as placeholders: `{}` for an element written as a Hash, `null` for anything else — including a lambda or serializer that would have produced a Hash, since it never runs.
+
+```ruby
+render inertia: 'reports/index', props: {
+  rows: [{ name: 'First', total: 10 }, { name: 'Second', total: 20 }],
+}
+```
+
+```js
+router.reload({ only: ['rows.0.name'] })
+// rows: [{ name: 'First' }, {}]
+```
+
+After this reload the page holds exactly `[{ name: 'First' }, {}]` — the second row's data is gone. Ask for every path the page still needs, or reload the whole prop. The placeholders exist to keep each element at its index, so the paths announced for deferred and merged props still match.
+
+Objects work the other way round: a nested object whose every key the reload filtered out is dropped along with its key, rather than arriving as `{}`.
+
 ## Router Shorthand
 
 Since partial reloads can only be made to the same page component the user is already on, it almost always makes sense to just use the `router.reload()` method, which automatically uses the current URL.

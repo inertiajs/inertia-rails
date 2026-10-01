@@ -78,24 +78,17 @@ module InertiaRails
       metadata
     end
 
-    # `prefix` addresses props by their position in what was passed to the renderer, so
-    # partial-reload keys and the metadata paths sent to the client resolve the same way
-    # on a follow-up. `record_prefix` addresses the rendered payload, which is what
-    # DevTools needs to line a prop up with its value; nil without a recorder. They only
-    # differ inside arrays.
-    def deep_transform_props(props, prefix = '', parent_was_resolved: false, record_prefix: prefix)
+    def deep_transform_props(props, prefix = '', parent_was_resolved: false)
       props.each_with_object({}) do |(key, prop), transformed_props|
         path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"
-        record_path = @recorder && (record_prefix.empty? ? key.to_s : "#{record_prefix}.#{key}")
 
         prop = prop.to_inertia if prop.respond_to?(:to_inertia)
 
         if prop.is_a?(Hash) && prop.any?
           next if !parent_was_resolved && excluded_by_partial_request?(path)
 
-          record_prop(prop, path, record_path)
-          nested = deep_transform_props(prop, path, parent_was_resolved: parent_was_resolved,
-                                                    record_prefix: record_path)
+          record_prop(prop, path)
+          nested = deep_transform_props(prop, path, parent_was_resolved: parent_was_resolved)
           transformed_props[key] = nested unless nested.empty?
           next
         end
@@ -103,16 +96,15 @@ module InertiaRails
         if prop.is_a?(Array)
           next if !parent_was_resolved && excluded_by_partial_request?(path)
 
-          record_prop(prop, path, record_path)
-          transformed_props[key] = transform_array(prop, path, parent_was_resolved: parent_was_resolved,
-                                                               record_path: record_path)
+          record_prop(prop, path)
+          transformed_props[key] = transform_array(prop, path, parent_was_resolved: parent_was_resolved)
           next
         end
 
         collect_metadata(prop, path)
         next unless keep_prop?(prop, path, parent_was_resolved: parent_was_resolved)
 
-        record_prop(prop, path, record_path)
+        record_prop(prop, path)
         rescue_enabled = prop.try(:rescue?)
 
         begin
@@ -123,20 +115,18 @@ module InertiaRails
             collect_metadata(value, path)
             next unless keep_prop?(value, path, parent_was_resolved: parent_was_resolved)
 
-            record_prop(value, path, record_path)
+            record_prop(value, path)
             value = @evaluator.call(value)
           end
 
           # A closure may return a Hash or Array containing prop types — recurse into it
           if prop.is_a?(Proc)
             if value.is_a?(Hash) && value.any?
-              nested = deep_transform_props(value, path, parent_was_resolved: true,
-                                                         record_prefix: record_path)
+              nested = deep_transform_props(value, path, parent_was_resolved: true)
               transformed_props[key] = nested unless nested.empty?
               next
             elsif value.is_a?(Array)
-              transformed_props[key] = transform_array(value, path, parent_was_resolved: true,
-                                                                    record_path: record_path)
+              transformed_props[key] = transform_array(value, path, parent_was_resolved: true)
               next
             end
           end
@@ -152,24 +142,20 @@ module InertiaRails
       end
     end
 
-    def transform_array(array, path, parent_was_resolved:, record_path: path)
-      return array unless needs_transform?(array)
+    # Partial reloads refer to array elements by position, so an unrequested element stays in
+    # place as `{}` (a hash) or `nil`, and is not evaluated.
+    def transform_array(array, path, parent_was_resolved:)
+      return array unless needs_transform?(array) || (!parent_was_resolved && partial_request_reaches_below?(path))
 
-      rendered_index = 0
+      array.each_with_index.map do |item, index|
+        item_path = "#{path}.#{index}"
 
-      array.each_with_index.filter_map do |item, index|
-        value =
-          if item.is_a?(Hash)
-            record_prefix = @recorder && "#{record_path}.#{rendered_index}"
-            nested = deep_transform_props(item, "#{path}.#{index}", parent_was_resolved: parent_was_resolved,
-                                                                    record_prefix: record_prefix)
-            nested unless nested.empty?
-          else
-            @evaluator.call(item)
-          end
-
-        rendered_index += 1 if value
-        value
+        case item
+        when Hash then deep_transform_props(item, item_path, parent_was_resolved: parent_was_resolved)
+        when Array then transform_array(item, item_path, parent_was_resolved: parent_was_resolved)
+        else
+          @evaluator.call(item) unless !parent_was_resolved && excluded_by_partial_request?(item_path)
+        end
       end
     end
 
@@ -182,8 +168,8 @@ module InertiaRails
       end
     end
 
-    def record_prop(prop, path, record_path)
-      @recorder&.prop_resolved(record_path, prop, reset: reset_keys.include?(path))
+    def record_prop(prop, path)
+      @recorder&.prop_resolved(path, prop, reset: reset_keys.include?(path))
     end
 
     def report_rescued_error(error)
@@ -276,8 +262,22 @@ module InertiaRails
       partial_keys.any? { |key| key == path || key.start_with?(path_prefix) || path.start_with?("#{key}.") }
     end
 
+    def filtering_partial_request?
+      rendering_partial_component? && (partial_keys.present? || partial_except_keys.present?)
+    end
+
+    # Arrays of plain values are skipped as a shortcut, unless a partial reload names an
+    # element inside one.
+    def partial_request_reaches_below?(path)
+      return false unless filtering_partial_request?
+
+      path_prefix = "#{path}."
+      partial_keys.any? { |key| key.start_with?(path_prefix) } ||
+        partial_except_keys.any? { |key| key.start_with?(path_prefix) }
+    end
+
     def excluded_by_partial_request?(path)
-      return false unless rendering_partial_component? && (partial_keys.present? || partial_except_keys.present?)
+      return false unless filtering_partial_request?
 
       excluded_by_only_partial_keys?(path) || excluded_by_except_partial_keys?(path)
     end

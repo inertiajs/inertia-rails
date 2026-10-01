@@ -389,14 +389,12 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(recorded['propValues'].keys).not_to include('auth.user')
       end
 
-      it 'keys array paths by their index in the rendered array' do
+      it 'keys array paths by the index of the element, even after an element rendered empty' do
         get devtools_collection_path
         recorded = entry
-        rows = recorded['http']['responseBody']['value']['props']['rows']
 
-        expect(rows.length).to eq 2
-        expect(recorded['propValues']['rows.0.tag']).to eq rows[0]['tag']
-        expect(recorded['propValues']['rows.1.tag']).to eq rows[1]['tag']
+        expect(recorded['http']['responseBody']['value']['props']['rows'][0]).to eq({})
+        expect(recorded['propValues']).to include('rows.1.tag' => 'A', 'rows.2.tag' => 'B')
       end
     end
 
