@@ -353,11 +353,12 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
       end
 
       it 'resolves the route' do
-        expect(recorded['route']).to include(
-          'uri' => '/devtools_props',
-          'action' => 'InertiaDevtoolsTestController#props'
-        )
+        expect(recorded['route']['action']).to eq 'InertiaDevtoolsTestController#props'
         expect(recorded['route']['actionSource']['file']).to end_with('inertia_devtools_test_controller.rb')
+      end
+
+      it 'records the matched URI pattern', if: Rails.gem_version >= Gem::Version.new('7.1') do
+        expect(recorded['route']['uri']).to eq '/devtools_props'
       end
 
       context 'with the page file in a configured directory' do
