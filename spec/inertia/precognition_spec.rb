@@ -52,8 +52,8 @@ RSpec.describe 'Precognition', type: :request do
         post precognition_basic_path, params: blank_user_params, headers: precognition_headers
       end
 
-      it 'returns 422 Unprocessable Entity' do
-        expect(response).to have_http_status(:unprocessable_entity)
+      it 'returns 422 Unprocessable Content' do
+        expect(response).to have_http_status(422)
       end
 
       it 'sets Precognition header in response' do
@@ -127,7 +127,7 @@ RSpec.describe 'Precognition', type: :request do
       it 'works with validator built in before_action' do
         post precognition_with_before_action_path, params: blank_user_params, headers: precognition_headers
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(422)
         body = JSON.parse(response.body)
         expect(body['errors']).to include('name', 'email')
       end
@@ -155,7 +155,7 @@ RSpec.describe 'Precognition', type: :request do
       it 'returns 422 with errors' do
         post precognition_non_bang_path, params: blank_user_params, headers: precognition_headers
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(422)
         expect(response.headers['Precognition']).to eq('true')
         body = JSON.parse(response.body)
         expect(body['errors']).to include('name', 'email')
@@ -176,7 +176,7 @@ RSpec.describe 'Precognition', type: :request do
     it 'returns 422 with errors when invalid' do
       post precognition_with_module_level_path, params: blank_user_params, headers: precognition_headers
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(422)
       expect(response.headers['Precognition']).to eq('true')
       body = JSON.parse(response.body)
       expect(body['errors']).to include('name', 'email')
@@ -201,7 +201,7 @@ RSpec.describe 'Precognition', type: :request do
     it 'works with validators that return a hash' do
       post precognition_with_custom_validator_path, params: blank_user_params, headers: precognition_headers
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(422)
       body = JSON.parse(response.body)
       expect(body['errors']['name']).to include('is required')
     end
@@ -217,7 +217,7 @@ RSpec.describe 'Precognition', type: :request do
     it 'returns errors when hash has string keys' do
       post precognition_with_string_keyed_errors_path, params: blank_user_params, headers: precognition_headers
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(422)
       body = JSON.parse(response.body)
       expect(body['errors']['name']).to include('is required')
     end

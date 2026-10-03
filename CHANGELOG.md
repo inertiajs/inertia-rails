@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Expose `@_inertia_page` to views on SSR responses (@onk)
 * Add [Inertia DevTools](https://inertiajs.com/docs/v3/advanced/devtools) support: record every request, expose the read API the Chrome extension reads, and configure it with the `devtools*` options (@mattwigham)
 * Add testing helpers for scroll props and once props (@onk)
 * Skip the `XSRF-TOKEN` cookie entirely (and expire a stale one) on controllers using Rails 8.2's `:header_only` forgery protection strategy, which verifies requests via `Sec-Fetch-Site` and never reads authenticity tokens (@mattwigham)
@@ -22,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Restart the SSR server promptly in the Puma plugin when the process dies during boot, instead of polling a dead port for the full boot timeout (@skryukov)
 * Fix `NoMethodError` raised when a request carrying the `X-Inertia` header reaches a non-Inertia controller such as an `ActionController::API` endpoint (@SAY-5)
 * Fix stale flash notice and use idiomatic class in Vue scaffolds (@skryukov)
+* Start the SSR server in the Puma plugin regardless of the global `ssr_enabled`, so SSR enabled per controller with `inertia_config` works (@bknoles)
+* Add lefthook with pre-commit and pre-push hooks that mirror CI/CD checks (@bknoles)
 
 ## [3.22.0] - 2026-07-17
 

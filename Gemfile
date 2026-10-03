@@ -18,6 +18,7 @@ end
 gem 'debug'
 gem 'generator_spec', '~> 0.10'
 gem 'json', '< 3' if rails_number <= 8.1
+gem 'lefthook'
 gem 'puma', rails_number < 7 ? '< 7' : '>= 7'
 gem 'rails-controller-testing'
 gem 'rake', '~> 13.0'

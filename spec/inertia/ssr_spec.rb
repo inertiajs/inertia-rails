@@ -52,6 +52,12 @@ RSpec.describe 'inertia ssr', type: :request do
         expect(response.headers['Content-Type']).to eq 'text/html; charset=utf-8'
       end
 
+      it 'exposes the component name to the layout' do
+        get props_path
+
+        expect(response.body).to include('<meta name="inertia-component" content="TestComponent">')
+      end
+
       it 'allows inertia to take over when inertia headers are passed' do
         get props_path, headers: { 'X-Inertia' => true, 'X-Inertia-Version' => '1.0' }
 
