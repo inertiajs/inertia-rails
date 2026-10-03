@@ -225,6 +225,14 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'with an object that responds to to_inertia as props' do
+    before { get serializer_props_path, headers: { 'X-Inertia' => true } }
+
+    it 'renders the props it returns' do
+      expect(response.parsed_body['props']).to include('count' => 1, 'course' => { 'title' => 'Ruby' })
+    end
+  end
+
   context 'partial rendering' do
     let(:page) do
       InertiaRails::Renderer.new('TestComponent', controller, request, response, '',
@@ -951,7 +959,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       end
 
       it 'writes to cache store' do
-        expect(cache_store.read('inertia_rails/stats_key')).to eq({ count: 42 }.to_json)
+        expect(cache_store.read('inertia_rails/@2/stats_key')).to eq({ count: 42 }.to_json)
       end
 
       it 'returns RawJson on second request' do
@@ -975,7 +983,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         end
 
         it 'does not write to cache on first load' do
-          expect(cache_store.read('inertia_rails/feed_key')).to be_nil
+          expect(cache_store.read('inertia_rails/@2/feed_key')).to be_nil
         end
       end
 
@@ -995,7 +1003,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         end
 
         it 'writes result to cache' do
-          expect(cache_store.read('inertia_rails/feed_key')).to eq(%w[fresh_item].to_json)
+          expect(cache_store.read('inertia_rails/@2/feed_key')).to eq(%w[fresh_item].to_json)
         end
       end
 
@@ -1009,7 +1017,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         end
 
         before do
-          cache_store.write('inertia_rails/feed_key', '["cached_item"]')
+          cache_store.write('inertia_rails/@2/feed_key', '["cached_item"]')
           get cached_deferred_props_path, headers: headers
         end
 
@@ -1028,7 +1036,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         end
 
         it 'does not write to cache on first load' do
-          expect(cache_store.read('inertia_rails/categories_key')).to be_nil
+          expect(cache_store.read('inertia_rails/@2/categories_key')).to be_nil
         end
       end
 
@@ -1048,7 +1056,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         end
 
         it 'writes result to cache' do
-          expect(cache_store.read('inertia_rails/categories_key')).to eq(%w[category1 category2].to_json)
+          expect(cache_store.read('inertia_rails/@2/categories_key')).to eq(%w[category1 category2].to_json)
         end
       end
 
@@ -1062,7 +1070,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         end
 
         before do
-          cache_store.write('inertia_rails/categories_key', '["cached_cat"]')
+          cache_store.write('inertia_rails/@2/categories_key', '["cached_cat"]')
           get optional_cached_props_path, headers: headers
         end
 

@@ -22,7 +22,7 @@ RSpec.describe InertiaRails::Renderer do
                           session: {},
                           inertia_shared_data: {})
 
-      request = double('request', headers: {})
+      request = double('request', headers: {}, env: {})
       response = double('response', headers: {}, set_header: nil)
       render_method = ->(args) {}
 

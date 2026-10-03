@@ -3,8 +3,23 @@
 Rails.application.routes.draw do
   mount InertiaRails::Engine => '/inertia-rails'
 
+  get 'devtools_props' => 'inertia_devtools_test#props'
+  get 'devtools_plain' => 'inertia_devtools_test#plain'
+  get 'devtools_invalid_json' => 'inertia_devtools_test#invalid_json'
+  post 'devtools_create' => 'inertia_devtools_test#create'
+  get 'devtools_boom' => 'inertia_devtools_test#boom'
+  get 'devtools_nested_share' => 'inertia_devtools_test#nested_share'
+  get 'devtools_collection' => 'inertia_devtools_test#collection'
+  get 'devtools_oversized' => 'inertia_devtools_test#oversized'
+  get 'devtools_rescued' => 'inertia_devtools_test#rescued'
+  get 'devtools_kinds' => 'inertia_devtools_test#kinds'
+  get 'devtools_implicit' => 'inertia_devtools_implicit#show'
+
   get 'configuration' => 'inertia_config_test#configuration'
   get 'props' => 'inertia_render_test#props'
+  get 'serializer_props' => 'inertia_serializer_test#show'
+  get 'broken_serializer_props' => 'inertia_serializer_test#broken'
+  get 'lazy_serializer_props' => 'inertia_serializer_test#lazy'
   get 'ssr_cache_disabled' => 'inertia_render_test#ssr_cache_disabled'
   get 'view_data' => 'inertia_render_test#view_data'
   get 'component' => 'inertia_render_test#component'

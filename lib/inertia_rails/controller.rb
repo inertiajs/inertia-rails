@@ -35,10 +35,14 @@ module InertiaRails
       def inertia_share(hash = nil, **props, &block)
         options = props.slice(:if, :unless, :only, :except)
         data = hash || props.except(:if, :unless, :only, :except)
+        source = InertiaRails::Devtools::SourceLocator.caller_source
 
         before_action(**options) do
           @_inertia_shared ||= []
-          @_inertia_shared << data.freeze if data.any?
+          if data.any?
+            @_inertia_shared << data.freeze
+            InertiaRails::Devtools.recorder(request)&.share_declared(data, source)
+          end
           @_inertia_shared << block if block
         end
       end
@@ -71,7 +75,10 @@ module InertiaRails
     # Instance-level inertia_share for use in before_action callbacks
     def inertia_share(**props, &block)
       @_inertia_shared ||= []
-      @_inertia_shared << props.freeze unless props.empty?
+      unless props.empty?
+        @_inertia_shared << props.freeze
+        InertiaRails::Devtools.recorder(request)&.share_declared(props, InertiaRails::Devtools::SourceLocator.caller_source)
+      end
       @_inertia_shared << block if block
     end
 
@@ -87,6 +94,7 @@ module InertiaRails
       full_page = response_options.dig(:inertia, :full_page)
       validate_full_page_redirect_status!(response_options) if full_page
       capture_inertia_session_options(response_options)
+
       super.tap do
         convert_redirect_to_location_response! if full_page && request.inertia?
       end
@@ -166,15 +174,16 @@ module InertiaRails
               'To disable this warning, set it to `false`.'
             )
           end
+
           {}
         end
 
+      recorder = InertiaRails::Devtools.recorder(request)
+
       (@_inertia_shared || []).filter_map do |shared_data|
-        if shared_data.respond_to?(:call)
-          instance_exec(&shared_data)
-        else
-          shared_data
-        end
+        result = shared_data.respond_to?(:call) ? instance_exec(&shared_data) : shared_data
+        recorder&.share_resolved(shared_data, result)
+        result
       end.reduce(initial_data, &:merge)
     end
 
@@ -189,12 +198,10 @@ module InertiaRails
 
     def inertia_collect_flash_data
       flash_data = flash.to_hash
-
       allowed_keys = inertia_configuration.flash_keys
+
       result = allowed_keys ? flash_data.slice(*allowed_keys.map(&:to_s)) : {}
-
       result.merge!(flash_data['inertia'].transform_keys(&:to_s)) if flash_data['inertia'].is_a?(Hash)
-
       result.symbolize_keys
     end
 

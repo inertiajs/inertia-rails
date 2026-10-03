@@ -165,6 +165,10 @@ module InertiaRails
       @options[:cache_store] || Rails.cache
     end
 
+    def devtools
+      Devtools.config
+    end
+
     # Normalized and validated at read time — ENV values arrive as strings, and callables are only evaluated here.
     def xsrf_cookie_refresh
       value = evaluate_option(options[:xsrf_cookie_refresh])

@@ -20,6 +20,17 @@ module HelperModule
     response.headers['Vary'].to_s.split(/,\s*/).reject { |v| v == 'Sec-Fetch-Site' }.join(', ')
   end
 
+  # Rails' request log and the controller log use different loggers.
+  def capture_log
+    io = StringIO.new
+    original = [Rails.logger, ActionController::Base.logger]
+    Rails.logger = ActionController::Base.logger = ActiveSupport::Logger.new(io, level: Logger::DEBUG)
+    yield
+    io.string
+  ensure
+    Rails.logger, ActionController::Base.logger = original
+  end
+
   def with_env(**env)
     orig = ENV.to_h
     begin
@@ -31,6 +42,17 @@ module HelperModule
   end
 
   module ClassMethods
+    def with_devtools_config(**settings)
+      around do |example|
+        config = InertiaRails::Devtools.config
+        original = settings.keys.to_h { |name| [name, config.public_send(name)] }
+        settings.each { |name, value| config.public_send(:"#{name}=", value) }
+        example.run
+      ensure
+        original.each { |name, value| config.public_send(:"#{name}=", value) }
+      end
+    end
+
     def with_inertia_config(**props)
       around do |example|
         config = InertiaRails.configuration

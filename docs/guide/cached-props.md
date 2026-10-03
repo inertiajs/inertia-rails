@@ -41,7 +41,7 @@ Pass an Active Record object to derive the key from `cache_key_with_version`. Th
 
 ```ruby
 InertiaRails.cache(@post) { PostSerializer.render(@post) }
-# Cache key: "inertia_rails/posts/1-20260410120000"
+# Cache key: "inertia_rails/@2/posts/1-20260410120000"
 ```
 
 ### Array Keys
@@ -50,7 +50,7 @@ Pass an array to build a composite key:
 
 ```ruby
 InertiaRails.cache(['stats', current_user.id]) { Stats.for(current_user) }
-# Cache key: "inertia_rails/stats/42"
+# Cache key: "inertia_rails/@2/stats/42"
 ```
 
 ## Cache Options
@@ -89,6 +89,6 @@ InertiaRails.defer(cache: { key: 'feed', expires_in: 5.minutes }) { current_user
 
 ## Cache Store
 
-By default, Inertia uses `Rails.cache`. You can configure a different store via the [`cache_store`](/guide/configuration#cache_store) option. All cached prop keys are automatically prefixed with `inertia_rails/` to avoid collisions.
+By default, Inertia uses `Rails.cache`. You can configure a different store via the [`cache_store`](/guide/configuration#cache_store) option. All cached prop keys are automatically prefixed with `inertia_rails/@2/` to avoid collisions.
 
 For more information on configuring cache stores, cache key strategies, and expiration policies, see the [Rails low-level caching guide](https://guides.rubyonrails.org/caching_with_rails.html#low-level-caching-using-rails-cache).

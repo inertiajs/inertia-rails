@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 * Expose `@_inertia_page` to views on SSR responses (@onk)
+* Add [Inertia DevTools](https://inertiajs.com/docs/v3/advanced/devtools) support: record requests in development (or those `config.devtools.authorize` approves elsewhere), expose the read API the browser extension reads, and configure it under `config.devtools` (@mattwigham and @skryukov)
+* Accept an object that responds to `to_inertia` as `props:`, as prop values already were. With `inertia_prop_sources`, it can also tell DevTools where it declared each prop (@skryukov)
+* Fix `to_inertia` objects returned from a closure or a prop type's block, placed in an array, or returned from an `InertiaRails.cache` block being serialized with `as_json`, which sent the object's instance variables, such as the record it wraps, to the client. Cached prop keys move to `inertia_rails/@2/`, so entries written before this fix are never read again: every cached prop fills once after upgrading, and code that deletes cached props by their full key needs the new prefix. `ActiveSupport::OrderedOptions` is no longer mistaken for a serializer, which turned it into `null` (@skryukov)
 * Add testing helpers for scroll props and once props (@onk)
 * Skip the `XSRF-TOKEN` cookie entirely (and expire a stale one) on controllers using Rails 8.2's `:header_only` forgery protection strategy, which verifies requests via `Sec-Fetch-Site` and never reads authenticity tokens (@mattwigham)
 * Skip setting `XSRF-TOKEN` cookie when Rails 8.2's `:header_only` CSRF strategy is on (@mattwigham)
@@ -17,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Preserve the original exception as `cause` on `InertiaRails::SSRError`, so connection failures report the underlying error instead of only the wrapper (@bknoles)
 * Convert external (cross-origin) redirects to Inertia location responses automatically (disable with `config.convert_external_redirects = false`), and add `redirect_to url, inertia: { full_page: true }` for same-origin redirects to non-Inertia endpoints (@skryukov)
 * Fix `inertia_location` to redirect plain (non-Inertia) requests instead of responding `409 Conflict`, and stop stale asset versions from replacing location responses with a forced refresh (@skryukov)
+* Fix partial reloads addressing array elements by index (`only: ['rows.0.name']`) dropping the elements they did not name, which shifted every later element onto the wrong path. Unrequested elements now keep their slot as a placeholder (`{}` for an element written as a Hash, `null` otherwise) and are never evaluated, and an indexed `only`/`except` path is now applied to arrays of plain hashes too (@skryukov)
 * Fix meta tags ignoring per-controller `use_data_inertia_head_attribute` set via `inertia_config` (@skryukov)
 * Use SHA256 instead of MD5 for meta tag head key digests, so they no longer raise on FIPS-enabled Rubies (@skryukov)
 * Restart the SSR server promptly in the Puma plugin when the process dies during boot, instead of polling a dead port for the full boot timeout (@skryukov)

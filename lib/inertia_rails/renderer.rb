@@ -22,6 +22,8 @@ module InertiaRails
       @configuration = controller.__send__(:inertia_configuration)
       @request = request
       @response = response
+      recorder = Devtools.recorder(request)
+      @recorder = recorder if recorder&.authorized?
       @render_method = render_method
       @view_data = options.fetch(:view_data, {})
       @encrypt_history = options.fetch(:encrypt_history, @configuration.encrypt_history)
@@ -33,11 +35,16 @@ module InertiaRails
       deep_merge = options.fetch(:deep_merge, @configuration.deep_merge_shared_data)
       passed_props = options.fetch(:props,
                                    component.is_a?(Hash) ? component : @controller.__send__(:inertia_view_assigns))
+      if PropsResolver.serializer?(passed_props)
+        @recorder&.serializer_found(passed_props)
+        passed_props = passed_props.to_inertia
+      end
       shared = shared_data
       @shared_keys = @configuration.expose_shared_prop_keys ? extract_shared_keys(shared) : nil
       @props = merge_props(shared, passed_props, deep_merge)
 
       @component = resolve_component(component)
+      start_recording(shared, passed_props, deep_merge)
 
       @controller.instance_variable_set('@_inertia_rendering', true)
       controller.inertia_meta.add(options[:meta]) if options[:meta]
@@ -59,7 +66,7 @@ module InertiaRails
             payload[:ssr] = true
             @controller.instance_variable_set('@_inertia_ssr_head', ssr['head'].join.html_safe)
             @render_method.call(
-              html: ssr['body'].html_safe,
+              html: "#{ssr['body']}#{@recorder&.discovery_tag}".html_safe,
               layout: layout,
               locals: @view_data.merge(page: page),
               formats: :html
@@ -77,6 +84,19 @@ module InertiaRails
     end
 
     private
+
+    def start_recording(shared, passed_props, deep_merge)
+      return unless @recorder
+
+      shared_keys = @shared_keys || extract_shared_keys(shared)
+      # A prop passed to the render replaces a shared one, unless the two are deep merged.
+      shared_keys -= extract_shared_keys(passed_props) unless deep_merge
+      @recorder.render_started(
+        component: @component,
+        render_source: Devtools::SourceLocator.render_source(caller_locations(1, 40), @controller),
+        shared_keys: shared_keys
+      )
+    end
 
     def ssr_render
       SSRRenderer.new(@configuration, page: page, cache: @ssr_cache).render
@@ -135,7 +155,8 @@ module InertiaRails
           except: parse_header('X-Inertia-Partial-Except'),
           reset: parse_header('X-Inertia-Reset'),
           except_once: parse_header('X-Inertia-Except-Once-Props'),
-        }
+        },
+        recorder: @recorder
       )
       resolved_props, metadata = resolver.resolve
 
@@ -160,6 +181,8 @@ module InertiaRails
       page[:preserveFragment] = @preserve_fragment if @preserve_fragment
 
       page.merge!(metadata)
+      @recorder&.page_rendered(page)
+      page
     end
 
     def resolve_component(component)

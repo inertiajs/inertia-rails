@@ -272,6 +272,18 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:deferredProps]).to eq({ 'default' => ['foos.0.notifications'] })
     end
 
+    it 'delivers a deferred prop at the array index it was announced under' do
+      props = {
+        foos: [
+          { name: 'First' },
+          { notifications: InertiaRails.defer { ['msg'] } }
+        ],
+      }
+
+      expect(resolve(props)[:deferredProps]).to eq({ 'default' => ['foos.1.notifications'] })
+      expect(resolve_partial(props, 'foos.1.notifications')[:props][:foos]).to eq([{}, { notifications: ['msg'] }])
+    end
+
     it 'merge prop inside indexed array uses indexed path in metadata' do
       page = resolve({
                        foos: [
@@ -308,9 +320,10 @@ RSpec.describe InertiaRails::PropsResolver do
         'foos.0.bar'
       )
 
-      expect(page[:props][:foos].length).to eq(1)
+      expect(page[:props][:foos].length).to eq(2)
       expect(page[:props][:foos][0][:bar]).to eq('expensive-1')
       expect(page[:props][:foos][0]).not_to have_key(:name)
+      expect(page[:props][:foos][1]).to eq({})
     end
 
     it 'non-indexed field path does not match inside indexed array' do
@@ -323,7 +336,7 @@ RSpec.describe InertiaRails::PropsResolver do
         'foos.bar'
       )
 
-      expect(page[:props][:foos]).to eq([])
+      expect(page[:props][:foos]).to eq([{}])
     end
 
     it 'closure returning array with optional prop excludes it on initial load' do
@@ -391,6 +404,68 @@ RSpec.describe InertiaRails::PropsResolver do
 
       expect(page[:props][:foos][:items][0][:name]).to eq('First')
       expect(page[:props][:foos][:items][0][:bar]).to eq('expensive')
+    end
+  end
+
+  describe 'array slots' do
+    it 'keeps an unrequested hash element as an empty hash and filters the requested one' do
+      page = resolve_partial(
+        { rows: [{ name: 'First', secret: 's' }, { name: 'Second', secret: 's' }] },
+        'rows.1.name'
+      )
+
+      expect(page[:props][:rows]).to eq([{}, { name: 'Second' }])
+    end
+
+    it 'does not evaluate a closure at an unrequested index and keeps its slot as nil' do
+      executed = false
+      page = resolve_partial(
+        { rows: [{ name: 'First' }, -> { executed = true }] },
+        'rows.0.name'
+      )
+
+      expect(executed).to be false
+      expect(page[:props][:rows]).to eq([{ name: 'First' }, nil])
+    end
+
+    it 'does not evaluate a closure at an except-ed index and keeps its slot as nil' do
+      executed = false
+      page = resolve(
+        { rows: [{ name: 'First' }, -> { executed = true }, { name: 'Third' }] },
+        visit: { component: true, only: ['rows'], except: ['rows.1'] }
+      )
+
+      expect(executed).to be false
+      expect(page[:props][:rows]).to eq([{ name: 'First' }, nil, { name: 'Third' }])
+    end
+
+    it 'evaluates a closure at a requested index' do
+      page = resolve_partial({ rows: ['zero', -> { 'one' }] }, 'rows.1')
+
+      expect(page[:props][:rows]).to eq([nil, 'one'])
+    end
+
+    it 'applies an indexed except path to an array of plain hashes' do
+      props = { rows: [{ name: 'n', secret: 's' }] }
+
+      page = resolve(props, visit: { component: true, except: ['rows.0.secret'] })
+
+      expect(page[:props][:rows]).to eq([{ name: 'n' }])
+    end
+
+    it 'keeps filtering below a second array level' do
+      props = { rows: [[{ name: 'n', secret: 's' }]] }
+
+      expect(resolve(props, visit: { component: true, except: ['rows.0.0.secret'] })[:props][:rows])
+        .to eq([[{ name: 'n' }]])
+      expect(resolve(props, visit: { component: true, only: ['rows.0.0.name'] })[:props][:rows])
+        .to eq([[{ name: 'n' }]])
+    end
+
+    it 'leaves an array alone on a full load' do
+      props = { rows: [{ name: 'n' }, 'plain', nil] }
+
+      expect(resolve(props)[:props][:rows]).to eq([{ name: 'n' }, 'plain', nil])
     end
   end
 
@@ -969,6 +1044,68 @@ RSpec.describe InertiaRails::PropsResolver do
 
       expect(page[:props][:auth]).not_to have_key(:user)
       expect(page[:props][:auth][:permissions]).to eq(['manage-users'])
+    end
+
+    describe 'wherever the serializer sits' do
+      let(:serializer) do
+        Class.new do
+          def initialize(name)
+            @secret = 'hunter2'
+            @name = name
+          end
+
+          def to_inertia = { name: @name }
+        end
+      end
+
+      it 'resolves one returned from a closure' do
+        user = serializer.new('Jonathan')
+        page = resolve({ user: -> { user } })
+
+        expect(page[:props][:user]).to eq({ name: 'Jonathan' })
+      end
+
+      it 'resolves one returned from a prop type' do
+        user = serializer.new('Jonathan')
+        page = resolve({ user: InertiaRails.always { user } })
+
+        expect(page[:props][:user]).to eq({ name: 'Jonathan' })
+      end
+
+      it 'resolves ones inside an array, directly or from a closure' do
+        brandon = serializer.new('Brandon')
+        page = resolve({ users: [serializer.new('Jonathan'), -> { brandon }] })
+
+        expect(page[:props][:users]).to eq([{ name: 'Jonathan' }, { name: 'Brandon' }])
+      end
+
+      it 'resolves closures inside one returned from a closure' do
+        lazy = Object.new
+        def lazy.to_inertia = { user: 'Jonathan', count: -> { 2 } }
+
+        page = resolve({ auth: -> { lazy } })
+
+        expect(page[:props][:auth]).to eq({ user: 'Jonathan', count: 2 })
+      end
+
+      it 'rescues an error raised by one a deferred prop returned' do
+        broken = Object.new
+        def broken.to_inertia = raise('boom')
+
+        page = resolve_partial({ stats: InertiaRails.defer(rescue: true) { broken } }, 'stats')
+
+        expect(page[:props]).not_to have_key(:stats)
+        expect(page[:rescuedProps]).to eq(['stats'])
+      end
+    end
+
+    it 'leaves ActiveSupport::OrderedOptions as they are' do
+      options = ActiveSupport::OrderedOptions.new
+      options.flag = true
+
+      page = resolve({ direct: options, lazy: -> { options } })
+
+      expect(page[:props]).to eq({ direct: { flag: true }, lazy: { flag: true } })
     end
   end
 
