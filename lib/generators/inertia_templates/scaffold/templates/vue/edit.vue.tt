@@ -7,12 +7,7 @@
     :<%= singular_table_name %>="<%= singular_table_name %>"
     submitText="Update <%= human_name %>"
     :action="`<%= js_resource_path %>`"
-<% if attributes.any?(&:attachments?) -%>
-    method="post"
-    :headers="{ 'X-HTTP-METHOD-OVERRIDE': 'patch' }"
-<% else -%>
     method="patch"
-<% end -%>
   />
 
   <br />
