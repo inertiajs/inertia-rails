@@ -310,6 +310,26 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(recorded['props']['rows.1.tag']['renderSource']).to eq recorded['renderSource']
       end
 
+      it 'links props to where the serializer that produced them declared them' do
+        get serializer_props_path, headers: { 'X-Inertia' => true }
+        recorded = entry
+        serializer = Rails.root.join('app/controllers/inertia_serializer_test_controller.rb').to_s
+
+        expect(recorded['props']['count']['renderSource']).to eq('file' => serializer, 'line' => 10)
+        expect(recorded['props']['course.title']['renderSource']).to eq('file' => serializer, 'line' => 5)
+      end
+
+      it 'links to the render call when a serializer fails to say where its props are' do
+        allow(InertiaRails::Devtools).to receive(:report)
+
+        get broken_serializer_props_path, headers: { 'X-Inertia' => true }
+        recorded = entry
+
+        expect(response.parsed_body['props']).to include('count' => 1)
+        expect(recorded['props']['count']['renderSource']).to eq recorded['renderSource']
+        expect(InertiaRails::Devtools).to have_received(:report).once
+      end
+
       it 'links an implicit render to its action, not to a filter around it' do
         get devtools_implicit_path, headers: { 'X-Inertia' => true }
         source = entry['renderSource']

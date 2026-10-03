@@ -225,6 +225,14 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'with an object that responds to to_inertia as props' do
+    before { get serializer_props_path, headers: { 'X-Inertia' => true } }
+
+    it 'renders the props it returns' do
+      expect(response.parsed_body['props']).to include('count' => 1, 'course' => { 'title' => 'Ruby' })
+    end
+  end
+
   context 'partial rendering' do
     let(:page) do
       InertiaRails::Renderer.new('TestComponent', controller, request, response, '',

@@ -35,6 +35,10 @@ module InertiaRails
       deep_merge = options.fetch(:deep_merge, @configuration.deep_merge_shared_data)
       passed_props = options.fetch(:props,
                                    component.is_a?(Hash) ? component : @controller.__send__(:inertia_view_assigns))
+      if passed_props.respond_to?(:to_inertia)
+        @recorder&.serializer_found(passed_props)
+        passed_props = passed_props.to_inertia
+      end
       shared = shared_data
       @shared_keys = @configuration.expose_shared_prop_keys ? extract_shared_keys(shared) : nil
       @props = merge_props(shared, passed_props, deep_merge)

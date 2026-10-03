@@ -14,6 +14,7 @@ module InertiaRails
         @started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         @collector = nil
         @share_sources = {}
+        @prop_sources = {}
         # Keyed by object, so identical hashes shared in different places keep their own links.
         @share_declarations = {}.compare_by_identity
         # Read now: Rails changes it while routing into a mounted engine.
@@ -49,12 +50,24 @@ module InertiaRails
           component: component,
           render_source: render_source,
           share_sources: @share_sources,
+          prop_sources: @prop_sources,
           shared_keys: shared_keys
         )
       end
 
       def prop_resolved(path, prop, reset: false)
         @collector.add_prop(path, classifier.classify(prop), reset: reset)
+      end
+
+      # A serializer may say where it declared each prop, as `[file, line]` pairs keyed like its `to_inertia`.
+      def serializer_found(serializer, path = nil)
+        return unless serializer.respond_to?(:inertia_prop_sources)
+
+        Devtools.swallow do
+          serializer.inertia_prop_sources.each do |key, (file, line)|
+            @prop_sources[[path, key].compact.join('.')] = { file: file, line: line } if file
+          end
+        end
       end
 
       def page_rendered(page)

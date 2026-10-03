@@ -36,6 +36,32 @@ Deferred and optional props are skipped before resolution on a first load, so th
 
 Props renamed by [`prop_transformer`](/guide/configuration#prop_transformer) are shown with their values but without their type, source, or `inertia_share` badge.
 
+## Linking props to serializers
+
+An object that responds to `to_inertia` can be passed as `props:` or as a prop value; Inertia Rails renders the hash it returns. Its props link to the `render inertia:` call by default. To link each one to where the serializer declares it, also define `inertia_prop_sources`, returning `[file, line]` pairs keyed like that hash:
+
+```ruby
+class CourseSerializer
+  def initialize(course)
+    @course = course
+  end
+
+  def to_inertia
+    { title: title }
+  end
+
+  def title
+    @course.title
+  end
+
+  def inertia_prop_sources
+    { 'title' => method(:title).source_location }
+  end
+end
+```
+
+A serializer nested in another one reports its own keys; DevTools adds the path it sits under. `inertia_prop_sources` is only called while DevTools records, and an error inside it is reported and ignored, so the page still renders.
+
 ## Enabling and disabling
 
 Recording is on in development and off everywhere else. Set `config.devtools.enabled` (or the `INERTIA_DEVTOOLS_ENABLED` environment variable, `true` or `false`) to override:

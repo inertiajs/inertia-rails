@@ -11,10 +11,11 @@ module InertiaRails
       attr_reader :component
       attr_accessor :page
 
-      def initialize(component:, render_source:, share_sources:, shared_keys:)
+      def initialize(component:, render_source:, share_sources:, prop_sources:, shared_keys:)
         @component = component
         @render_source = render_source
         @share_sources = share_sources
+        @prop_sources = prop_sources
         @shared_keys = shared_keys
         @rows = {}
         @page = nil
@@ -83,17 +84,19 @@ module InertiaRails
         path.split('.', 2).first
       end
 
-      # A prop under a shared key links to its share; any other prop to the render call.
+      # A prop under a shared key links to its share; any other prop to where its serializer
+      # declared it, or else to the render call.
       def link_sources(rows)
         shared, rendered = rows.keys.partition { |path| shared?(path) }
         shared.each do |path|
           source = @share_sources[top_key(path)]
           rows[path] = rows[path].merge(shareSource: source) if source
         end
-        return unless @render_source
 
-        SourceLocator.key_sources(@render_source, rendered).each do |path, source|
-          rows[path] = rows[path].merge(renderSource: source)
+        render_sources = @render_source ? SourceLocator.key_sources(@render_source, rendered) : {}
+        rendered.each do |path|
+          source = @prop_sources[path] || render_sources[path]
+          rows[path] = rows[path].merge(renderSource: source) if source
         end
       end
 
