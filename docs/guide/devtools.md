@@ -38,7 +38,7 @@ Props renamed by [`prop_transformer`](/guide/configuration#prop_transformer) are
 
 ## Linking props to serializers
 
-An object that responds to `to_inertia` can be passed as `props:` or as a prop value; Inertia Rails renders the hash it returns. Its props link to the `render inertia:` call by default. To link each one to where the serializer declares it, also define `inertia_prop_sources`, returning `[file, line]` pairs keyed like that hash:
+An object that responds to `to_inertia` can be passed as `props:` or used as a prop value, including inside an array or returned from a closure or a prop type's block; Inertia Rails renders the hash it returns. Its props link to the `render inertia:` call by default. To link each one to where the serializer declares it, also define `inertia_prop_sources`, returning `[file, line]` pairs keyed like that hash:
 
 ```ruby
 class CourseSerializer

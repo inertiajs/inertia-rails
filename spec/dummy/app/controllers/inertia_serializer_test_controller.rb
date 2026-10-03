@@ -23,4 +23,8 @@ class InertiaSerializerTestController < ApplicationController
   def broken
     render inertia: 'Courses/Index', props: BrokenSerializer.new
   end
+
+  def lazy
+    render inertia: 'Courses/Index', props: { course: -> { CourseSerializer.new } }
+  end
 end

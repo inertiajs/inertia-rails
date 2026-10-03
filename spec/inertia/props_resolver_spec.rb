@@ -1045,6 +1045,68 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props][:auth]).not_to have_key(:user)
       expect(page[:props][:auth][:permissions]).to eq(['manage-users'])
     end
+
+    describe 'wherever the serializer sits' do
+      let(:serializer) do
+        Class.new do
+          def initialize(name)
+            @secret = 'hunter2'
+            @name = name
+          end
+
+          def to_inertia = { name: @name }
+        end
+      end
+
+      it 'resolves one returned from a closure' do
+        user = serializer.new('Jonathan')
+        page = resolve({ user: -> { user } })
+
+        expect(page[:props][:user]).to eq({ name: 'Jonathan' })
+      end
+
+      it 'resolves one returned from a prop type' do
+        user = serializer.new('Jonathan')
+        page = resolve({ user: InertiaRails.always { user } })
+
+        expect(page[:props][:user]).to eq({ name: 'Jonathan' })
+      end
+
+      it 'resolves ones inside an array, directly or from a closure' do
+        brandon = serializer.new('Brandon')
+        page = resolve({ users: [serializer.new('Jonathan'), -> { brandon }] })
+
+        expect(page[:props][:users]).to eq([{ name: 'Jonathan' }, { name: 'Brandon' }])
+      end
+
+      it 'resolves closures inside one returned from a closure' do
+        lazy = Object.new
+        def lazy.to_inertia = { user: 'Jonathan', count: -> { 2 } }
+
+        page = resolve({ auth: -> { lazy } })
+
+        expect(page[:props][:auth]).to eq({ user: 'Jonathan', count: 2 })
+      end
+
+      it 'rescues an error raised by one a deferred prop returned' do
+        broken = Object.new
+        def broken.to_inertia = raise('boom')
+
+        page = resolve_partial({ stats: InertiaRails.defer(rescue: true) { broken } }, 'stats')
+
+        expect(page[:props]).not_to have_key(:stats)
+        expect(page[:rescuedProps]).to eq(['stats'])
+      end
+    end
+
+    it 'leaves ActiveSupport::OrderedOptions as they are' do
+      options = ActiveSupport::OrderedOptions.new
+      options.flag = true
+
+      page = resolve({ direct: options, lazy: -> { options } })
+
+      expect(page[:props]).to eq({ direct: { flag: true }, lazy: { flag: true } })
+    end
   end
 
   describe 'partial request filtering' do

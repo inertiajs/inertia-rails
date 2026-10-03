@@ -4,6 +4,11 @@ module InertiaRails
   # Resolves props and collects metadata (deferred, merge, once, scroll)
   # for the Inertia page response.
   class PropsResolver
+    # `ActiveSupport::OrderedOptions` answers every method, `to_inertia` included, with a key lookup.
+    def self.serializer?(value)
+      value.respond_to?(:to_inertia) && !value.is_a?(ActiveSupport::OrderedOptions)
+    end
+
     def initialize(props, evaluator:, visit: {}, recorder: nil)
       @props = props
       @evaluator = evaluator
@@ -58,7 +63,7 @@ module InertiaRails
 
     def resolve_value(current, key)
       value = current[key]
-      value = value.to_inertia if value.respond_to?(:to_inertia)
+      value = value.to_inertia if self.class.serializer?(value)
       value = @evaluator.call(value) if value.is_a?(Proc)
       current[key] = value || {}
     end
@@ -82,10 +87,7 @@ module InertiaRails
       props.each_with_object({}) do |(key, prop), transformed_props|
         path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"
 
-        if prop.respond_to?(:to_inertia)
-          @recorder&.serializer_found(prop, path)
-          prop = prop.to_inertia
-        end
+        prop = serialize(prop, path) if self.class.serializer?(prop)
 
         if prop.is_a?(Hash) && prop.any?
           next if !parent_was_resolved && excluded_by_partial_request?(path)
@@ -122,8 +124,11 @@ module InertiaRails
             value = @evaluator.call(value)
           end
 
-          # A closure may return a Hash or Array containing prop types — recurse into it
-          if prop.is_a?(Proc)
+          serialized = self.class.serializer?(value)
+          value = serialize(value, path) if serialized
+
+          # A closure or a serializer may return a Hash or Array containing prop types — recurse into it
+          if prop.is_a?(Proc) || serialized
             if value.is_a?(Hash) && value.any?
               nested = deep_transform_props(value, path, parent_was_resolved: true)
               transformed_props[key] = nested unless nested.empty?
@@ -157,9 +162,28 @@ module InertiaRails
         when Hash then deep_transform_props(item, item_path, parent_was_resolved: parent_was_resolved)
         when Array then transform_array(item, item_path, parent_was_resolved: parent_was_resolved)
         else
-          @evaluator.call(item) unless !parent_was_resolved && excluded_by_partial_request?(item_path)
+          next if !parent_was_resolved && excluded_by_partial_request?(item_path)
+
+          transform_element(item, item_path, parent_was_resolved: parent_was_resolved)
         end
       end
+    end
+
+    def transform_element(item, path, parent_was_resolved:)
+      value = @evaluator.call(item)
+      return value unless self.class.serializer?(value)
+
+      value = serialize(value, path)
+      case value
+      when Hash then deep_transform_props(value, path, parent_was_resolved: parent_was_resolved)
+      when Array then transform_array(value, path, parent_was_resolved: parent_was_resolved)
+      else value
+      end
+    end
+
+    def serialize(serializer, path)
+      @recorder&.serializer_found(serializer, path)
+      serializer.to_inertia
     end
 
     def needs_transform?(value)
@@ -167,7 +191,7 @@ module InertiaRails
       when BaseProp, Proc then true
       when Hash then value.any? { |_, v| needs_transform?(v) }
       when Array then value.any? { |v| needs_transform?(v) }
-      else value.respond_to?(:to_inertia)
+      else self.class.serializer?(value)
       end
     end
 

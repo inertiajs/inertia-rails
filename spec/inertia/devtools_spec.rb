@@ -319,6 +319,13 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(recorded['props']['course.title']['renderSource']).to eq('file' => serializer, 'line' => 5)
       end
 
+      it 'links props of a serializer a closure returned' do
+        get lazy_serializer_props_path, headers: { 'X-Inertia' => true }
+        serializer = Rails.root.join('app/controllers/inertia_serializer_test_controller.rb').to_s
+
+        expect(entry['props']['course.title']['renderSource']).to eq('file' => serializer, 'line' => 5)
+      end
+
       it 'links to the render call when a serializer fails to say where its props are' do
         allow(InertiaRails::Devtools).to receive(:report)
 
