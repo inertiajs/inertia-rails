@@ -75,3 +75,4 @@ jobs:
         with:
           name: docs-build
           path: docs/.vitepress/dist
+          include-hidden-files: true
