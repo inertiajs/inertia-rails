@@ -13,7 +13,7 @@ module InertiaRails
   module Precognition
     class << self
       # Returns filtered errors hash if precognition request, nil otherwise
-      def validate(model_or_errors)
+      def validate(model_or_errors, flatten_errors: InertiaRails.configuration.flatten_errors, &block)
         # Check before the precognitive? guard to catch errors early
         # without waiting for precognition requests.
         ensure_single_precognition_call!
@@ -21,6 +21,8 @@ module InertiaRails
         return unless request&.inertia_precognitive?
 
         errors = normalize_errors(model_or_errors)
+        errors = block.call(errors) if block && errors.any?
+        errors = ValidationErrors.flatten(errors) if block || flatten_errors
         filter_errors(errors, request)
       end
 
@@ -56,8 +58,8 @@ module InertiaRails
     end
   end
 
-  def self.precognition!(model_or_errors)
-    errors = Precognition.validate(model_or_errors)
+  def self.precognition!(model_or_errors, flatten_errors: InertiaRails.configuration.flatten_errors, &block)
+    errors = Precognition.validate(model_or_errors, flatten_errors: flatten_errors, &block)
     return false if errors.nil?
 
     raise PrecognitionResponse, errors, []

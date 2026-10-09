@@ -35,7 +35,7 @@ module Inertia
         invoke route unless options.skip_routes?
       end
 
-      hook_for :test_framework, in: :rails, as: :scaffold
+      hook_for :test_framework, in: :inertia, as: :scaffold
 
       # Invoke the helper using the controller name (pluralized)
       hook_for :helper, in: :rails, as: :scaffold do |invoked|
@@ -58,6 +58,11 @@ module Inertia
 
       def parent_controller
         defined?(InertiaController) ? 'InertiaController' : 'ApplicationController'
+      end
+
+      def wraps_json_params?
+        controller = parent_controller.safe_constantize || ActionController::Base
+        controller._wrapper_options.format.include?(:json)
       end
     end
   end

@@ -85,6 +85,11 @@ module InertiaRails
       # will raise ActiveRecord::ReadOnlyError.
       precognition_prevent_writes: false,
 
+      # Whether to flatten nested error hashes to dot-notated keys:
+      # `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }`, the key
+      # the Inertia client looks up for a field named `user.name`.
+      flatten_errors: false,
+
       # Whether to include shared prop keys in the page response metadata.
       expose_shared_prop_keys: true,
 

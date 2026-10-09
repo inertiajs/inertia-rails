@@ -115,6 +115,16 @@ class InertiaTestController < ApplicationController
     redirect_to empty_test_path, inertia: { errors: 'uh oh' }
   end
 
+  def redirect_with_nested_inertia_errors
+    redirect_to empty_test_path, inertia: { errors: { user: { name: 'is required', email: 'is invalid' } } }
+  end
+
+  def redirect_with_nested_model_errors
+    model = InertiaPrecognitionTestController::TestValidator.new(name: '', email: '')
+    model.valid?
+    redirect_to empty_test_path, inertia: { errors: { user: model.errors } }
+  end
+
   def redirect_with_inertia_error_object
     redirect_to empty_test_path, inertia: { errors: MyError.new }
   end
