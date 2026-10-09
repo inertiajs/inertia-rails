@@ -5,6 +5,7 @@ module InertiaRails
     prepend PropOnceable
     prepend PropMergeable
     prepend PropCacheable
+    prepend PropLiveable
 
     DEFAULT_GROUP = 'default'
 

@@ -7,6 +7,27 @@ module InertiaRails
       app.middleware.use ::InertiaRails::Middleware
     end
 
+    # app/channels and app/jobs reference ActionCable and ActiveJob, so an app without them can't eager
+    # load those directories. Same guard as turbo-rails.
+    initializer 'inertia_rails.live_frameworks', before: :set_eager_load_paths do
+      { 'app/channels' => defined?(ActionCable), 'app/jobs' => defined?(ActiveJob) }.each do |dir, loaded|
+        next if loaded
+
+        path = root.join(dir).to_s
+        if Rails.autoloaders.zeitwerk_enabled?
+          Rails.autoloaders.main.do_not_eager_load(path)
+        else
+          config.eager_load_paths.delete(path)
+        end
+      end
+    end
+
+    initializer 'inertia_rails.live_broadcastable' do
+      ActiveSupport.on_load(:active_record) do
+        include ::InertiaRails::LiveBroadcastable
+      end
+    end
+
     initializer 'inertia_rails.action_controller' do
       ActiveSupport.on_load(:action_controller_base) do
         include ::InertiaRails::Controller

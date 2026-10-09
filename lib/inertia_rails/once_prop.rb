@@ -3,6 +3,7 @@
 module InertiaRails
   class OnceProp < BaseProp
     prepend PropOnceable
+    prepend PropLiveable
 
     def initialize(**, &block)
       @once = true

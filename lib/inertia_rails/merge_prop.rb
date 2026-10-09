@@ -4,6 +4,7 @@ module InertiaRails
   class MergeProp < BaseProp
     prepend PropOnceable
     prepend PropMergeable
+    prepend PropLiveable
 
     def initialize(**_props, &block)
       super(&block)
