@@ -118,7 +118,7 @@ The following headers should be sent by your server-side adapter in Inertia resp
 
 - `X-Inertia`: Set to `true` to indicate this is an Inertia response.
 - `X-Inertia-Location`: Used for external redirects when a `409 Conflict` response is returned due to asset version mismatches. Triggers a full `window.location` visit.
-- `X-Inertia-Redirect`: Used for redirects containing URL fragments when a `409 Conflict` response is returned. Contains the full redirect URL including the fragment. Triggers a standard Inertia visit instead of a full page reload.
+- `X-Inertia-Redirect`: Used for redirects containing URL fragments when a `409 Conflict` response is returned. Contains the full redirect URL including the fragment. Triggers a standard Inertia visit instead of a full page reload. Inertia Rails sends it only when [`convert_fragment_redirects`](/guide/configuration#convert-fragment-redirects) is enabled.
 - `Vary`: Set to `X-Inertia` to help browsers correctly differentiate between HTML and JSON responses.
 
 The following headers are used for [Precognition](/guide/forms#precognition) validation responses.
@@ -434,6 +434,8 @@ Inertia uses specific HTTP status codes to handle different scenarios.
 | **302 Found**     | Standard redirect response. Inertia's server-side adapters automatically convert this to `303 See Other` when returned after `PUT`, `PATCH`, or `DELETE` requests.                                                                                                                                                                                                                                                     |
 | **303 See Other** | Used for redirects after non-GET requests. This status code tells the browser to make a `GET` request to the redirect URL, preventing duplicate form submissions that could occur if the browser repeated the original request method.                                                                                                                                                                                 |
 | **409 Conflict**  | Returned when there's an asset version mismatch, for external redirects, or for redirects containing URL fragments. For asset mismatches, this prompts a full page reload. For external redirects, the response includes an `X-Inertia-Location` header and triggers a `window.location` redirect. For fragment redirects, the response includes an `X-Inertia-Redirect` header and triggers a standard Inertia visit. |
+
+Inertia Rails returns `409 Conflict` for redirects containing URL fragments only when [`convert_fragment_redirects`](/guide/configuration#convert-fragment-redirects) is enabled.
 
 The following status codes are used for [Precognition](/guide/forms#precognition) validation requests.
 

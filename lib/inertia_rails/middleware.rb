@@ -39,6 +39,9 @@ module InertiaRails
 
         status = 303 if inertia_non_post_redirect?(status)
 
+        # Runs after the session cleanup, so Inertia session data survives as on a redirect.
+        status, headers, body = convert_to_redirect_response!(headers, body) if fragment_redirect?(status, headers)
+
         # A response with X-Inertia-Location is already a full page visit — nothing to refresh.
         if stale_inertia_get? && !headers['X-Inertia-Location']
           force_refresh
@@ -77,6 +80,26 @@ module InertiaRails
       # Set-Cookie (which matters mid-OAuth).
       def convert_to_location_response!(headers, body)
         headers['X-Inertia-Location'] = headers.delete('Location')
+        headers.delete('Content-Type')
+        headers.delete('Content-Length')
+        body.close if body.respond_to?(:close)
+
+        [409, headers, []]
+      end
+
+      # The client follows X-Inertia-Redirect with a same-origin GET, so 307/308 and
+      # cross-origin redirects are left alone. Prefetches too, as in inertia-laravel.
+      def fragment_redirect?(status, headers)
+        inertia_request? &&
+          configuration.convert_fragment_redirects &&
+          [301, 302, 303].include?(status) &&
+          headers['Location'].to_s.include?('#') &&
+          !external_origin?(headers['Location']) &&
+          request.headers['Purpose'] != 'prefetch'
+      end
+
+      def convert_to_redirect_response!(headers, body)
+        headers['X-Inertia-Redirect'] = headers.delete('Location')
         headers.delete('Content-Type')
         headers.delete('Content-Length')
         body.close if body.respond_to?(:close)

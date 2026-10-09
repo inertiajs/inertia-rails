@@ -58,6 +58,10 @@ module InertiaRails
       # Whether to convert cross-origin redirects into Inertia location responses.
       convert_external_redirects: true,
 
+      # Whether to convert same-origin redirects to URLs with a fragment into
+      # Inertia redirect responses, so the fragment survives (Inertia.js v3+).
+      convert_fragment_redirects: false,
+
       # Whether to use `<script>` element for initial page rendering instead of the `data-page` attribute.
       use_script_element_for_initial_page: false,
 

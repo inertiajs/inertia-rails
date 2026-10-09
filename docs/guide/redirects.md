@@ -66,6 +66,32 @@ You may preserve the fragment by passing `preserve_fragment` on the redirect res
 redirect_to article_path(article), inertia: { preserve_fragment: true }
 ```
 
+## Redirecting to Fragments
+
+@available_since rails=master core=3.0.0
+
+A redirect can also point to a fragment of its own, for example to scroll to a new comment. Unlike `preserve_fragment`, this fragment comes from the redirect target, not from the original request. On Inertia requests, the browser follows the redirect without showing it to the client, so the fragment is lost and the client lands on `/articles/1` instead of `/articles/1#comments`.
+
+Enable the `convert_fragment_redirects` option to keep the fragment:
+
+```ruby
+# config/initializers/inertia.rb
+InertiaRails.configure do |config|
+  config.convert_fragment_redirects = true
+end
+```
+
+```ruby
+redirect_to article_path(article, anchor: 'comments')
+```
+
+For Inertia requests, a same-origin redirect to a URL with a fragment then becomes a `409 Conflict` response with the URL in the `X-Inertia-Redirect` header. The client makes a regular Inertia visit to that URL and keeps the fragment. Flash messages and `inertia: { errors: ... }` reach that visit just like they reach the target of a regular redirect.
+
+The conversion applies to `301`, `302`, and `303` responses, since the follow-up visit is always a `GET`. It skips prefetch requests and cross-origin redirects, which [external redirects](#external-redirects) handle with a full page visit that keeps the fragment.
+
+> [!WARNING]
+> Inertia.js v2 clients don't understand `X-Inertia-Redirect`. They treat the response as invalid, show an empty error modal, and stay on the current page. Enable the option only after you upgrade the client to v3.
+
 ## External Redirects
 
 Sometimes it's necessary to redirect outside of your Inertia app: to another website, or to a non-Inertia endpoint in your own app. These destinations can't be visited as Inertia pages — the client has to leave the SPA with a full `window.location` visit. The server triggers that visit by responding with an Inertia location response: `409 Conflict` with the destination URL in the `X-Inertia-Location` header.
