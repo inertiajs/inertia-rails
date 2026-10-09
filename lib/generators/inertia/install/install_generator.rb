@@ -119,6 +119,7 @@ module Inertia
 
         say 'Copying InertiaController'
         copy_file 'inertia_controller.rb', file_path('app/controllers/inertia_controller.rb')
+        copy_file 'inertia_channel.rb', file_path('app/channels/inertia_channel.rb') if defined?(ActionCable)
 
         if application_layout.exist?
           say "Adding #{inertia_entrypoint} script tag to the application layout"
