@@ -1,3 +1,5 @@
 **/node_modules
 **/dist
 **/cache
+.prettierignore
+public/.well-known/cf-2fa-verify.txt
