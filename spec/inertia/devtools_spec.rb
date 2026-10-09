@@ -206,6 +206,8 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(badges['deep']).to include('inertiaType' => 'merge', 'deepMerge' => true)
         expect(badges['settings']).to include('inertiaType' => 'once', 'once' => true)
         expect(badges['users']).to include('inertiaType' => 'scroll', 'mergeDirection' => 'append')
+        expect(badges['ticker']).to include('inertiaType' => nil, 'live' => true)
+        expect(badges['always']).not_to have_key('live')
       end
 
       it 'keeps the group of a deferred scroll prop' do

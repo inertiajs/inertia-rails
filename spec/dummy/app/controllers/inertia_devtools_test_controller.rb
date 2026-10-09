@@ -55,6 +55,7 @@ class InertiaDevtoolsTestController < ApplicationController
       deep: InertiaRails.deep_merge { { count: 1 } },
       settings: InertiaRails.once { 's' },
       users: InertiaRails.scroll(pagy) { [{ id: 1 }] },
+      ticker: InertiaRails.live(:ticker) { 1 },
       more_users: InertiaRails.scroll(pagy, defer: true, group: 'custom') { [{ id: 2 }] },
     }
   end

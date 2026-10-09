@@ -14,6 +14,7 @@ module InertiaRails
           inertiaType: inertia_type(prop),
           deferGroup: defer_group(prop),
           once: prop.try(:once?),
+          live: prop.try(:live?),
           mergeDirection: merge_direction(prop),
           deepMerge: deep_merge?(prop),
         }
