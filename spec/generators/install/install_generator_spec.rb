@@ -102,6 +102,28 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
     end
   end
 
+  context 'with Action Cable' do
+    before { prepare_application }
+
+    it 'creates the channel live props subscribe to' do
+      stub_const('ActionCable', Module.new)
+
+      expect { generator }.not_to raise_error
+      expect(destination_root).to(have_structure do
+        directory('app/channels') do
+          file('inertia_channel.rb') { contains('class InertiaChannel < InertiaRails::LiveChannel') }
+        end
+      end)
+    end
+
+    it 'skips the channel when the app has no Action Cable' do
+      hide_const('ActionCable')
+
+      expect { generator }.not_to raise_error
+      expect(File).not_to exist(File.join(destination_root, 'app/channels/inertia_channel.rb'))
+    end
+  end
+
   context 'with --framework=svelte' do
     let(:framework) { :svelte }
 
