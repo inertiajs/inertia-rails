@@ -3,6 +3,7 @@
 module InertiaRails
   class CachedProp < BaseProp
     include PropCacheable
+    prepend PropLiveable
 
     def initialize(key, **options, &block)
       super(cache: options.merge!(key: key), &block)

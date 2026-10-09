@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module InertiaRails
-  # Resolves props and collects metadata (deferred, merge, once, scroll)
+  # Resolves props and collects metadata (deferred, merge, once, scroll, live)
   # for the Inertia page response.
   class PropsResolver
     # `ActiveSupport::OrderedOptions` answers every method, `to_inertia` included, with a key lookup.
@@ -30,6 +30,7 @@ module InertiaRails
       @_match_on = []
       @_once = {}
       @_scroll = {}
+      @_live = {}
       @_rescued = []
 
       props = expand_dot_notation(@props)
@@ -79,6 +80,7 @@ module InertiaRails
       metadata[:deepMergeProps] = @_deep_merge unless @_deep_merge.empty?
       metadata[:matchPropsOn] = @_match_on unless @_match_on.empty?
       metadata[:onceProps] = @_once unless @_once.empty?
+      metadata[:liveProps] = @_live unless @_live.empty?
       metadata[:rescuedProps] = @_rescued unless @_rescued.empty?
 
       metadata
@@ -216,6 +218,7 @@ module InertiaRails
       collect_deferred_metadata(prop, path)
       collect_merge_metadata(prop, path)
       collect_once_metadata(prop, path)
+      collect_live_metadata(prop, path)
     end
 
     def collect_deferred_metadata(prop, path)
@@ -249,6 +252,15 @@ module InertiaRails
       end
 
       prop.match_on&.each { |ms| @_match_on << "#{path}.#{ms}" }
+    end
+
+    # A full load lists every live prop, sent or not, so the page subscribes to all of them. A partial
+    # reload lists only the props it asks for; the client keeps its subscriptions for the rest.
+    def collect_live_metadata(prop, path)
+      return unless prop.try(:live?)
+      return if excluded_by_partial_request?(path)
+
+      @_live[path] = prop.live_metadata
     end
 
     def collect_once_metadata(prop, path)

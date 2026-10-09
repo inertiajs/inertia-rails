@@ -16,6 +16,8 @@ require_relative 'inertia_rails/raw_json'
 require_relative 'inertia_rails/prop_cacheable'
 require_relative 'inertia_rails/prop_onceable'
 require_relative 'inertia_rails/prop_mergeable'
+require_relative 'inertia_rails/live_stream'
+require_relative 'inertia_rails/prop_liveable'
 require_relative 'inertia_rails/base_prop'
 require_relative 'inertia_rails/ignore_on_first_load_prop'
 require_relative 'inertia_rails/always_prop'
@@ -25,11 +27,14 @@ require_relative 'inertia_rails/cached_prop'
 require_relative 'inertia_rails/defer_prop'
 require_relative 'inertia_rails/merge_prop'
 require_relative 'inertia_rails/once_prop'
+require_relative 'inertia_rails/live_prop'
 require_relative 'inertia_rails/scroll_metadata'
 require_relative 'inertia_rails/scroll_prop'
 require_relative 'inertia_rails/prop_evaluator'
 require_relative 'inertia_rails/props_resolver'
 require_relative 'inertia_rails/big_integers'
+require_relative 'inertia_rails/live_broadcast'
+require_relative 'inertia_rails/live_broadcastable'
 
 # devtools
 require_relative 'inertia_rails/devtools'
@@ -78,8 +83,8 @@ module InertiaRails
       OptionalProp.new(...)
     end
 
-    def always(&block)
-      AlwaysProp.new(&block)
+    def always(...)
+      AlwaysProp.new(...)
     end
 
     def once(...)
@@ -104,6 +109,18 @@ module InertiaRails
 
     def scroll(metadata = nil, **options, &block)
       ScrollProp.new(metadata: metadata, **options, &block)
+    end
+
+    def live(*streamables, streams: nil, throttle: nil, &block)
+      LiveProp.new(live: LiveStream.option(streamables, streams), throttle: throttle, &block)
+    end
+
+    def broadcast(*streamables, streams: nil, props: nil, to_others: false)
+      LiveBroadcast.broadcast(LiveStream.option(streamables, streams), props: props, to_others: to_others)
+    end
+
+    def broadcast_later(*streamables, streams: nil, to_others: false)
+      LiveBroadcast.broadcast_later(LiveStream.option(streamables, streams), to_others: to_others)
     end
   end
 end
