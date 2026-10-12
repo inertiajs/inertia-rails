@@ -25,7 +25,8 @@ RSpec.describe 'Inertia configuration', type: :request do
           'INERTIA_SSR_ENABLED' => 'true',
           'INERTIA_SSR_URL' => 'http://env-ssr-url:1234',
           'INERTIA_DEEP_MERGE_SHARED_DATA' => 'true',
-          'INERTIA_XSRF_COOKIE_REFRESH' => 'lazy'
+          'INERTIA_XSRF_COOKIE_REFRESH' => 'lazy',
+          'INERTIA_SSR_TIMEOUT' => '2.5'
         ) do
           config = InertiaRails::Configuration.default
 
@@ -35,6 +36,7 @@ RSpec.describe 'Inertia configuration', type: :request do
           expect(config.ssr_url).to eq 'http://env-ssr-url:1234'
           expect(config.deep_merge_shared_data).to eq true
           expect(config.xsrf_cookie_refresh).to eq :lazy
+          expect(config.ssr_timeout).to eq 2.5
         end
       end
 
