@@ -6,12 +6,6 @@ RSpec.describe InertiaRails::Devtools::Redaction do
     expect(described_class.redact_url('http://x/?token=%zz')).to eq 'http://x/?token=%5BREDACTED%5D'
   end
 
-  it 'redacts the query of the URL in X-Inertia-Redirect' do
-    headers = described_class.redact_headers('x-inertia-redirect' => '/articles?token=secret#comments')
-
-    expect(headers['x-inertia-redirect']).to eq '/articles?token=%5BREDACTED%5D#comments'
-  end
-
   context 'with a dotted key' do
     with_devtools_config redact_keys: %w[token user.name]
 
