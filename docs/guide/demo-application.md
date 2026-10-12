@@ -6,7 +6,7 @@ The demo is hosted on [Laravel Cloud](https://cloud.laravel.com) and the databas
 
 ## Inertia 1.x-2.x Demo App
 
-The previos demo app for Inertia.js is called [Ping CRM](https://demo.inertiajs.com). This application is built using Laravel and Vue. You can find the source code on [GitHub](https://github.com/inertiajs/pingcrm).
+The previous demo app for Inertia.js is called [Ping CRM](https://demo.inertiajs.com). This application is built using Laravel and Vue. You can find the source code on [GitHub](https://github.com/inertiajs/pingcrm).
 
 In addition to the Vue version of Ping CRM, we also maintain a Svelte version of the application, which you can find [on GitHub](https://github.com/inertiajs/pingcrm-svelte).
 
