@@ -7,6 +7,11 @@ module InertiaRails
       app.middleware.use ::InertiaRails::Middleware
     end
 
+    config.to_prepare do
+      exceptions_app = Rails.application.config.exceptions_app
+      exceptions_app.controller if exceptions_app.is_a?(::InertiaRails::ExceptionsApp)
+    end
+
     initializer 'inertia_rails.action_controller' do
       ActiveSupport.on_load(:action_controller_base) do
         include ::InertiaRails::Controller

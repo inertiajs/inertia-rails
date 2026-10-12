@@ -114,4 +114,15 @@ RSpec.describe InertiaRails::ExceptionsApp, type: :request do
       expect(response).to redirect_to('/login')
     end
   end
+
+  # Without it, the controller would render error pages with a 200 status.
+  it 'fails on boot and on code reload when the controller does not include InertiaRails::ErrorPage' do
+    original = Rails.application.config.exceptions_app
+    Rails.application.config.exceptions_app = described_class.new(controller: 'ExceptionsAppTestController')
+
+    expect { Rails.application.reloader.prepare! }
+      .to raise_error(ArgumentError, /ExceptionsAppTestController must include InertiaRails::ErrorPage/)
+  ensure
+    Rails.application.config.exceptions_app = original
+  end
 end

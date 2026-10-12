@@ -24,10 +24,19 @@ module InertiaRails
         # ShowExceptions sits above these middlewares. Without InertiaRails::Middleware, a client
         # with stale assets would adopt the new version from the page; without Rack::ETag,
         # the page would get no Cache-Control header.
-        Rack::ETag.new(Middleware.new(@controller.constantize.action(:show)), 'no-cache').call(env)
+        Rack::ETag.new(Middleware.new(controller.action(:show)), 'no-cache').call(env)
       else
         ActionDispatch::PublicExceptions.new(Rails.public_path).call(env)
       end
+    end
+
+    # The engine also calls this on boot and on each code reload, so a misconfiguration
+    # fails in development, where Rails shows debug pages instead of error pages.
+    def controller
+      controller = @controller.constantize
+      return controller if controller < ErrorPage
+
+      raise ArgumentError, "#{controller} must include InertiaRails::ErrorPage to render error pages"
     end
 
     private
