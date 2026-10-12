@@ -28,7 +28,7 @@ end
 
 When redirecting after a `PUT`, `PATCH`, or `DELETE` request, you must use a `303` response code, otherwise the subsequent request will not be treated as a `GET` request. A `303` redirect is very similar to a `302` redirect; however, the follow-up request is explicitly changed to a `GET` request.
 
-If you're using one of our official server-side adapters, all redirects will automatically be converted to `303` redirects.
+The Rails adapter does this for you: it converts `301` and `302` redirects to `303` when they respond to an Inertia `PUT`, `PATCH`, or `DELETE` request.
 
 ## Preserving Fragments
 
