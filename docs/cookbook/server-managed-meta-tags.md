@@ -65,8 +65,7 @@ The meta tags travel in the `head` prop. If your app already uses a prop with th
 
 #### Older clients (cookbook component)
 
-For Inertia.js clients older than v3.5, copy the following code into your application instead. It should be rendered **once** in your application, such as in a [layout component
-](/guide/pages#creating-layouts).
+For Inertia.js clients older than v3.5, copy the following code into your application instead. It should be rendered **once** in your application, such as in a [layout component](/guide/layouts#creating-layouts).
 
 :::tabs key:frameworks
 == Vue
