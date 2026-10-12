@@ -75,7 +75,7 @@ end
 
 :::
 
-The `InertiaRails.scroll` method works with [Pagy](https://github.com/ddnexus/pagy) and [Kaminari](https://github.com/kaminari/kaminari) gems out of the box. For more details, check out the [`InertiaRails.scroll` method](#inertiarailsscroll-method) documentation.
+The `InertiaRails.scroll` method works with [Pagy](https://github.com/ddnexus/pagy) and [Kaminari](https://github.com/kaminari/kaminari) gems out of the box. For more details, check out the [`InertiaRails.scroll` method](#inertiarails-scroll-method) documentation.
 
 ## Client-Side
 
@@ -122,7 +122,7 @@ export default function Users({ users }) {
 ```svelte
 <script>
   import { InfiniteScroll } from '@inertiajs/svelte'
-  export let users
+  let { users } = $props()
 </script>
 
 <InfiniteScroll data="users">
@@ -722,7 +722,7 @@ export default ({ users }) => (
 <InfiniteScroll data="users" manual>
   {#snippet previous({ hasMore, fetch, loading, manualMode })}
     {#if manualMode && hasMore}
-      <button on:click={fetch} disabled={loading}>
+      <button onclick={fetch} disabled={loading}>
         {loading ? 'Loading...' : 'Load previous'}
       </button>
     {/if}
@@ -732,7 +732,7 @@ export default ({ users }) => (
   {/each}
   {#snippet next({ hasMore, fetch, loading, manualMode })}
     {#if manualMode && hasMore}
-      <button on:click={fetch} disabled={loading}>
+      <button onclick={fetch} disabled={loading}>
         {loading ? 'Loading...' : 'Load more'}
       </button>
     {/if}
@@ -1142,8 +1142,8 @@ class DashboardController < ApplicationController
   include Pagy::Method
 
   def index
-    pagy_users, users = pagy(:countless, User.all, page_param: :users)
-    pagy_orders, orders = pagy(:countless, Order.all, page_param: :orders)
+    pagy_users, users = pagy(:countless, User.all, page_key: 'users')
+    pagy_orders, orders = pagy(:countless, Order.all, page_key: 'orders')
 
     render inertia: {
       users: InertiaRails.scroll(pagy_users) { users.as_json(...) },
@@ -1175,8 +1175,8 @@ end
 ```ruby
 class DashboardController < ApplicationController
   def index
-    users_meta, users = paginate(User.order(:name), page_name: 'users')
-    orders_meta, orders = paginate(Order.order(:created_at), page_name: 'orders')
+    users_meta, users = paginate(User.order(:name), page_param: :users)
+    orders_meta, orders = paginate(Order.order(:created_at), page_param: :orders)
 
     render inertia: {
       users: InertiaRails.scroll(users_meta) { users.as_json(...) },
@@ -1254,7 +1254,7 @@ export default ({ users }) => {
       <button onClick={fetchNext}>Load More</button>
 
       <InfiniteScroll ref={infiniteScrollRef} data="users" manual>
-        {users.data.map((user) => (
+        {users.map((user) => (
           <div key={user.id}>{user.name}</div>
         ))}
       </InfiniteScroll>
@@ -1393,7 +1393,7 @@ class UsersController < ApplicationController
     users = User.page(params[:page])
 
     render inertia: {
-      users: InertiaRails.scroll(users, wrapper: 'data') do
+      users: InertiaRails.scroll(users, wrapper: 'items') do
         {
           items: users.as_json(...),
           metadata: { total: users.total_count }
