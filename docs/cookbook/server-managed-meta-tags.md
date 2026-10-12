@@ -67,6 +67,9 @@ The meta tags travel in the `head` prop. If your app already uses a prop with th
 
 For Inertia.js clients older than v3.5, copy the following code into your application instead. It should be rendered **once** in your application, such as in a [layout component](/guide/layouts#creating-layouts).
 
+> [!NOTE]
+> These components are written for Inertia.js v2. On v3.0 to v3.4, upgrade to v3.5 or newer and use the [`serverHead` option](#inertia-js-v3-5) instead.
+
 :::tabs key:frameworks
 == Vue
 
