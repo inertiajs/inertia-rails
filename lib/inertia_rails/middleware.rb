@@ -157,6 +157,7 @@ module InertiaRails
 
       def force_refresh
         request.flash.keep
+        request.commit_flash
         Rack::Response.new('', 409, { 'X-Inertia-Location' => request.original_url }).finish
       end
 
