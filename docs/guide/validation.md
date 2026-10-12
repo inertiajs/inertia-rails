@@ -41,6 +41,8 @@ In order for your server-side validation errors to be available client-side, you
 
 Since validation errors are made available client-side as page component props, you can conditionally display them based on their existence. Remember, when using Rails server adapter, the `errors` prop will automatically be available to your page.
 
+`user.errors` gives each field an array of messages, so the examples join them.
+
 :::tabs key:frameworks
 
 == Vue
@@ -67,13 +69,13 @@ function submit() {
   <form @submit.prevent="submit">
     <label for="first_name">First name:</label>
     <input id="first_name" v-model="form.first_name" />
-    <div v-if="errors.first_name">{{ errors.first_name }}</div>
+    <div v-if="errors.first_name">{{ errors.first_name.join(', ') }}</div>
     <label for="last_name">Last name:</label>
     <input id="last_name" v-model="form.last_name" />
-    <div v-if="errors.last_name">{{ errors.last_name }}</div>
+    <div v-if="errors.last_name">{{ errors.last_name.join(', ') }}</div>
     <label for="email">Email:</label>
     <input id="email" v-model="form.email" />
-    <div v-if="errors.email">{{ errors.email }}</div>
+    <div v-if="errors.email">{{ errors.email.join(', ') }}</div>
     <button type="submit">Submit</button>
   </form>
 </template>
@@ -114,13 +116,13 @@ export default function Edit() {
         value={values.first_name}
         onChange={handleChange}
       />
-      {errors.first_name && <div>{errors.first_name}</div>}
+      {errors.first_name && <div>{errors.first_name.join(', ')}</div>}
       <label htmlFor="last_name">Last name:</label>
       <input id="last_name" value={values.last_name} onChange={handleChange} />
-      {errors.last_name && <div>{errors.last_name}</div>}
+      {errors.last_name && <div>{errors.last_name.join(', ')}</div>}
       <label htmlFor="email">Email:</label>
       <input id="email" value={values.email} onChange={handleChange} />
-      {errors.email && <div>{errors.email}</div>}
+      {errors.email && <div>{errors.email.join(', ')}</div>}
       <button type="submit">Submit</button>
     </form>
   )
@@ -152,15 +154,15 @@ export default function Edit() {
 >
   <label for="first_name">First name:</label>
   <input id="first_name" bind:value={values.first_name} />
-  {#if errors.first_name}<div>{errors.first_name}</div>{/if}
+  {#if errors.first_name}<div>{errors.first_name.join(', ')}</div>{/if}
 
   <label for="last_name">Last name:</label>
   <input id="last_name" bind:value={values.last_name} />
-  {#if errors.last_name}<div>{errors.last_name}</div>{/if}
+  {#if errors.last_name}<div>{errors.last_name.join(', ')}</div>{/if}
 
   <label for="email">Email:</label>
   <input id="email" bind:value={values.email} />
-  {#if errors.email}<div>{errors.email}</div>{/if}
+  {#if errors.email}<div>{errors.email.join(', ')}</div>{/if}
 
   <button type="submit">Submit</button>
 </form>
