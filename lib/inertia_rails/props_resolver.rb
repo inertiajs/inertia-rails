@@ -44,8 +44,9 @@ module InertiaRails
     def expand_dot_notation(props)
       result = {}
       props.each do |key, value|
-        if key.is_a?(String) && key.include?('.')
-          parts = key.split('.')
+        path = key.to_s
+        if path.include?('.')
+          parts = path.split('.')
           current = result
           parts[0..-2].each { |part| current = resolve_value(current, part.to_sym) }
           current[parts.last.to_sym] = value
@@ -65,7 +66,7 @@ module InertiaRails
       value = current[key]
       value = value.to_inertia if self.class.serializer?(value)
       value = @evaluator.call(value) if value.is_a?(Proc)
-      current[key] = value || {}
+      current[key] = value.is_a?(Hash) ? value.dup : value || {}
     end
 
     def build_metadata
