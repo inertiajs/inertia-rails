@@ -20,13 +20,24 @@ module InertiaRails
       request = ActionDispatch::Request.new(env)
       status = request.path_info.delete_prefix('/').to_i
 
-      if request.format.html? && @statuses.include?(status)
+      if request.format.html? && @statuses.include?(status) && params_parse?(request)
         # ShowExceptions sits above InertiaRails::Middleware, so the error page would skip its
         # asset version check, and a stale client would adopt the new version from the page.
         Middleware.new(@controller.constantize.action(:show)).call(env)
       else
         ActionDispatch::PublicExceptions.new(Rails.public_path).call(env)
       end
+    end
+
+    private
+
+    # Rails' controller instrumentation reads the params, and raises when the failed
+    # request's query string or form body doesn't parse.
+    def params_parse?(request)
+      request.filtered_parameters
+      true
+    rescue ActionController::BadRequest
+      false
     end
   end
 end

@@ -64,6 +64,23 @@ RSpec.describe InertiaRails::ExceptionsApp, type: :request do
     expect(response.body).to eq(public_page(500))
   end
 
+  describe 'malformed params' do
+    it 'serves public/<status>.html when the query string does not parse' do
+      get '/exceptions_app/missing?q=%ff', headers: html_headers
+
+      expect(response).to have_http_status(:not_found)
+      expect(response.body).to eq(public_page(404))
+    end
+
+    it 'renders the page when a JSON body does not parse' do
+      post '/exceptions_app/missing', params: '{"name":',
+                                      headers: html_headers.merge('CONTENT_TYPE' => 'application/json')
+
+      expect(response).to have_http_status(:not_found)
+      expect(html_page).to include('component' => 'ErrorPage', 'props' => { 'status' => 404 })
+    end
+  end
+
   describe 'the failed request’s method' do
     let(:stale_headers) { inertia_headers.merge('X-Inertia-Version' => 'stale') }
 
