@@ -29,6 +29,7 @@ require_relative 'inertia_rails/scroll_metadata'
 require_relative 'inertia_rails/scroll_prop'
 require_relative 'inertia_rails/prop_evaluator'
 require_relative 'inertia_rails/props_resolver'
+require_relative 'inertia_rails/big_integers'
 
 # devtools
 require_relative 'inertia_rails/devtools'

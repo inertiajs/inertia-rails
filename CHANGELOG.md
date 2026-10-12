@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Add the `preserve_big_integers` option (config, `inertia_config` and render option), which sends integers outside JavaScript's safe range as `{"$bigint": "..."}` markers that Inertia.js v3.8+ turns into `BigInt` values. The testing helpers turn them back into integers (@skryukov)
 * Expose `@_inertia_page` to views on SSR responses (@onk)
 * Add [Inertia DevTools](https://inertiajs.com/docs/v3/advanced/devtools) support: record requests in development (or those `config.devtools.authorize` approves elsewhere), expose the read API the browser extension reads, and configure it under `config.devtools` (@mattwigham and @skryukov)
 * Accept an object that responds to `to_inertia` as `props:`, as prop values already were. With `inertia_prop_sources`, it can also tell DevTools where it declared each prop (@skryukov)

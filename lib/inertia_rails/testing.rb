@@ -58,6 +58,7 @@ module InertiaRails
           page = JSON.parse(params[:json])
         end
 
+        page = decode_big_integers(page) if page['preserveBigIntegers'] == true
         page = page.with_indifferent_access
         @props = (page[:props] || {}).with_indifferent_access
         @component = page[:component]
@@ -65,6 +66,18 @@ module InertiaRails
         @deferred_props = (page[:deferredProps] || {}).with_indifferent_access
         @scroll_props = (page[:scrollProps] || {}).with_indifferent_access
         @once_props = (page[:onceProps] || {}).with_indifferent_access
+      end
+
+      private
+
+      def decode_big_integers(value)
+        case value
+        when Hash
+          digits = value[BigIntegers::MARKER]
+          digits.is_a?(String) ? Integer(digits, 10) : value.transform_values { |nested| decode_big_integers(nested) }
+        when Array then value.map { |nested| decode_big_integers(nested) }
+        else value
+        end
       end
     end
 

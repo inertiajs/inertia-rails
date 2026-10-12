@@ -165,6 +165,7 @@ export default withMermaid({
         {
           text: 'Advanced',
           items: [
+            { text: 'Big integers', link: '/guide/big-integers' },
             { text: 'Caching', link: '/guide/caching' },
             { text: 'Asset versioning', link: '/guide/asset-versioning' },
             { text: 'Code splitting', link: '/guide/code-splitting' },
