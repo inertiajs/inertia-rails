@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Send `X-Inertia-Version` with the stale-version `409` response, so Inertia.js v3.6+ can skip the reload on background requests such as polling (@skryukov)
 * Keep flash messages when a stale asset version forces a page refresh, instead of losing them (@skryukov)
 * Fix dot-notated prop keys (`'auth.user' => ...`) passed to `render` or `inertia_share` reaching the client as a literal key instead of nested props (@skryukov)
+* Add `InertiaRails::ExceptionsApp` and `InertiaRails::ErrorPage` to render production error pages as Inertia pages with your own controller: `config.exceptions_app = InertiaRails::ExceptionsApp.new(controller: 'ErrorsController')` (@skryukov)
 * Expose `@_inertia_page` to views on SSR responses (@onk)
 * Add [Inertia DevTools](https://inertiajs.com/docs/v3/advanced/devtools) support: record requests in development (or those `config.devtools.authorize` approves elsewhere), expose the read API the browser extension reads, and configure it under `config.devtools` (@mattwigham and @skryukov)
 * Accept an object that responds to `to_inertia` as `props:`, as prop values already were. With `inertia_prop_sources`, it can also tell DevTools where it declared each prop (@skryukov)

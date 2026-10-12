@@ -50,6 +50,8 @@ require_relative 'inertia_rails/precognition'
 require_relative 'inertia_rails/xsrf_cookie_refresh_policy'
 require_relative 'inertia_rails/controller'
 require_relative 'inertia_rails/middleware'
+require_relative 'inertia_rails/error_page'
+require_relative 'inertia_rails/exceptions_app'
 require_relative 'inertia_rails/engine'
 
 module InertiaRails

@@ -35,6 +35,10 @@ module Dummy
     # Required for Rails 5.0 and 5.1
     config.secret_key_base = SecureRandom.hex
 
+    # Specs try other options by passing an app in the `dummy.exceptions_app` env key.
+    error_pages = InertiaRails::ExceptionsApp.new(controller: 'ExceptionsAppErrorsController')
+    config.exceptions_app = ->(env) { env.fetch('dummy.exceptions_app', error_pages).call(env) }
+
     # Rails 8.2 defaults to :header_only, which skips the XSRF-TOKEN cookie;
     # keep tokens on so the cookie specs stay meaningful.
     if Rails.gem_version >= Gem::Version.new('8.2.0.alpha')

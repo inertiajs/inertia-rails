@@ -1,0 +1,32 @@
+# frozen_string_literal: true
+
+module InertiaRails
+  # A Rails exceptions app that renders error pages with your controller:
+  #
+  #   config.exceptions_app = InertiaRails::ExceptionsApp.new(controller: 'ErrorsController')
+  #
+  # ActionDispatch::ShowExceptions calls it with PATH_INFO rewritten to "/<status>".
+  # HTML requests for one of +statuses+ go to the controller's +show+ action;
+  # everything else gets Rails' default ActionDispatch::PublicExceptions response.
+  class ExceptionsApp
+    DEFAULT_STATUSES = [403, 404, 500, 503].freeze
+
+    def initialize(controller:, statuses: DEFAULT_STATUSES)
+      @controller = controller
+      @statuses = statuses.map { |status| Rack::Utils.status_code(status) }
+    end
+
+    def call(env)
+      request = ActionDispatch::Request.new(env)
+      status = request.path_info.delete_prefix('/').to_i
+
+      if request.format.html? && @statuses.include?(status)
+        # ShowExceptions sits above InertiaRails::Middleware, so the error page would skip its
+        # asset version check, and a stale client would adopt the new version from the page.
+        Middleware.new(@controller.constantize.action(:show)).call(env)
+      else
+        ActionDispatch::PublicExceptions.new(Rails.public_path).call(env)
+      end
+    end
+  end
+end
