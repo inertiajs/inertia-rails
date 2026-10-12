@@ -370,7 +370,7 @@ const http = useHttp({
 
 :::
 
-The same method is available on the [`useForm`](/guide/forms#options-2) helper and the [`<Form>`](/guide/forms#options) component.
+The same method is available on the [`useForm`](/guide/forms#options-1) helper and the [`<Form>`](/guide/forms#options) component.
 
 ## File Uploads
 
