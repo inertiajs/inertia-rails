@@ -1565,6 +1565,14 @@ RSpec.describe 'rendering inertia views', type: :request do
       end
     end
   end
+
+  context 'with dot-notated prop keys' do
+    before { get dotted_props_path, headers: { 'X-Inertia' => true } }
+
+    it 'expands them into nested props' do
+      expect(response.parsed_body['props']).to eq('auth' => { 'user' => 'Brandon', 'role' => 'admin' })
+    end
+  end
 end
 
 def inertia_div(page)
