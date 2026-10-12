@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Leave `encryptHistory` and `clearHistory` out of the page object when they are `false`, like inertia-laravel 3.x. Clients treat a missing key as `false`; specs that compare the full page JSON need updating (@skryukov)
 * Always escape the initial page JSON in the `<script>` element instead of relying on `ActiveSupport.escape_html_entities_in_json` being on. With that setting off, a prop containing `</script>` could break out of the element (@skryukov)
 * Add `config.ssr_timeout` (default 10 seconds) for SSR requests, instead of `Net::HTTP`'s 60 seconds, so a stuck SSR server can't hold a request for a minute (@skryukov)
 * Fix SSR failing with a 500 when `ssr_url` ends with a slash (@skryukov)

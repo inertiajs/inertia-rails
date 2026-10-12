@@ -7,14 +7,12 @@ RSpec.describe 'inertia ssr', type: :request do
       props: { name: 'Brandon', sport: 'hockey' },
       url: props_path,
       version: '1.0',
-      encryptHistory: false,
-      clearHistory: false,
     }.to_json
   end
 
   # rubocop:disable-next Layout/LineLength
   let(:client_side_html) do
-    '<div id="app" data-page="{&quot;component&quot;:&quot;TestComponent&quot;,&quot;props&quot;:{&quot;name&quot;:&quot;Brandon&quot;,&quot;sport&quot;:&quot;hockey&quot;},&quot;url&quot;:&quot;/props&quot;,&quot;version&quot;:&quot;1.0&quot;,&quot;encryptHistory&quot;:false,&quot;clearHistory&quot;:false}"></div>'
+    '<div id="app" data-page="{&quot;component&quot;:&quot;TestComponent&quot;,&quot;props&quot;:{&quot;name&quot;:&quot;Brandon&quot;,&quot;sport&quot;:&quot;hockey&quot;},&quot;url&quot;:&quot;/props&quot;,&quot;version&quot;:&quot;1.0&quot;}"></div>'
   end
 
   def stub_ssr_response(url:, body:, status: 200)
