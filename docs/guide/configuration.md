@@ -7,7 +7,7 @@ Inertia Rails can be configured globally or in a specific controller (and subcla
 Use the `InertiaRails.configure` method to set global configuration options. If using global configuration, we recommend you place the code inside an initializer:
 
 ```ruby
-# config/initializers/inertia.rb
+# config/initializers/inertia_rails.rb
 
 InertiaRails.configure do |config|
   # Example: force a full-reload if the deployed assets change.

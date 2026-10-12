@@ -73,7 +73,7 @@ redirect_to article_path(article), inertia: { preserve_fragment: true }
 A redirect target may contain its own fragment, such as `/articles/1#comments`. By default, the fragment is lost when Inertia follows the redirect. Enable `convert_fragment_redirects` to keep it. Apps set up with the installer have it enabled.
 
 ```ruby
-# config/initializers/inertia.rb
+# config/initializers/inertia_rails.rb
 InertiaRails.configure do |config|
   config.convert_fragment_redirects = true
 end
