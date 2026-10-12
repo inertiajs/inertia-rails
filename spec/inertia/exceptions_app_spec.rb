@@ -46,6 +46,12 @@ RSpec.describe InertiaRails::ExceptionsApp, type: :request do
     expect(response.parsed_body).to include('component' => 'ErrorPage', 'props' => { 'status' => 500 })
   end
 
+  it 'sends the Cache-Control header Rails sends with other error responses' do
+    get '/exceptions_app/missing', headers: html_headers
+
+    expect(response.headers['Cache-Control']).to eq('no-cache')
+  end
+
   it 'keeps Rails’ JSON response for JSON requests' do
     get '/exceptions_app/boom', headers: { 'Accept' => 'application/json' }
 

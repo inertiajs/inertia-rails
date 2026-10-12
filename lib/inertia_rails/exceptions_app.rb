@@ -21,9 +21,10 @@ module InertiaRails
       status = request.path_info.delete_prefix('/').to_i
 
       if request.format.html? && @statuses.include?(status) && params_parse?(request)
-        # ShowExceptions sits above InertiaRails::Middleware, so the error page would skip its
-        # asset version check, and a stale client would adopt the new version from the page.
-        Middleware.new(@controller.constantize.action(:show)).call(env)
+        # ShowExceptions sits above these middlewares. Without InertiaRails::Middleware, a client
+        # with stale assets would adopt the new version from the page; without Rack::ETag,
+        # the page would get no Cache-Control header.
+        Rack::ETag.new(Middleware.new(@controller.constantize.action(:show)), 'no-cache').call(env)
       else
         ActionDispatch::PublicExceptions.new(Rails.public_path).call(env)
       end
