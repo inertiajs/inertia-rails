@@ -19,6 +19,14 @@ RSpec.describe InertiaRails::Helper, type: :helper do
     end
   end
 
+  describe '#inertia_page' do
+    it 'reads props with symbol or string keys' do
+      controller.instance_variable_set(:@_inertia_page, { props: { event: { 'title' => 'Rails World' } } })
+
+      expect(helper.inertia_page[:props][:event][:title]).to eq('Rails World')
+    end
+  end
+
   describe '#inertia_root' do
     let(:page) do
       {

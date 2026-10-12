@@ -17,8 +17,13 @@ module InertiaRails
       controller.instance_variable_get('@_inertia_rendering')
     end
 
+    # Props hold JSON (string keys) under prop names (symbols), so views get indifferent access.
+    # Converted on the first call only, so apps that never call it pay nothing.
     def inertia_page
-      controller.instance_variable_get('@_inertia_page')
+      page = inertia_raw_page
+      return page if page.nil? || page.is_a?(ActiveSupport::HashWithIndifferentAccess)
+
+      controller.instance_variable_set('@_inertia_page', page.with_indifferent_access)
     end
 
     def inertia_meta_tags
@@ -26,7 +31,7 @@ module InertiaRails
       return ''.html_safe unless inertia_ssr_head.nil?
 
       config = controller.send(:inertia_configuration)
-      meta_tag_data = (inertia_page || {}).dig(:props, config.meta_prop) || []
+      meta_tag_data = inertia_raw_page&.dig(:props, config.meta_prop) || []
       attribute = config.head_attribute
 
       meta_tags = meta_tag_data.map do |inertia_meta_tag|
@@ -38,7 +43,7 @@ module InertiaRails
       safe_join(meta_tags, "\n")
     end
 
-    def inertia_root(id: nil, page: inertia_page)
+    def inertia_root(id: nil, page: inertia_raw_page)
       config = controller.send(:inertia_configuration)
       id ||= config.root_dom_id
 
@@ -65,6 +70,12 @@ module InertiaRails
     # Rendered by `inertia_root`; call it yourself if your layout builds the root element.
     def inertia_devtools_tag
       InertiaRails::Devtools.recorder(request)&.discovery_tag
+    end
+
+    private
+
+    def inertia_raw_page
+      controller.instance_variable_get('@_inertia_page')
     end
   end
 end
