@@ -95,13 +95,13 @@ Inertia Rails provides several view helpers for working with Inertia data in you
 
 ### `inertia_page`
 
-Returns the [page object](/guide/the-protocol#the-page-object) hash containing `component`, `props`, `url`, and other Inertia data. Use this to access page data in your root template.
+Returns the [page object](/guide/the-protocol#the-page-object) hash containing `component`, `props`, `url`, and other Inertia data. Use this to access page data in your root template. Props hold what the client receives, so a record is a hash with string keys.
 
 ```erb
 # app/views/inertia.html.erb
 
 <% content_for(:head) do %>
-<meta name="twitter:title" content="<%= inertia_page[:props][:event][:title] %>">
+<meta name="twitter:title" content="<%= inertia_page[:props][:event]['title'] %>">
 <% end %>
 
 <%= inertia_root %>

@@ -139,7 +139,7 @@ module InertiaRails
             end
           end
 
-          transformed_props[key] = rescue_enabled ? value.as_json : value
+          transformed_props[key] = json_ready(value)
         rescue StandardError => e
           raise unless rescue_enabled
 
@@ -153,7 +153,9 @@ module InertiaRails
     # Partial reloads refer to array elements by position, so an unrequested element stays in
     # place as `{}` (a hash) or `nil`, and is not evaluated.
     def transform_array(array, path, parent_was_resolved:)
-      return array unless needs_transform?(array) || (!parent_was_resolved && partial_request_reaches_below?(path))
+      unless needs_transform?(array) || (!parent_was_resolved && partial_request_reaches_below?(path))
+        return json_ready(array)
+      end
 
       array.each_with_index.map do |item, index|
         item_path = "#{path}.#{index}"
@@ -171,13 +173,24 @@ module InertiaRails
 
     def transform_element(item, path, parent_was_resolved:)
       value = @evaluator.call(item)
-      return value unless self.class.serializer?(value)
+      return json_ready(value) unless self.class.serializer?(value)
 
       value = serialize(value, path)
       case value
       when Hash then deep_transform_props(value, path, parent_was_resolved: parent_was_resolved)
       when Array then transform_array(value, path, parent_was_resolved: parent_was_resolved)
-      else value
+      else json_ready(value)
+      end
+    end
+
+    # What the client receives, except JSON fragments, which the encoder embeds as they are.
+    def json_ready(value)
+      if value.instance_of?(Hash)
+        value.transform_values { |nested| json_ready(nested) }
+      elsif value.instance_of?(Array)
+        value.map { |nested| json_ready(nested) }
+      else
+        defined?(::JSON::Fragment) && value.is_a?(::JSON::Fragment) ? value : value.as_json
       end
     end
 

@@ -30,6 +30,25 @@ RSpec.describe InertiaRails::PropsResolver do
     end
   end
 
+  describe 'JSON-ready values' do
+    it 'resolves objects to their JSON form wherever they sit' do
+      record = Struct.new(:id, :created_at).new(1, Time.utc(2020))
+      page = resolve({ user: record, users: [record], lazy_users: [-> { record }],
+                       always: InertiaRails.always { { user: record } }, })
+
+      json = { 'id' => 1, 'created_at' => '2020-01-01T00:00:00.000Z' }
+      expect(page[:props]).to eq(user: json, users: [json], lazy_users: [json], always: { user: json })
+    end
+
+    it 'keeps JSON fragments for the encoder' do
+      skip 'JSON::Fragment needs json 2.10+' unless defined?(JSON::Fragment)
+
+      fragment = JSON::Fragment.new('{"a":1}')
+
+      expect(resolve({ chart: fragment, charts: [fragment] })[:props]).to eq(chart: fragment, charts: [fragment])
+    end
+  end
+
   describe 'AlwaysProp' do
     it 'resolves nested always prop' do
       page = resolve({ auth: { user: InertiaRails.always { 'Jonathan' } } })
