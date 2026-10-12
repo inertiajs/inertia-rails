@@ -46,7 +46,9 @@ module InertiaRails
 
     def post_page
       uri = URI.parse(url)
-      Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') do |http|
+      timeout = @configuration.ssr_timeout
+      options = { use_ssl: uri.scheme == 'https', open_timeout: timeout, read_timeout: timeout, write_timeout: timeout }
+      Net::HTTP.start(uri.hostname, uri.port, **options) do |http|
         http.post(uri.request_uri, page_json, 'Content-Type' => 'application/json')
       end
     rescue StandardError => e

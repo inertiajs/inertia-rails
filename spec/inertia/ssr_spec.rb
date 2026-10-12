@@ -29,7 +29,8 @@ RSpec.describe 'inertia ssr', type: :request do
       .with(uri.request_uri, page_json, 'Content-Type' => 'application/json')
       .and_return(http_response)
     allow(Net::HTTP).to receive(:start)
-      .with(uri.hostname, uri.port, use_ssl: uri.scheme == 'https')
+      .with(uri.hostname, uri.port, use_ssl: uri.scheme == 'https',
+                                    open_timeout: 10.0, read_timeout: 10.0, write_timeout: 10.0)
       .and_yield(http_double)
   end
 

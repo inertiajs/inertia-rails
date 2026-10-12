@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Add `config.ssr_timeout` (default 10 seconds) for SSR requests, instead of `Net::HTTP`'s 60 seconds, so a stuck SSR server can't hold a request for a minute (@skryukov)
 * Fix SSR failing with a 500 when `ssr_url` ends with a slash (@skryukov)
 * Expose `@_inertia_page` to views on SSR responses (@onk)
 * Add [Inertia DevTools](https://inertiajs.com/docs/v3/advanced/devtools) support: record requests in development (or those `config.devtools.authorize` approves elsewhere), expose the read API the browser extension reads, and configure it under `config.devtools` (@mattwigham and @skryukov)
