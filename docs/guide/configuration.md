@@ -313,12 +313,14 @@ When enabled, the HTML output looks like:
 
 ### `flatten_errors`
 
-**Default**: `false`
+**Default**: `nil`
 **ENV**: `INERTIA_FLATTEN_ERRORS`
 
 @available_since rails=master
 
-When enabled, nested error hashes passed to `inertia: { errors: ... }` in a redirect or to `precognition!`/`precognition` are flattened to dot-notated keys: `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }`. That is the key the Inertia client looks up for a field named `user.name`, so `errors['user.name']` and `invalid('user.name')` work the same whether the error came from a precognition request or a full form submission. Flat errors are left untouched. The result of a [precognition block](/guide/precognition#transforming-error-keys) is flattened regardless of this option.
+When enabled, errors passed to `inertia: { errors: ... }` in a redirect are flattened to dot-notated keys: `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }`, and indexed association keys like `addresses[0].street` become `addresses.0.street`. These are the keys the Inertia client looks up, and the same keys [precognition](/guide/precognition#transforming-error-keys) responses always use. So `errors['user.name']` and `invalid('user.name')` work the same after a precognition request and a full form submission.
+
+When `nil`, errors are left untouched, and a deprecation warning is logged whenever flattening would change them. Flattening will be enabled by default starting with InertiaRails 4.0. Set it to `false` to keep errors untouched and disable the warning.
 
 The `inertia_rails:install` generator enables it in new apps. To enable it in an existing app:
 

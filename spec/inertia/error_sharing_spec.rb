@@ -70,10 +70,21 @@ RSpec.describe 'errors shared automatically', type: :request do
       expect(session[:inertia_errors]).not_to be
     end
 
-    it 'leaves nested errors untouched by default' do
-      post redirect_with_nested_inertia_errors_path, headers: headers
+    it 'leaves nested errors untouched and warns by default' do
+      expect { post redirect_with_nested_inertia_errors_path, headers: headers }
+        .to output(/will be flattened to dot-notated keys/).to_stderr
 
       expect(session[:inertia_errors]).to eq(user: { name: 'is required', email: 'is invalid' })
+    end
+
+    context 'with flatten_errors disabled' do
+      with_inertia_config flatten_errors: false
+
+      it 'leaves nested errors untouched without a warning' do
+        expect { post redirect_with_nested_inertia_errors_path, headers: headers }.not_to output.to_stderr
+
+        expect(session[:inertia_errors]).to eq(user: { name: 'is required', email: 'is invalid' })
+      end
     end
 
     context 'with flatten_errors enabled' do
@@ -96,8 +107,8 @@ RSpec.describe 'errors shared automatically', type: :request do
       end
     end
 
-    it 'leaves flat errors untouched' do
-      post redirect_with_inertia_errors_path, headers: headers
+    it 'leaves flat errors untouched without a warning' do
+      expect { post redirect_with_inertia_errors_path, headers: headers }.not_to output.to_stderr
 
       errors = session[:inertia_errors]
       expect(errors.keys).to eq([:uh])

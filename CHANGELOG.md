@@ -24,7 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fix stale flash notice and use idiomatic class in Vue scaffolds (@skryukov)
 * Scaffold generator no longer produces enveloped requests using `transform` (@bknoles)
 * Accept a block in `precognition!` and `precognition` to transform errors (@bknoles)
-* Add `flatten_errors` configuration option to flatten nested error hashes to dot-notated keys (@bknoles)
+* Return precognition errors with dot-notated keys, so nested errors match the field names the client looks up (@bknoles)
+* Add `flatten_errors` configuration option to flatten redirect errors to dot-notated keys; when unset, warn about errors it would change, as it will be enabled by default in 4.0 (@bknoles)
 * Start the SSR server in the Puma plugin regardless of the global `ssr_enabled`, so SSR enabled per controller with `inertia_config` works (@bknoles)
 * Add lefthook with pre-commit and pre-push hooks that mirror CI/CD checks (@bknoles)
 

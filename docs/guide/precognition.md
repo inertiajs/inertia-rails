@@ -160,11 +160,11 @@ def create
 end
 ```
 
-The block's result is flattened to dot-notated keys: `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }` in the response, matching the format the client expects when looking up errors for a field named `user.name`. The block only runs when there are errors; on a successful validation, the 204 response is sent without calling the block.
+Precognition responses always use dot-notated keys: `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }`, matching the format the client expects when looking up errors for a field named `user.name`. The block only runs when there are errors; on a successful validation, the 204 response is sent without calling the block.
 
-The block runs before field-level filtering, so `Precognition-Validate-Only: user.name` correctly finds the flattened key.
+Flattening runs before field-level filtering, so `Precognition-Validate-Only: user.name` correctly finds the flattened key.
 
-To get the same keys from the redirect above, enable [`flatten_errors`](/guide/configuration#flatten_errors). Nested errors passed to `redirect_to` with `inertia: { errors: ... }` are then flattened the same way, so `{ user: @user.errors }` arrives as `errors['user.email_address']` on the client, and precognition and full form submissions produce identical error keys. The option is disabled by default and enabled in apps set up with the `inertia_rails:install` generator. Set it globally or per controller with `inertia_config(flatten_errors: true)`.
+To get the same keys from the redirect above, enable [`flatten_errors`](/guide/configuration#flatten_errors). Nested errors passed to `redirect_to` with `inertia: { errors: ... }` are then flattened the same way, so `{ user: @user.errors }` arrives as `errors['user.email_address']` on the client, and precognition and full form submissions produce identical error keys. Apps set up with the `inertia_rails:install` generator have it enabled. Otherwise, a deprecation warning points to nested redirect errors until you set it.
 
 ## Using `transform` with precognition
 
