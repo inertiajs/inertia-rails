@@ -49,7 +49,7 @@ declare module '@inertiajs/core' {
 ```
 
 > [!NOTE]
-> The `import` statement (or `export {}`) is required to make this file a module. Without it, `declare module` replaces the module definition instead of augmenting it. Your `tsconfig.json` also needs to include `.d.ts` files, so make sure a pattern like `"@/**/*.d.ts"` is present in the `include` array.
+> The `import` statement (or `export {}`) is required to make this file a module. Without it, `declare module` replaces the module definition instead of augmenting it. Your `tsconfig.json` also needs to include `.d.ts` files, so make sure a pattern like `"app/frontend/**/*.d.ts"` is present in the `include` array.
 
 ### Shared Page Props
 
@@ -434,32 +434,6 @@ interface UserResponse {
 const http = useHttp<UserForm, UserResponse>({ name: '', email: '' })
 ```
 
-### Per-Request Response Types
-
-Each HTTP method accepts its own generic type parameter, allowing you to override the response type on a per-call basis. This is useful when different endpoints return different response shapes.
-
-```ts
-interface OrderResponse {
-  orderId: string
-  total: number
-}
-
-// Override the response type per request...
-const user: UserResponse = await http.post<UserResponse>('/api/users')
-const order: OrderResponse = await http.get<OrderResponse>('/api/orders/123')
-const submitted: UserResponse = await http.submit<UserResponse>(
-  'post',
-  '/api/users',
-)
-
-// The onSuccess callback is also typed...
-await http.post<UserResponse>('/api/users', {
-  onSuccess: (response) => {
-    console.log(response.id, response.name)
-  },
-})
-```
-
 ## Remembering State
 
 The `useRemember` hook accepts a generic type parameter for type-safe local state persistence, providing autocomplete and ensuring values match the expected types.
@@ -578,7 +552,7 @@ interface UserPageProps {
 }
 
 router.push<UserPageProps>({
-  component: 'Users/Show',
+  component: 'users/show',
   url: '/users/1',
   props: { user: { id: 1, name: 'John' } },
 })
