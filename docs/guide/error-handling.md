@@ -31,29 +31,43 @@ createInertiaApp({
 
 ## Production
 
-In production you will want to return a proper Inertia error response instead of relying on the modal-driven error reporting that is present during development. To accomplish this, use the `rescue_from` method in your `ApplicationController`.
+@available_since rails=master
+
+In production, you want a styled error page instead of the modal Inertia shows during development. Inertia Rails provides an exceptions app that renders error pages with a controller you write. Set it in `config/application.rb`:
 
 ```ruby
-class ApplicationController < ActionController::Base
-  rescue_from StandardError, with: :inertia_error_page
+# config/application.rb
+config.exceptions_app = InertiaRails::ExceptionsApp.new(controller: 'ErrorsController')
+```
 
-  private
+```ruby
+# app/controllers/errors_controller.rb
+class ErrorsController < ApplicationController
+  include InertiaRails::ErrorPage
 
-  def inertia_error_page(exception)
-    raise exception if Rails.env.local?
-
-    status = ActionDispatch::ExceptionWrapper.new(nil, exception).status_code
-
-    render inertia: 'ErrorPage', props: { status: }, status:
+  def show
+    render inertia: 'ErrorPage', props: { status: }
   end
 end
 ```
 
-Since `rescue_from` runs inside the controller, shared data defined via `inertia_share` is available automatically.
+Rails calls the [exceptions app](https://guides.rubyonrails.org/configuring.html#config-exceptions-app) for every exception your app doesn't rescue, routing errors included. When an HTML or Inertia request fails with a 403, 404, 500, or 503 status, the exceptions app calls the `show` action of your controller. Inertia requests get the page as JSON, so the error page replaces the current page without a full reload.
 
-### Error Page Example
+Other responses stay the same as with Rails' default exceptions app:
 
-You'll need to create the error page components referenced above. Here's an example you may use as a starting point.
+- JSON and other non-HTML requests get a body like `{ "status": 404, "error": "Not Found" }` in the requested format.
+- Statuses without an Inertia page, such as 422, get the matching file from `public/`, like `public/422.html`.
+
+`InertiaRails::ErrorPage` sets the response status to the error's status before any callback runs, so `render` uses it and `status` returns it. Inertia Rails checks the controller when your app boots, so a typo in its name or a missing `include` raises an error right away.
+
+The error controller is a regular controller, so error pages get your layout and `inertia_share` data.
+
+> [!NOTE]
+> In development, Rails shows its debug page instead, because `config.consider_all_requests_local` is `true`. To preview your error pages, set it to `false` in `config/environments/development.rb`.
+
+### Error page example
+
+You'll need to create the `ErrorPage` component. Here's an example you may use as a starting point.
 
 :::tabs key:frameworks
 
@@ -148,32 +162,66 @@ export default function ErrorPage({ status }) {
 
 :::
 
-### Routing-level exceptions
+### Skipping callbacks
 
-Some exceptions (for example, routing 404s) occur before a controller is instantiated, so `rescue_from` won't catch them. Rails handles these via static files in `public/` by default, which is fine for most apps.
-
-If you want routing-level errors to render as Inertia pages too, point `exceptions_app` at your router and add error routes.
+The error controller runs every callback it inherits. A callback that redirects sends visitors away from the error page, and when one raises, Rails responds with a plain-text 500 instead. Skip such callbacks in the error controller:
 
 ```ruby
-# config/application.rb
-config.exceptions_app = routes
-```
-
-```ruby
-# config/routes.rb
-match '/404', to: 'errors#show', defaults: { status: 404 }, via: :all
-match '/422', to: 'errors#show', defaults: { status: 422 }, via: :all
-match '/500', to: 'errors#show', defaults: { status: 500 }, via: :all
-```
-
-```ruby
-# app/controllers/errors_controller.rb
 class ErrorsController < ApplicationController
-  def show
-    status = params[:status].to_i
-    render inertia: 'ErrorPage', props: { status: }, status:
-  end
+  include InertiaRails::ErrorPage
+
+  skip_before_action :authenticate_user!
+  skip_after_action :verify_authorized
+
+  # ...
 end
 ```
 
-Since this goes through the full Rails stack, shared data from `inertia_share` is available on error pages as well.
+Look out for these in particular:
+
+- Devise's `authenticate_user!` gives signed-out visitors a plain-text 500, because the exceptions app runs outside the Warden middleware.
+- Pundit's `verify_authorized` raises, because the error page doesn't authorize anything.
+- Rails' `rate_limit` raises once a visitor goes over the limit. You can't skip it by name, so declare it in the controllers that need it, or pass it `unless: -> { is_a?(ErrorsController) }`.
+
+### Customizing the page
+
+The `show` action can render any component with any props:
+
+```ruby
+def show
+  component = status == 404 ? 'NotFound' : 'ErrorPage'
+
+  render inertia: component, props: { status:, request_id: request.request_id }
+end
+```
+
+The exception that caused the error is available as `request.env['action_dispatch.exception']`.
+
+Don't read `params` in the error controller or its callbacks. They come from the failed request, and when its body doesn't parse, reading them raises again and Rails responds with a plain-text 500. When the query string doesn't parse, the exceptions app serves the file from `public/` instead of calling your controller.
+
+### Choosing statuses
+
+Pass `statuses:` to choose which statuses get an Inertia page:
+
+```ruby
+config.exceptions_app = InertiaRails::ExceptionsApp.new(
+  controller: 'ErrorsController',
+  statuses: [403, 404, 422, 429, 500, 503]
+)
+```
+
+Rails maps exceptions to statuses with `config.action_dispatch.rescue_responses`. Add your own exceptions there, for example to show the 403 page when Pundit denies access:
+
+```ruby
+# config/application.rb
+config.action_dispatch.rescue_responses['Pundit::NotAuthorizedError'] = :forbidden
+```
+
+### Limitations
+
+Rails calls the exceptions app from the `ActionDispatch::ShowExceptions` middleware, which sits above the cookie, session, flash, and Content Security Policy middleware. Error page responses don't pass through them:
+
+- Error pages can't set cookies. A visitor whose first request fails gets neither a session nor an `XSRF-TOKEN` cookie.
+- Session changes aren't saved. A flash message or validation errors shown on an error page appear again on the next page, and a `clear_history` from a redirect applies to that page too.
+- Error pages don't get a `Content-Security-Policy` header.
+- Deferred props in your shared data make the client request the failing URL again to load them.
