@@ -457,7 +457,8 @@ export default function CreateUser() {
     email: '',
   })
 
-  function submit() {
+  function submit(e) {
+    e.preventDefault()
     form.post('/users', {
       except: ['permissions'],
     })
