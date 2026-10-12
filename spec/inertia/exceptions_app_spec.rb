@@ -64,10 +64,31 @@ RSpec.describe InertiaRails::ExceptionsApp, type: :request do
     expect(response.body).to eq(public_page(500))
   end
 
-  it 'asks an Inertia client with stale assets to reload' do
-    get '/exceptions_app/boom', headers: inertia_headers.merge('X-Inertia-Version' => 'stale')
+  describe 'the failed request’s method' do
+    let(:stale_headers) { inertia_headers.merge('X-Inertia-Version' => 'stale') }
 
-    expect(response).to have_http_status(:conflict)
-    expect(response.headers['X-Inertia-Location']).to eq('http://www.example.com/exceptions_app/boom')
+    it 'asks an Inertia client with stale assets to reload after a GET' do
+      get '/exceptions_app/boom', headers: stale_headers
+
+      expect(response).to have_http_status(:conflict)
+      expect(response.headers['X-Inertia-Location']).to eq('http://www.example.com/exceptions_app/boom')
+    end
+
+    # Reloading would turn the POST into a GET.
+    it 'renders the page for a client with stale assets after a POST' do
+      post '/exceptions_app/boom', headers: stale_headers
+
+      expect(response).to have_http_status(:internal_server_error)
+      expect(response.parsed_body).to include('component' => 'ErrorPage', 'props' => { 'status' => 500 })
+    end
+
+    it 'makes a redirect after a PATCH a 303, so the client follows it with a GET' do
+      errors_app = described_class.new(controller: 'ExceptionsAppLoginWallController')
+
+      patch '/exceptions_app/boom', headers: inertia_headers, env: { 'dummy.exceptions_app' => errors_app }
+
+      expect(response).to have_http_status(:see_other)
+      expect(response).to redirect_to('/login')
+    end
   end
 end

@@ -123,7 +123,7 @@ module InertiaRails
       end
 
       def non_get_redirectable_method?
-        %w[PUT PATCH DELETE].include? request.request_method
+        %w[PUT PATCH DELETE].include? request_method
       end
 
       def inertia_non_post_redirect?(status)
@@ -131,7 +131,12 @@ module InertiaRails
       end
 
       def stale_inertia_get?
-        request.get? && stale_inertia_request?
+        request_method == 'GET' && stale_inertia_request?
+      end
+
+      # ActionDispatch::ShowExceptions rewrites the method to GET before calling the exceptions app.
+      def request_method
+        @env['action_dispatch.original_request_method'] || request.request_method
       end
 
       def request
