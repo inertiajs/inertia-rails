@@ -72,7 +72,7 @@ redirect_to article_path(article), inertia: { preserve_fragment: true }
 
 A redirect can also point to a fragment of its own, for example to scroll to a new comment. Unlike `preserve_fragment`, this fragment comes from the redirect target, not from the original request. On Inertia requests, the browser follows the redirect without showing it to the client, so the fragment is lost and the client lands on `/articles/1` instead of `/articles/1#comments`.
 
-Enable the `convert_fragment_redirects` option to keep the fragment:
+Enable the `convert_fragment_redirects` option to keep the fragment. Apps set up with the `inertia:install` generator have it enabled.
 
 ```ruby
 # config/initializers/inertia.rb
