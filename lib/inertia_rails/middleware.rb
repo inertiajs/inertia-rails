@@ -24,7 +24,9 @@ module InertiaRails
                                   @app.call(@env)
                                 end
 
-        status, headers, body = convert_to_location_response!(headers, body) if external_redirect?(status, headers)
+        if external_redirect?(status, headers)
+          status, headers, body = conflict_response!('X-Inertia-Location', headers, body)
+        end
 
         # Inertia session data is added via redirect_to
         # Guard with session.loaded? to avoid forcing session I/O (and unnecessary
@@ -40,7 +42,9 @@ module InertiaRails
         status = 303 if inertia_non_post_redirect?(status)
 
         # Runs after the session cleanup, so Inertia session data survives as on a redirect.
-        status, headers, body = convert_to_redirect_response!(headers, body) if fragment_redirect?(status, headers)
+        if fragment_redirect?(status, headers)
+          status, headers, body = conflict_response!('X-Inertia-Redirect', headers, body)
+        end
 
         # A response with X-Inertia-Location is already a full page visit — nothing to refresh.
         if stale_inertia_get? && !headers['X-Inertia-Location']
@@ -78,8 +82,8 @@ module InertiaRails
 
       # Mutates the headers in place to keep the rest of the response, notably
       # Set-Cookie (which matters mid-OAuth).
-      def convert_to_location_response!(headers, body)
-        headers['X-Inertia-Location'] = headers.delete('Location')
+      def conflict_response!(header, headers, body)
+        headers[header] = headers.delete('Location')
         headers.delete('Content-Type')
         headers.delete('Content-Length')
         body.close if body.respond_to?(:close)
@@ -96,15 +100,6 @@ module InertiaRails
           headers['Location'].to_s.include?('#') &&
           !external_origin?(headers['Location']) &&
           request.headers['Purpose'] != 'prefetch'
-      end
-
-      def convert_to_redirect_response!(headers, body)
-        headers['X-Inertia-Redirect'] = headers.delete('Location')
-        headers.delete('Content-Type')
-        headers.delete('Content-Length')
-        body.close if body.respond_to?(:close)
-
-        [409, headers, []]
       end
 
       def keep_inertia_session_options?(status)
