@@ -11,12 +11,7 @@ export default function Edit({ <%= singular_table_name %> }) {
       <Form
         <%= singular_table_name %>={<%= singular_table_name %>}
         action={`<%= js_resource_path %>`}
-<% if attributes.any?(&:attachments?) -%>
-        method="post"
-        headers={{ 'X-HTTP-METHOD-OVERRIDE': 'patch' }}
-<% else -%>
         method="patch"
-<% end -%>
         submitText="Update <%= human_name %>"
       />
 
