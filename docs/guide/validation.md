@@ -133,6 +133,8 @@ export default function Edit() {
 
 ```svelte
 <script>
+  import { router } from '@inertiajs/svelte'
+
   let { errors = {} } = $props()
 
   let values = {
@@ -170,7 +172,7 @@ export default function Edit() {
 
 :::
 
-When using the Vue adapters, you may also access the errors via the `page.props.errors` object.
+When using the Vue adapters, you may also access the errors via the `$page.props.errors` object.
 
 > [!TIP]
 > If form data is wrapped in an envelope, you must access Precognition errors with flat, dot-notated keys, e.g. `invalid('user.name')` and `errors['user.name']`. With [`flatten_errors`](/guide/configuration#flatten_errors) enabled, full form submissions return the same flat keys.
@@ -186,7 +188,7 @@ So, the only work remaining is to display any validation errors using the `error
 ## Error Bags
 
 > [!NOTE]
-> Error bags are a Laravel-specific feature that relies on Laravel's `ViewErrorBag` system. In Rails, this feature is typically unnecessary because:
+> Inertia Rails doesn't support error bags. The client sends an `X-Inertia-Error-Bag` header for visits made with the `errorBag` option, but the server ignores it, so those forms show no errors. In Rails, error bags are rarely needed because:
 >
 > - Forms submit to separate controller actions, so only one set of errors is returned per request
 > - The [form helper](/guide/forms.md) automatically scopes validation errors to each form instance
