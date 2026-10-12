@@ -9,6 +9,7 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
 
       expect(response.status).to eq 409
       expect(response.headers['X-Inertia-Location']).to eq request.original_url
+      expect(response.headers['X-Inertia-Version']).to eq '1.0'
     end
 
     it 'returns page when version is up to date' do
