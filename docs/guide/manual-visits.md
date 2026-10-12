@@ -503,7 +503,7 @@ import { router } from '@inertiajs/vue3'
 
 router.push({
   url: '/users',
-  component: 'Users',
+  component: 'users/index',
   props: { search: 'John' },
   clearHistory: false,
   encryptHistory: false,
@@ -523,7 +523,7 @@ import { router } from '@inertiajs/react'
 
 router.push({
   url: '/users',
-  component: 'Users',
+  component: 'users/index',
   props: { search: 'John' },
   clearHistory: false,
   encryptHistory: false,
@@ -543,7 +543,7 @@ import { router } from '@inertiajs/svelte'
 
 router.push({
   url: '/users',
-  component: 'Users',
+  component: 'users/index',
   props: { search: 'John' },
   clearHistory: false,
   encryptHistory: false,
@@ -569,7 +569,7 @@ If you need access to the current page's props, you may pass a function to the `
 ```js
 import { router } from '@inertiajs/vue3'
 
-router.push({ url: '/users', component: 'Users' })
+router.push({ url: '/users', component: 'users/index' })
 
 router.replace({
   props: (currentProps) => ({ ...currentProps, search: 'John' }),
@@ -581,7 +581,7 @@ router.replace({
 ```js
 import { router } from '@inertiajs/react'
 
-router.push({ url: '/users', component: 'Users' })
+router.push({ url: '/users', component: 'users/index' })
 
 router.replace({
   props: (currentProps) => ({ ...currentProps, search: 'John' }),
@@ -593,7 +593,7 @@ router.replace({
 ```js
 import { router } from '@inertiajs/svelte'
 
-router.push({ url: '/users', component: 'Users' })
+router.push({ url: '/users', component: 'users/index' })
 
 router.replace({
   props: (currentProps) => ({ ...currentProps, search: 'John' }),
