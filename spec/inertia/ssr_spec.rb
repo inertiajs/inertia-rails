@@ -153,6 +153,19 @@ RSpec.describe 'inertia ssr', type: :request do
       end
     end
 
+    context 'with a trailing slash in ssr_url' do
+      with_inertia_config ssr_url: 'http://localhost:13714/'
+
+      before do
+        stub_ssr_response(url: 'http://localhost:13714/render', body: { body: '<div>Test works</div>', head: [] })
+      end
+
+      it 'renders through /render' do
+        get props_path
+        expect(response.body).to include '<div>Test works</div>'
+      end
+    end
+
     context 'with on_ssr_error callback' do
       ssr_errors = []
 
