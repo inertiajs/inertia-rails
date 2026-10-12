@@ -49,6 +49,24 @@ RSpec.describe InertiaRails::Helper, type: :helper do
 
         expect(helper.inertia_root(page: page)).not_to include(' nonce=')
       end
+
+      context 'with ActiveSupport.escape_html_entities_in_json off' do
+        around do |example|
+          original = ActiveSupport.escape_html_entities_in_json
+          ActiveSupport.escape_html_entities_in_json = false
+          example.run
+        ensure
+          ActiveSupport.escape_html_entities_in_json = original
+        end
+
+        let(:page) { { component: 'TestComponent', props: { closer: '</script><script>alert(1)</script>' } } }
+
+        it 'keeps prop content inside the script element' do
+          json = helper.inertia_root(page: page)[%r{<script[^>]*>(.*?)</script}m, 1]
+
+          expect(JSON.parse(json)).to eq(page.deep_stringify_keys)
+        end
+      end
     end
 
     context 'when using a data-page attribute for the initial page' do
