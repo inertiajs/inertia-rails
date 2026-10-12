@@ -274,6 +274,15 @@ RSpec.describe 'Precognition', type: :request do
     end
   end
 
+  describe 'with an app-level rescue_from StandardError' do
+    it 'returns 422 with errors when validation fails' do
+      post precognition_with_rescue_from_path, params: blank_user_params, headers: precognition_headers
+
+      expect(response).to have_http_status(422)
+      expect(JSON.parse(response.body)['errors'].keys).to contain_exactly('name', 'email')
+    end
+  end
+
   describe 'precognition_prevent_writes' do
     before do
       stub_const('ActiveRecord::Base', Class.new do
