@@ -15,7 +15,7 @@ import { router, usePage } from '@inertiajs/vue3'
 const page = usePage()
 
 router.post('/users', {
-  _token: page.props.csrf_token,
+  authenticity_token: page.props.csrf_token,
   name: 'John Doe',
   email: 'john.doe@example.com',
 })
@@ -29,7 +29,7 @@ import { router, usePage } from '@inertiajs/react'
 const props = usePage().props
 
 router.post('/users', {
-  _token: props.csrf_token,
+  authenticity_token: props.csrf_token,
   name: 'John Doe',
   email: 'john.doe@example.com',
 })
@@ -41,7 +41,7 @@ router.post('/users', {
 import { page, router } from '@inertiajs/svelte'
 
 router.post('/users', {
-  _token: page.props.csrf_token,
+  authenticity_token: page.props.csrf_token,
   name: 'John Doe',
   email: 'john.doe@example.com',
 })
@@ -64,20 +64,6 @@ end
 ```
 
 That keeps the default behavior for non-safe requests while avoiding unnecessary XSRF cookie rewrites on steady-state `GET` / `HEAD` requests once the cookie already exists. See the cookbook note on [HTTP caching and XSRF cookie refresh](/cookbook/http-caching-and-xsrf-cookie-refresh) for validation details and caveats.
-
-You may customize the cookie and header names via the `http` option in `createInertiaApp`.
-
-@available_since core=3.0.0
-
-```js
-createInertiaApp({
-  http: {
-    xsrfCookieName: 'MY-XSRF-TOKEN',
-    xsrfHeaderName: 'X-MY-XSRF-TOKEN',
-  },
-  // ...
-})
-```
 
 ## Header-Only CSRF Protection (Rails 8.2+)
 
@@ -130,9 +116,9 @@ end
 
 ## Handling Mismatches
 
-When a CSRF token mismatch occurs, Rails raises the `ActionController::InvalidAuthenticityToken` error which results in a `419` error page. Since that isn't a valid Inertia response, the error is shown in a modal.
+When a CSRF token mismatch occurs, Rails raises the `ActionController::InvalidAuthenticityToken` error which results in a `422` error page. Since that isn't a valid Inertia response, the error is shown in a modal.
 
-Obviously, this isn't a great user experience. A better way to handle these errors is to return a redirect back to the previous page, along with a flash message that the page expired. This will result in a valid Inertia response with the flash message available as a prop which you can then display to the user. Of course, you'll need to share your [flash messages](/guide/shared-data#flash-messages) with Inertia for this to work.
+Obviously, this isn't a great user experience. A better way to handle these errors is to return a redirect back to the previous page, along with a flash message that the page expired. This will result in a valid Inertia response with the flash message available as a prop which you can then display to the user. Of course, you'll need to share your [flash messages](/guide/flash-data) with Inertia for this to work.
 
 You may modify your application's exception handler to automatically redirect the user back to the page they were previously on while flashing a message to the session. To accomplish this, you can use Rails' `rescue_from` (or by overriding `handle_unverified_request`) in your base controller.
 
