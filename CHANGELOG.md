@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Always escape the initial page JSON in the `<script>` element instead of relying on `ActiveSupport.escape_html_entities_in_json` being on. With that setting off, a prop containing `</script>` could break out of the element (@skryukov)
 * Add `config.ssr_timeout` (default 10 seconds) for SSR requests, instead of `Net::HTTP`'s 60 seconds, so a stuck SSR server can't hold a request for a minute (@skryukov)
 * Fix SSR failing with a 500 when `ssr_url` ends with a slash (@skryukov)
 * Send `X-Inertia-Version` with the stale-version `409` response, so Inertia.js v3.6+ can skip the reload on background requests such as polling (@skryukov)
