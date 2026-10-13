@@ -426,3 +426,26 @@ end
 ::: warning
 When `evaluate_optional_props` is enabled, deferred props will appear in `inertia.props` but will still be listed in `inertia.deferred_props`. Partial reload behaviour is unaffected — this setting only changes first-load behaviour.
 :::
+
+## Disabling SSR During Tests
+
+Your application may have [SSR enabled](/guide/server-side-rendering) for development and production, but you might not need it during testing. You may turn off the `ssr_enabled` option in the test environment to prevent the Rails adapter from dispatching SSR requests.
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.ssr_enabled = !Rails.env.test?
+end
+```
+
+Alternatively, you may set the `INERTIA_SSR_ENABLED` environment variable to `false`. It only applies when your initializer does not set `ssr_enabled`.
+
+A controller that sets `ssr_enabled` with [`inertia_config`](/guide/configuration#local-configuration) overrides the global value, so give it the same condition.
+
+```ruby
+class DashboardController < ApplicationController
+  inertia_config(ssr_enabled: !Rails.env.test?)
+end
+```
+
+If you keep SSR on in system tests, you may want SSR failures to [raise an error](/guide/server-side-rendering#raising-on-error) instead of falling back to client-side rendering.
