@@ -42,7 +42,7 @@ Inertia Rails supports setting any configuration option via environment variable
 
 **Default**: `->(path:, action:) { "#{path}/#{action}" }`
 
-Use `component_path_resolver` to customize component path resolution when [`default_render`](#default_render) config value is set to `true`. The value should be callable and will receive the `path` and `action` parameters, returning a string component path. See [Automatically determine component name](/guide/responses#automatically-determine-component-name).
+Use `component_path_resolver` to customize component path resolution when [`default_render`](#default-render) config value is set to `true`. The value should be callable and will receive the `path` and `action` parameters, returning a string component path. See [Custom Path Resolver](/guide/responses#custom-path-resolver).
 
 ### `prop_transformer`
 
