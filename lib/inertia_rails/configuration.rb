@@ -25,10 +25,16 @@ module InertiaRails
       # Whether to encrypt the history state in the client.
       encrypt_history: false,
 
+      # Whether to send integers outside JavaScript's safe range as markers
+      # that Inertia.js (v3.8+) turns into BigInt values.
+      preserve_big_integers: false,
+
       # SSR options.
       ssr_enabled: false,
       # URL of the SSR server. When nil, defaults to DEFAULT_SSR_URL.
       ssr_url: nil,
+      # Seconds to wait for the SSR server to connect and answer before falling back to client-side rendering.
+      ssr_timeout: 10,
       ssr_raise_on_error: false,
       on_ssr_error: nil,
       # Path(s) to check for SSR bundle existence before attempting SSR.
@@ -57,6 +63,10 @@ module InertiaRails
 
       # Whether to convert cross-origin redirects into Inertia location responses.
       convert_external_redirects: true,
+
+      # Whether to convert same-origin redirects to URLs with a fragment into
+      # Inertia redirect responses, so the fragment survives (Inertia.js v3+).
+      convert_fragment_redirects: false,
 
       # Whether to use `<script>` element for initial page rendering instead of the `data-page` attribute.
       use_script_element_for_initial_page: false,
@@ -178,6 +188,11 @@ module InertiaRails
       raise ArgumentError,
             "Invalid xsrf_cookie_refresh: #{value.inspect}. " \
             "Expected one of: #{XSRF_COOKIE_REFRESH_OPTIONS.map(&:inspect).join(', ')}"
+    end
+
+    # ENV values arrive as strings.
+    def ssr_timeout
+      Float(evaluate_option(options[:ssr_timeout]))
     end
 
     # Inertia.js v3's `serverHead` only recognizes `data-inertia`.

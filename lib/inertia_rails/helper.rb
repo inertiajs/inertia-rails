@@ -52,7 +52,7 @@ module InertiaRails
           end
 
           safe_join([
-                      tag.script(page.to_json.html_safe, **script_options),
+                      tag.script(ERB::Util.json_escape(page.to_json).html_safe, **script_options),
                       tag.div(id: id)
                     ], "\n")
         else

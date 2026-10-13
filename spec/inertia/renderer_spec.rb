@@ -11,6 +11,7 @@ RSpec.describe InertiaRails::Renderer do
     it "has a deprecated #{method_name} accessor" do
       configuration = double('configuration',
                              encrypt_history: true,
+                             preserve_big_integers: false,
                              deep_merge_shared_data: false,
                              clear_history: false,
                              expose_shared_prop_keys: true,

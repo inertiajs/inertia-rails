@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Add `config.convert_fragment_redirects` (off by default and enabled by the installer, requires Inertia.js v3) to keep URL fragments on Inertia redirects: a same-origin redirect to a URL with a fragment becomes a `409` response with the `X-Inertia-Redirect` header, which the client follows with a regular Inertia visit (@skryukov)
+* Add the `preserve_big_integers` option (config, `inertia_config` and render option), which sends integers outside JavaScript's safe range as `{"$bigint": "..."}` markers that Inertia.js v3.8+ turns into `BigInt` values. The testing helpers turn them back into integers (@skryukov)
+* Leave `encryptHistory` and `clearHistory` out of the page object when they are `false`, like inertia-laravel 3.x. Clients treat a missing key as `false`; specs that compare the full page JSON need updating (@skryukov)
+* Always escape the initial page JSON in the `<script>` element instead of relying on `ActiveSupport.escape_html_entities_in_json` being on. With that setting off, a prop containing `</script>` could break out of the element (@skryukov)
+* Add `config.ssr_timeout` (default 10 seconds) for SSR requests, instead of `Net::HTTP`'s 60 seconds, so a stuck SSR server can't hold a request for a minute (@skryukov)
+* Fix SSR failing with a 500 when `ssr_url` ends with a slash (@skryukov)
+* Send `X-Inertia-Version` with the stale-version `409` response, so Inertia.js v3.6+ can skip the reload on background requests such as polling (@skryukov)
+* Keep flash messages when a stale asset version forces a page refresh, instead of losing them (@skryukov)
+* Fix dot-notated prop keys (`'auth.user' => ...`) passed to `render` or `inertia_share` reaching the client as a literal key instead of nested props (@skryukov)
 * Expose `@_inertia_page` to views on SSR responses (@onk)
 * Add [Inertia DevTools](https://inertiajs.com/docs/v3/advanced/devtools) support: record requests in development (or those `config.devtools.authorize` approves elsewhere), expose the read API the browser extension reads, and configure it under `config.devtools` (@mattwigham and @skryukov)
 * Accept an object that responds to `to_inertia` as `props:`, as prop values already were. With `inertia_prop_sources`, it can also tell DevTools where it declared each prop (@skryukov)
@@ -29,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Start the SSR server in the Puma plugin regardless of the global `ssr_enabled`, so SSR enabled per controller with `inertia_config` works (@bknoles)
 * Add lefthook with pre-commit and pre-push hooks that mirror CI/CD checks (@bknoles)
 * Add `default_title:` option to `inertia_meta_tags`, and render meta tags in the installer's layout instead of a plain `<title>` (@bknoles)
+* Use `PATCH` instead of a method override header in scaffold edit forms with file uploads (@skryukov)
 
 ## [3.22.0] - 2026-07-17
 

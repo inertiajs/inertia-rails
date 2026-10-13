@@ -8,7 +8,7 @@ module InertiaRails
     module Redaction
       REDACTED = '[REDACTED]'
       ENCODED_REDACTED = URI.encode_www_form_component(REDACTED)
-      URL_HEADERS = %w[location content-location referer refresh x-inertia-location].freeze
+      URL_HEADERS = %w[location content-location referer refresh x-inertia-location x-inertia-redirect].freeze
       SENSITIVE_PROBE = 'inertia-devtools-probe'
 
       class << self
