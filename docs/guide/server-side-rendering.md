@@ -4,6 +4,10 @@ Server-side rendering pre-renders your JavaScript pages on the server, allowing 
 
 Server-side rendering uses Node.js to render your pages in a background process; therefore, Node must be available on your server for server-side rendering to function properly. Inertia's SSR server requires Node.js 22 or higher.
 
+## Starter Kits
+
+The [Inertia Rails starter kits](/guide/starter-kits) ship with optional SSR support. Each kit's README explains how to turn it on.
+
 ## Vite Plugin Setup
 
 @available_since rails=3.19.0 core=3.0.0
