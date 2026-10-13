@@ -91,6 +91,19 @@ sequenceDiagram
     Note over Client: Inertia.js swaps components
 ```
 
+## How the Client Handles Responses
+
+After each request, the client inspects the response before touching the page. Dispatch follows a small set of rules:
+
+- **An Inertia response (`X-Inertia: true`)** is rendered directly: the client applies the page object and swaps the component.
+- **A `409 Conflict` carrying `X-Inertia-Location`** triggers a full `window.location` visit to that URL, loading fresh assets. Background requests are exempt when the version changed, since reloading a visit the user never initiated would discard unsaved state.
+- **A `409 Conflict` carrying `X-Inertia-Redirect`** triggers a fresh Inertia `GET` visit to that URL.
+- **Any other response**, such as an HTML error page or plain JSON, is treated as an exception. The client fires a cancelable [HTTP exception event](/guide/events#http-exception) and, unless you cancel it, shows an error modal rather than silently navigating.
+
+Standard `3xx` redirects never reach these rules. The browser follows them transparently, replaying the request headers against the new location, so `X-Inertia` reaches the redirect target and the client only ever inspects the final response in the chain. See [redirects](#redirects) for the statuses Inertia Rails returns to steer this.
+
+A valid Inertia response with a status of `400` or greater fires that same cancelable HTTP exception event before rendering. Canceling it there suppresses the render, letting you handle the failure yourself.
+
 ## Request Headers
 
 The following headers are automatically sent by Inertia when making requests. You don't need to set these manually, they're handled by the Inertia client-side adapter.
