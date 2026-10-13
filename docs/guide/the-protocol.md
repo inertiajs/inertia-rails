@@ -432,18 +432,44 @@ Content-Type: application/json
 }
 ```
 
+## Redirects
+
+Inertia relies on standard HTTP redirects for navigation after a server-side action. Inertia Rails converts a `301` or `302` redirect that responds to an Inertia `PUT`, `PATCH`, or `DELETE` request into a `303 See Other`. The browser then issues a `GET` to the redirect target instead of repeating the original request method.
+
+External redirects point outside your Inertia app, where an Inertia visit can't follow them. Inertia Rails returns a `409 Conflict` with an `X-Inertia-Location` header instead, and the client performs a full `window.location` visit. Cross-origin `301`, `302`, and `303` redirects get this conversion automatically, unless [`convert_external_redirects`](/guide/configuration#convert-external-redirects) is disabled. For non-Inertia endpoints on your own origin, use `inertia_location` or mark the redirect with `inertia: { full_page: true }`.
+
+A redirect whose target contains a URL fragment can be returned as a `409 Conflict` with an `X-Inertia-Redirect` header holding the full URL. The client then makes a fresh Inertia `GET` visit to that URL. Inertia Rails does this only when [`convert_fragment_redirects`](/guide/configuration#convert-fragment-redirects) is enabled, and only for same-origin `301`, `302`, and `303` redirects that don't answer a prefetch request.
+
+This is distinct from the `preserveFragment` page object field, which carries the original request's fragment across an ordinary redirect. Inertia Rails sets that field when you pass `inertia: { preserve_fragment: true }` to `redirect_to`. See the [redirects](/guide/redirects) documentation.
+
+## Validation Errors
+
+Validation errors are shared through the `errors` prop. Inertia Rails treats `errors` as an always prop, so partial reloads never filter it out. When there are no errors, `errors` is `{}` if [`always_include_errors_hash`](/guide/configuration#always-include-errors-hash) is enabled, and absent otherwise.
+
+You share errors by passing them to `redirect_to` with `inertia: { errors: ... }`. Inertia Rails keeps them in the session, much like flash data, and shares them on the next render. They survive redirects and asset version `409` responses, and are cleared after any other response.
+
+Each key may map to either a single message or an array of messages, and the client renders whichever shape it receives. Inertia Rails doesn't reshape the errors you pass. With an `ActiveModel::Errors` object, such as `user.errors`, each field maps to an array of all its messages. To type them as arrays on the client, see [error values](/guide/typescript#error-values).
+
+```json
+{
+  "errors": {
+    "name": ["can't be blank", "is too short (minimum is 3 characters)"]
+  }
+}
+```
+
+Requests may scope errors to a named error bag with the `X-Inertia-Error-Bag` header. Inertia Rails ignores this header. See [error bags](/guide/validation#error-bags).
+
 ## HTTP Status Codes
 
 Inertia uses specific HTTP status codes to handle different scenarios.
 
-| Status Code       | Description                                                                                                                                                                                                                                                                                                                                                                                                            |
-| :---------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **200 OK**        | Standard successful response for both HTML and Inertia JSON responses.                                                                                                                                                                                                                                                                                                                                                 |
-| **302 Found**     | Standard redirect response. Inertia Rails converts `301` and `302` redirects to `303 See Other` when they respond to an Inertia `PUT`, `PATCH`, or `DELETE` request.                                                                                                                                                                                                                                                   |
-| **303 See Other** | Used for redirects after non-GET requests. This status code tells the browser to make a `GET` request to the redirect URL, preventing duplicate form submissions that could occur if the browser repeated the original request method.                                                                                                                                                                                 |
-| **409 Conflict**  | Returned when there's an asset version mismatch, for external redirects, or for redirects containing URL fragments. For asset mismatches, this prompts a full page reload. For external redirects, the response includes an `X-Inertia-Location` header and triggers a `window.location` redirect. For fragment redirects, the response includes an `X-Inertia-Redirect` header and triggers a standard Inertia visit. |
-
-Inertia Rails returns `409 Conflict` for redirects containing URL fragments only when [`convert_fragment_redirects`](/guide/configuration#convert-fragment-redirects) is enabled.
+| Status Code       | Description                                                                                                                                                                |
+| :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **200 OK**        | Standard successful response for both HTML and Inertia JSON responses.                                                                                                     |
+| **302 Found**     | Standard redirect response.                                                                                                                                                |
+| **303 See Other** | The redirect status after an Inertia `PUT`, `PATCH`, or `DELETE` request, which tells the browser to follow it with a `GET`. See [redirects](#redirects).                  |
+| **409 Conflict**  | A control response rather than a page, used for an [asset version mismatch](#asset-versioning), an external redirect, or a fragment redirect. See [redirects](#redirects). |
 
 The following status codes are used for [Precognition](/guide/forms#precognition) validation requests.
 
