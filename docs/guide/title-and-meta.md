@@ -2,6 +2,8 @@
 
 Since Inertia powered JavaScript apps are rendered within the document `<body>`, they are unable to render markup to the document `<head>`, as it's outside of their scope. To help with this, Inertia ships with a `<Head>` component which can be used to set the page `<title>`, `<meta>` tags, and other `<head>` elements.
 
+The `<Head>` component will only replace `<head>` elements that are not in your root layout.
+
 > [!NOTE]
 > Since v3.10.0, Inertia Rails supports managing meta tags via Rails. This allows your meta tags to work with link preview services without setting up server-side rendering. Since this isn't a part of the Inertia.js core, it's documented in the [server driven meta tags cookbook](/cookbook/server-managed-meta-tags).
 
@@ -355,7 +357,30 @@ export default () => <AppHead title="About" />
 
 :::
 
-## The `data-inertia` Attribute
+## Server-Side Head Elements
+
+You may wish to include default head elements like `<title>` or `<meta>` tags in your root layout. This creates two challenges: preventing duplicates when [SSR](/guide/server-side-rendering) is active, and ensuring the client-side `<Head>` component may replace them during navigation.
+
+### SSR Fallback
+
+@available_since rails=master
+
+`inertia_ssr_head` accepts fallback content in a block. The block renders only when the response isn't server-side rendered. When SSR is active, the `<Head>` component already provides these elements as part of the server-rendered response, so the fallback is skipped.
+
+```erb
+<%# app/views/layouts/application.html.erb %>
+<head>
+  <%= inertia_ssr_head do %>
+    <title>My App</title>
+    <meta data-inertia="description" name="description" content="My application description">
+  <% end %>
+  <%= vite_javascript_tag 'application' %>
+</head>
+```
+
+If you only need a fallback `<title>`, use the [`default_title`](/guide/responses#default-title) option of `inertia_meta_tags` instead.
+
+### The `data-inertia` Attribute
 
 @available_since core=2.2.13
 
