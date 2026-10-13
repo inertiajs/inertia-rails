@@ -23,6 +23,7 @@ module InertiaRails
                                 else
                                   @app.call(@env)
                                 end
+        headers['Vary'] = [headers['Vary'], 'Precognition'].compact_blank.join(', ') if Current.precognition_called
 
         if external_redirect?(status, headers)
           status, headers, body = conflict_response!('X-Inertia-Location', headers, body)

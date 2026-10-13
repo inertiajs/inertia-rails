@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Keep flash messages when a stale asset version forces a page refresh, instead of losing them (@skryukov)
 * Fix dot-notated prop keys (`'auth.user' => ...`) passed to `render` or `inertia_share` reaching the client as a literal key instead of nested props (@skryukov)
 * Fix an app's `rescue_from StandardError` turning Precognition validation responses into error pages. `InertiaRails::PrecognitionResponse` now inherits from `Exception`, so bare `rescue` clauses and `Rails.error.handle` no longer swallow it either; code that caught it as a `StandardError` must rescue it by name (@skryukov)
+* Add `Precognition` to the `Vary` header of responses from actions that call `precognition!` or `precognition`, like Laravel, so HTTP caches keep validation responses apart from regular ones (@skryukov)
 * Expose `@_inertia_page` to views on SSR responses (@onk)
 * Add [Inertia DevTools](https://inertiajs.com/docs/v3/advanced/devtools) support: record requests in development (or those `config.devtools.authorize` approves elsewhere), expose the read API the browser extension reads, and configure it under `config.devtools` (@mattwigham and @skryukov)
 * Accept an object that responds to `to_inertia` as `props:`, as prop values already were. With `inertia_prop_sources`, it can also tell DevTools where it declared each prop (@skryukov)
