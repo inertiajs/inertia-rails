@@ -541,7 +541,7 @@ If none of the above finds a file, the plugin logs nothing and stays idle.
 
 #### Runtime Detection
 
-The JavaScript runtime is auto-detected from your lockfile (`bun.lockb` → Bun, `deno.lock` → Deno, otherwise Node.js). To override:
+The JavaScript runtime is auto-detected from your lockfile (`bun.lock` or `bun.lockb` → Bun, `deno.lock` → Deno, otherwise Node.js). To override:
 
 ```ruby
 # config/initializers/inertia_rails.rb
