@@ -99,6 +99,17 @@ createInertiaApp({
 })
 ```
 
+@available_since core=3.5.0
+
+The callback also receives the current [page object](/guide/the-protocol#the-page-object) as its second argument, which you may use to build titles from the page's props.
+
+```js
+createInertiaApp({
+  title: (title, page) => `${title} - ${page.props.app_name}`,
+  // ...
+})
+```
+
 After defining the `title` callback, the callback will automatically be invoked when you set a title using the `<Head>` component.
 
 > [!NOTE]
