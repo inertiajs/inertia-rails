@@ -77,6 +77,27 @@ class EventsController < ApplicationController
 end
 ```
 
+### Sharing Data From Callbacks
+
+@available_since rails=3.19.0
+
+Alternatively, you can call `inertia_share` on the controller instance, for example inside a `before_action` callback. This is useful when the shared data depends on work the callback already does, such as loading a record.
+
+```ruby
+class ProjectsController < ApplicationController
+  before_action :set_team
+
+  private
+
+  def set_team
+    @team = current_user.teams.find(params[:team_id])
+    inertia_share team: @team.as_json(only: [:id, :name])
+  end
+end
+```
+
+The instance method accepts keyword arguments and a block. Use the `before_action` options, such as `only:` or `if:`, to control when the data is shared.
+
 > [!NOTE]
 > Shared data should be used sparingly as all shared data is included with every response.
 
