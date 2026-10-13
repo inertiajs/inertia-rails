@@ -326,6 +326,7 @@ You should also update your `inertia.js` file to use hydration instead of normal
 ```js
 import { createApp, h } from 'vue' // [!code --]
 import { createSSRApp, h } from 'vue' // [!code ++]
+import { createInertiaApp } from '@inertiajs/vue3'
 
 createInertiaApp({
   resolve: (name) => {
@@ -344,6 +345,7 @@ createInertiaApp({
 == React
 
 ```js
+import { createInertiaApp } from '@inertiajs/react'
 import { createRoot } from 'react-dom/client' // [!code --]
 import { hydrateRoot } from 'react-dom/client' // [!code ++]
 
@@ -362,6 +364,7 @@ createInertiaApp({
 == Svelte
 
 ```js
+import { createInertiaApp } from '@inertiajs/svelte'
 import { mount } from 'svelte' // [!code --]
 import { hydrate, mount } from 'svelte' // [!code ++]
 
