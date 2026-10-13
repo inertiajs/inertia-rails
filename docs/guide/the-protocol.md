@@ -173,8 +173,6 @@ Inertia shares data between the server and client via a page object. This object
 
 On standard full page visits, the page object is JSON encoded into the `<script type="application/json">` element, or into the `data-page` attribute when `use_script_element_for_initial_page` is disabled. On Inertia visits (as indicated by the presence of the `X-Inertia` header), the page object is returned as the JSON payload.
 
-### Basic Page Object
-
 Only `component`, `props`, `url`, and `version` are present on every page object, so a minimal one looks like this:
 
 ```json
@@ -191,9 +189,52 @@ Only `component`, `props`, `url`, and `version` are present on every page object
 }
 ```
 
-### Page Object with Deferred Props
+The remaining fields are conditional, and Inertia Rails includes them only when the corresponding behavior applies. Absent fields default on the client to an empty array, an empty object, or `false`.
 
-When using deferred props, the page object includes a `deferredProps` configuration. Note that deferred props are not included in the initial props since they are loaded in a subsequent request.
+## Partial Reloads
+
+When making Inertia requests, the partial reload option allows you to request a subset of the props (data) from the server on subsequent visits to the _same_ page component. This can be a helpful performance optimization if it's acceptable that some page data becomes stale. See the [partial reloads](/guide/partial-reloads) documentation for details.
+
+When a partial reload request is made, Inertia includes the `X-Inertia-Partial-Component` header and may include `X-Inertia-Partial-Data` and/or `X-Inertia-Partial-Except` headers with the request.
+
+The `X-Inertia-Partial-Data` header is a comma separated list of the desired props (data) keys that should be returned.
+
+The `X-Inertia-Partial-Except` header is a comma separated list of the props (data) keys that should not be returned. When only the `X-Inertia-Partial-Except` header is included, all props (data) except those listed will be sent. Both headers may be sent together. In that case, the `X-Inertia-Partial-Data` list narrows the response first and the `X-Inertia-Partial-Except` list is then removed from it, so a prop named in both is excluded.
+
+The `X-Inertia-Partial-Component` header includes the name of the component that is being partially reloaded. This is necessary, since partial reloads only work for requests made to the same page component. If the final destination is different for some reason (eg. the user was logged out and is now on the login page), then no partial reloading will occur.
+
+```http
+REQUEST
+GET: https://example.com/events
+Accept: text/html, application/xhtml+xml
+X-Requested-With: XMLHttpRequest
+X-Inertia: true
+X-Inertia-Version: 6b16b94d7c51cbe5b1fa42aac98241d5
+X-Inertia-Partial-Data: events
+X-Inertia-Partial-Component: Events
+
+RESPONSE
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+    "component": "Events",
+    "props": {
+        "events": [...], // the requested prop
+        "errors": {}     // always included
+    },
+    "url": "/events/80",
+    "version": "6b16b94d7c51cbe5b1fa42aac98241d5"
+}
+```
+
+### Resetting Props
+
+The `X-Inertia-Reset` header lists prop paths the client wants to reset before new data is applied. A reset prop is re-resolved and returned unlabeled. It's present in `props` but absent from every merge array and from `matchPropsOn`, so the client replaces the value instead of merging into it. The client sends reset paths in both the `X-Inertia-Reset` header and the `only` list. For scroll props, Inertia Rails also sets `scrollProps[path].reset` to `true`, which the [infinite scroll](/guide/infinite-scroll) component uses to re-sync its pagination state to the returned page. See [resetting props](/guide/merging-props#resetting-props) for the client-side API.
+
+## Deferred and Optional Props
+
+Deferred props let the server announce data that will load in a follow-up request. On a full visit, Inertia Rails skips each `InertiaRails.defer` prop and lists its key under `deferredProps`, grouped by the prop's `group` option. Props without a group go to `default`. The client issues one partial reload per group to fetch them, and the group names themselves are arbitrary. See the [deferred props](/guide/deferred-props) documentation.
 
 ```json
 {
@@ -213,9 +254,11 @@ When using deferred props, the page object includes a `deferredProps` configurat
 }
 ```
 
-### Page Object with Rescued Deferred Props
+Optional props behave similarly but are never announced. Inertia Rails skips `InertiaRails.optional` props on full visits and resolves them only when a partial reload selects them via `only` or `except`.
 
-When a [deferred prop](/guide/deferred-props#error-handling) is resolved with `rescue: true` and throws an exception, the prop is omitted from `props` and its key is included in `rescuedProps`. The client uses this list to render the `rescue` slot on the `<Deferred>` component.
+### Rescued Deferred Props
+
+A prop defined with `InertiaRails.defer(rescue: true)` that raises doesn't fail the response, which is still a `200` carrying every other prop. Inertia Rails reports the exception to the Rails [error reporter](https://guides.rubyonrails.org/error_reporting.html) as handled, or logs it on Rails 6. It omits the prop from `props` entirely, rather than sending it as `null`, and adds its key to the top-level `rescuedProps` array. The client uses this list to render the `rescue` slot on the `<Deferred>` component. See [error handling](/guide/deferred-props#error-handling).
 
 ```json
 {
@@ -229,9 +272,9 @@ When a [deferred prop](/guide/deferred-props#error-handling) is resolved with `r
 }
 ```
 
-### Page Object with Merge Props
+## Merging Props
 
-When using merge props, additional configuration is included.
+Merge props instruct the client to combine incoming prop data with data already on the page instead of replacing it. Arrays are appended or prepended, and objects are shallow or deep merged. The page object labels each merging prop under `mergeProps` (append), `prependProps` (prepend), or `deepMergeProps` (deep merge). In Inertia Rails, `InertiaRails.merge` appends by default, `InertiaRails.merge(prepend: true)` prepends, and `InertiaRails.deep_merge` deep merges. Merging applies on partial reloads only, so a full visit always replaces the prop even when it carries a merge label. See the [merging props](/guide/merging-props) documentation.
 
 ```json
 {
@@ -272,46 +315,13 @@ When using merge props, additional configuration is included.
 }
 ```
 
-### Page Object with Scroll Props
+### Matching Items
 
-When using [Infinite scroll](/guide/infinite-scroll), the page object includes a `scrollProps` configuration.
+The `matchPropsOn` array tells the client which field identifies each item, so existing entries can be updated in place rather than duplicated. Each entry has the form `"<propPath>.<keyField>"` and is split on the last dot: everything before the final segment is the prop path, and the final segment is the key field. `conversations.data.id` keys the array at `conversations.data` on its `id` field. Inertia Rails builds each entry by joining the prop path and the `match_on` option, so `InertiaRails.deep_merge(match_on: 'data.id')` on `conversations` emits `conversations.data.id`. See [matching items](/guide/merging-props#matching-items).
 
-```json
-{
-  "component": "Posts/Index",
-  "props": {
-    "errors": {},
-    "posts": {
-      "data": [
-        {
-          "id": 1,
-          "title": "First Post"
-        },
-        {
-          "id": 2,
-          "title": "Second Post"
-        }
-      ]
-    }
-  },
-  "url": "/posts?page=1",
-  "version": "6b16b94d7c51cbe5b1fa42aac98241d5",
-  "mergeProps": ["posts.data"],
-  "scrollProps": {
-    "posts": {
-      "pageName": "page",
-      "previousPage": null,
-      "nextPage": 2,
-      "currentPage": 1,
-      "reset": false
-    }
-  }
-}
-```
+## Once Props
 
-### Page Object with Once Props
-
-When using [once props](/guide/once-props), the page object includes an `onceProps` configuration. Each entry maps a key to the prop name and an optional expiration timestamp.
+Once props are resolved a single time and remembered by the client, then reused on subsequent pages that include the same prop. The page object carries an `onceProps` configuration. Each entry maps a key to the prop name, plus an expiration timestamp in milliseconds when the prop sets `expires_in`. See the [once props](/guide/once-props) documentation.
 
 ```json
 {
@@ -339,7 +349,7 @@ When using [once props](/guide/once-props), the page object includes an `oncePro
 }
 ```
 
-When navigating to a subsequent page that includes the same once prop, the client sends the loaded keys in the `X-Inertia-Except-Once-Props` header. The server skips resolving these props and excludes them from the response. The client reuses the previously loaded values.
+On subsequent Inertia requests, the client sends the loaded, non-expired once keys in the `X-Inertia-Except-Once-Props` header. Inertia Rails skips resolving those props and excludes them from the response, and the client reuses the previously loaded values.
 
 ```http
 REQUEST
@@ -375,6 +385,51 @@ Content-Type: application/json
 
 Note that `plans` is included in `onceProps` but not in `props` since it was already loaded on the client. The `onceProps` key identifies the once prop across pages, while `prop` specifies the actual prop name. These may differ when using [custom keys](/guide/once-props#custom-keys).
 
+### Force-Fresh and Partial Reloads
+
+Pass `fresh: true` to send a fresh value for a once prop even when its key appears in `X-Inertia-Except-Once-Props`, for example when the underlying data has changed. The returned value and its new `expiresAt` replace the client's copy. See [forcing a refresh](/guide/once-props#forcing-a-refresh).
+
+On a partial reload the except-once header is ignored, so a requested once prop is always resolved.
+
+## Infinite Scroll
+
+Infinite scroll builds on merge props. The array inside the prop is labeled for merging (`posts.data` below, set with the `wrapper` option of `InertiaRails.scroll`), and the page object carries a `scrollProps` entry describing the paginator's cursor. See the [infinite scroll](/guide/infinite-scroll) documentation.
+
+```json
+{
+  "component": "Posts/Index",
+  "props": {
+    "errors": {},
+    "posts": {
+      "data": [
+        {
+          "id": 1,
+          "title": "First Post"
+        },
+        {
+          "id": 2,
+          "title": "Second Post"
+        }
+      ]
+    }
+  },
+  "url": "/posts?page=1",
+  "version": "6b16b94d7c51cbe5b1fa42aac98241d5",
+  "mergeProps": ["posts.data"],
+  "scrollProps": {
+    "posts": {
+      "pageName": "page",
+      "previousPage": null,
+      "nextPage": 2,
+      "currentPage": 1,
+      "reset": false
+    }
+  }
+}
+```
+
+Every scroll response emits the merge label and a fresh cursor. A reset request drops the merge label and sets `scrollProps[path].reset` to `true`, which tells the client to re-sync its pagination state to the returned page. A deferred scroll prop emits no `scrollProps` on the full visit, since it resolves in the follow-up request.
+
 ## Asset Versioning
 
 One common challenge with single-page apps is refreshing site assets when they've been changed. Inertia makes this easy by optionally tracking the current version of the site's assets. In the event that an asset changes, Inertia will automatically make a full-page visit instead of an XHR visit.
@@ -407,43 +462,6 @@ X-Inertia-Version: 2f8a1c9e4b7d0a3f6c5e8b1d4a7f0c2e
 ```
 
 You can read more about this on the [asset versioning](/guide/asset-versioning) page.
-
-## Partial Reloads
-
-When making Inertia requests, the partial reload option allows you to request a subset of the props (data) from the server on subsequent visits to the _same_ page component. This can be a helpful performance optimization if it's acceptable that some page data becomes stale. See the [partial reloads](/guide/partial-reloads) documentation for details.
-
-When a partial reload request is made, Inertia includes the `X-Inertia-Partial-Component` header and may include `X-Inertia-Partial-Data` and/or `X-Inertia-Partial-Except` headers with the request.
-
-The `X-Inertia-Partial-Data` header is a comma separated list of the desired props (data) keys that should be returned.
-
-The `X-Inertia-Partial-Except` header is a comma separated list of the props (data) keys that should not be returned. When only the `X-Inertia-Partial-Except` header is included, all props (data) except those listed will be sent. If both `X-Inertia-Partial-Data` and `X-Inertia-Partial-Except` headers are included, the `X-Inertia-Partial-Except` header will take precedence.
-
-The `X-Inertia-Partial-Component` header includes the name of the component that is being partially reloaded. This is necessary, since partial reloads only work for requests made to the same page component. If the final destination is different for some reason (eg. the user was logged out and is now on the login page), then no partial reloading will occur.
-
-```http
-REQUEST
-GET: https://example.com/events
-Accept: text/html, application/xhtml+xml
-X-Requested-With: XMLHttpRequest
-X-Inertia: true
-X-Inertia-Version: 6b16b94d7c51cbe5b1fa42aac98241d5
-X-Inertia-Partial-Data: events
-X-Inertia-Partial-Component: Events
-
-RESPONSE
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-    "component": "Events",
-    "props": {
-        "events": [...], // the requested prop
-        "errors": {}     // always included
-    },
-    "url": "/events/80",
-    "version": "6b16b94d7c51cbe5b1fa42aac98241d5"
-}
-```
 
 ## Redirects
 
