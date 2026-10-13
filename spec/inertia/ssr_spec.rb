@@ -7,14 +7,12 @@ RSpec.describe 'inertia ssr', type: :request do
       props: { name: 'Brandon', sport: 'hockey' },
       url: props_path,
       version: '1.0',
-      encryptHistory: false,
-      clearHistory: false,
     }.to_json
   end
 
   # rubocop:disable-next Layout/LineLength
   let(:client_side_html) do
-    '<div id="app" data-page="{&quot;component&quot;:&quot;TestComponent&quot;,&quot;props&quot;:{&quot;name&quot;:&quot;Brandon&quot;,&quot;sport&quot;:&quot;hockey&quot;},&quot;url&quot;:&quot;/props&quot;,&quot;version&quot;:&quot;1.0&quot;,&quot;encryptHistory&quot;:false,&quot;clearHistory&quot;:false}"></div>'
+    '<div id="app" data-page="{&quot;component&quot;:&quot;TestComponent&quot;,&quot;props&quot;:{&quot;name&quot;:&quot;Brandon&quot;,&quot;sport&quot;:&quot;hockey&quot;},&quot;url&quot;:&quot;/props&quot;,&quot;version&quot;:&quot;1.0&quot;}"></div>'
   end
 
   def stub_ssr_response(url:, body:, status: 200)
@@ -29,7 +27,8 @@ RSpec.describe 'inertia ssr', type: :request do
       .with(uri.request_uri, page_json, 'Content-Type' => 'application/json')
       .and_return(http_response)
     allow(Net::HTTP).to receive(:start)
-      .with(uri.hostname, uri.port, use_ssl: uri.scheme == 'https')
+      .with(uri.hostname, uri.port, use_ssl: uri.scheme == 'https',
+                                    open_timeout: 10.0, read_timeout: 10.0, write_timeout: 10.0)
       .and_yield(http_double)
   end
 
@@ -150,6 +149,19 @@ RSpec.describe 'inertia ssr', type: :request do
       it 'falls back to client-side rendering' do
         get props_path
         expect(response.body).to include client_side_html
+      end
+    end
+
+    context 'with a trailing slash in ssr_url' do
+      with_inertia_config ssr_url: 'http://localhost:13714/'
+
+      before do
+        stub_ssr_response(url: 'http://localhost:13714/render', body: { body: '<div>Test works</div>', head: [] })
+      end
+
+      it 'renders through /render' do
+        get props_path
+        expect(response.body).to include '<div>Test works</div>'
       end
     end
 

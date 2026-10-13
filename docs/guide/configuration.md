@@ -111,6 +111,15 @@ When enabled, you instruct Inertia to encrypt your app's history, it uses
 the browser's built-in [`crypto` api](https://developer.mozilla.org/en-US/docs/Web/API/Crypto)
 to encrypt the current page's data before pushing it to the history state.
 
+### `preserve_big_integers`
+
+**Default**: `false`
+**ENV**: `INERTIA_PRESERVE_BIG_INTEGERS`
+
+@available_since rails=master core=3.8.0
+
+When enabled, integers outside JavaScript's safe range reach your components as native `BigInt` values instead of losing precision. See [Big Integers](/guide/big-integers) for details.
+
 ### `ssr_enabled` _(experimental)_
 
 **Default**: `false`
@@ -143,6 +152,15 @@ The URL of the SSR server. When `nil`, auto-detects from the Vite dev server.
 
 > [!NOTE]
 > Inertia SSR expects the server to respond at `/render` (production) or `/__inertia_ssr` (dev). If you set a server address, `/render` is appended automatically unless the URL already ends with `/render` or `/__inertia_ssr`.
+
+### `ssr_timeout`
+
+**Default**: `10`
+**ENV**: `INERTIA_SSR_TIMEOUT`
+
+@available_since rails=master
+
+Seconds to wait for the SSR server to connect and respond. When the wait runs out, the page falls back to client-side rendering, as on any other SSR error.
 
 ### `version` _(recommended)_
 

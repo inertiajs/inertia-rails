@@ -175,7 +175,9 @@ module InertiaRails
 
       def force_refresh
         request.flash.keep
-        Rack::Response.new('', 409, { 'X-Inertia-Location' => request.original_url }).finish
+        request.commit_flash
+        headers = { 'X-Inertia-Location' => request.original_url, 'X-Inertia-Version' => server_version.to_s }
+        Rack::Response.new('', 409, headers).finish
       end
 
       def copy_xsrf_to_csrf!

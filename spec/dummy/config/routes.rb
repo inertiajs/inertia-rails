@@ -58,6 +58,9 @@ Rails.application.routes.draw do
   get 'same_origin_redirect_test' => 'inertia_test#same_origin_redirect_test'
   post 'fragment_redirect_test' => 'inertia_test#fragment_redirect_test'
   get 'full_page_redirect_test' => 'inertia_test#full_page_redirect_test'
+  get 'big_integers_enabled' => 'inertia_big_integers#enabled'
+  get 'big_integers_disabled' => 'inertia_big_integers#disabled'
+  get 'big_integers_enabled_for_render' => 'inertia_big_integers#enabled_for_render'
   get 'full_page_redirect_with_cookie_test' => 'inertia_test#full_page_redirect_with_cookie_test'
   get 'invalid_full_page_redirect_test' => 'inertia_test#invalid_full_page_redirect_test'
   get 'location_header_test' => 'inertia_test#location_header_test'
@@ -109,6 +112,7 @@ Rails.application.routes.draw do
   get 'api_test' => 'inertia_api_test#index'
   get 'api_external_redirect_test' => 'inertia_api_test#external_redirect'
   get 'deeply_nested_props' => 'inertia_render_test#deeply_nested_props'
+  get 'dotted_props' => 'inertia_render_test#dotted_props'
 
   get 'instance_props_test' => 'inertia_rails_mimic#instance_props_test'
   get 'default_render_test' => 'inertia_rails_mimic#default_render_test'
