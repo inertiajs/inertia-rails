@@ -111,6 +111,7 @@ Rails.application.routes.draw do
   get 'api_test' => 'inertia_api_test#index'
   get 'api_external_redirect_test' => 'inertia_api_test#external_redirect'
   get 'deeply_nested_props' => 'inertia_render_test#deeply_nested_props'
+  get 'dotted_props' => 'inertia_render_test#dotted_props'
 
   get 'instance_props_test' => 'inertia_rails_mimic#instance_props_test'
   get 'default_render_test' => 'inertia_rails_mimic#default_render_test'

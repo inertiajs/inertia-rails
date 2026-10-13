@@ -211,9 +211,6 @@ router.visit(url, { method: 'post' })
 
 :::
 
-> [!WARNING]
-> Uploading files via `put` or `patch` is not supported in Rails. Instead, make the request via `post`, including a `_method` attribute or a `X-HTTP-METHOD-OVERRIDE` header set to `put` or `patch`. For more info see [`Rack::MethodOverride`](https://github.com/rack/rack/blob/main/lib/rack/method_override.rb).
-
 ## Data
 
 You may use the `data` option to add data to the request.

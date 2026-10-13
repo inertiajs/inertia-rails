@@ -153,6 +153,15 @@ The URL of the SSR server. When `nil`, auto-detects from the Vite dev server.
 > [!NOTE]
 > Inertia SSR expects the server to respond at `/render` (production) or `/__inertia_ssr` (dev). If you set a server address, `/render` is appended automatically unless the URL already ends with `/render` or `/__inertia_ssr`.
 
+### `ssr_timeout`
+
+**Default**: `10`
+**ENV**: `INERTIA_SSR_TIMEOUT`
+
+@available_since rails=master
+
+Seconds to wait for the SSR server to connect and respond. When the wait runs out, the page falls back to client-side rendering, as on any other SSR error.
+
 ### `version` _(recommended)_
 
 **Default**: `nil`

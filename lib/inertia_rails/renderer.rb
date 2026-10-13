@@ -168,9 +168,9 @@ module InertiaRails
         props: resolved_props,
         url: @request.original_fullpath,
         version: @configuration.version,
-        encryptHistory: @encrypt_history,
-        clearHistory: @clear_history,
       }
+      page[:encryptHistory] = @encrypt_history if @encrypt_history
+      page[:clearHistory] = @clear_history if @clear_history
 
       flash_data = @controller.__send__(:inertia_collect_flash_data)
       page[:flash] = flash_data if flash_data.present?
