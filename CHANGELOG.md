@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fix stale flash notice and use idiomatic class in Vue scaffolds (@skryukov)
 * Start the SSR server in the Puma plugin regardless of the global `ssr_enabled`, so SSR enabled per controller with `inertia_config` works (@bknoles)
 * Add lefthook with pre-commit and pre-push hooks that mirror CI/CD checks (@bknoles)
+* Add `default_title:` option to `inertia_meta_tags`, and render meta tags in the installer's layout instead of a plain `<title>` (@bknoles)
 * Use `PATCH` instead of a method override header in scaffold edit forms with file uploads (@skryukov)
 
 ## [3.22.0] - 2026-07-17

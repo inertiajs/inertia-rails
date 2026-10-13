@@ -251,5 +251,67 @@ RSpec.describe InertiaRails::Helper, type: :helper do
         end
       end
     end
+
+    describe 'default_title' do
+      context 'without an Inertia page' do
+        it 'renders the default title as a plain tag' do
+          expect(helper.inertia_meta_tags(default_title: 'My App')).to eq('<title>My App</title>')
+        end
+      end
+
+      context 'with meta tags but no server-side title' do
+        before do
+          controller.instance_variable_set(
+            :@_inertia_page,
+            {
+              props: {
+                _inertia_meta: [
+                  InertiaRails::MetaTag.new(name: 'description', content: 'Inertia rules', head_key: 'my_key')
+                ],
+              },
+            }
+          )
+        end
+
+        it 'appends the default title after the meta tags' do
+          expect(helper.inertia_meta_tags(default_title: 'My App')).to eq(
+            "<meta name=\"description\" content=\"Inertia rules\" inertia=\"my_key\">\n<title>My App</title>"
+          )
+        end
+      end
+
+      context 'with a server-side title' do
+        before do
+          controller.instance_variable_set(
+            :@_inertia_page,
+            { props: { _inertia_meta: [InertiaRails::MetaTag.new(title: 'Events')] } }
+          )
+        end
+
+        it 'does not add the default title' do
+          expect(helper.inertia_meta_tags(default_title: 'My App')).to eq('<title inertia="title">Events</title>')
+        end
+      end
+
+      context 'with an SSR head without a title' do
+        before do
+          controller.instance_variable_set(:@_inertia_ssr_head, '<meta name="description" inertia>'.html_safe)
+        end
+
+        it 'renders only the default title' do
+          expect(helper.inertia_meta_tags(default_title: 'My App')).to eq('<title>My App</title>')
+        end
+      end
+
+      context 'with an SSR head with a title' do
+        before do
+          controller.instance_variable_set(:@_inertia_ssr_head, '<title inertia="title">SSR Title</title>'.html_safe)
+        end
+
+        it 'does not add the default title' do
+          expect(helper.inertia_meta_tags(default_title: 'My App')).to eq('')
+        end
+      end
+    end
   end
 end

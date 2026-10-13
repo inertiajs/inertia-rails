@@ -21,12 +21,10 @@ module InertiaRails
       controller.instance_variable_get('@_inertia_page')
     end
 
-    def inertia_meta_tags
-      # SSR responses deliver the meta tags through inertia_ssr_head instead.
-      return ''.html_safe unless inertia_ssr_head.nil?
-
+    def inertia_meta_tags(default_title: nil)
       config = controller.send(:inertia_configuration)
-      meta_tag_data = (inertia_page || {}).dig(:props, config.meta_prop) || []
+      # SSR responses deliver the meta tags through inertia_ssr_head instead.
+      meta_tag_data = (inertia_ssr_head.nil? && inertia_page&.dig(:props, config.meta_prop)) || []
       attribute = config.head_attribute
 
       meta_tags = meta_tag_data.map do |inertia_meta_tag|
@@ -34,6 +32,9 @@ module InertiaRails
 
         inertia_meta_tag.to_tag(tag, inertia_attribute: attribute)
       end
+
+      head = inertia_ssr_head || safe_join(meta_tags)
+      meta_tags << tag.title(default_title) if default_title && !head.include?('<title')
 
       safe_join(meta_tags, "\n")
     end
