@@ -2318,6 +2318,9 @@ const form = useForm('post', '/users', {
 })
 ```
 
+> [!TIP]
+> Since Precognition is now built-in, you may remove the `laravel-precognition` package and import `useForm` from your Inertia adapter instead.
+
 Once Precognition is enabled, call `validate()` with a field name to trigger validation for that field. The `invalid()` helper checks if a field has validation errors, while `validating` indicates when a request is in progress.
 
 :::tabs key:frameworks
