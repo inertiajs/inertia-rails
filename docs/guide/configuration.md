@@ -241,6 +241,15 @@ end
 > [!NOTE]
 > The origin comparison relies on the request scheme as Rails sees it (`X-Forwarded-Proto` is honored, as it is everywhere in Rails). If your app is behind a proxy, make sure it forwards this header — otherwise every absolute `https://` redirect to your own host will look cross-origin and trigger a full page visit.
 
+### `convert_fragment_redirects`
+
+**Default**: `false`
+**ENV**: `INERTIA_CONVERT_FRAGMENT_REDIRECTS`
+
+@available_since rails=master core=3.0.0
+
+Whether to keep URL fragments on Inertia redirects to URLs like `/articles/1#comments`, by responding with `409 Conflict` and the `X-Inertia-Redirect` header. See [Redirecting to Fragments](/guide/redirects#redirecting-to-fragments).
+
 ### `flash_keys`
 
 **Default**: `%i[notice alert]`

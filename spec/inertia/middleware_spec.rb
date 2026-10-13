@@ -260,6 +260,55 @@ RSpec.describe 'InertiaRails::Middleware', type: :request do
     end
   end
 
+  context 'a redirect to a url with a fragment' do
+    let(:inertia_headers) { { 'X-Inertia' => true } }
+
+    it 'leaves the redirect untouched by default' do
+      post fragment_redirect_test_path, headers: inertia_headers
+
+      expect(response.status).to eq 302
+    end
+
+    context 'when conversion is enabled' do
+      with_inertia_config convert_fragment_redirects: true
+
+      it 'hands the redirect to the client, keeping errors and flash for the follow-up visit' do
+        post fragment_redirect_test_path, headers: inertia_headers
+
+        expect(response.status).to eq 409
+        expect(response.headers['X-Inertia-Redirect']).to eq "#{empty_test_url}#section"
+
+        get response.headers['X-Inertia-Redirect'], headers: inertia_headers
+
+        expect(response.parsed_body['props']['errors']).to eq('uh' => 'oh')
+        expect(response.parsed_body['flash']).to eq('notice' => 'Saved!')
+      end
+
+      it 'does not convert a method-preserving redirect' do
+        get location_header_test_path(url: '/empty_test#section', status: 307), headers: inertia_headers
+
+        expect(response.status).to eq 307
+      end
+
+      it 'does not convert a redirect for a prefetch request' do
+        post fragment_redirect_test_path, headers: inertia_headers.merge('Purpose' => 'prefetch')
+
+        expect(response.status).to eq 302
+      end
+
+      context 'when external redirect conversion is disabled' do
+        with_inertia_config convert_external_redirects: false
+
+        it 'leaves an external redirect untouched' do
+          get location_header_test_path(url: 'http://external-website.com/some_path#section'),
+              headers: inertia_headers
+
+          expect(response.status).to eq 302
+        end
+      end
+    end
+  end
+
   context 'a redirect status was passed with an http method that preserves itself on 302 redirect' do
     subject { response.status }
 

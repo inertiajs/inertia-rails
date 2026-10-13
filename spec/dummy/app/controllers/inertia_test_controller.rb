@@ -44,6 +44,10 @@ class InertiaTestController < ApplicationController
     redirect_to 'http://external-website.com/some_path', allow_other_host: true, inertia: { errors: { uh: 'oh' } }
   end
 
+  def fragment_redirect_test
+    redirect_to "#{empty_test_path}#section", notice: 'Saved!', inertia: { errors: { uh: 'oh' } }
+  end
+
   def full_page_redirect_test
     redirect_to empty_test_path, inertia: { full_page: true }
   end

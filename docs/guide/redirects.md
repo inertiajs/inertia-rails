@@ -66,6 +66,25 @@ You may preserve the fragment by passing `preserve_fragment` on the redirect res
 redirect_to article_path(article), inertia: { preserve_fragment: true }
 ```
 
+## Redirecting to Fragments
+
+@available_since rails=master core=3.0.0
+
+A redirect target may contain its own fragment, such as `/articles/1#comments`. By default, the fragment is lost when Inertia follows the redirect. Enable `convert_fragment_redirects` to keep it. Apps set up with the installer have it enabled.
+
+```ruby
+# config/initializers/inertia.rb
+InertiaRails.configure do |config|
+  config.convert_fragment_redirects = true
+end
+```
+
+```ruby
+redirect_to article_path(article, anchor: 'comments')
+```
+
+Inertia Rails then returns a `409 Conflict` response with the URL in the `X-Inertia-Redirect` header, and the client visits `/articles/1#comments`.
+
 ## External Redirects
 
 Sometimes it's necessary to redirect outside of your Inertia app: to another website, or to a non-Inertia endpoint in your own app. These destinations can't be visited as Inertia pages — the client has to leave the SPA with a full `window.location` visit. The server triggers that visit by responding with an Inertia location response: `409 Conflict` with the destination URL in the `X-Inertia-Location` header.
