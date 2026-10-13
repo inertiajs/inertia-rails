@@ -211,6 +211,80 @@ router.visit(url, { method: 'post' })
 
 :::
 
+## Typelizer
+
+When using [Typelizer route helpers](/guide/routing#typelizer), you can pass the resulting object directly to any router method. The router will infer the HTTP method and URL from the object. This works with any object that has `url` and `method` keys.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+import { users } from '@/routes'
+
+router.visit(users.show(1))
+router.post(users.create())
+router.delete(users.destroy(1))
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+import { users } from '@/routes'
+
+router.visit(users.show(1))
+router.post(users.create())
+router.delete(users.destroy(1))
+```
+
+== Svelte
+
+```js
+import { router } from '@inertiajs/svelte'
+import { users } from '@/routes'
+
+router.visit(users.show(1))
+router.post(users.create())
+router.delete(users.destroy(1))
+```
+
+:::
+
+If you provide both a route object and the `method` option, the `method` option will take precedence. For example, `resources` routes send both `PATCH` and `PUT` requests to `update`, so you can make a `PUT` request with the `update` helper.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+import { users } from '@/routes'
+
+router.visit(users.update(1), { method: 'put' })
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+import { users } from '@/routes'
+
+router.visit(users.update(1), { method: 'put' })
+```
+
+== Svelte
+
+```js
+import { router } from '@inertiajs/svelte'
+import { users } from '@/routes'
+
+router.visit(users.update(1), { method: 'put' })
+```
+
+:::
+
 ## Data
 
 You may use the `data` option to add data to the request.
