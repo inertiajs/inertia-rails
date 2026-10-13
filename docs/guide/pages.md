@@ -86,6 +86,19 @@ end
 
 If you attempt to render a page that does not exist, the response will typically be a blank screen.
 
+## Transforming Component Names
+
+Sometimes you may wish to transform component names. This may be done on the client side using the [`pages.transform`](/guide/client-side-setup#pages-shorthand) option, or on the server using the [`component_path_resolver`](/guide/responses#custom-path-resolver) config option. The transformed name is sent to the browser.
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.component_path_resolver = ->(path:, action:) { "#{path}/#{action}/page" }
+end
+```
+
+The server-side resolver only runs when Inertia Rails infers the component name, as in `render inertia: { event: }`. Explicit names, like `render inertia: 'events/show'`, are sent as-is.
+
 ## Layouts
 
 Most applications share common UI elements across pages. Inertia provides persistent layouts that survive page navigations, along with layout props for passing dynamic data between pages and their layouts. Visit the [layouts documentation](/guide/layouts) to learn more.
