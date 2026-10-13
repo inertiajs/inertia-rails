@@ -387,6 +387,24 @@ createInertiaApp({
 
 :::
 
+### Opting Out of the Vite Plugin
+
+You may pass `ssr: false` to the Inertia plugin to disable its automatic SSR handling and manage the SSR build yourself.
+
+```js
+// vite.config.js
+export default defineConfig({
+  plugins: [
+    RubyPlugin(),
+    inertia({
+      ssr: false, // [!code ++]
+    }),
+  ],
+})
+```
+
+Vite Ruby then builds your SSR entry point on its own. Its default `ssrEntrypoint` setting (`~/ssr/ssr.{js,ts,jsx,tsx}`) already matches `app/frontend/ssr/ssr.js`, so `bin/vite build --ssr` builds it to `public/vite-ssr`. The `ssrBuildEnabled` option from step 2 adds this build to `assets:precompile`.
+
 ### Clustering
 
 By default, the SSR server runs on a single thread. You may enable clustering to start multiple Node servers on the same port, with requests handled by each thread in a round-robin fashion.
