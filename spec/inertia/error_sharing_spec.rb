@@ -70,6 +70,50 @@ RSpec.describe 'errors shared automatically', type: :request do
       expect(session[:inertia_errors]).not_to be
     end
 
+    it 'leaves nested errors untouched and warns by default' do
+      expect { post redirect_with_nested_inertia_errors_path, headers: headers }
+        .to output(/will be flattened to dot-notated keys/).to_stderr
+
+      expect(session[:inertia_errors]).to eq(user: { name: 'is required', email: 'is invalid' })
+    end
+
+    context 'with flatten_errors disabled' do
+      with_inertia_config flatten_errors: false
+
+      it 'leaves nested errors untouched without a warning' do
+        expect { post redirect_with_nested_inertia_errors_path, headers: headers }.not_to output.to_stderr
+
+        expect(session[:inertia_errors]).to eq(user: { name: 'is required', email: 'is invalid' })
+      end
+    end
+
+    context 'with flatten_errors enabled' do
+      with_inertia_config flatten_errors: true
+
+      it 'flattens nested errors to dot-notated keys' do
+        post redirect_with_nested_inertia_errors_path, headers: headers
+
+        expect(session[:inertia_errors]).to eq('user.name' => 'is required', 'user.email' => 'is invalid')
+
+        get response.headers['Location'], headers: headers
+        errors = JSON.parse(response.body)['props']['errors']
+        expect(errors).to eq('user.name' => 'is required', 'user.email' => 'is invalid')
+      end
+
+      it 'flattens nested ActiveModel::Errors' do
+        post redirect_with_nested_model_errors_path, headers: headers
+
+        expect(session[:inertia_errors].keys).to contain_exactly('user.name', 'user.email')
+      end
+    end
+
+    it 'leaves flat errors untouched without a warning' do
+      expect { post redirect_with_inertia_errors_path, headers: headers }.not_to output.to_stderr
+
+      errors = session[:inertia_errors]
+      expect(errors.keys).to eq([:uh])
+    end
+
     it 'accepts a non-hash error object' do
       expect { post redirect_with_non_hash_inertia_errors_path, headers: headers }
         .to output(/Object passed to `inertia: { errors: ... }` must respond to `to_hash`/).to_stderr

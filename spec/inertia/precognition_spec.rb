@@ -197,6 +197,49 @@ RSpec.describe 'Precognition', type: :request do
     end
   end
 
+  describe 'nested error flattening' do
+    context 'without a block (nested hash passed directly)' do
+      it 'flattens nested hash to dot-notated keys' do
+        post precognition_with_nested_errors_path, params: blank_user_params, headers: precognition_headers
+
+        body = JSON.parse(response.body)
+        expect(body['errors']).to include('user.name', 'user.email')
+      end
+
+      it 'filters on flattened keys' do
+        post precognition_with_nested_errors_path,
+             params: blank_user_params,
+             headers: validate_only_headers('user.name')
+
+        body = JSON.parse(response.body)
+        expect(body['errors'].keys).to eq(['user.name'])
+      end
+
+      it 'returns 204 when the filtered field is valid' do
+        post precognition_with_nested_errors_path,
+             params: { user: { name: 'Jane Doe', email: '' } },
+             headers: validate_only_headers('user.name')
+
+        expect(response).to have_http_status(:no_content)
+      end
+    end
+
+    context 'with a block' do
+      %i[
+        precognition_with_block_transform_path
+        precognition_non_bang_with_block_transform_path
+        precognition_module_level_with_block_transform_path
+      ].each do |path_helper|
+        it "flattens the block result (#{path_helper})" do
+          post send(path_helper), params: blank_user_params, headers: precognition_headers
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(JSON.parse(response.body)['errors'].keys).to contain_exactly('user.name', 'user.email')
+        end
+      end
+    end
+  end
+
   describe 'custom validators' do
     it 'works with validators that return a hash' do
       post precognition_with_custom_validator_path, params: blank_user_params, headers: precognition_headers

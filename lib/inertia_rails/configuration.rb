@@ -91,6 +91,11 @@ module InertiaRails
       # will raise ActiveRecord::ReadOnlyError.
       precognition_prevent_writes: false,
 
+      # Whether to flatten redirect errors to dot-notated keys:
+      # `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }`, the key
+      # the Inertia client looks up for a field named `user.name`.
+      flatten_errors: nil,
+
       # Whether to include shared prop keys in the page response metadata.
       expose_shared_prop_keys: true,
 
