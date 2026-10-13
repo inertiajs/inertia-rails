@@ -551,7 +551,7 @@ export default Profile
 
 :::
 
-The callback receives the page's props and may return any valid layout format: a single component, a tuple with static props, an array for nested layouts, or a named layout object. TypeScript users may use the `LayoutCallback` type for type safety.
+The callback receives the page's props and may return any valid layout format: a single component, a tuple with static props, an array for nested layouts, or a named layout object. TypeScript users may use the [`LayoutCallback`](/guide/typescript#layout-callbacks) type for type safety.
 
 #### Returning Props Only
 

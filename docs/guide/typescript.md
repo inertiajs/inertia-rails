@@ -434,6 +434,61 @@ interface UserResponse {
 const http = useHttp<UserForm, UserResponse>({ name: '', email: '' })
 ```
 
+## Layout Callbacks
+
+The `LayoutCallback` type provides type safety for [layout callbacks](/guide/layouts#callback-props). The callback receives the page's props (typed via your global `sharedPageProps` configuration) and should return a valid layout definition.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script lang="ts">
+import Layout from './Layout.vue'
+import type { LayoutCallback } from '@inertiajs/vue3'
+
+const callback: LayoutCallback = (props) => {
+  return [Layout, { title: props.auth.user?.name }]
+}
+
+export default {
+  layout: callback,
+}
+</script>
+```
+
+== React
+
+```tsx
+import type { LayoutCallback } from '@inertiajs/react'
+import Layout from './Layout'
+
+const Profile = () => <h1>Profile</h1>
+
+const callback: LayoutCallback = (props) => {
+  return [Layout, { title: props.auth.user?.name }]
+}
+
+Profile.layout = callback
+
+export default Profile
+```
+
+== Svelte
+
+```svelte
+<script module lang="ts">
+  import Layout from './Layout.svelte'
+  import type { LayoutCallback } from '@inertiajs/svelte'
+
+  export const layout: LayoutCallback = (props) => {
+    return [Layout, { title: props.auth.user?.name }]
+  }
+</script>
+```
+
+:::
+
 ## Remembering State
 
 The `useRemember` hook accepts a generic type parameter for type-safe local state persistence, providing autocomplete and ensuring values match the expected types.
