@@ -87,6 +87,140 @@ Please note that if you manually provide a props hash in your render call, the i
 >
 > This creates a high risk of accidentally leaking sensitive data or internal implementation details to the client. It can also negatively impact performance by serializing unnecessary heavy objects. We recommend being explicit with your props whenever possible.
 
+## Properties
+
+To pass data from the server to your page components, you can use props. You can pass various types of values as props, including primitive types, hashes, arrays, Active Record objects, lambdas, and custom objects:
+
+```ruby
+class DashboardController < ApplicationController
+  def index
+    render inertia: {
+      # Primitive values
+      title: 'Dashboard',
+      count: 42,
+      active: true,
+
+      # Hashes and arrays
+      settings: { theme: 'dark', notifications: true },
+
+      # Active Record models and relations
+      event: Event.first,
+      events: Event.all,
+
+      # Objects that respond to `to_inertia`
+      avatar: UserAvatar.new(current_user, size: 128),
+
+      # Lambdas
+      timestamp: -> { Time.current.to_i },
+    }
+  end
+end
+```
+
+Active Record models, relations, and other Ruby objects are converted with `as_json` when Inertia serializes the response. Objects that respond to `to_inertia` are converted with that method instead, as described in [the next section](#the-to-inertia-method). Lambdas run only when the response includes the prop, which makes them useful for [partial reloads](/guide/partial-reloads#lazy-data-evaluation).
+
+Integers outside JavaScript's safe range lose precision in the browser. You may preserve them as native `BigInt` values using [big integer support](/guide/big-integers).
+
+## The `to_inertia` Method
+
+@available_since rails=3.19.0
+
+When passing props to your components, you may want to create custom classes that can transform themselves into the appropriate data format. Any object that responds to `to_inertia` can be a prop value. Inertia calls the method and sends its return value in place of the object.
+
+```ruby
+class UserAvatar
+  def initialize(user, size: 64)
+    @user = user
+    @size = size
+  end
+
+  def to_inertia
+    @user.avatar_url.presence ||
+      "https://ui-avatars.com/api/?name=#{ERB::Util.url_encode(@user.name)}&size=#{@size}"
+  end
+end
+```
+
+Once defined, you can use this class directly as a prop value.
+
+```ruby
+class ProfilesController < ApplicationController
+  def show
+    user = User.find(params[:id])
+
+    render inertia: {
+      user: user.as_json(only: [:id, :name]),
+      avatar: UserAvatar.new(user, size: 128),
+    }
+  end
+end
+```
+
+Inertia also finds these objects inside nested hashes and arrays, and when a lambda or a prop type returns one. The `to_inertia` method may return a hash that contains lambdas and prop types. Inertia resolves them like any other props, including on partial reloads.
+
+```ruby
+class CourseProps
+  def initialize(course)
+    @course = course
+  end
+
+  def to_inertia
+    course = @course
+
+    {
+      title: course.title,
+      students: InertiaRails.optional { course.students.as_json(only: [:id, :name]) },
+    }
+  end
+end
+```
+
+> [!WARNING]
+> Inertia runs lambdas and prop type blocks in the controller's context, so an instance variable like `@course` inside the block reads the controller's variable. Copy the value to a local variable first, as in the example above.
+
+Like a lambda, `to_inertia` runs only when the response includes the prop, so a partial reload that skips the prop doesn't call it.
+
+The `to_inertia` method receives no arguments. It can't see the prop's key, the other props, or the request, so pass anything it needs to the constructor.
+
+### Passing an Object as Props
+
+@available_since rails=master
+
+In some situations you may want to group related props together for reusability across different pages. You can pass an object that responds to `to_inertia` as the `props:` option. Its `to_inertia` method must return a hash, and each key becomes a prop.
+
+```ruby
+class UserPermissions
+  def initialize(user)
+    @user = user
+  end
+
+  def to_inertia
+    {
+      can_edit: @user.editor?,
+      can_publish: @user.publisher?,
+      is_admin: @user.admin?,
+    }
+  end
+end
+```
+
+```ruby
+class ProfilesController < ApplicationController
+  def show
+    render inertia: 'profiles/show', props: UserPermissions.new(current_user)
+  end
+end
+```
+
+Inertia merges [shared data](/guide/shared-data) with these props as usual. To combine the object with other props, merge its hash into a props hash:
+
+```ruby
+render inertia: {
+  user: current_user.as_json(only: [:id, :name]),
+  **UserPermissions.new(current_user).to_inertia,
+}
+```
+
 ## Root Template Data
 
 There are situations where you may want to access your prop data in your ERB template. For example, you may want to add a meta description tag, Twitter card meta tags, or Facebook Open Graph meta tags.
