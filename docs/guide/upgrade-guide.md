@@ -156,6 +156,17 @@ router.post('/users', data, {
 })
 ```
 
+Returning `false` from the `onHttpException` callback or calling `event.preventDefault()` on the global `httpException` event will prevent Inertia from navigating to the [error page](/guide/error-handling). This lets you handle HTTP exceptions (4xx and 5xx responses) without leaving the current page.
+
+```js
+router.post('/users', data, {
+  onHttpException: (response) => {
+    // Handle the error without navigating
+    return false
+  },
+})
+```
+
 ### `router.cancel()` Replaced
 
 The `router.cancel()` method has been replaced by `router.cancelAll()`. In v2, `cancel()` only cancelled synchronous requests. The new `cancelAll()` method cancels all synchronous, asynchronous, and prefetch requests by default. You may pass options to limit which request types are cancelled.
@@ -310,6 +321,43 @@ dot-notation for targeting nested props.
 ```js
 router.reload({ only: ['auth.notifications'] })
 ```
+
+Objects that respond to `to_inertia` also work at any nesting level. Inertia Rails renders the hash they return and resolves the prop types inside it.
+
+```ruby
+class AuthProps
+  def to_inertia
+    {
+      user: Current.user,
+      permissions: InertiaRails.optional { Current.user.permissions }
+    }
+  end
+end
+
+class DashboardController < ApplicationController
+  def index
+    render inertia: { auth: AuthProps.new }
+  end
+end
+```
+
+### `InertiaRails.lazy` Deprecated
+
+`InertiaRails.lazy` has been deprecated since Inertia Rails 3.6 and logs a deprecation warning. It will be removed in Inertia Rails 4.0. Use `InertiaRails.optional` instead, which provides the same functionality:
+
+```ruby
+# Before
+render inertia: {
+  users: InertiaRails.lazy { User.all }
+}
+
+# After
+render inertia: {
+  users: InertiaRails.optional { User.all }
+}
+```
+
+`InertiaRails.optional` only takes a block, so pass the value as one: `InertiaRails.lazy(-> { User.all })` becomes `InertiaRails.optional { User.all }`.
 
 ### ES2022 Build Target
 
