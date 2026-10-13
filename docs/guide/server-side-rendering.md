@@ -564,7 +564,7 @@ With the server running, you should be able to access your app within the browse
 
 When SSR rendering fails, Inertia gracefully falls back to client-side rendering. The Vite plugin logs detailed error information to the console, including the component name, request URL, source location, and a tailored hint to help you resolve the issue.
 
-Common SSR errors are automatically classified. Browser API errors (such as referencing `window` or `document` in server-rendered code) include guidance on moving the code to a lifecycle hook. Component resolution errors suggest checking file paths and casing.
+Common SSR errors are automatically classified. Browser API errors (such as referencing `window` or `document` in server-rendered code) include guidance on moving the code to a lifecycle hook. Components that depend on browser APIs may also be wrapped in [`WhenMounted`](#client-only-components). Component resolution errors suggest checking file paths and casing.
 
 The Rails adapter always logs SSR failures to `Rails.logger` at the `error` level, so a failure is never silent. Beyond that, exactly one of the following applies:
 
@@ -734,6 +734,81 @@ class DashboardController < ApplicationController
   inertia_config(ssr_enabled: -> { !complex_client_only_page? })
 end
 ```
+
+## Client-Only Components
+
+@available_since core=3.8.0
+
+Sometimes, a component relies on browser APIs such as `window` or `document` and cannot be rendered on the server. Instead of disabling SSR for the entire page, you may wrap the component in `WhenMounted`, which renders its children only after mounting in the browser. The `fallback` is rendered on the server and during hydration instead.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup>
+import { WhenMounted } from '@inertiajs/vue3'
+import Chart from '@/components/Chart.vue'
+</script>
+
+<template>
+  <WhenMounted>
+    <template #fallback>
+      <div>Loading chart...</div>
+    </template>
+
+    <Chart />
+  </WhenMounted>
+</template>
+```
+
+== React
+
+```jsx
+import { WhenMounted } from '@inertiajs/react'
+import Chart from '@/components/Chart'
+
+export default () => (
+  <WhenMounted fallback={<div>Loading chart...</div>}>
+    <Chart />
+  </WhenMounted>
+)
+```
+
+== Svelte
+
+```svelte
+<script>
+  import { WhenMounted } from '@inertiajs/svelte'
+  import Chart from '@/components/Chart.svelte'
+</script>
+
+<WhenMounted>
+  {#snippet fallback()}
+    <div>Loading chart...</div>
+  {/snippet}
+
+  <Chart />
+</WhenMounted>
+```
+
+:::
+
+The fallback only appears on the initial server-rendered page load. Subsequent visits, as well as applications not using SSR, render the children immediately.
+
+<React>
+
+JSX children are evaluated before `WhenMounted` renders, so expressions that access `window` directly still run on the server. You may pass a function as the children to defer their evaluation until the component mounts.
+
+```jsx
+<WhenMounted fallback={<div>Loading chart...</div>}>
+  {() => <Chart width={window.innerWidth} />}
+</WhenMounted>
+```
+
+</React>
+
+Note that `WhenMounted` only skips rendering on the server. The wrapped component is still part of your SSR bundle, so its module must be safe to import on the server.
 
 ## Deployment
 
