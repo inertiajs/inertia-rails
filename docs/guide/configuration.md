@@ -336,7 +336,7 @@ When enabled, the HTML output looks like:
 
 > [!NOTE]
 > When using this option make sure your client-side Inertia setup is configured to read the page data from the `<script>` element.
-> See the [client side setup](/guide/client-side-setup#script-element-for-page-data) for more details.
+> See the [upgrade guide](/guide/upgrade-guide#future-options-removed) for more details.
 
 ### `precognition_prevent_writes`
 
