@@ -15,7 +15,32 @@ createInertiaApp({
 })
 ```
 
-Open your browser's DevTools on your app and pick the **Inertia** panel.
+Open your browser's DevTools on your app and pick the **Inertia** panel. Navigate around your application and each visit will appear in the timeline.
+
+> [!NOTE]
+> Run the Vite development server for full functionality. In dev mode Inertia exposes the hooks the panel relies on for client-side detail such as visit options and request grouping. Without them, requests are still recorded, but some client-side features are unavailable.
+
+## The Timeline
+
+Every Inertia request is listed in the timeline on the left, with a live indicator while it is in flight. You may filter by method, request type, or status, or search by URL and component. Request types include full visits, [partial reloads](/guide/partial-reloads), [deferred prop loads](/guide/deferred-props), [polls](/guide/polling), [prefetches](/guide/prefetching), and [Precognition validation](/guide/precognition). Related requests are grouped rather than listed separately, so a page visit and its follow-up requests appear together. The grouping is determined on the client because only the browser can tell a poll from a full navigation or know whether a prefetch was served from cache.
+
+## Inspecting a Request
+
+Selecting a request opens its detail, split into four tabs.
+
+The **Props** tab lists every prop as a tree, with a badge indicating whether it is deferred, optional, merged, or shared with `inertia_share`, and a `file:line` link into your editor. Values expand inline. Alongside it, the **HTTP** tab shows the request and response headers and bodies with sensitive values [redacted](#redaction), and the **Route** tab shows the matched route name, URI, and controller action.
+
+The **Page** tab shows the full page state after Inertia has handled the response. A partial reload might send only one prop over the wire, but Inertia merges it into the existing page, so this tab shows the complete result, not only what arrived in the response.
+
+[What gets recorded](#what-gets-recorded) lists the server data behind each tab.
+
+## Client-Side Events
+
+Some interactions never reach the server, so the Network tab shows nothing for them. The extension records them as their own timeline entries: [client-side visits](/guide/manual-visits#client-side-visits) and requests served from the [prefetch](/guide/prefetching) cache.
+
+## Editor Links
+
+File references throughout the panel link directly to your editor. You may use the editor picker in the toolbar to choose your editor. VS Code, PhpStorm, Cursor, and Zed register their URL schemes on install and work out of the box. Sublime Text ships no URL-scheme handler, so its links do nothing until you install one such as [SublimeUrl](https://github.com/inopinatus/sublime_url).
 
 ## What gets recorded
 
@@ -64,6 +89,8 @@ A serializer nested in another one reports its own keys; DevTools adds the path 
 
 ## Enabling and disabling
 
+DevTools has two independent switches, one on the server and one on the client. Both default to on in development and off in production.
+
 Recording is on in development and off everywhere else. Set `config.devtools.enabled` (or the `INERTIA_DEVTOOLS_ENABLED` environment variable, `true` or `false`) to override:
 
 ```ruby
@@ -94,6 +121,10 @@ It also decides who may read entries. The read API inherits `base_controller`, a
 > The base controller's filters run on every entry the extension fetches. A filter that expects every action to authorize something, such as Pundit's `verify_authorized`, needs a skip in `InertiaRails::Devtools::EntriesController`. The base controller is read when the app boots: set it in an initializer and restart the server after changing it.
 
 The extension reads an entry for every response it sees, so those requests are kept out of the log. Only the `/_inertia/devtools` paths are silenced; your app's own requests log normally.
+
+On the client, the hooks follow the `dev` option of `createInertiaApp()` shown in [Installation](#installation). These hooks expose the visit options and request grouping described above, so turning them off leaves the timeline recording requests without that client-side detail.
+
+To disable the panel itself, toggle the extension off from your browser's extensions page, such as `chrome://extensions`.
 
 ## Redaction
 
