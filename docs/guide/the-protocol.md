@@ -554,3 +554,50 @@ The following status codes are used for [Precognition](/guide/forms#precognition
 | :--------------------------- | :--------------------------------------------------------------------------------------------- |
 | **204 No Content**           | Successful Precognition validation request with no validation errors.                          |
 | **422 Unprocessable Entity** | Precognition validation request with validation errors. The response body contains the errors. |
+
+## Server-Side Rendering
+
+Inertia does not server-side render the page components by default. Enabling [SSR](/guide/server-side-rendering) introduces a second wire contract, this time between Inertia Rails and Inertia's Node SSR server. Inertia Rails POSTs the page object to the SSR server, which returns the pre-rendered markup for the HTML document.
+
+```http
+REQUEST
+POST: http://localhost:13714/render
+Content-Type: application/json
+
+{"component":"Event","props":{"errors":{},"event":{"id":80,"title":"Birthday party"}},"url":"/events/80","version":"c32b8e4965f418ad16eaebba1d4e960f"}
+
+RESPONSE
+HTTP/1.1 200 OK
+Content-Type: application/json
+Server: Inertia.js SSR
+
+{"head":["<title>Birthday party<\/title>"],"body":"<script data-page=\"app\" type=\"application\/json\">{\"component\":\"Event\",...}<\/script><div data-server-rendered=\"true\" id=\"app\"><h1>Birthday party<\/h1><\/div>"}
+```
+
+Inertia Rails sends this request to [`ssr_url`](/guide/configuration#ssr-url-experimental), which defaults to `http://localhost:13714`, and appends `/render` unless the URL already ends with `/render` or `/__inertia_ssr`. In development, when the Vite dev server is running and `ssr_url` isn't set, it posts to the dev server's `/__inertia_ssr` endpoint instead. It waits up to [`ssr_timeout`](/guide/configuration#ssr-timeout) seconds for the response.
+
+The response fills the two slots of the root template. The `head` array holds the elements that belong in the document's `<head>`, such as the title and meta tags. Inertia Rails joins them and returns them from the [`inertia_ssr_head`](/guide/responses#inertia-ssr-head) helper in your layout. The `body` string takes the place of the page object script tag and root `<div>` that a non-SSR document would render, since the SSR server already includes both in its markup. Inertia Rails renders it as the view inside your layout. It carries `data-server-rendered="true"` so the client hydrates the existing DOM instead of mounting a fresh app. The SSR server escapes the embedded page object itself, so Inertia Rails prints the `body` markup as is.
+
+The SSR server exposes two additional endpoints. A `GET` request to `/health` returns `{"status":"OK"}`, and a `POST` to `/shutdown` stops the process. The Inertia Rails [Puma plugin](/guide/server-side-rendering#puma-plugin) uses both: it polls `/health` while the SSR server boots and calls `/shutdown` to stop it.
+
+A failed render returns a `500` response whose JSON body classifies the error rather than just reporting it.
+
+```json
+{
+  "error": "window is not defined",
+  "type": "browser-api",
+  "component": "events/show",
+  "url": "/events/80",
+  "browserApi": "The global window object",
+  "hint": "The global window object doesn't exist in Node.js. Wrap browser-specific code in a lifecycle hook...",
+  "stack": "ReferenceError: window is not defined\n    at ...",
+  "sourceLocation": "app/frontend/pages/events/show.vue:14:3",
+  "timestamp": "2026-03-14T09:21:44.512Z"
+}
+```
+
+The `error` message, `hint`, and `timestamp` are always present, while `component`, `url`, `stack`, and `sourceLocation` appear whenever the SSR server can determine them. The `type` narrows the cause to `browser-api` for a browser global touched during render, which also sets `browserApi` to the offending API, `component-resolution` for a page component that could not be resolved, or `render` for anything else thrown by your components.
+
+Inertia Rails treats a failed render as non-fatal. It logs the failure to `Rails.logger` and falls back to the standard client-side rendered document, so a broken SSR build never takes the site down. It wraps the payload in an `InertiaRails::SSRError`, which exposes `type`, `hint`, `browser_api`, `stack`, and `source_location`. When the SSR server can't be reached or doesn't answer in time, the error gets a `connection` type of its own.
+
+If you defined an [`on_ssr_error`](/guide/server-side-rendering#customizing-error-handling) callback, Inertia Rails passes the error to it. Otherwise, it reports the error through `Rails.error`. With [`ssr_raise_on_error`](/guide/server-side-rendering#raising-on-error) enabled, it raises the error instead of falling back, and skips the `Rails.error` report. See [error handling](/guide/server-side-rendering#error-handling).
