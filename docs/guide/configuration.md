@@ -162,6 +162,67 @@ The URL of the SSR server. When `nil`, auto-detects from the Vite dev server.
 
 Seconds to wait for the SSR server to connect and respond. When the wait runs out, the page falls back to client-side rendering, as on any other SSR error.
 
+### `ssr_raise_on_error`
+
+**Default**: `false`
+**ENV**: `INERTIA_SSR_RAISE_ON_ERROR`
+
+@available_since rails=3.19.0
+
+When enabled, SSR failures raise `InertiaRails::SSRError` instead of falling back to client-side rendering. The failure is still logged and passed to `on_ssr_error` if you defined one, but it is not reported to `Rails.error`. Not recommended for production.
+
+```ruby
+InertiaRails.configure do |config|
+  config.ssr_raise_on_error = Rails.env.test?
+end
+```
+
+See [Raising on Error](/guide/server-side-rendering#raising-on-error).
+
+### `on_ssr_error`
+
+**Default**: `nil`
+
+@available_since rails=3.19.0
+
+A callable that receives the `InertiaRails::SSRError` and the page hash when SSR fails. Defining it replaces the automatic report to `Rails.error`.
+
+```ruby
+InertiaRails.configure do |config|
+  config.on_ssr_error = ->(error, page) do
+    Rails.logger.warn("SSR failed for #{page[:component]}: #{error.message}")
+  end
+end
+```
+
+See [Customizing Error Handling](/guide/server-side-rendering#customizing-error-handling).
+
+### `ssr_bundle`
+
+**Default**: `nil`
+**ENV**: `INERTIA_SSR_BUNDLE`
+
+@available_since rails=3.19.0
+
+A path, or an array of paths, to your SSR bundle. When set, Inertia Rails only attempts SSR if one of the files exists, and renders on the client otherwise. The check is skipped while the Vite dev server is running. The [Puma plugin](/guide/server-side-rendering#puma-plugin) also starts the first path that exists.
+
+```ruby
+InertiaRails.configure do |config|
+  config.ssr_bundle = 'public/vite-ssr/ssr.js'
+end
+```
+
+When `nil`, every render attempts SSR, and the Puma plugin finds the bundle on its own (see [Bundle Resolution](/guide/server-side-rendering#bundle-resolution)). Keep it `nil` when the web server cannot see the bundle, for example when the SSR server runs in a separate container.
+
+### `ssr_runtime`
+
+**Default**: `nil` (auto-detected)
+**ENV**: `INERTIA_SSR_RUNTIME`
+
+@available_since rails=3.20.0
+
+The JavaScript runtime the [Puma plugin](/guide/server-side-rendering#puma-plugin) uses to run the SSR bundle, such as `"node"`, `"bun"`, or `"deno"`. When `nil`, it is detected from your lockfile. The Puma plugin only reads the global setting. See [Runtime Detection](/guide/server-side-rendering#runtime-detection).
+
 ### `version` _(recommended)_
 
 **Default**: `nil`
