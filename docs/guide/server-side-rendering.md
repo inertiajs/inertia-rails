@@ -622,14 +622,21 @@ The callback receives an `InertiaRails::SSRError` and the page hash, giving you 
 
 ### Raising on Error
 
-For CI or E2E testing, you may prefer SSR failures to raise an exception instead of falling back silently. Set the `ssr_raise_on_error` option in your initializer.
+Since Inertia falls back to client-side rendering, SSR failures may go unnoticed. Your tests pass because the client-side render succeeds, but your users never receive server-rendered HTML. This is especially common in system tests.
+
+You may set the `ssr_raise_on_error` option in your `config/initializers/inertia_rails.rb` file to raise an exception instead of falling back, so you catch SSR issues early.
 
 ```ruby
 # config/initializers/inertia_rails.rb
 InertiaRails.configure do |config|
-  config.ssr_raise_on_error = true
+  config.ssr_raise_on_error = Rails.env.test?
 end
 ```
+
+> [!WARNING]
+> This option is not recommended for production. SSR failures will return an error response instead of falling back to client-side rendering.
+
+You may also set the `INERTIA_SSR_RAISE_ON_ERROR` environment variable to `true`, for example on CI. It only applies when your initializer does not set the option.
 
 ## SSR Response Caching
 
