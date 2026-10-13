@@ -29,6 +29,7 @@ module InertiaRails
       @encrypt_history = options.fetch(:encrypt_history, @configuration.encrypt_history)
       @clear_history = options.fetch(:clear_history, controller.session[:inertia_clear_history] || false)
       @preserve_fragment = options.fetch(:preserve_fragment, controller.session[:inertia_preserve_fragment] || false)
+      @preserve_big_integers = options.fetch(:preserve_big_integers, @configuration.preserve_big_integers)
       @layout_override = options.fetch(:layout) { @configuration.layout }
       @ssr_cache = options[:ssr_cache]
 
@@ -162,9 +163,6 @@ module InertiaRails
 
       resolved_props = @configuration.prop_transformer(props: resolved_props)
 
-      # Add meta tags (never transformed by prop_transformer)
-      merge_meta_tags!(resolved_props)
-
       page = {
         component: @component,
         props: resolved_props,
@@ -181,6 +179,10 @@ module InertiaRails
       page[:preserveFragment] = @preserve_fragment if @preserve_fragment
 
       page.merge!(metadata)
+      page = BigIntegers.encode(page).merge(preserveBigIntegers: true) if @preserve_big_integers
+
+      # Add meta tags (never transformed by prop_transformer or BigIntegers)
+      merge_meta_tags!(page[:props])
       @recorder&.page_rendered(page)
       page
     end

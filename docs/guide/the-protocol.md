@@ -138,6 +138,7 @@ Inertia shares data between the server and client via a page object. This object
 - `encryptHistory`: Whether or not to [encrypt the current page's history state](/guide/history-encryption). Only included when `true`.
 - `clearHistory`: Whether or not to clear any [encrypted history state](/guide/history-encryption#clearing-history). Only included when `true`.
 - `preserveFragment`: Whether to [preserve the URL fragment](/guide/redirects#preserving-fragments) from the original request across a redirect.
+- `preserveBigIntegers`: Whether `{"$bigint": "..."}` markers in `props` and `flash` should be turned into [`BigInt` values](/guide/big-integers). Only included when `true`.
 - `mergeProps`: Array of prop keys that should be [merged](/guide/merging-props) (appended) during navigation.
 - `prependProps`: Array of prop keys that should be [prepended](/guide/merging-props) during navigation.
 - `deepMergeProps`: Array of prop keys that should be [deep merged](/guide/merging-props#deep-merge) during navigation.

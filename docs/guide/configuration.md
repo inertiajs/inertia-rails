@@ -111,6 +111,15 @@ When enabled, you instruct Inertia to encrypt your app's history, it uses
 the browser's built-in [`crypto` api](https://developer.mozilla.org/en-US/docs/Web/API/Crypto)
 to encrypt the current page's data before pushing it to the history state.
 
+### `preserve_big_integers`
+
+**Default**: `false`
+**ENV**: `INERTIA_PRESERVE_BIG_INTEGERS`
+
+@available_since rails=master core=3.8.0
+
+When enabled, integers outside JavaScript's safe range reach your components as native `BigInt` values instead of losing precision. See [Big Integers](/guide/big-integers) for details.
+
 ### `ssr_enabled` _(experimental)_
 
 **Default**: `false`
