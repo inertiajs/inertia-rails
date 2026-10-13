@@ -191,6 +191,52 @@ Only `component`, `props`, `url`, and `version` are present on every page object
 
 The remaining fields are conditional, and Inertia Rails includes them only when the corresponding behavior applies. Absent fields default on the client to an empty array, an empty object, or `false`.
 
+## Prop Evaluation Model
+
+Every prop your server returns falls into one or more categories. The category determines whether the prop is resolved for a given request and what metadata, if any, the page object carries to describe it. These rules are purely a server-side resolution concern. The client applies whatever metadata it receives.
+
+Inertia Rails builds these categories with its prop helpers: `InertiaRails.always`, `InertiaRails.optional`, `InertiaRails.defer`, `InertiaRails.merge` and `InertiaRails.deep_merge`, `InertiaRails.once`, and `InertiaRails.scroll`. Any other value, including a lambda, is a regular prop.
+
+Resolution differs between the two request modes. A full visit resolves the complete set of eligible props. A partial reload resolves only the props the client asked for, keyed on the page component.
+
+**Full visit**
+
+| Prop category                | Resolved?                                | Metadata emitted                                               |
+| :--------------------------- | :--------------------------------------- | :------------------------------------------------------------- |
+| Regular                      | Yes                                      | none                                                           |
+| Always                       | Yes (immune to `only`/`except`)          | none                                                           |
+| Optional                     | No (not resolved, not announced)         | none                                                           |
+| Deferred                     | No (announced only)                      | `deferredProps`                                                |
+| Merge / deep merge / prepend | Yes                                      | `mergeProps`, `deepMergeProps`, `prependProps`, `matchPropsOn` |
+| Once                         | Yes, unless already remembered by client | `onceProps`                                                    |
+| Scroll                       | Yes                                      | `scrollProps`, `mergeProps`                                    |
+
+**Partial reload**
+
+| Prop category                | Resolved?                                                                    | Metadata emitted                                               |
+| :--------------------------- | :--------------------------------------------------------------------------- | :------------------------------------------------------------- |
+| Regular                      | Only when requested via `only`/`except`                                      | none                                                           |
+| Always                       | Yes (immune to `only`/`except`)                                              | none                                                           |
+| Optional                     | Only when selected via `only`/`except`                                       | none                                                           |
+| Deferred                     | Only when selected via `only`/`except`                                       | `rescuedProps` (on rescue)                                     |
+| Merge / deep merge / prepend | When resolved                                                                | `mergeProps`, `deepMergeProps`, `prependProps`, `matchPropsOn` |
+| Once                         | When selected via `only`/`except`, unless remembered and not named in `only` | `onceProps`                                                    |
+| Scroll                       | When resolved                                                                | `scrollProps`, `mergeProps`                                    |
+
+A few metadata fields are mode-specific:
+
+- `deferredProps` is populated on full visits only. It's absent on partial reloads, since deferred props resolve in the follow-up request.
+- `rescuedProps` is populated on partial reloads only, listing deferred props that failed to resolve.
+- Merge, scroll, and once metadata is emitted per response, alongside whichever props carry those behaviors.
+
+### Always Props
+
+Always props are resolved on every response in both modes. They ignore the partial reload filters entirely, so an always prop is sent even when a request lists it in `except`. They carry no page object metadata, since they're purely a server-side resolution rule. Inertia Rails treats the `errors` prop as an always prop, so partial reloads include it whenever it's present.
+
+### Composing Categories
+
+A prop may belong to several categories at once, such as `InertiaRails.defer(merge: true)` or `InertiaRails.scroll(defer: true)`. The metadata fields are independent, so the page object carries every label that applies, subject to the mode, the partial reload filters, and the [reset rules](#resetting-props). For example, a deferred merge prop is listed in both `deferredProps` and `mergeProps` on the full visit.
+
 ## Partial Reloads
 
 When making Inertia requests, the partial reload option allows you to request a subset of the props (data) from the server on subsequent visits to the _same_ page component. This can be a helpful performance optimization if it's acceptable that some page data becomes stale. See the [partial reloads](/guide/partial-reloads) documentation for details.
