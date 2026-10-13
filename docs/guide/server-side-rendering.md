@@ -717,6 +717,8 @@ InertiaRails.configure do |config|
 end
 ```
 
+To keep SSR in your build but skip it in tests, see [Disabling SSR During Tests](/guide/testing#disabling-ssr-during-tests).
+
 ## Excluding Controllers from SSR
 
 Sometimes you may wish to skip server-side rendering for certain controllers while keeping SSR enabled for the rest of your application.
