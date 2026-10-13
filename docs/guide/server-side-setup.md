@@ -5,6 +5,9 @@ The first step when installing Inertia is to configure your server-side framewor
 > [!NOTE]
 > For the official Laravel adapter instructions, please see the [official documentation](https://inertiajs.com/docs/v3/installation/server-side-setup).
 
+> [!TIP]
+> The [Inertia Rails starter kits](/guide/starter-kits) provide out-of-the-box scaffolding for new Inertia applications. They're the fastest way to start a new project. To install Inertia into an existing application, follow the steps below.
+
 ## Install Dependencies
 
 First, install the Inertia server-side adapter gem and add to the application's Gemfile by executing:
@@ -96,6 +99,8 @@ First, setup the root template that will be loaded on the first page visit. This
 
 This template should include your assets, as well as the `yield` method to render the Inertia page. The `inertia_ssr_head` method is used to include the Inertia headers in the response, it's required when [SSR](/guide/server-side-rendering.md) is enabled.
 
+You may also render [fallback head elements](/guide/title-and-meta#ssr-fallback) when SSR is not active.
+
 Inertia's adapter will use standard Rails layout inheritance, with `app/views/layouts/application.html.erb` as a default layout. If you would like to use a different layout, set it with the Rails `layout` method in your controller.
 
 ```ruby
@@ -106,11 +111,12 @@ end
 
 ## Configuration
 
-Next, create an initializer. Inertia.js v3 clients need the following options, which the Rails generator sets for you.
+Next, create an initializer. Inertia.js v3 clients need the `use_script_element_for_initial_page`, `use_data_inertia_head_attribute`, and `always_include_errors_hash` options. The `version` option sets your [asset version](/guide/asset-versioning). The Rails generator sets all of them for you.
 
 ```ruby
 # config/initializers/inertia_rails.rb
 InertiaRails.configure do |config|
+  config.version = ViteRuby.digest # or any other versioning method
   config.use_script_element_for_initial_page = true
   config.use_data_inertia_head_attribute = true
   config.always_include_errors_hash = true
@@ -118,6 +124,25 @@ end
 ```
 
 See the [configuration](/guide/configuration) guide for all available options.
+
+## Base Controller
+
+Inertia Rails adds its middleware and controller methods automatically, so there's nothing to register. To define [shared data](/guide/shared-data) for your Inertia pages, call `inertia_share` in a base controller. The Rails generator creates an `InertiaController` for this:
+
+```ruby
+# app/controllers/inertia_controller.rb
+class InertiaController < ApplicationController
+  inertia_share user: -> { Current.user&.as_json(only: [:id, :name, :email]) }
+end
+```
+
+Then inherit your Inertia controllers from it:
+
+```ruby
+class EventsController < InertiaController
+  # ...
+end
+```
 
 ## Creating Responses
 
