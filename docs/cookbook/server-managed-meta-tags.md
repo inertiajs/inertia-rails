@@ -53,15 +53,15 @@ createInertiaApp({
 })
 ```
 
-That's it — no custom component is needed. This works in React, Vue, and Svelte (even though Svelte has no `<Head>` component), meta tags re-sync on every navigation including partial reloads, and page-level `<Head>` elements override server tags with a matching `head-key`.
+That's it, no custom component is needed. This works in React, Vue, and Svelte (even though Svelte has no `<Head>` component), meta tags re-sync on every navigation including partial reloads, and page-level `<Head>` elements override server tags with a matching `head-key`.
 
-The meta tags travel in the `head` prop. If your app already uses a prop with that name, pick a custom one — Inertia Rails raises an error on the conflict — and pass it on both sides: `config.server_head = 'server_meta'` and `serverHead: 'server_meta'`. In tests, note that the prop contains rendered HTML strings rather than structured hashes.
+The meta tags travel in the `head` prop. If your app already uses a prop with that name, Inertia Rails raises an error on the conflict. Pick a custom name and pass it on both sides: `config.server_head = 'server_meta'` and `serverHead: 'server_meta'`. In tests, note that the prop contains rendered HTML strings rather than structured hashes.
 
 > [!WARNING]
 > Enable both sides together. With `serverHead` set on the client but `config.server_head` disabled (or vice versa), meta tags silently disappear: the client reads a prop the server doesn't send, and the cookbook component below cannot render HTML strings.
 
 > [!NOTE]
-> When using [SSR](/guide/server-side-rendering), pass the same `serverHead` option to `createInertiaApp` in your SSR entrypoint. The tags are then delivered through `inertia_ssr_head` instead. Keep both helpers in your layout: exactly one of them renders per response — `inertia_meta_tags` is empty on SSR-rendered responses (except for its `default_title` when the SSR head has no `<title>`), and `inertia_ssr_head` is empty when SSR is disabled or falls back — so the tags never duplicate.
+> When using [SSR](/guide/server-side-rendering), pass the same `serverHead` option to `createInertiaApp` in your SSR entrypoint. The tags are then delivered through `inertia_ssr_head` instead. Keep both helpers in your layout. Exactly one of them renders per response, so the tags never duplicate: `inertia_meta_tags` is empty on SSR-rendered responses (except for its `default_title` when the SSR head has no `<title>`), and `inertia_ssr_head` is empty when SSR is disabled or falls back.
 
 #### Older clients (cookbook component)
 
