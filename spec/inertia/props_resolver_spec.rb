@@ -745,6 +745,15 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:onceProps]).to eq({ 'locale' => { prop: 'locale' } })
     end
 
+    it 'resolves a once prop already loaded by the client on a partial reload' do
+      page = resolve(
+        { locale: InertiaRails.once { 'en' }, timezone: 'UTC' },
+        visit: { component: true, except: ['timezone'], except_once: ['locale'] }
+      )
+
+      expect(page[:props]).to eq({ locale: 'en' })
+    end
+
     it 'resolves nested once prop on initial load with dot-path metadata' do
       page = resolve({ config: { locale: InertiaRails.once { 'en' } } })
 
