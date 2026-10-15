@@ -130,7 +130,7 @@ end
 
 ### Test Flash Messages
 
-Inertia Rails automatically shares [flash data](/guide/flash-data) with your frontend.
+Inertia Rails automatically shares [flash data](/guide/flash-data) with your frontend. Flash messages usually come with a redirect, so follow it before asserting.
 
 :::tabs key:tests
 
@@ -140,6 +140,7 @@ Inertia Rails automatically shares [flash data](/guide/flash-data) with your fro
 RSpec.describe '/events' do
   it 'shows flash message after create' do
     post events_path, params: { event: { title: 'New Event' } }
+    follow_redirect!
 
     expect(inertia).to have_flash(notice: 'Event created!')
     expect(inertia).to have_exact_flash(notice: 'Event created!')
@@ -155,6 +156,7 @@ end
 class EventsTest < ActionDispatch::IntegrationTest
   test 'shows flash message after create' do
     post events_path, params: { event: { title: 'New Event' } }
+    follow_redirect!
 
     assert_inertia_flash notice: 'Event created!'
     assert_inertia_flash_equal notice: 'Event created!'
@@ -168,7 +170,7 @@ end
 
 ### Test Validation Errors
 
-[Validation errors](/guide/validation) are shared as props automatically when using `redirect_to` with `inertia_errors`. Assert them on the `errors` key.
+[Validation errors](/guide/validation) are shared as props automatically when you redirect with `inertia: { errors: ... }`. Follow the redirect and assert them on the `errors` key.
 
 :::tabs key:tests
 
@@ -178,6 +180,7 @@ end
 RSpec.describe '/events' do
   it 'returns validation errors' do
     post events_path, params: { event: { title: '' } }
+    follow_redirect!
 
     expect(inertia).to render_component 'events/new'
     expect(inertia).to have_props(errors: { title: ["can't be blank"] })
@@ -191,6 +194,7 @@ end
 class EventsTest < ActionDispatch::IntegrationTest
   test 'returns validation errors' do
     post events_path, params: { event: { title: '' } }
+    follow_redirect!
 
     assert_inertia_component 'events/new'
     assert_inertia_props errors: { title: ["can't be blank"] }
@@ -340,7 +344,7 @@ end
 
 @available_since rails=3.18.0
 
-By default, [optional](/guide/partial-reloads#optional-props) and [deferred](/guide/deferred-props) props are excluded on first load — just like in production. This means `inertia.props[:my_optional]` returns `nil` unless you simulate a partial reload.
+By default, [optional](/guide/partial-reloads#lazy-data-evaluation) and [deferred](/guide/deferred-props) props are excluded on first load — just like in production. This means `inertia.props[:my_optional]` returns `nil` unless you simulate a partial reload.
 
 To have these props evaluated on first load in tests, enable `evaluate_optional_props`:
 

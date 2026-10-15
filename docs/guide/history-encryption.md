@@ -12,11 +12,18 @@ History encryption relies on `window.crypto.subtle` which is only available in s
 
 ## Opting in
 
-History encryption is an opt-in feature. There are several methods for enabling it:
+History encryption is disabled by default in the Rails adapter. The [Rails generator](/guide/server-side-setup#rails-generator) enables it globally in new apps. There are several methods for enabling it:
 
 ### Global Encryption
 
 If you'd like to enable history encryption globally, set the `encrypt_history` config value to `true`.
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.encrypt_history = true
+end
+```
 
 You are able to opt out of encryption on specific pages by passing `false` to the `encrypt_history` option.
 
@@ -66,4 +73,4 @@ Once the response has rendered on the client, the encryption key will be rotated
 > [!NOTE]
 > Clearing history only protects pages that were stored encrypted. With `encrypt_history` disabled, history entries are stored in plain text and remain readable after the key rotation, so the Back button will still restore them.
 
-You can also clear history on the client site by calling `router.clearHistory()`.
+You can also clear history on the client side by calling `router.clearHistory()`.

@@ -125,7 +125,7 @@ Returns `true` when the current request is rendering an Inertia response. This i
 
 ### `inertia_root`
 
-Renders the root element for the Inertia app. This helper automatically respects the [`root_dom_id`](/guide/configuration#root_dom_id) and [`use_script_element_for_initial_page`](/guide/configuration#use_script_element_for_initial_page) configuration options.
+Renders the root element for the Inertia app. This helper automatically respects the [`root_dom_id`](/guide/configuration#root-dom-id) and [`use_script_element_for_initial_page`](/guide/configuration#use-script-element-for-initial-page) configuration options.
 
 ```erb
 <%= inertia_root %>
@@ -153,6 +153,19 @@ Returns the SSR head content when [server-side rendering](/guide/server-side-ren
     <%= yield %>
   </body>
 </html>
+```
+
+@available_since rails=master
+
+Pass a block to render fallback head elements when the response isn't server-side rendered. When SSR is active, the `<Head>` component already provides these elements, so the block is skipped. Give fallback `<meta>` tags a `data-inertia` key, so the `<Head>` component replaces them instead of adding a duplicate.
+
+```erb
+<head>
+  <%= inertia_ssr_head do %>
+    <title>My App</title>
+    <meta data-inertia="description" name="description" content="My application description">
+  <% end %>
+</head>
 ```
 
 ### `inertia_meta_tags`

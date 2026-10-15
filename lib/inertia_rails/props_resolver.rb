@@ -88,7 +88,11 @@ module InertiaRails
       props.each_with_object({}) do |(key, prop), transformed_props|
         path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"
 
-        prop = serialize(prop, path) if self.class.serializer?(prop)
+        if self.class.serializer?(prop)
+          next if !parent_was_resolved && excluded_by_partial_request?(path)
+
+          prop = serialize(prop, path)
+        end
 
         if prop.is_a?(Hash) && prop.any?
           next if !parent_was_resolved && excluded_by_partial_request?(path)

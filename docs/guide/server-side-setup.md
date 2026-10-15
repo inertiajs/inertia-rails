@@ -3,7 +3,7 @@
 The first step when installing Inertia is to configure your server-side framework.
 
 > [!NOTE]
-> For the official Laravel adapter instructions, please see the [official documentation](https://inertiajs.com/server-side-setup).
+> For the official Laravel adapter instructions, please see the [official documentation](https://inertiajs.com/docs/v3/installation/server-side-setup).
 
 ## Install Dependencies
 
@@ -31,7 +31,7 @@ This command will:
 - Ask if you want to install Tailwind CSS
 - Install necessary dependencies
 - Set up the application to work with Inertia
-- Copy example Inertia controller and views (can be skipped with the `--skip-example` option)
+- Copy example Inertia controller and views (can be skipped with the `--skip-example-page` option)
 
 With that done, you can now start the Rails server and the Vite development server (we recommend using [Overmind](https://github.com/DarthSim/overmind)):
 
@@ -39,7 +39,7 @@ With that done, you can now start the Rails server and the Vite development serv
 bin/dev
 ```
 
-And navigate to `http://localhost:3100/inertia-example` to see the example Inertia page.
+And navigate to `http://localhost:3000/inertia-example` to see the example Inertia page.
 
 That's it! You're all set up to start using Inertia in your Rails application. Check the guide on [creating pages](/guide/pages) to know more.
 
@@ -96,18 +96,32 @@ First, setup the root template that will be loaded on the first page visit. This
 
 This template should include your assets, as well as the `yield` method to render the Inertia page. The `inertia_ssr_head` method is used to include the Inertia headers in the response, it's required when [SSR](/guide/server-side-rendering.md) is enabled.
 
-Inertia's adapter will use standard Rails layout inheritance, with `view/layouts/application.html.erb` as a default layout. If you would like to use a different default layout, you can change it using the `InertiaRails.configure`.
+Inertia's adapter will use standard Rails layout inheritance, with `app/views/layouts/application.html.erb` as a default layout. If you would like to use a different layout, set it with the Rails `layout` method in your controller.
+
+```ruby
+class EventsController < ApplicationController
+  layout 'my_inertia_layout'
+end
+```
+
+## Configuration
+
+Next, create an initializer. Inertia.js v3 clients need the following options, which the Rails generator sets for you.
 
 ```ruby
 # config/initializers/inertia_rails.rb
 InertiaRails.configure do |config|
-  config.layout = 'my_inertia_layout'
+  config.use_script_element_for_initial_page = true
+  config.use_data_inertia_head_attribute = true
+  config.always_include_errors_hash = true
 end
 ```
 
-# Creating Responses
+See the [configuration](/guide/configuration) guide for all available options.
 
-That's it, you're all ready to go server-side! Once you setup the [client-side](/guide/client-side-setup.md) framework, you can start start creating Inertia [pages](/guide/pages.md) and rendering them via [responses](/guide/responses.md).
+## Creating Responses
+
+That's it, you're all ready to go server-side! Once you setup the [client-side](/guide/client-side-setup.md) framework, you can start creating Inertia [pages](/guide/pages.md) and rendering them via [responses](/guide/responses.md).
 
 ```ruby
 class EventsController < ApplicationController

@@ -142,7 +142,9 @@ Update your main JavaScript file to boot your Inertia app. The Vite plugin handl
 ```js
 import { createInertiaApp } from '@inertiajs/vue3'
 
-createInertiaApp()
+createInertiaApp({
+  pages: '../pages',
+})
 ```
 
 == React
@@ -150,7 +152,9 @@ createInertiaApp()
 ```js
 import { createInertiaApp } from '@inertiajs/react'
 
-createInertiaApp()
+createInertiaApp({
+  pages: '../pages',
+})
 ```
 
 == Svelte
@@ -158,12 +162,14 @@ createInertiaApp()
 ```js
 import { createInertiaApp } from '@inertiajs/svelte'
 
-createInertiaApp()
+createInertiaApp({
+  pages: '../pages',
+})
 ```
 
 :::
 
-The plugin generates a default resolver that looks for pages in both `./pages` and `./Pages` directories, and the app mounts automatically.
+The `pages` path is relative to the entry point. The Rails generator places the entry point in `app/frontend/entrypoints` and your pages in `app/frontend/pages`, so it uses `../pages`. Without the `pages` option, the plugin looks for pages in the `./pages` and `./Pages` directories next to the entry point. The app mounts automatically.
 
 ### React Strict Mode
 
@@ -398,7 +404,7 @@ createInertiaApp({
 If you prefer not to use the Vite plugin, you may provide the `resolve` and `setup` callbacks manually. The `resolve` callback tells Inertia how to load a page component and receives the component name and the full [page object](/guide/the-protocol). The `setup` callback initializes the client-side framework.
 
 > [!NOTE]
-> A manual `setup` callback prevents the Vite plugin from auto-generating [SSR](/guide/server-side-rendering) handling. You should create a [separate SSR entry point](/guide/server-side-rendering#ssr-entry-point) and update your app to use [client-side hydration](/guide/server-side-rendering#client-side-hydration).
+> A manual `setup` callback prevents the Vite plugin from auto-generating [SSR](/guide/server-side-rendering) handling. You should create a [separate SSR entry point](/guide/server-side-rendering#manual-setup) and update your app to use [client-side hydration](/guide/server-side-rendering#client-side-hydration).
 
 :::tabs key:frameworks
 
@@ -565,7 +571,7 @@ createInertiaApp({
 })
 ```
 
-If you change the `id` of the root element, be sure to update it [server-side](/guide/server-side-setup#root-template) as well.
+If you change the `id` of the root element, be sure to update it [server-side](/guide/configuration#root-dom-id) as well.
 
 ## Content Security Policy
 

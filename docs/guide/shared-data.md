@@ -167,7 +167,7 @@ You may configure the shared props type globally using [TypeScript's declaration
 
 ## Flash Data
 
-@available_since rails=3.17.0 core=2.3.3
+@available_since rails=3.16.0 core=2.3.3
 
 For one-time notifications like toast messages or success alerts, you may use [flash data](/guide/flash-data). Unlike shared data, flash data is not persisted in the browser's history state, so it won't reappear when navigating through history.
 
