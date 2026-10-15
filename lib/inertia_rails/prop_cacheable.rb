@@ -22,11 +22,11 @@ module InertiaRails
       !@cache_key.nil?
     end
 
-    def call(controller, **context)
+    def call(controller, **)
       return super unless cached?
 
       json = InertiaRails.cache_store.fetch(@cache_key, **(@cache_options || {})) do
-        resolve_for_cache(super, controller, context).to_json
+        resolve_for_cache(super, controller).to_json
       end
       RawJson.new(json)
     end
@@ -35,14 +35,14 @@ module InertiaRails
 
     # The cached JSON is replayed to every visit, so everything inside is evaluated now. A serializer's
     # `as_json` would cache its instance variables, and a closure or prop type would cache as junk.
-    def resolve_for_cache(value, controller, context)
-      return resolve_for_cache(value.to_inertia, controller, context) if PropsResolver.serializer?(value)
+    def resolve_for_cache(value, controller)
+      return resolve_for_cache(value.to_inertia, controller) if PropsResolver.serializer?(value)
 
       case value
-      when Proc then resolve_for_cache(controller.instance_exec(&value), controller, context)
-      when BaseProp then resolve_for_cache(value.call(controller, **context), controller, context)
-      when Hash then value.dup.transform_values! { |inner| resolve_for_cache(inner, controller, context) }
-      when Array then value.dup.map! { |inner| resolve_for_cache(inner, controller, context) }
+      when Proc then resolve_for_cache(controller.instance_exec(&value), controller)
+      when BaseProp then resolve_for_cache(value.call(controller), controller)
+      when Hash then value.dup.transform_values! { |inner| resolve_for_cache(inner, controller) }
+      when Array then value.dup.map! { |inner| resolve_for_cache(inner, controller) }
       else value
       end
     end

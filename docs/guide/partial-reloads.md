@@ -240,7 +240,7 @@ Here's a summary of each approach:
 
 @available_since core=3.0.0
 
-Since the Rails adapter shares errors using `InertiaRails.always`, they are included in every response, even partial reloads where no validation runs. This means an empty errors hash from the server will overwrite any existing client-side validation errors. You may use the `preserveErrors` option to keep existing errors when the server doesn't return new ones.
+The Rails adapter shares errors using `InertiaRails.always`. With [`always_include_errors_hash`](/guide/configuration#always-include-errors-hash) enabled, as the Rails generator does, every response includes an errors hash, even partial reloads where no validation runs. This means an empty errors hash from the server will overwrite any existing client-side validation errors. You may use the `preserveErrors` option to keep existing errors when the server doesn't return new ones.
 
 :::tabs key:frameworks
 
@@ -277,7 +277,7 @@ router.reload({
 
 @available_since rails=3.15.0 core=2.2.20
 
-You may pass the `once: true` argument to a deferred prop to ensure the data is resolved only once and remembered by the client across subsequent navigations.
+You may pass the `once: true` argument to an optional prop to ensure the data is resolved only once and remembered by the client across subsequent navigations.
 
 ```ruby
 class UsersController < ApplicationController

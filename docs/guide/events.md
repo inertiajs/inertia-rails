@@ -583,7 +583,7 @@ The `success` event is not cancelable.
 
 ## Flash
 
-@available_since rails=3.17.0 core=2.3.3
+@available_since rails=3.16.0 core=2.3.3
 
 The `flash` event fires when [flash data](/guide/flash-data) is received from the server. This is useful for displaying toast notifications or handling temporary data in a central location.
 
@@ -627,7 +627,7 @@ router.on('flash', (event) => {
 
 :::
 
-The `flash` event is not cancelable. [Partial reloads](/guide/partial-reloads) will only trigger the event if the flash data has changed.
+The `flash` event is not cancelable and fires on every response that carries flash data.
 
 ## Error
 

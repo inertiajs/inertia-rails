@@ -138,7 +138,7 @@ end
 
 Since precognition requests reuse your existing controller actions, it's important to place the `precognition!` call **before** any side-effect-producing code (saving records, sending emails, calling external APIs, enqueuing jobs). The `precognition!` method halts the action on precognition requests, so any code after it only runs during real form submissions.
 
-You can also enable [`precognition_prevent_writes`](/guide/configuration#precognition_prevent_writes) to automatically block database writes during precognition requests as an extra safety net.
+You can also enable [`precognition_prevent_writes`](/guide/configuration#precognition-prevent-writes) to automatically block database writes during precognition requests as an extra safety net.
 
 ## Field-specific validation
 

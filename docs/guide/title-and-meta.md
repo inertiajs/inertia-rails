@@ -355,13 +355,35 @@ export default () => <AppHead title="About" />
 
 :::
 
-## Inertia Attribute on Elements
+## The `data-inertia` Attribute
 
 @available_since core=2.2.13
 
-Inertia has historically used the `inertia` attribute to track and manage elements in the document `<head>`. However, you can now opt-in to using the more standards-compliant `data-inertia` attribute instead. According to the HTML specification, custom attributes should be prefixed with `data-` to avoid conflicts with future HTML standards.
+The client-side `<Head>` component tracks the elements it manages by marking them with a `data-inertia` attribute. By default, it leaves any other tags in your root layout untouched. Since there may only be one `<title>` tag, the `<Head>` component will always replace it. Other elements like `<meta>` and `<link>` may have multiple instances, so the component needs a way to identify which ones it should manage.
 
-To enable this for `@inertiajs/core` < 3.0, configure the `future.useDataInertiaHeadAttribute` option in your [application defaults](/guide/client-side-setup#configuring-defaults).
+You may add the `data-inertia` attribute to elements in your root layout to have the `<Head>` component adopt them. On the first client-side navigation, it will match these elements by key and replace or remove them as needed.
+
+```erb
+<%# app/views/layouts/application.html.erb %>
+<head>
+  <title>My App</title>
+  <meta data-inertia="description" name="description" content="My application description">
+  <%= vite_javascript_tag 'application' %>
+</head>
+```
+
+The `data-inertia` value corresponds to the `head-key` property on your client-side `<Head>` elements.
+
+Meta tags rendered by Inertia Rails use the older `inertia` attribute unless you enable the [`use_data_inertia_head_attribute`](/guide/configuration#use-data-inertia-head-attribute) or [`server_head`](/guide/configuration#server-head) option. Inertia.js v3 clients only recognize `data-inertia`, so the Rails generator enables this option.
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.use_data_inertia_head_attribute = true
+end
+```
+
+Inertia.js v2 clients use the `inertia` attribute by default. To switch them to `data-inertia`, enable the `future.useDataInertiaHeadAttribute` option in your [application defaults](/guide/client-side-setup#configuring-defaults):
 
 ```js
 createInertiaApp({

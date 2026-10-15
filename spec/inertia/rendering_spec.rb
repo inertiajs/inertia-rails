@@ -718,6 +718,20 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'scroll props merge intent' do
+    it 'prepends the scroll prop when loading the previous page' do
+      get '/scroll_test', headers: {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'users',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Infinite-Scroll-Merge-Intent' => 'prepend',
+      }
+
+      expect(response.parsed_body['prependProps']).to eq(['users'])
+      expect(response.parsed_body['mergeProps']).to be_nil
+    end
+  end
+
   context 'shared scroll props rendering' do
     let(:headers) { { 'X-Inertia' => true } }
 

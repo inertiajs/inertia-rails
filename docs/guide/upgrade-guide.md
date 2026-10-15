@@ -25,7 +25,8 @@ This release also includes several additional improvements:
 
 - [Instant visits](/guide/instant-visits) that swap to the target component before the server responds
 - [Form component generics](/guide/typescript#form-component) for type-safe errors and slot props
-- [Disable SSR per-route](/guide/server-side-rendering#disabling-ssr) via middleware or facade
+- [Disable SSR per controller](/guide/server-side-rendering#excluding-controllers-from-ssr) with
+  `inertia_config(ssr_enabled: false)`
 - [Improved SSR error messages](/guide/server-side-rendering#error-handling) with component names, URLs, and actionable
   hints
 - [Page object in resolve callback](/guide/client-side-setup#manual-setup) for context-aware component resolution
@@ -76,7 +77,7 @@ gem 'inertia_rails', '~> 3.19'
 Make sure you are using configuration options that are compatible with Inertia.js v3.0.
 
 ```ruby
-# config/initializers/inertia.rb
+# config/initializers/inertia_rails.rb
 InertiaRails.configure do |config|
   config.use_script_element_for_initial_page = true
   config.use_data_inertia_head_attribute = true
@@ -138,26 +139,20 @@ Global event listeners should be updated accordingly:
 
 ```js
 // Before (v2)
-router.on('invalid', (event) => { ...
-})
-router.on('exception', (event) => { ...
-})
+router.on('invalid', (event) => { ... })
+router.on('exception', (event) => { ... })
 
 // After (v3)
-router.on('httpException', (event) => { ...
-})
-router.on('networkError', (event) => { ...
-})
+router.on('httpException', (event) => { ... })
+router.on('networkError', (event) => { ... })
 ```
 
 You may also handle these events per-visit using the new `onHttpException` and `onNetworkError` callbacks:
 
 ```js
 router.post('/users', data, {
-  onHttpException: (response) => { ...
-  },
-  onNetworkError: (error) => { ...
-  },
+  onHttpException: (response) => { ... },
+  onNetworkError: (error) => { ... },
 })
 ```
 
@@ -241,7 +236,7 @@ was shown each time a partial reload was triggered. Now the existing content rem
 consistent with the Vue and Svelte behavior.
 
 A new `reloading` slot prop is available across all adapters, allowing you to show a loading indicator during partial
-reloads while keeping the existing content visible. See the [deferred props](/guide/deferred-props#reloading)
+reloads while keeping the existing content visible. See the [deferred props](/guide/deferred-props#reloading-indicator)
 documentation for details.
 
 ### Form Processing Reset Timing
@@ -301,7 +296,7 @@ class DashboardController < ApplicationController
         {
           user: Current.user,
           notifications: InertiaRails.defer { Current.user.unread_notifications },
-          invoices: Inertia.optional { Current.user.invoices }
+          invoices: InertiaRails.optional { Current.user.invoices }
         }
       }
     }
@@ -341,7 +336,7 @@ support asynchronous requests, enabling a whole set of new features, including:
 - [Polling](/guide/polling)
 - [Prefetching](/guide/prefetching)
 - [Deferred props](/guide/deferred-props)
-- [Infinite scrolling](/guide/merging-props)
+- [Infinite scrolling](/guide/infinite-scroll)
 - [Lazy loading data on scroll](/guide/load-when-visible)
 
 Additionally, for security sensitive projects, Inertia now offers a [history encryption API](/guide/history-encryption),
@@ -354,24 +349,19 @@ To upgrade to Inertia.js v2.0, first use npm to install the client-side adapter 
 :::tabs key:frameworks
 == Vue
 
-```vue
+```bash
 npm install @inertiajs/vue3@^2.0
 ```
 
 == React
 
-```jsx
-npm
-install
-@inertiajs/
-react
-@^
-2.0
+```bash
+npm install @inertiajs/react@^2.0
 ```
 
 == Svelte
 
-```svelte
+```bash
 npm install @inertiajs/svelte@^2.0
 ```
 
@@ -399,7 +389,7 @@ The Vue 2 adapter has been removed. Vue 2 reached End of Life on December 3, 202
 - Updated `setup` callback in `inertia.js`. You need to pass `props` when initializing the `App`
   component. [See the updated guide](/guide/client-side-setup#initialize-the-inertia-app)
 - The `setup` callback is now required in
-  `ssr.js`. [See the updated guide](/guide/server-side-rendering#add-server-entry-point)
+  `ssr.js`. [See the updated guide](/guide/server-side-rendering#manual-setup)
 
 #### Partial reloads are now async
 

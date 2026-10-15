@@ -8,6 +8,8 @@ The very first request to an Inertia app is just a regular, full-page browser re
 
 This HTML response includes the site assets (CSS, JavaScript) as well as a root `<div>` in the page's body. The root `<div>` serves as a mounting point for the client-side app. A `<script type="application/json">` element contains the JSON encoded [page object](#the-page-object) for the initial page. Inertia uses this information to boot your client-side framework and display the initial page component.
 
+Inertia Rails renders this `<script>` element when [`use_script_element_for_initial_page`](/guide/configuration#use-script-element-for-initial-page) is enabled. The installer enables it, and Inertia.js v3 reads the initial page only from the `<script>` element. With the option disabled, which is the gem default, the page object goes into a `data-page` attribute on the root `<div>` instead.
+
 ```http
 REQUEST
 GET: https://example.com/events/80
@@ -24,7 +26,7 @@ Content-Type: text/html; charset=utf-8
         <script src="/js/app.js" defer></script>
     </head>
     <body>
-        <script data-page="app" type="application/json">{"component":"Event","props":{"errors":{},"event":{"id":80,"title":"Birthday party","start_date":"2019-06-02","description":"Come out and celebrate Jonathan's 36th birthday party!"}},"url":"\/events\/80","version":"c32b8e4965f418ad16eaebba1d4e960f"}</script>
+        <script data-page="app" type="application/json">{"component":"Event","props":{"errors":{},"event":{"id":80,"title":"Birthday party","start_date":"2019-06-02","description":"Come out and celebrate Jonathan's 36th birthday party!"}},"url":"/events/80","version":"c32b8e4965f418ad16eaebba1d4e960f"}</script>
         <div id="app"></div>
     </body>
 </html>
@@ -96,7 +98,9 @@ The following headers are automatically sent by Inertia when making requests. Yo
 - `X-Inertia`: Set to `true` to indicate this is an Inertia request.
 - `X-Requested-With`: Set to `XMLHttpRequest` on all Inertia requests.
 - `Accept`: Set to `text/html, application/xhtml+xml` to indicate acceptable response types.
+- `Content-Type`: Set to `application/json` for requests that do not include file uploads.
 - `X-Inertia-Version`: The current asset version to check for asset mismatches.
+- `X-XSRF-TOKEN`: The CSRF token read from the `XSRF-TOKEN` cookie, which Inertia Rails sets. See [CSRF protection](/guide/csrf-protection).
 - `Purpose`: Set to `prefetch` when making [prefetch](/guide/prefetching) requests.
 - `X-Inertia-Partial-Component`: The component name for [partial reloads](/guide/partial-reloads).
 - `X-Inertia-Partial-Data`: Comma-separated list of props to include in partial reloads.
@@ -114,25 +118,29 @@ The following headers are used for [Precognition](/guide/forms#precognition) val
 
 ## Response Headers
 
-The following headers should be sent by your server-side adapter in Inertia responses. If you're using an official server-side adapter, these are handled automatically.
+Inertia Rails sets the following headers on Inertia page responses.
 
 - `X-Inertia`: Set to `true` to indicate this is an Inertia response.
-- `X-Inertia-Location`: Used for external redirects when a `409 Conflict` response is returned due to asset version mismatches. Triggers a full `window.location` visit.
-- `X-Inertia-Redirect`: Used for redirects containing URL fragments when a `409 Conflict` response is returned. Contains the full redirect URL including the fragment. Triggers a standard Inertia visit instead of a full page reload. Inertia Rails sends it only when [`convert_fragment_redirects`](/guide/configuration#convert-fragment-redirects) is enabled.
 - `Vary`: Set to `X-Inertia` to help browsers correctly differentiate between HTML and JSON responses.
+
+The following headers appear on `409 Conflict` responses instead. A `409` response carries no `X-Inertia` header, since it tells the client to navigate rather than render a page.
+
+- `X-Inertia-Location`: The destination URL for a full `window.location` visit. Inertia Rails sets it for [external redirects](/guide/redirects#external-redirects): `inertia_location`, redirects marked with `inertia: { full_page: true }`, and cross-origin redirects. It also sets it on an [asset version](#asset-versioning) mismatch, where it holds the requested URL.
+- `X-Inertia-Redirect`: The full redirect URL, including its fragment, for a redirect whose target contains a URL fragment. Triggers a fresh Inertia `GET` visit instead of a full page reload. Inertia Rails sends it only when [`convert_fragment_redirects`](/guide/configuration#convert-fragment-redirects) is enabled, as it is in apps set up with the installer.
+- `X-Inertia-Version`: The current asset version, sent on an asset version mismatch `409` so the client can see it.
 
 The following headers are used for [Precognition](/guide/forms#precognition) validation responses.
 
 - `Precognition`: Set to `true` to indicate this is a Precognition validation response.
 - `Precognition-Success`: Set to `true` when validation passes with no errors, combined with a `204 No Content` status code.
-- `Vary`: Set to `Precognition` on all responses when the Precognition middleware is applied.
+- `Vary`: Includes `Precognition` on responses from actions that call `precognition!` or `precognition`.
 
 ## The Page Object
 
 Inertia shares data between the server and client via a page object. This object includes the necessary information required to render the page component, update the browser's history state, and track the site's asset version. The page object can include the following properties:
 
 - `component`: The name of the JavaScript page component.
-- `props`: The page props. Contains all of the page data along with an `errors` object (defaults to `{}` if there are no errors).
+- `props`: The page props. Contains all of the page data along with an `errors` object. When there are no errors, `errors` is `{}` if [`always_include_errors_hash`](/guide/configuration#always-include-errors-hash) is enabled, as it is in apps set up with the installer. Otherwise, it's absent.
 - `url`: The page URL.
 - `version`: The current [asset version](/guide/asset-versioning).
 - `encryptHistory`: Whether or not to [encrypt the current page's history state](/guide/history-encryption). Only included when `true`.
@@ -146,14 +154,15 @@ Inertia shares data between the server and client via a page object. This object
 - `scrollProps`: Configuration for [infinite scroll](/guide/infinite-scroll) prop merging behavior.
 - `deferredProps`: Configuration for client-side [lazy loading of props](/guide/deferred-props).
 - `rescuedProps`: Array of [deferred prop](/guide/deferred-props#error-handling) keys that failed to resolve and were rescued server-side. Used by the client to render the `rescue` slot on the `<Deferred>` component.
-- `sharedProps`: Array of top-level prop keys registered via `Inertia::share()`. Used by the client to carry shared props over during [instant visits](/guide/instant-visits).
-- `onceProps`: Configuration for [once props](/guide/once-props) that should only be resolved once and reused on subsequent pages. Each entry maps a key to an object containing the `prop` name and optional `expiresAt` timestamp (in milliseconds).
+- `sharedProps`: Array of top-level prop keys registered via [`inertia_share`](/guide/shared-data). Used by the client to carry shared props over during [instant visits](/guide/instant-visits).
+- `onceProps`: Configuration for [once props](/guide/once-props) that should only be resolved once and reused on subsequent pages. Each entry maps a key to an object containing the `prop` name and an `expiresAt` timestamp (in milliseconds), which is only included when the prop sets `expires_in`.
+- `flash`: [Flash data](/guide/flash-data) for the current request. Only included when flash data exists. The client exposes it through the [`flash` event](/guide/flash-data#global-flash-event) and strips it from persisted history state.
 
-On standard full page visits, the page object is JSON encoded into a `<script type="application/json">` element. On Inertia visits (as indicated by the presence of the `X-Inertia` header), the page object is returned as the JSON payload.
+On standard full page visits, the page object is JSON encoded into the `<script type="application/json">` element, or into the `data-page` attribute when `use_script_element_for_initial_page` is disabled. On Inertia visits (as indicated by the presence of the `X-Inertia` header), the page object is returned as the JSON payload.
 
 ### Basic Page Object
 
-A minimal page object contains the core properties.
+Only `component`, `props`, `url`, and `version` are present on every page object, so a minimal one looks like this:
 
 ```json
 {
@@ -280,7 +289,8 @@ When using [Infinite scroll](/guide/infinite-scroll), the page object includes a
       "pageName": "page",
       "previousPage": null,
       "nextPage": 2,
-      "currentPage": 1
+      "currentPage": 1,
+      "reset": false
     }
   }
 }
@@ -310,8 +320,7 @@ When using [once props](/guide/once-props), the page object includes an `oncePro
   "version": "6b16b94d7c51cbe5b1fa42aac98241d5",
   "onceProps": {
     "plans": {
-      "prop": "plans",
-      "expiresAt": null
+      "prop": "plans"
     }
   }
 }
@@ -345,8 +354,7 @@ Content-Type: application/json
     "version": "6b16b94d7c51cbe5b1fa42aac98241d5",
     "onceProps": {
         "plans": {
-            "prop": "plans",
-            "expiresAt": null
+            "prop": "plans"
         }
     }
 }
@@ -362,14 +370,14 @@ The Inertia [page object](#the-page-object) includes a `version` identifier. Thi
 
 Whenever an Inertia request is made, Inertia will include the current asset version in the `X-Inertia-Version` header. When the server receives the request, it compares the asset version provided in the `X-Inertia-Version` header with the current asset version. This is typically handled in the middleware layer of your server-side framework.
 
-If the asset versions are the same, the request simply continues as expected. However, if the asset versions are different, the server immediately returns a `409 Conflict` response, and includes the URL in a `X-Inertia-Location` header. This header is necessary, since server-side redirects may have occurred. This tells Inertia what the final intended destination URL is.
+If the asset versions are the same, the request simply continues as expected. If they differ, Inertia Rails still runs the controller action, and its middleware then replaces the response with a `409 Conflict`. The `409` includes the URL in an `X-Inertia-Location` header and the current asset version in an `X-Inertia-Version` header. The URL header is necessary, since server-side redirects may have occurred. This tells Inertia what the final intended destination URL is.
 
 > [!TIP]
 > Note, `409 Conflict` responses are only sent for `GET` requests, and not for `POST/PUT/PATCH/DELETE` requests. That said, they will be sent in the event that a `GET` redirect occurs after one of these requests.
 
 When the Inertia client receives a `409 Conflict` response, it checks for the presence of the `X-Inertia-Location` header. If this header exists, Inertia performs a full-page visit to the URL specified in the header. This ensures that the user always has the latest assets loaded.
 
-If "flash" session data exists when a `409 Conflict` response occurs, Inertia's server-side framework adapters will automatically reflash this data.
+If flash data exists when a `409 Conflict` response occurs, Inertia Rails keeps it for the next request.
 
 ```http
 REQUEST
@@ -382,6 +390,7 @@ X-Inertia-Version: 6b16b94d7c51cbe5b1fa42aac98241d5
 RESPONSE
 409: Conflict
 X-Inertia-Location: https://example.com/events/80
+X-Inertia-Version: 2f8a1c9e4b7d0a3f6c5e8b1d4a7f0c2e
 ```
 
 You can read more about this on the [asset versioning](/guide/asset-versioning) page.
@@ -415,10 +424,8 @@ Content-Type: application/json
 {
     "component": "Events",
     "props": {
-        "auth": {...},       // NOT included
-        "categories": [...], // NOT included
-        "events": [...],     // Included
-        "errors": {}         // ALWAYS included
+        "events": [...], // the requested prop
+        "errors": {}     // always included
     },
     "url": "/events/80",
     "version": "6b16b94d7c51cbe5b1fa42aac98241d5"
@@ -432,7 +439,7 @@ Inertia uses specific HTTP status codes to handle different scenarios.
 | Status Code       | Description                                                                                                                                                                                                                                                                                                                                                                                                            |
 | :---------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **200 OK**        | Standard successful response for both HTML and Inertia JSON responses.                                                                                                                                                                                                                                                                                                                                                 |
-| **302 Found**     | Standard redirect response. Inertia's server-side adapters automatically convert this to `303 See Other` when returned after `PUT`, `PATCH`, or `DELETE` requests.                                                                                                                                                                                                                                                     |
+| **302 Found**     | Standard redirect response. Inertia Rails converts `301` and `302` redirects to `303 See Other` when they respond to an Inertia `PUT`, `PATCH`, or `DELETE` request.                                                                                                                                                                                                                                                   |
 | **303 See Other** | Used for redirects after non-GET requests. This status code tells the browser to make a `GET` request to the redirect URL, preventing duplicate form submissions that could occur if the browser repeated the original request method.                                                                                                                                                                                 |
 | **409 Conflict**  | Returned when there's an asset version mismatch, for external redirects, or for redirects containing URL fragments. For asset mismatches, this prompts a full page reload. For external redirects, the response includes an `X-Inertia-Location` header and triggers a `window.location` redirect. For fragment redirects, the response includes an `X-Inertia-Redirect` header and triggers a standard Inertia visit. |
 
