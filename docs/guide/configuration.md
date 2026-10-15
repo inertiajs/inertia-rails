@@ -7,7 +7,7 @@ Inertia Rails can be configured globally or in a specific controller (and subcla
 Use the `InertiaRails.configure` method to set global configuration options. If using global configuration, we recommend you place the code inside an initializer:
 
 ```ruby
-# config/initializers/inertia.rb
+# config/initializers/inertia_rails.rb
 
 InertiaRails.configure do |config|
   # Example: force a full-reload if the deployed assets change.
@@ -42,7 +42,7 @@ Inertia Rails supports setting any configuration option via environment variable
 
 **Default**: `->(path:, action:) { "#{path}/#{action}" }`
 
-Use `component_path_resolver` to customize component path resolution when [`default_render`](#default_render) config value is set to `true`. The value should be callable and will receive the `path` and `action` parameters, returning a string component path. See [Automatically determine component name](/guide/responses#automatically-determine-component-name).
+Use `component_path_resolver` to customize component path resolution when [`default_render`](#default-render) config value is set to `true`. The value should be callable and will receive the `path` and `action` parameters, returning a string component path. See [Custom Path Resolver](/guide/responses#custom-path-resolver).
 
 ### `prop_transformer`
 
@@ -137,7 +137,7 @@ Requires a JavaScript server to be available at `ssr_url`. [_Example_](https://g
 
 **Default**: `nil` (disabled)
 
-@available_since rails=3.21.0
+@available_since rails=3.19.0
 
 Cache SSR responses to avoid redundant Node.js render requests for identical page data. Accepts `true`, `false`/`nil`, or a Hash of `Rails.cache.fetch` options (e.g. `{ expires_in: 1.hour }`). Lambdas are supported and evaluated in the controller context. Can be overridden per render call.
 
@@ -336,7 +336,7 @@ When enabled, the HTML output looks like:
 
 > [!NOTE]
 > When using this option make sure your client-side Inertia setup is configured to read the page data from the `<script>` element.
-> See the [client side setup](/guide/client-side-setup#script-element-for-page-data) for more details.
+> See the [upgrade guide](/guide/upgrade-guide#future-options-removed) for more details.
 
 ### `precognition_prevent_writes`
 

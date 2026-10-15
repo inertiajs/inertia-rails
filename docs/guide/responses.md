@@ -125,7 +125,7 @@ Returns `true` when the current request is rendering an Inertia response. This i
 
 ### `inertia_root`
 
-Renders the root element for the Inertia app. This helper automatically respects the [`root_dom_id`](/guide/configuration#root_dom_id) and [`use_script_element_for_initial_page`](/guide/configuration#use_script_element_for_initial_page) configuration options.
+Renders the root element for the Inertia app. This helper automatically respects the [`root_dom_id`](/guide/configuration#root-dom-id) and [`use_script_element_for_initial_page`](/guide/configuration#use-script-element-for-initial-page) configuration options.
 
 ```erb
 <%= inertia_root %>

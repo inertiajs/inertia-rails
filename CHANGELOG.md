@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fix `inertia_location` to redirect plain (non-Inertia) requests instead of responding `409 Conflict`, and stop stale asset versions from replacing location responses with a forced refresh (@skryukov)
 * Fix partial reloads addressing array elements by index (`only: ['rows.0.name']`) dropping the elements they did not name, which shifted every later element onto the wrong path. Unrequested elements now keep their slot as a placeholder (`{}` for an element written as a Hash, `null` otherwise) and are never evaluated, and an indexed `only`/`except` path is now applied to arrays of plain hashes too (@skryukov)
 * Fix meta tags ignoring per-controller `use_data_inertia_head_attribute` set via `inertia_config` (@skryukov)
-* Use SHA256 instead of MD5 for meta tag head key digests, so they no longer raise on FIPS-enabled Rubies (@skryukov)
+* Use SHA256 instead of MD5 for generated meta tag head keys (@skryukov)
 * Restart the SSR server promptly in the Puma plugin when the process dies during boot, instead of polling a dead port for the full boot timeout (@skryukov)
 * Fix `NoMethodError` raised when a request carrying the `X-Inertia` header reaches a non-Inertia controller such as an `ActionController::API` endpoint (@SAY-5)
 * Fix stale flash notice and use idiomatic class in Vue scaffolds (@skryukov)

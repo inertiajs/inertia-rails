@@ -34,7 +34,7 @@ For Inertia renders, the entry also carries:
 
 Deferred and optional props are skipped before resolution on a first load, so they show up on the request that actually delivers them, not on the initial one.
 
-Props renamed by [`prop_transformer`](/guide/configuration#prop_transformer) are shown with their values but without their type, source, or `inertia_share` badge.
+Props renamed by [`prop_transformer`](/guide/configuration#prop-transformer) are shown with their values but without their type, source, or `inertia_share` badge.
 
 ## Linking props to serializers
 
