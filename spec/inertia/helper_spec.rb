@@ -19,6 +19,26 @@ RSpec.describe InertiaRails::Helper, type: :helper do
     end
   end
 
+  describe '#inertia_ssr_head' do
+    let(:fallback) { -> { helper.tag.title('Fallback') } }
+
+    it 'renders the block when the response was not server-side rendered' do
+      expect(helper.inertia_ssr_head(&fallback)).to eq('<title>Fallback</title>')
+    end
+
+    it 'renders the SSR head instead of the block' do
+      controller.instance_variable_set(:@_inertia_ssr_head, '<title inertia>SSR</title>'.html_safe)
+
+      expect(helper.inertia_ssr_head(&fallback)).to eq('<title inertia>SSR</title>')
+    end
+
+    it 'skips the block when the SSR head is empty' do
+      controller.instance_variable_set(:@_inertia_ssr_head, ''.html_safe)
+
+      expect(helper.inertia_ssr_head(&fallback)).to eq('')
+    end
+  end
+
   describe '#inertia_root' do
     let(:page) do
       {
