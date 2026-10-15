@@ -1016,6 +1016,15 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props][:auth][:user]).to eq({ name: 'Jonathan' })
     end
 
+    it 'does not call to_inertia on objects a partial reload skips' do
+      serializer = Object.new
+      def serializer.to_inertia = raise('called')
+
+      page = resolve_partial({ user: serializer, locale: 'en' }, 'locale')
+
+      expect(page[:props]).to eq({ locale: 'en' })
+    end
+
     it 'resolves to_inertia object with prop types inside' do
       serializer = Object.new
       def serializer.to_inertia
