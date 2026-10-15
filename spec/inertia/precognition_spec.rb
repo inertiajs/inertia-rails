@@ -42,6 +42,10 @@ RSpec.describe 'Precognition', type: :request do
         expect(response.headers['Precognition-Success']).to eq('true')
       end
 
+      it 'adds Precognition to the Vary header' do
+        expect(vary_header_without_sec_fetch_site).to eq('Precognition')
+      end
+
       it 'returns empty body' do
         expect(response.body).to be_empty
       end
@@ -120,6 +124,20 @@ RSpec.describe 'Precognition', type: :request do
         post precognition_basic_path, params: blank_user_params
 
         expect(response).to have_http_status(:ok)
+      end
+
+      it 'appends Precognition to the Vary header' do
+        post precognition_basic_path, params: valid_user_params, headers: { 'Accept' => 'application/json' }
+
+        expect(vary_header_without_sec_fetch_site).to eq('Accept, Precognition')
+      end
+    end
+
+    context 'when the action does not call precognition' do
+      it 'does not add Precognition to the Vary header' do
+        post precognition_without_path
+
+        expect(response.headers['Vary'].to_s).not_to include('Precognition')
       end
     end
 
@@ -271,6 +289,15 @@ RSpec.describe 'Precognition', type: :request do
       expect do
         post precognition_mixed_bang_then_module_level_path, params: valid_user_params
       end.to raise_error(InertiaRails::DoublePrecognitionError)
+    end
+  end
+
+  describe 'with an app-level rescue_from StandardError' do
+    it 'returns 422 with errors when validation fails' do
+      post precognition_with_rescue_from_path, params: blank_user_params, headers: precognition_headers
+
+      expect(response).to have_http_status(422)
+      expect(JSON.parse(response.body)['errors'].keys).to contain_exactly('name', 'email')
     end
   end
 

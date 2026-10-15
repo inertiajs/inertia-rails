@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Send `X-Inertia-Version` with the stale-version `409` response, so Inertia.js v3.6+ can skip the reload on background requests such as polling (@skryukov)
 * Keep flash messages when a stale asset version forces a page refresh, instead of losing them (@skryukov)
 * Fix dot-notated prop keys (`'auth.user' => ...`) passed to `render` or `inertia_share` reaching the client as a literal key instead of nested props (@skryukov)
+* Fix an app's `rescue_from StandardError` turning Precognition validation responses into error pages. `InertiaRails::PrecognitionResponse` now inherits from `Exception`, so bare `rescue` clauses and `Rails.error.handle` no longer swallow it either; code that caught it as a `StandardError` must rescue it by name (@skryukov)
+* Add `Precognition` to the `Vary` header of responses from actions that call `precognition!` or `precognition`, like Laravel, so HTTP caches keep validation responses apart from regular ones (@skryukov)
 * Fix `InertiaRails.scroll` merge metadata ignoring the infinite scroll merge intent since 3.19.0: loading the previous page appended its items instead of prepending them, and a `wrapper:` prop replaced the loaded items instead of merging into the wrapped key. A scroll prop shared via `inertia_share` no longer collects duplicate merge paths on every request (@skryukov)
 * Fix once props missing from partial reloads that only list `except`: the client's already-loaded once props are skipped on full visits only, as in inertia-laravel (@skryukov)
 * Skip `to_inertia` for objects a partial reload doesn't include, instead of serializing them and dropping the result (@skryukov)
