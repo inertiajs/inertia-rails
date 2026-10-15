@@ -18,6 +18,7 @@ module InertiaRails
       @partial_except_keys = visit[:except] || []
       @reset_keys = visit[:reset] || []
       @except_once_keys = visit[:except_once] || []
+      @scroll_intent = visit[:scroll_intent]
     end
 
     # Returns [resolved_props, metadata]
@@ -111,6 +112,7 @@ module InertiaRails
           next
         end
 
+        prop = prop.with_merge_intent(@scroll_intent) if prop.is_a?(ScrollProp)
         collect_metadata(prop, path)
         next unless keep_prop?(prop, path, parent_was_resolved: parent_was_resolved)
 
@@ -122,6 +124,7 @@ module InertiaRails
 
           # A closure may return a prop type — unwrap one level
           if value.is_a?(BaseProp) && !prop.is_a?(BaseProp)
+            value = value.with_merge_intent(@scroll_intent) if value.is_a?(ScrollProp)
             collect_metadata(value, path)
             next unless keep_prop?(value, path, parent_was_resolved: parent_was_resolved)
 
