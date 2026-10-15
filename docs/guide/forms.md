@@ -1737,7 +1737,7 @@ const { progress } = useForm({
 
 ### Form Errors
 
-If there are form validation errors, they are available via the `errors` property. When building Laravel powered Inertia applications, form errors will automatically be populated when your application throws instances of `ValidationException`, such as when using `$request->validate()`.
+If there are form validation errors, they are available via the `errors` property. Form errors are populated when your controller redirects with the model errors, such as `redirect_to new_user_url, inertia: { errors: user.errors }`. See [server-side responses](#server-side-responses) for a full example.
 
 :::tabs key:frameworks
 

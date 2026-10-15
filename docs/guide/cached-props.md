@@ -89,6 +89,6 @@ InertiaRails.defer(cache: { key: 'feed', expires_in: 5.minutes }) { current_user
 
 ## Cache Store
 
-By default, Inertia uses `Rails.cache`. You can configure a different store via the [`cache_store`](/guide/configuration#cache_store) option. All cached prop keys are automatically prefixed with `inertia_rails/@2/` to avoid collisions.
+By default, Inertia uses `Rails.cache`. You can configure a different store via the [`cache_store`](/guide/configuration#cache-store) option. All cached prop keys are automatically prefixed with `inertia_rails/@2/` to avoid collisions.
 
 For more information on configuring cache stores, cache key strategies, and expiration policies, see the [Rails low-level caching guide](https://guides.rubyonrails.org/caching_with_rails.html#low-level-caching-using-rails-cache).

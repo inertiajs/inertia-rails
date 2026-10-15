@@ -155,31 +155,31 @@ You may pass the HTTP method and URL as the first two arguments to `useHttp()`, 
 == Vue
 
 ```js
-const response = await http.post('/api/comments', {
-  onError: (errors) => {
-    console.log(errors)
-  },
+const http = useHttp('post', '/api/comments', {
+  body: '',
 })
+
+const response = await http.submit()
 ```
 
 == React
 
 ```js
-const response = await post('/api/comments', {
-  onError: (errors) => {
-    console.log(errors)
-  },
+const { submit } = useHttp('post', '/api/comments', {
+  body: '',
 })
+
+const response = await submit()
 ```
 
 == Svelte
 
 ```js
-const response = await http.post('/api/comments', {
-  onError: (errors) => {
-    console.log(errors)
-  },
+const http = useHttp('post', '/api/comments', {
+  body: '',
 })
+
+const response = await http.submit()
 ```
 
 :::
@@ -370,7 +370,7 @@ const http = useHttp({
 
 :::
 
-The same method is available on the [`useForm`](/guide/forms#options-2) helper and the [`<Form>`](/guide/forms#options) component.
+The same method is available on the [`useForm`](/guide/forms#options-1) helper and the [`<Form>`](/guide/forms#options) component.
 
 ## File Uploads
 

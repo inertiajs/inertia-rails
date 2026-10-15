@@ -99,7 +99,7 @@ The `viewTransition` option is also available on the `Link` component.
 
 ```vue
 <script setup>
-import { router } from '@inertiajs/vue3'
+import { Link } from '@inertiajs/vue3'
 </script>
 
 <template>
@@ -110,7 +110,7 @@ import { router } from '@inertiajs/vue3'
 == React
 
 ```jsx
-import { router } from '@inertiajs/react'
+import { Link } from '@inertiajs/react'
 
 export default () => (
   <Link href="/another-page" viewTransition>
@@ -123,7 +123,7 @@ export default () => (
 
 ```svelte
 <script>
-  import { router } from '@inertiajs/svelte'
+  import { Link } from '@inertiajs/svelte'
 </script>
 
 <Link href="/another-page" viewTransition>Navigate</Link>
@@ -139,7 +139,7 @@ You may also pass a callback to access the `ViewTransition` instance.
 
 ```vue
 <script setup>
-import { router } from '@inertiajs/vue3'
+import { Link } from '@inertiajs/vue3'
 </script>
 
 <template>
@@ -157,7 +157,7 @@ import { router } from '@inertiajs/vue3'
 == React
 
 ```jsx
-import { router } from '@inertiajs/react'
+import { Link } from '@inertiajs/react'
 
 export default () => (
   <Link
@@ -175,7 +175,7 @@ export default () => (
 
 ```svelte
 <script>
-  import { router } from '@inertiajs/svelte'
+  import { Link } from '@inertiajs/svelte'
 </script>
 
 <Link

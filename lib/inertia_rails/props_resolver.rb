@@ -89,7 +89,11 @@ module InertiaRails
       props.each_with_object({}) do |(key, prop), transformed_props|
         path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"
 
-        prop = serialize(prop, path) if self.class.serializer?(prop)
+        if self.class.serializer?(prop)
+          next if !parent_was_resolved && excluded_by_partial_request?(path)
+
+          prop = serialize(prop, path)
+        end
 
         if prop.is_a?(Hash) && prop.any?
           next if !parent_was_resolved && excluded_by_partial_request?(path)
@@ -280,17 +284,10 @@ module InertiaRails
     def excluded_by_once_cache?(prop, path)
       return false unless prop.try(:once?)
       return false if prop.try(:fresh?)
-      return false if explicitly_requested?(path)
+      return false if rendering_partial_component?
 
       once_key = (prop.once_key || path).to_s
       except_once_keys.include?(once_key)
-    end
-
-    def explicitly_requested?(path)
-      return false unless rendering_partial_component? && partial_keys.present?
-
-      path_prefix = "#{path}."
-      partial_keys.any? { |key| key == path || key.start_with?(path_prefix) || path.start_with?("#{key}.") }
     end
 
     def filtering_partial_request?

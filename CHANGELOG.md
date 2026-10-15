@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Accept a block in `inertia_ssr_head` for fallback head elements, rendered when the response isn't server-side rendered, like inertia-laravel's `<x-inertia::head>` (@skryukov)
 * Add `config.convert_fragment_redirects` (off by default and enabled by the installer, requires Inertia.js v3) to keep URL fragments on Inertia redirects: a same-origin redirect to a URL with a fragment becomes a `409` response with the `X-Inertia-Redirect` header, which the client follows with a regular Inertia visit (@skryukov)
 * Add the `preserve_big_integers` option (config, `inertia_config` and render option), which sends integers outside JavaScript's safe range as `{"$bigint": "..."}` markers that Inertia.js v3.8+ turns into `BigInt` values. The testing helpers turn them back into integers (@skryukov)
 * Leave `encryptHistory` and `clearHistory` out of the page object when they are `false`, like inertia-laravel 3.x. Clients treat a missing key as `false`; specs that compare the full page JSON need updating (@skryukov)
@@ -16,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Keep flash messages when a stale asset version forces a page refresh, instead of losing them (@skryukov)
 * Fix dot-notated prop keys (`'auth.user' => ...`) passed to `render` or `inertia_share` reaching the client as a literal key instead of nested props (@skryukov)
 * Fix `InertiaRails.scroll` merge metadata ignoring the infinite scroll merge intent since 3.19.0: loading the previous page appended its items instead of prepending them, and a `wrapper:` prop replaced the loaded items instead of merging into the wrapped key. A scroll prop shared via `inertia_share` no longer collects duplicate merge paths on every request (@skryukov)
+* Fix once props missing from partial reloads that only list `except`: the client's already-loaded once props are skipped on full visits only, as in inertia-laravel (@skryukov)
+* Skip `to_inertia` for objects a partial reload doesn't include, instead of serializing them and dropping the result (@skryukov)
 * Expose `@_inertia_page` to views on SSR responses (@onk)
 * Add [Inertia DevTools](https://inertiajs.com/docs/v3/advanced/devtools) support: record requests in development (or those `config.devtools.authorize` approves elsewhere), expose the read API the browser extension reads, and configure it under `config.devtools` (@mattwigham and @skryukov)
 * Accept an object that responds to `to_inertia` as `props:`, as prop values already were. With `inertia_prop_sources`, it can also tell DevTools where it declared each prop (@skryukov)
@@ -32,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fix `inertia_location` to redirect plain (non-Inertia) requests instead of responding `409 Conflict`, and stop stale asset versions from replacing location responses with a forced refresh (@skryukov)
 * Fix partial reloads addressing array elements by index (`only: ['rows.0.name']`) dropping the elements they did not name, which shifted every later element onto the wrong path. Unrequested elements now keep their slot as a placeholder (`{}` for an element written as a Hash, `null` otherwise) and are never evaluated, and an indexed `only`/`except` path is now applied to arrays of plain hashes too (@skryukov)
 * Fix meta tags ignoring per-controller `use_data_inertia_head_attribute` set via `inertia_config` (@skryukov)
-* Use SHA256 instead of MD5 for meta tag head key digests, so they no longer raise on FIPS-enabled Rubies (@skryukov)
+* Use SHA256 instead of MD5 for generated meta tag head keys (@skryukov)
 * Restart the SSR server promptly in the Puma plugin when the process dies during boot, instead of polling a dead port for the full boot timeout (@skryukov)
 * Fix `NoMethodError` raised when a request carrying the `X-Inertia` header reaches a non-Inertia controller such as an `ActionController::API` endpoint (@SAY-5)
 * Fix stale flash notice and use idiomatic class in Vue scaffolds (@skryukov)
