@@ -289,6 +289,19 @@ Returns the SSR head content when [server-side rendering](/guide/server-side-ren
 </html>
 ```
 
+@available_since rails=master
+
+Pass a block to render fallback head elements when the response isn't server-side rendered. When SSR is active, the `<Head>` component already provides these elements, so the block is skipped. Give fallback `<meta>` tags a `data-inertia` key, so the `<Head>` component replaces them instead of adding a duplicate.
+
+```erb
+<head>
+  <%= inertia_ssr_head do %>
+    <title>My App</title>
+    <meta data-inertia="description" name="description" content="My application description">
+  <% end %>
+</head>
+```
+
 ### `inertia_meta_tags`
 
 Renders meta tags that were defined server-side using the `inertia_meta` configuration. This is useful for SEO when you want to manage meta tags from your Rails controllers. See the [Server-managed meta tags cookbook](/cookbook/server-managed-meta-tags) for a complete guide.

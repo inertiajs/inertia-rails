@@ -2,8 +2,11 @@
 
 module InertiaRails
   module Helper
-    def inertia_ssr_head
-      controller.instance_variable_get('@_inertia_ssr_head')
+    def inertia_ssr_head(&block)
+      head = controller.instance_variable_get('@_inertia_ssr_head')
+      return capture(&block) if head.nil? && block
+
+      head
     end
 
     def inertia_headers
