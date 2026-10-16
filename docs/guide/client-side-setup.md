@@ -586,6 +586,51 @@ createInertiaApp({
 })
 ```
 
+In Rails, the nonce comes from your [content security policy](https://guides.rubyonrails.org/security.html#content-security-policy-header) configuration. The nonce must be allowed for inline styles, so include `style-src` in `content_security_policy_nonce_directives`:
+
+```ruby
+# config/initializers/content_security_policy.rb
+Rails.application.configure do
+  config.content_security_policy do |policy|
+    policy.script_src :self, :https
+    policy.style_src :self, :https
+    # ...
+  end
+
+  config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
+  config.content_security_policy_nonce_directives = %w[script-src style-src]
+end
+```
+
+To pass the nonce to the client, render `csp_meta_tag` in the `<head>` of your root template. The default Rails layout already includes it.
+
+```erb
+<head>
+  <%= csp_meta_tag %>
+  <!-- ... -->
+</head>
+```
+
+Then read the nonce from the meta tag when creating your Inertia app. The check for `document` keeps the entry point working during [server-side rendering](/guide/server-side-rendering), where no DOM exists:
+
+```js
+const nonce =
+  typeof document === 'undefined'
+    ? undefined
+    : document
+        .querySelector('meta[name="csp-nonce"]')
+        ?.getAttribute('content') || undefined
+
+createInertiaApp({
+  nonce,
+  // ...
+})
+```
+
+@available_since rails=3.21.2
+
+Inertia Rails also adds the nonce to the `<script>` element that holds the initial page data, so you don't need to configure it yourself.
+
 ## HTTP Client
 
 @available_since core=3.0.0

@@ -21,6 +21,16 @@ end
 
 Asset refreshing in Inertia works on the assumption that a hard page visit will trigger your assets to reload. However, Inertia doesn't actually do anything to force this. Typically this is done with some form of cache busting. For example, appending a version query parameter to the end of your asset URLs.
 
+With Vite Ruby, cache busting is done automatically: built files get a content hash in their names. The [Rails generator](/guide/server-side-setup#rails-generator) also sets `config.version = ViteRuby.digest` in `config/initializers/inertia_rails.rb`, so the Inertia version changes whenever your frontend files change.
+
+## Background Requests
+
+@available_since rails=master core=3.6.0
+
+A version change detected on a background request, such as polling or a `router.reload()`, does not force a full page visit. Reloading a request the user never initiated could wipe out unsaved state, so the current page stays untouched and the next user-initiated visit picks up the new assets. You may hook into the [`location` event](/guide/events#location) to detect an asset version change and show a notification instead of reloading.
+
+The client tells a version change apart from a redirect by the `X-Inertia-Version` header, which Inertia Rails sends with the version change response.
+
 ## Manual Refreshing
 
 If you want to take asset refreshing into your own control, you can set the version to a fixed value. This disables Inertia's automatic asset versioning.

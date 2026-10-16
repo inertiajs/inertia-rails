@@ -139,6 +139,49 @@ export default () => (
 
 :::
 
+## Typelizer
+
+When using [Typelizer route helpers](/guide/routing#typelizer) with the `Link` component, you can pass the resulting object directly to the `href` prop. The `Link` will infer the HTTP method and URL from the object. This works with any object that has `url` and `method` keys.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup>
+import { Link } from '@inertiajs/vue3'
+import { users } from '@/routes'
+</script>
+
+<template>
+  <Link :href="users.show(1)">John Doe</Link>
+</template>
+```
+
+== React
+
+```jsx
+import { Link } from '@inertiajs/react'
+import { users } from '@/routes'
+
+export default () => <Link href={users.show(1)}>John Doe</Link>
+```
+
+== Svelte
+
+```svelte
+<script>
+  import { inertia, Link } from '@inertiajs/svelte'
+  import { users } from '@/routes'
+</script>
+
+<button use:inertia={{ href: users.show(1) }} type="button">John Doe</button>
+
+<Link href={users.show(1)}>John Doe</Link>
+```
+
+:::
+
 ## Data
 
 When making `POST` or `PUT` requests, you may wish to add additional data to the request. You can accomplish this using the `data` prop. The provided data can be an `object` or `FormData` instance.

@@ -307,7 +307,7 @@ removeStartEventListener()
 
 ## Cancelling Events
 
-Some events, such as `before`, `networkError`, and `httpException`, support cancellation, allowing you to prevent Inertia's default behavior. Just like native events, the event will be cancelled if only one event listener calls `event.preventDefault()`.
+Some events, such as `before`, `networkError`, `httpException`, and `location`, support cancellation, allowing you to prevent Inertia's default behavior. Just like native events, the event will be cancelled if only one event listener calls `event.preventDefault()`.
 
 :::tabs key:frameworks
 
@@ -880,6 +880,10 @@ The `finish` event is not cancelable.
 
 The `navigate` event fires on successful page visits, as well as when navigating through history.
 
+@available_since core=3.9.0
+
+The event detail includes a `type` value describing how the navigation happened: `initial` for the first page load, `visit` for Inertia visits, and `history` for back and forward navigation.
+
 :::tabs key:frameworks
 
 == Vue
@@ -889,6 +893,7 @@ import { router } from '@inertiajs/vue3'
 
 router.on('navigate', (event) => {
   console.log(`Navigated to ${event.detail.page.url}`)
+  console.log(`Navigation type: ${event.detail.type}`)
 })
 ```
 
@@ -899,6 +904,7 @@ import { router } from '@inertiajs/react'
 
 router.on('navigate', (event) => {
   console.log(`Navigated to ${event.detail.page.url}`)
+  console.log(`Navigation type: ${event.detail.type}`)
 })
 ```
 
@@ -909,12 +915,105 @@ import { router } from '@inertiajs/svelte'
 
 router.on('navigate', (event) => {
   console.log(`Navigated to ${event.detail.page.url}`)
+  console.log(`Navigation type: ${event.detail.type}`)
 })
 ```
 
 :::
 
 The `navigate` event is not cancelable.
+
+## Location
+
+@available_since core=3.6.0
+
+The `location` event fires whenever Inertia is about to force a full page visit, either because the [asset version](/guide/asset-versioning) changed or because the server returned an [external redirect](/guide/redirects#external-redirects), such as `inertia_location`. The event detail includes a `versionChange` boolean so you may tell an automatic asset version change apart from a manual redirect.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.on('location', (event) => {
+  console.log(`Navigating to ${event.detail.url}`)
+  console.log(`Triggered by a version change: ${event.detail.versionChange}`)
+})
+```
+
+== React
+
+```jsx
+import { router } from '@inertiajs/react'
+
+router.on('location', (event) => {
+  console.log(`Navigating to ${event.detail.url}`)
+  console.log(`Triggered by a version change: ${event.detail.versionChange}`)
+})
+```
+
+== Svelte
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.on('location', (event) => {
+  console.log(`Navigating to ${event.detail.url}`)
+  console.log(`Triggered by a version change: ${event.detail.versionChange}`)
+})
+```
+
+:::
+
+@available_since rails=master
+
+Inertia Rails sends the `X-Inertia-Version` header that `versionChange` relies on. With older versions of the gem, `versionChange` is always `false`.
+
+You may cancel the `location` event to take over the navigation yourself, for example to show a "new version available" banner instead of reloading.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.on('location', (event) => {
+  if (event.detail.versionChange) {
+    event.preventDefault()
+    showBanner('A new version is available.')
+  }
+})
+```
+
+== React
+
+```jsx
+import { router } from '@inertiajs/react'
+
+router.on('location', (event) => {
+  if (event.detail.versionChange) {
+    event.preventDefault()
+    showBanner('A new version is available.')
+  }
+})
+```
+
+== Svelte
+
+```js
+import { router } from '@inertiajs/svelte'
+
+router.on('location', (event) => {
+  if (event.detail.versionChange) {
+    event.preventDefault()
+    showBanner('A new version is available.')
+  }
+})
+```
+
+:::
 
 ## Prefetching
 

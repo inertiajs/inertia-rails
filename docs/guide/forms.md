@@ -244,6 +244,7 @@ The `<Form>` component exposes reactive state and helper methods through its def
       isDirty,
       reset,
       submit,
+      cancel,
     }"
   >
     <input type="text" name="name" />
@@ -279,6 +280,7 @@ The `<Form>` component exposes reactive state and helper methods through its def
     isDirty,
     reset,
     submit,
+    cancel,
   }) => (
     <>
       <input type="text" name="name" />
@@ -313,6 +315,7 @@ The `<Form>` component exposes reactive state and helper methods through its def
     isDirty,
     reset,
     submit,
+    cancel,
   })}
     <input type="text" name="name" />
 
@@ -403,6 +406,7 @@ In addition to `action` and `method`, the `<Form>` component accepts several pro
     :optimistic="(props, data) => ({ ...props })"
     :invalidate-cache-tags="['users', 'dashboard']"
     disable-while-processing
+    cancel-on-unmount
     :options="{
       preserveScroll: true,
       preserveState: true,
@@ -433,6 +437,7 @@ In addition to `action` and `method`, the `<Form>` component accepts several pro
   optimistic={(props, data) => ({ ...props })}
   invalidateCacheTags={['users', 'dashboard']}
   disableWhileProcessing
+  cancelOnUnmount
   options={{
     preserveScroll: true,
     preserveState: true,
@@ -462,6 +467,7 @@ In addition to `action` and `method`, the `<Form>` component accepts several pro
   optimistic={(props, data) => ({ ...props })}
   invalidateCacheTags={['users', 'dashboard']}
   disableWhileProcessing
+  cancelOnUnmount
   options={{
     preserveScroll: true,
     preserveState: true,
@@ -748,6 +754,100 @@ The `Form` component provides the `setDefaultsOnSuccess` attribute to set the cu
   <input type="text" name="name" />
   <input type="email" name="email" />
   <button type="submit">Submit</button>
+</Form>
+```
+
+:::
+
+### Canceling Form Submissions
+
+@available_since core=3.7.0
+
+The `cancel` method aborts an in-flight submission. It's available through the [slot props](#slot-props), the [component ref](#programmatic-access), and the [form context](#form-context).
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<template>
+  <Form action="/users" method="post" #default="{ processing, cancel }">
+    <input type="text" name="name" />
+
+    <button v-if="processing" type="button" @click="cancel">Cancel</button>
+    <button v-else type="submit">Submit</button>
+  </Form>
+</template>
+```
+
+== React
+
+```jsx
+<Form action="/users" method="post">
+  {({ processing, cancel }) => (
+    <>
+      <input type="text" name="name" />
+
+      {processing ? (
+        <button type="button" onClick={cancel}>
+          Cancel
+        </button>
+      ) : (
+        <button type="submit">Submit</button>
+      )}
+    </>
+  )}
+</Form>
+```
+
+== Svelte
+
+```svelte
+<Form action="/users" method="post">
+  {#snippet children({ processing, cancel })}
+    <input type="text" name="name" />
+
+    {#if processing}
+      <button type="button" onclick={cancel}>Cancel</button>
+    {:else}
+      <button type="submit">Submit</button>
+    {/if}
+  {/snippet}
+</Form>
+```
+
+:::
+
+Submissions continue running when the form that started them is removed from the page. Navigating away cancels the submission, but closing a modal that contains the form does not, so an abandoned upload still completes. You may use the <React>`cancelOnUnmount`</React><Svelte>`cancelOnUnmount`</Svelte><Vue>`cancel-on-unmount`</Vue> attribute to cancel an in-flight submission as soon as the form unmounts.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<template>
+  <Form action="/avatar" method="post" cancel-on-unmount>
+    <input type="file" name="avatar" />
+    <button type="submit">Upload</button>
+  </Form>
+</template>
+```
+
+== React
+
+```jsx
+<Form action="/avatar" method="post" cancelOnUnmount>
+  <input type="file" name="avatar" />
+  <button type="submit">Upload</button>
+</Form>
+```
+
+== Svelte
+
+```svelte
+<Form action="/avatar" method="post" cancelOnUnmount>
+  <input type="file" name="avatar" />
+  <button type="submit">Upload</button>
 </Form>
 ```
 
