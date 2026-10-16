@@ -1,6 +1,6 @@
 # DevTools
 
-@available_since rails=master core=3.6.0
+@available_since rails=3.23.0 core=3.6.0
 
 [Inertia DevTools](https://inertiajs.com/docs/v3/advanced/devtools) is a browser extension that records every Inertia request your app makes and shows you its props, headers, route, and merged page state. Inertia Rails implements the server half of the [DevTools protocol](https://inertiajs.com/docs/v3/advanced/devtools-protocol), so recording works with no setup in development.
 

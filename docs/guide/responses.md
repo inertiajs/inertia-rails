@@ -184,7 +184,7 @@ The `to_inertia` method receives no arguments. It can't see the prop's key, the 
 
 ### Passing an Object as Props
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 In some situations you may want to group related props together for reusability across different pages. You can pass an object that responds to `to_inertia` as the `props:` option. Its `to_inertia` method must return a hash, and each key becomes a prop.
 
@@ -289,7 +289,7 @@ Returns the SSR head content when [server-side rendering](/guide/server-side-ren
 </html>
 ```
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 Pass a block to render fallback head elements when the response isn't server-side rendered. When SSR is active, the `<Head>` component already provides these elements, so the block is skipped. Give fallback `<meta>` tags a `data-inertia` key, so the `<Head>` component replaces them instead of adding a duplicate.
 
@@ -314,7 +314,7 @@ Renders meta tags that were defined server-side using the `inertia_meta` configu
 
 #### Default Title
 
-@available_since rails=master core=3.0.1
+@available_since rails=3.23.0 core=3.0.1
 
 Pass `default_title:` to render a plain `<title>` when the page has no title of its own, for example on non-Inertia pages:
 

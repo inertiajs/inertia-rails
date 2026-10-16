@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.23.0] - 2026-10-16
+
 * Accept a block in `inertia_ssr_head` for fallback head elements, rendered when the response isn't server-side rendered, like inertia-laravel's `<x-inertia::head>` (@skryukov)
 * Add `config.convert_fragment_redirects` (off by default and enabled by the installer, requires Inertia.js v3) to keep URL fragments on Inertia redirects: a same-origin redirect to a URL with a fragment becomes a `409` response with the `X-Inertia-Redirect` header, which the client follows with a regular Inertia visit (@skryukov)
 * Add the `preserve_big_integers` option (config, `inertia_config` and render option), which sends integers outside JavaScript's safe range as `{"$bigint": "..."}` markers that Inertia.js v3.8+ turns into `BigInt` values. The testing helpers turn them back into integers (@skryukov)

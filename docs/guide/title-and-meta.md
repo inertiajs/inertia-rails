@@ -374,7 +374,7 @@ You may wish to include default head elements like `<title>` or `<meta>` tags in
 
 ### SSR Fallback
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 `inertia_ssr_head` accepts fallback content in a block. The block renders only when the response isn't server-side rendered. When SSR is active, the `<Head>` component already provides these elements as part of the server-rendered response, so the fallback is skipped.
 

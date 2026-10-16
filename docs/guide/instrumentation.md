@@ -2,7 +2,7 @@
 
 Inertia Rails emits [ActiveSupport::Notifications](https://guides.rubyonrails.org/active_support_instrumentation.html) events around rendering, prop resolution, and SSR requests. Subscribe to them to trace rendering with OpenTelemetry or AppSignal, log slow pages, or measure how much time your prop blocks take.
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 ## Events
 

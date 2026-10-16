@@ -34,7 +34,7 @@ Apps generated with the `inertia:install` generator have this preconfigured: the
 
 #### Inertia.js v3.5+
 
-@available_since rails=master core=3.5.0
+@available_since rails=3.23.0 core=3.5.0
 
 Since v3.5.0, Inertia.js natively supports [server-provided head elements](https://github.com/inertiajs/inertia/pull/3161) via the `serverHead` option of `createInertiaApp`. Apps generated with the `inertia:install` generator have this preconfigured; in existing apps, enable HTML string serialization on the server:
 
@@ -337,7 +337,7 @@ inertia_meta.add({
 
 ## Title Template
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 Instead of repeating an app-wide suffix in every action, configure a title template — the server-side counterpart of the [title callback](/guide/title-and-meta#title-callback). It receives the current title (or `nil` when the page sets none), runs in the controller context, and its result becomes the title:
 

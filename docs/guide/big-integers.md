@@ -1,6 +1,6 @@
 # Big Integers
 
-@available_since rails=master core=3.8.0
+@available_since rails=3.23.0 core=3.8.0
 
 JavaScript can't represent integers above `2**53 - 1` exactly, so it rounds them while parsing JSON. An ID like `900719925474099988` from a `bigint` column or a generator like Twitter's Snowflake reaches your components as `900719925474100000`. With big integer support enabled, Inertia Rails sends those values in a form the client turns into native `BigInt` values, following the JSON convention [documented on MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt#use_within_json).
 

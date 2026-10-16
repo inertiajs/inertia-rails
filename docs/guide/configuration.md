@@ -116,7 +116,7 @@ to encrypt the current page's data before pushing it to the history state.
 **Default**: `false`
 **ENV**: `INERTIA_PRESERVE_BIG_INTEGERS`
 
-@available_since rails=master core=3.8.0
+@available_since rails=3.23.0 core=3.8.0
 
 When enabled, integers outside JavaScript's safe range reach your components as native `BigInt` values instead of losing precision. See [Big Integers](/guide/big-integers) for details.
 
@@ -158,7 +158,7 @@ The URL of the SSR server. When `nil`, auto-detects from the Vite dev server.
 **Default**: `10`
 **ENV**: `INERTIA_SSR_TIMEOUT`
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 Seconds to wait for the SSR server to connect and respond. When the wait runs out, the page falls back to client-side rendering, as on any other SSR error.
 
@@ -283,7 +283,7 @@ This setting has no effect on controllers using Rails 8.2's `:header_only` forge
 **Default**: `true`
 **ENV**: `INERTIA_CONVERT_EXTERNAL_REDIRECTS`
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 Whether to automatically convert redirects to external (cross-origin) URLs into Inertia location responses (`409 Conflict` with the `X-Inertia-Location` header) for Inertia requests.
 
@@ -307,7 +307,7 @@ end
 **Default**: `false`
 **ENV**: `INERTIA_CONVERT_FRAGMENT_REDIRECTS`
 
-@available_since rails=master core=3.0.0
+@available_since rails=3.23.0 core=3.0.0
 
 Whether to keep URL fragments on Inertia redirects to URLs like `/articles/1#comments`, by responding with `409 Conflict` and the `X-Inertia-Redirect` header. See [Redirecting to Fragments](/guide/redirects#redirecting-to-fragments).
 
@@ -444,7 +444,7 @@ When set to `true`, Inertia Rails uses the [`data-*` attribute](https://develope
 **Default**: `false`
 **ENV**: `INERTIA_SERVER_HEAD`
 
-@available_since rails=master core=3.5.0
+@available_since rails=3.23.0 core=3.5.0
 
 When enabled, [server driven meta tags](/cookbook/server-managed-meta-tags) are serialized into the `head` prop as ready-to-render HTML strings for the `serverHead` option of `createInertiaApp` (Inertia.js v3.5+), instead of structured objects for the client-side cookbook component.
 
@@ -481,7 +481,7 @@ createInertiaApp({
 
 **Default**: `nil`
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 A callable applied to the `<title>` tag of [server driven meta tags](/cookbook/server-managed-meta-tags). It receives the current title (or `nil` when the page sets none), runs in the controller context, and its result becomes the title — so it can also provide a default for pages without one:
 
@@ -497,7 +497,7 @@ See [Title Template](/cookbook/server-managed-meta-tags#title-template) for deta
 
 **Default**: `nil`
 
-@available_since rails=master core=3.6.0
+@available_since rails=3.23.0 core=3.6.0
 
 Whether to record requests for the [Inertia DevTools](/guide/devtools) extension. `nil` records in development only; `true` or `false` force it on or off everywhere. Also settable with the `INERTIA_DEVTOOLS_ENABLED` environment variable.
 

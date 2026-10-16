@@ -966,7 +966,7 @@ router.on('location', (event) => {
 
 :::
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 Inertia Rails sends the `X-Inertia-Version` header that `versionChange` relies on. With older versions of the gem, `versionChange` is always `false`.
 

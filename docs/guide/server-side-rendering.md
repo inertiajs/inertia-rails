@@ -573,7 +573,7 @@ The Rails adapter always logs SSR failures to `Rails.logger` at the `error` leve
 
 ### Reporting to the Error Reporter
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 When no `on_ssr_error` callback is configured, SSR failures are reported through `Rails.error`, so error trackers that subscribe to the Rails error reporter pick them up without any extra wiring. (Requires Rails 7.0 or newer; on older versions the log line above is the only output.)
 

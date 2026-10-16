@@ -25,7 +25,7 @@ With Vite Ruby, cache busting is done automatically: built files get a content h
 
 ## Background Requests
 
-@available_since rails=master core=3.6.0
+@available_since rails=3.23.0 core=3.6.0
 
 A version change detected on a background request, such as polling or a `router.reload()`, does not force a full page visit. Reloading a request the user never initiated could wipe out unsaved state, so the current page stays untouched and the next user-initiated visit picks up the new assets. You may hook into the [`location` event](/guide/events#location) to detect an asset version change and show a notification instead of reloading.
 

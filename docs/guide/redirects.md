@@ -68,7 +68,7 @@ redirect_to article_path(article), inertia: { preserve_fragment: true }
 
 ## Redirecting to Fragments
 
-@available_since rails=master core=3.0.0
+@available_since rails=3.23.0 core=3.0.0
 
 A redirect target may contain its own fragment, such as `/articles/1#comments`. By default, the fragment is lost when Inertia follows the redirect. Enable `convert_fragment_redirects` to keep it. Apps set up with the installer have it enabled.
 
@@ -93,7 +93,7 @@ Inertia Rails generates these responses in two ways: automatically for cross-ori
 
 ### Cross-Origin Redirects
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 A regular redirect to another origin works out of the box — Inertia Rails automatically converts it into an Inertia location response for Inertia requests:
 
@@ -109,7 +109,7 @@ You can disable this behavior with the [`convert_external_redirects`](/guide/con
 
 ### Same-Origin Redirects
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 Redirects to a non-Inertia endpoint on the same origin can't be converted automatically: a `Location` header doesn't reveal whether its target renders an Inertia page, and converting every same-origin redirect would turn regular Inertia navigation into full page loads. A plain `redirect_to` fails differently here — the browser follows the redirect transparently, the non-Inertia endpoint responds without the `X-Inertia` header, and the client rejects it as an invalid Inertia response.
 

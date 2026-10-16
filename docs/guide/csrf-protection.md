@@ -67,7 +67,7 @@ That keeps the default behavior for non-safe requests while avoiding unnecessary
 
 ## Header-Only CSRF Protection (Rails 8.2+)
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 Rails 8.2 introduces a new default forgery protection strategy, `:header_only`, which verifies requests using the `Sec-Fetch-Site` header sent by modern browsers instead of authenticity tokens. Under this strategy Rails never reads a token, so there is nothing for the client to send back.
 

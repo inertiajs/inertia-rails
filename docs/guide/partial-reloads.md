@@ -85,7 +85,7 @@ router.visit(url, {
 
 ### Filtering Inside Arrays
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 Dot-notation keys address array elements by index: `rows.0.name` selects one key of one element. The response still replaces the whole array on the client, so this saves server work, not client state. Elements you did not ask for are never evaluated and arrive as placeholders: `{}` for an element written as a Hash, `null` for anything else — including a lambda or serializer that would have produced a Hash, since it never runs.
 
