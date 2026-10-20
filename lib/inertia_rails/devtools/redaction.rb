@@ -29,8 +29,11 @@ module InertiaRails
           headers.to_h do |name, value|
             next [name, REDACTED] if keys.include?(name)
 
-            value = Array(value).map { |part| utf8(part) }.join(', ')
-            [name, URL_HEADERS.include?(name) ? redact_url(value) : value]
+            value = Array(value).map do |part|
+              part = utf8(part)
+              URL_HEADERS.include?(name) ? redact_url(part) : part
+            end.join(', ')
+            [name, value]
           end
         end
 
@@ -38,22 +41,34 @@ module InertiaRails
         def redact_url(url)
           base, fragment = url.split('#', 2)
           path, query = base.split('?', 2)
-          return url if query.nil? || query.empty?
+          return url if query.to_s.empty? && fragment.to_s.empty?
 
           filter = log_filter
-          query = query.gsub(/[^&;]+/) do |pair|
+          query = query&.gsub(/[^&;]+/) do |pair|
             key, value = pair.split('=', 2)
             sensitive = value && sensitive_query_key?(URI.decode_www_form_component(key), filter)
             sensitive ? "#{key}=#{ENCODED_REDACTED}" : pair
           end
 
-          fragment ? "#{path}?#{query}##{fragment}" : "#{path}?#{query}"
+          fragment = redact_fragment(fragment, filter) if fragment
+          base = query.nil? ? path : "#{path}?#{query}"
+          fragment ? "#{base}##{fragment}" : base
         rescue StandardError
-          # If the query can't be read, hide all of it.
-          "#{url.split('?').first}?#{REDACTED}"
+          # If URL parameters can't be read, retain neither the query nor the fragment.
+          "#{url.split(/[?#]/, 2).first}?#{REDACTED}"
         end
 
         private
+
+        def redact_fragment(fragment, filter)
+          sensitive = fragment.split(/[?&;]/).any? do |pair|
+            key, value = pair.split('=', 2)
+            value && sensitive_query_key?(URI.decode_www_form_component(key), filter)
+          end
+
+          # Fragment syntax is app-defined, so hide the whole fragment if it contains a secret.
+          sensitive ? REDACTED : fragment
+        end
 
         def redact(value, filter)
           case value
