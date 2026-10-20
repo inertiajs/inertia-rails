@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Resolve nested `to_inertia` objects returned by prop types through their public projections instead of exposing internal instance variables, including deferred and partial responses (@thomasklemm)
 * Send plain prop values that respond to `deferred?`, `once?` or `rescue?` as data instead of treating them as prop types, and resolve plain props with fewer allocations (@thomasklemm)
 * Reduce controller configuration binding and plain-data prop scanning overhead without caching request-dependent configuration or changing prop evaluation order (@thomasklemm)
 * Skip HTML escaping of Inertia JSON responses when the app sets `config.action_controller.escape_json_responses = false` (the Rails 8.1 default), as `render json:` does (@brodienguyen)
