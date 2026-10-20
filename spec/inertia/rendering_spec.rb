@@ -233,6 +233,98 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'with serializers nested in prop type results' do
+    let(:user) { { 'name' => 'Ada' } }
+    let(:always_prop) { { 'user' => user, 'users' => [user] } }
+
+    it 'projects nested hashes and arrays on the initial request without exposing internal fields' do
+      get nested_serializer_props_path, headers: { 'X-Inertia' => true }
+
+      expect(response.parsed_body['props']).to eq(
+        'direct' => { 'user' => user },
+        'always' => always_prop,
+        'once' => [{ 'user' => user, 'evaluations' => 1 }],
+        'merged' => [{ 'user' => user }]
+      )
+      expect(response.parsed_body['onceProps']).to eq('once' => { 'prop' => 'once' })
+      expect(response.parsed_body['mergeProps']).to eq(['merged'])
+      expect(response.parsed_body['deferredProps']).to eq('default' => %w[deferred filtered rescuable])
+    end
+
+    it 'does not embed internal serializer fields in the initial HTML page' do
+      get nested_serializer_props_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('Ada')
+      expect(response.body).not_to include('password_digest')
+    end
+
+    it 'projects deferred and optional serializers on a partial request' do
+      get nested_serializer_props_path, headers: {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Partial-Data' => 'deferred,optional',
+      }
+
+      expect(response.parsed_body['props']).to eq(
+        'always' => always_prop,
+        'deferred' => { 'users' => [user] },
+        'optional' => { 'user' => user }
+      )
+      expect(response.parsed_body['deferredProps']).to be_nil
+    end
+
+    it 'does not evaluate an unrequested child of a deferred prop' do
+      get nested_serializer_props_path, headers: {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Partial-Data' => 'filtered.user',
+      }
+
+      expect(response.parsed_body['props']).to eq(
+        'always' => always_prop,
+        'filtered' => { 'user' => user }
+      )
+    end
+
+    it 'honors an except filter within a deferred prop' do
+      get nested_serializer_props_path, headers: {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Partial-Data' => 'filtered',
+        'X-Inertia-Partial-Except' => 'filtered.ignored',
+      }
+
+      expect(response.parsed_body['props']).to eq(
+        'always' => always_prop,
+        'filtered' => { 'user' => user }
+      )
+    end
+
+    it 'rescues an error from a nested serializer within a deferred prop' do
+      get nested_serializer_props_path, headers: {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Partial-Data' => 'rescuable',
+      }
+
+      expect(response.parsed_body['props']).to eq('always' => always_prop)
+      expect(response.parsed_body['rescuedProps']).to eq(['rescuable'])
+    end
+
+    it 'uses fresh serializer projections on consecutive requests' do
+      get nested_serializer_props_path, params: { viewer: 'Ada' }, headers: { 'X-Inertia' => true }
+      expect(response.parsed_body['props']['always']).to eq(always_prop)
+
+      get nested_serializer_props_path, params: { viewer: 'Bob' }, headers: { 'X-Inertia' => true }
+      expect(response.parsed_body['props']['always']).to eq(
+        'user' => { 'name' => 'Bob' },
+        'users' => [{ 'name' => 'Bob' }]
+      )
+      expect(response.body).not_to include('Ada', 'password_digest')
+    end
+  end
+
   context 'partial rendering' do
     let(:page) do
       InertiaRails::Renderer.new('TestComponent', controller, request, response, '',

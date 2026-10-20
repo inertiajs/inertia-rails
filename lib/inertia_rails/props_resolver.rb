@@ -135,14 +135,17 @@ module InertiaRails
           serialized = self.class.serializer?(value)
           value = serialize(value, path) if serialized
 
-          # A closure or a serializer may return a Hash or Array containing prop types — recurse into it
-          if prop.is_a?(Proc) || serialized
+          # A prop type may return nested serializers; leave plain results on their existing path.
+          # Keep child filters for prop types, except always props included outside the partial selection.
+          if prop.is_a?(Proc) || serialized || (prop.is_a?(BaseProp) && needs_transform?(value))
+            resolved_parent = parent_was_resolved || serialized || !prop.is_a?(BaseProp) ||
+                              (prop.is_a?(AlwaysProp) && excluded_by_partial_request?(path))
             if value.is_a?(Hash) && value.any?
-              nested = deep_transform_props(value, path, parent_was_resolved: true)
+              nested = deep_transform_props(value, path, parent_was_resolved: resolved_parent)
               transformed_props[key] = nested unless nested.empty?
               next
             elsif value.is_a?(Array)
-              transformed_props[key] = transform_array(value, path, parent_was_resolved: true)
+              transformed_props[key] = transform_array(value, path, parent_was_resolved: resolved_parent)
               next
             end
           end

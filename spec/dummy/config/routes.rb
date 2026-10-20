@@ -20,6 +20,7 @@ Rails.application.routes.draw do
   get 'serializer_props' => 'inertia_serializer_test#show'
   get 'broken_serializer_props' => 'inertia_serializer_test#broken'
   get 'lazy_serializer_props' => 'inertia_serializer_test#lazy'
+  get 'nested_serializer_props' => 'inertia_serializer_test#nested'
   get 'ssr_cache_disabled' => 'inertia_render_test#ssr_cache_disabled'
   get 'view_data' => 'inertia_render_test#view_data'
   get 'component' => 'inertia_render_test#component'
