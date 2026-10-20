@@ -85,7 +85,7 @@ module InertiaRails
       metadata
     end
 
-    def deep_transform_props(props, prefix = '', parent_was_resolved: false)
+    def deep_transform_props(props, prefix = '', parent_was_resolved: false, filter_nested_props: false)
       props.each_with_object({}) do |(key, prop), transformed_props|
         path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"
 
@@ -99,7 +99,8 @@ module InertiaRails
           next if !parent_was_resolved && excluded_by_partial_request?(path)
 
           record_prop(prop, path)
-          nested = deep_transform_props(prop, path, parent_was_resolved: parent_was_resolved)
+          nested = deep_transform_props(prop, path, parent_was_resolved: parent_was_resolved,
+                                                    filter_nested_props: filter_nested_props)
           transformed_props[key] = nested unless nested.empty?
           next
         end
@@ -108,13 +109,15 @@ module InertiaRails
           next if !parent_was_resolved && excluded_by_partial_request?(path)
 
           record_prop(prop, path)
-          transformed_props[key] = transform_array(prop, path, parent_was_resolved: parent_was_resolved)
+          transformed_props[key] = transform_array(prop, path, parent_was_resolved: parent_was_resolved,
+                                                               filter_nested_props: filter_nested_props)
           next
         end
 
         prop = prop.with_merge_intent(@scroll_intent) if prop.is_a?(ScrollProp)
         collect_metadata(prop, path)
-        next unless keep_prop?(prop, path, parent_was_resolved: parent_was_resolved)
+        resolved_child = parent_was_resolved && !(filter_nested_props && (prop.is_a?(BaseProp) || prop.is_a?(Proc)))
+        next unless keep_prop?(prop, path, parent_was_resolved: resolved_child)
 
         record_prop(prop, path)
         rescue_enabled = prop.try(:rescue?)
@@ -126,7 +129,7 @@ module InertiaRails
           if value.is_a?(BaseProp) && !prop.is_a?(BaseProp)
             value = value.with_merge_intent(@scroll_intent) if value.is_a?(ScrollProp)
             collect_metadata(value, path)
-            next unless keep_prop?(value, path, parent_was_resolved: parent_was_resolved)
+            next unless keep_prop?(value, path, parent_was_resolved: resolved_child)
 
             record_prop(value, path)
             value = @evaluator.call(value)
@@ -136,16 +139,19 @@ module InertiaRails
           value = serialize(value, path) if serialized
 
           # A prop type may return nested serializers; leave plain results on their existing path.
-          # Keep child filters for prop types, except always props included outside the partial selection.
+          # Always data stays included, but its executable children still obey partial selection.
           if prop.is_a?(Proc) || serialized || (prop.is_a?(BaseProp) && needs_transform?(value))
             resolved_parent = parent_was_resolved || serialized || !prop.is_a?(BaseProp) ||
                               (prop.is_a?(AlwaysProp) && excluded_by_partial_request?(path))
+            filter_children = filter_nested_props || (prop.is_a?(BaseProp) && !serialized)
             if value.is_a?(Hash) && value.any?
-              nested = deep_transform_props(value, path, parent_was_resolved: resolved_parent)
-              transformed_props[key] = nested unless nested.empty?
+              nested = deep_transform_props(value, path, parent_was_resolved: resolved_parent,
+                                                         filter_nested_props: filter_children)
+              transformed_props[key] = nested unless nested.empty? && !prop.is_a?(AlwaysProp)
               next
             elsif value.is_a?(Array)
-              transformed_props[key] = transform_array(value, path, parent_was_resolved: resolved_parent)
+              transformed_props[key] = transform_array(value, path, parent_was_resolved: resolved_parent,
+                                                                    filter_nested_props: filter_children)
               next
             end
           end
@@ -163,31 +169,41 @@ module InertiaRails
 
     # Partial reloads refer to array elements by position, so an unrequested element stays in
     # place as `{}` (a hash) or `nil`, and is not evaluated.
-    def transform_array(array, path, parent_was_resolved:)
+    def transform_array(array, path, parent_was_resolved:, filter_nested_props: false)
       return array unless needs_transform?(array) || (!parent_was_resolved && partial_request_reaches_below?(path))
 
       array.each_with_index.map do |item, index|
         item_path = "#{path}.#{index}"
 
+        if filter_nested_props && (item.is_a?(BaseProp) || item.is_a?(Proc))
+          next deep_transform_props({ index => item }, path, parent_was_resolved: parent_was_resolved,
+                                                             filter_nested_props: true)[index]
+        end
+
         case item
-        when Hash then deep_transform_props(item, item_path, parent_was_resolved: parent_was_resolved)
-        when Array then transform_array(item, item_path, parent_was_resolved: parent_was_resolved)
+        when Hash then deep_transform_props(item, item_path, parent_was_resolved: parent_was_resolved,
+                                                             filter_nested_props: filter_nested_props)
+        when Array then transform_array(item, item_path, parent_was_resolved: parent_was_resolved,
+                                                         filter_nested_props: filter_nested_props)
         else
           next if !parent_was_resolved && excluded_by_partial_request?(item_path)
 
-          transform_element(item, item_path, parent_was_resolved: parent_was_resolved)
+          transform_element(item, item_path, parent_was_resolved: parent_was_resolved,
+                                             filter_nested_props: filter_nested_props)
         end
       end
     end
 
-    def transform_element(item, path, parent_was_resolved:)
+    def transform_element(item, path, parent_was_resolved:, filter_nested_props: false)
       value = @evaluator.call(item)
       return value unless self.class.serializer?(value)
 
       value = serialize(value, path)
       case value
-      when Hash then deep_transform_props(value, path, parent_was_resolved: parent_was_resolved)
-      when Array then transform_array(value, path, parent_was_resolved: parent_was_resolved)
+      when Hash then deep_transform_props(value, path, parent_was_resolved: parent_was_resolved,
+                                                       filter_nested_props: filter_nested_props)
+      when Array then transform_array(value, path, parent_was_resolved: parent_was_resolved,
+                                                   filter_nested_props: filter_nested_props)
       else value
       end
     end
