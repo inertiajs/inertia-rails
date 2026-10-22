@@ -976,9 +976,18 @@ RSpec.describe 'rendering inertia views', type: :request do
         expect(cache_store.read('inertia_rails/@2/stats_key')).to eq({ count: 42 }.to_json)
       end
 
-      it 'returns RawJson on second request' do
+      it 'returns the cached value on second request' do
         get cached_props_path, headers: headers
         expect(response.parsed_body['props']['stats']).to eq({ 'count' => 42 })
+      end
+
+      it 'embeds the cached JSON without parsing it again on a cache hit',
+         if: InertiaRails::RawJson.fragment_embeddable? do
+        allow(JSON).to receive(:parse).and_call_original
+        get cached_props_path, headers: headers
+
+        expect(response.parsed_body['props']['stats']).to eq({ 'count' => 42 })
+        expect(JSON).not_to have_received(:parse).with({ count: 42 }.to_json)
       end
     end
 
@@ -1038,6 +1047,24 @@ RSpec.describe 'rendering inertia views', type: :request do
         it 'returns cached data without evaluating block' do
           expect(response.parsed_body['props']['feed']).to eq(%w[cached_item])
         end
+      end
+    end
+
+    context 'cached deferred prop with rescue' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'stats',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      it 'returns the cached value on a cache miss and on a cache hit' do
+        2.times do
+          get cached_rescued_deferred_props_path, headers: headers
+          expect(response.parsed_body['props']['stats']).to eq({ 'count' => 42 })
+        end
+        expect(cache_store.read('inertia_rails/@2/rescued_stats_key')).to eq({ count: 42 }.to_json)
       end
     end
 

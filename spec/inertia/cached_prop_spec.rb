@@ -16,7 +16,7 @@ RSpec.describe InertiaRails::CachedProp do
   end
 
   describe 'InertiaRails.cache(key) { block }' do
-    it 'caches the block result and returns RawJson' do
+    it 'caches the block result and returns the cached JSON' do
       call_count = 0
       prop = InertiaRails.cache('stats') do
         call_count += 1
@@ -24,13 +24,11 @@ RSpec.describe InertiaRails::CachedProp do
       end
 
       result = prop.call(controller)
-      expect(result).to be_a(InertiaRails::RawJson)
-      expect(result.to_json).to eq({ count: 42 }.to_json)
+      expect(ActiveSupport::JSON.encode(result)).to eq({ count: 42 }.to_json)
       expect(call_count).to eq(1)
 
       result2 = prop.call(controller)
-      expect(result2).to be_a(InertiaRails::RawJson)
-      expect(result2.to_json).to eq({ count: 42 }.to_json)
+      expect(ActiveSupport::JSON.encode(result2)).to eq({ count: 42 }.to_json)
       expect(call_count).to eq(1)
     end
   end
