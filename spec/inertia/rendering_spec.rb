@@ -247,6 +247,33 @@ RSpec.describe 'rendering inertia views', type: :request do
 
       it { is_expected.to include escaped_name }
     end
+
+    context 'when the app does not escape JSON responses',
+            if: ActionController::Base.respond_to?(:escape_json_responses?) do
+      before do
+        allow(InertiaRenderTestController).to receive(:escape_json_responses?).and_return(false)
+      end
+
+      context 'with Active Support encoding through JSON::Coder',
+              if: defined?(ActiveSupport::JSON::Encoding::JSONGemCoderEncoder) do
+        before { visit }
+
+        it { is_expected.to include '<b>Fish & Chips</b>' }
+        it { is_expected.not_to include escaped_name }
+      end
+
+      context 'with Active Support using its older encoder' do
+        before do
+          allow(ActiveSupport::JSON::Encoding).to receive(:json_encoder)
+            .and_return(ActiveSupport::JSON::Encoding::JSONGemEncoder)
+          visit
+        end
+
+        it 'keeps escaping, which that encoder does faster' do
+          is_expected.to include escaped_name
+        end
+      end
+    end
   end
 
   context 'with an object that responds to to_inertia as props' do

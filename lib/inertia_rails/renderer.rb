@@ -59,7 +59,7 @@ module InertiaRails
         @response.headers['Vary'] = vary.join(', ')
         if @request.inertia?
           @response.set_header('X-Inertia', 'true')
-          @render_method.call json: page.to_json, status: @response.status, content_type: Mime[:json]
+          @render_method.call json: page_json, status: @response.status, content_type: Mime[:json]
         else
           @controller.instance_variable_set('@_inertia_page', page)
           ssr = @configuration.ssr_enabled && ssr_render
@@ -101,6 +101,28 @@ module InertiaRails
 
     def ssr_render
       SSRRenderer.new(@configuration, page: page, cache: @ssr_cache).render
+    end
+
+    # Skips HTML escaping when the app turned it off for JSON responses, as
+    # `render json:` would, but only where Active Support makes that faster.
+    def page_json
+      escape_json_response? ? page.to_json : page.to_json(escape: false)
+    end
+
+    def escape_json_response?
+      controller_class = @controller.class
+      return true unless controller_class.respond_to?(:escape_json_responses?)
+
+      controller_class.escape_json_responses? || !coder_json_encoder?
+    end
+
+    # Active Support's older JSON encoder (json < 2.15.2) walks the whole page
+    # through as_json again for any option, so `escape: false` is slower there
+    # than the escaped default.
+    def coder_json_encoder?
+      encoding = ActiveSupport::JSON::Encoding
+      encoding.const_defined?(:JSONGemCoderEncoder, false) &&
+        encoding.json_encoder == encoding::JSONGemCoderEncoder
     end
 
     def layout
