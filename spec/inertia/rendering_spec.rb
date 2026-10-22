@@ -976,9 +976,18 @@ RSpec.describe 'rendering inertia views', type: :request do
         expect(cache_store.read('inertia_rails/@2/stats_key')).to eq({ count: 42 }.to_json)
       end
 
-      it 'returns RawJson on second request' do
+      it 'returns the cached value on second request' do
         get cached_props_path, headers: headers
         expect(response.parsed_body['props']['stats']).to eq({ 'count' => 42 })
+      end
+
+      it 'embeds the cached JSON without parsing it again on a cache hit',
+         if: InertiaRails::RawJson.fragment_embeddable? do
+        allow(JSON).to receive(:parse).and_call_original
+        get cached_props_path, headers: headers
+
+        expect(response.parsed_body['props']['stats']).to eq({ 'count' => 42 })
+        expect(JSON).not_to have_received(:parse).with({ count: 42 }.to_json)
       end
     end
 

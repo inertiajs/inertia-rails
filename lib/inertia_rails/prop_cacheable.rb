@@ -28,7 +28,7 @@ module InertiaRails
       json = InertiaRails.cache_store.fetch(@cache_key, **(@cache_options || {})) do
         resolve_for_cache(super, controller).to_json
       end
-      RawJson.new(json)
+      RawJson.wrap(json)
     end
 
     private
