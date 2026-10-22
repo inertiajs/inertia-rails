@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Embed cached props (`InertiaRails.cache` and `cache:` options) into the page as they are, instead of parsing the cached JSON and encoding it again on every request. This needs Active Support 8.1, which embeds `JSON::Fragment` values; with older versions, or an encoder that doesn't embed fragments, cached props work as before (@brodienguyen)
+
 ## [3.23.0] - 2026-10-16
 
 * Accept a block in `inertia_ssr_head` for fallback head elements, rendered when the response isn't server-side rendered, like inertia-laravel's `<x-inertia::head>` (@skryukov)
