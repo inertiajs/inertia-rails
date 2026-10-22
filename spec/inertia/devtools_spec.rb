@@ -417,6 +417,15 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(recorded['propValues'].keys).not_to include('auth.user')
       end
 
+      it 'records a cached prop as its data on a cache miss and on a cache hit' do
+        allow(InertiaRails).to receive(:cache_store).and_return(ActiveSupport::Cache::MemoryStore.new)
+
+        2.times do
+          get devtools_cached_path
+          expect(entry['propValues']).to include('stats' => { 'count' => 42 })
+        end
+      end
+
       it 'keys array paths by the index of the element, even after an element rendered empty' do
         get devtools_collection_path
         recorded = entry
