@@ -225,6 +225,57 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'subsequent requests with HTML characters in props' do
+    let(:escaped_name) { '\\u003cb\\u003eFish \\u0026 Chips\\u003c/b\\u003e' }
+
+    def visit
+      get html_props_path, headers: { 'X-Inertia' => true }
+    end
+
+    it 'returns the props unchanged' do
+      visit
+      expect(response.parsed_body['props']).to eq('name' => '<b>Fish & Chips</b>')
+    end
+
+    context 'when the app escapes JSON responses' do
+      before do
+        if InertiaRenderTestController.respond_to?(:escape_json_responses?)
+          allow(InertiaRenderTestController).to receive(:escape_json_responses?).and_return(true)
+        end
+        visit
+      end
+
+      it { is_expected.to include escaped_name }
+    end
+
+    context 'when the app does not escape JSON responses',
+            if: ActionController::Base.respond_to?(:escape_json_responses?) do
+      before do
+        allow(InertiaRenderTestController).to receive(:escape_json_responses?).and_return(false)
+      end
+
+      context 'with Active Support encoding through JSON::Coder',
+              if: defined?(ActiveSupport::JSON::Encoding::JSONGemCoderEncoder) do
+        before { visit }
+
+        it { is_expected.to include '<b>Fish & Chips</b>' }
+        it { is_expected.not_to include escaped_name }
+      end
+
+      context 'with Active Support using its older encoder' do
+        before do
+          allow(ActiveSupport::JSON::Encoding).to receive(:json_encoder)
+            .and_return(ActiveSupport::JSON::Encoding::JSONGemEncoder)
+          visit
+        end
+
+        it 'keeps escaping, which that encoder does faster' do
+          is_expected.to include escaped_name
+        end
+      end
+    end
+  end
+
   context 'with an object that responds to to_inertia as props' do
     before { get serializer_props_path, headers: { 'X-Inertia' => true } }
 

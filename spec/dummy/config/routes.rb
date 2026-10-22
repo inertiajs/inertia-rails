@@ -17,6 +17,7 @@ Rails.application.routes.draw do
 
   get 'configuration' => 'inertia_config_test#configuration'
   get 'props' => 'inertia_render_test#props'
+  get 'html_props' => 'inertia_render_test#html_props'
   get 'serializer_props' => 'inertia_serializer_test#show'
   get 'broken_serializer_props' => 'inertia_serializer_test#broken'
   get 'lazy_serializer_props' => 'inertia_serializer_test#lazy'
