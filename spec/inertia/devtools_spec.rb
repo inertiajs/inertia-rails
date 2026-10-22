@@ -80,13 +80,19 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(entries.length).to eq 1
       end
 
-      it 'reads a redirect location a Rack app returns as an array' do
+      it 'redacts each redirect location a Rack app returns as an array' do
         in_development
-        app = ->(_env) { [302, { 'location' => ['/next'] }, []] }
-        _status, headers, _body = InertiaRails::Devtools::Middleware.new(app).call(Rack::MockRequest.env_for('/old'))
+        locations = ['/next#section', '/callback#access_token=fragment-secret&state=public']
 
-        entry = InertiaRails::Devtools.store.read(headers['x-inertia-devtools-id'])
-        expect(entry['__meta']['redirectLocation']).to eq '/next'
+        %w[location x-inertia-location].each do |header|
+          app = ->(_env) { [302, { header => locations }, []] }
+          _status, headers, _body = InertiaRails::Devtools::Middleware.new(app).call(Rack::MockRequest.env_for('/old'))
+          entry = InertiaRails::Devtools.store.read(headers['x-inertia-devtools-id'])
+
+          expect(headers[header]).to eq locations
+          expect(entry['http']['responseHeaders'][header]).to eq '/next#section, /callback#[REDACTED]'
+          expect(entry['__meta']['redirectLocation']).to eq '/next#section, /callback#[REDACTED]'
+        end
       end
 
       context 'with server-side rendering' do
@@ -492,6 +498,24 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
 
         expect(recorded['http']['requestHeaders']['referer']).to eq 'http://ex.com/r?token=%5BREDACTED%5D'
         expect(recorded['http']['responseHeaders']['location']).to include('token=%5BREDACTED%5D')
+      end
+
+      it 'redacts fragment secrets in recorded redirects without changing the live response' do
+        [{}, { 'X-Inertia' => true }].each do |headers|
+          get devtools_fragment_redirect_path, headers: headers
+          header = headers.empty? ? 'location' : 'x-inertia-location'
+          id = response.headers['x-inertia-devtools-id']
+
+          expect(response.status).to eq(headers.empty? ? 302 : 409)
+          expect(response.headers[header]).to eq 'http://external-website.com/callback#access_token=fragment-secret&state=public'
+
+          get "/_inertia/devtools/entries/#{id}"
+          expect(response.status).to eq 200
+          recorded = response.parsed_body
+          expect(recorded['http']['responseHeaders'][header]).to eq 'http://external-website.com/callback#[REDACTED]'
+          expect(recorded['__meta']['redirectLocation']).to eq 'http://external-website.com/callback#[REDACTED]'
+          expect(response.body).not_to include('fragment-secret')
+        end
       end
 
       it 'redacts a raw body Rails did not parse' do

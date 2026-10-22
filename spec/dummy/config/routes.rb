@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get 'devtools_plain' => 'inertia_devtools_test#plain'
   get 'devtools_invalid_json' => 'inertia_devtools_test#invalid_json'
   post 'devtools_create' => 'inertia_devtools_test#create'
+  get 'devtools_fragment_redirect' => 'inertia_devtools_test#fragment_redirect'
   get 'devtools_boom' => 'inertia_devtools_test#boom'
   get 'devtools_nested_share' => 'inertia_devtools_test#nested_share'
   get 'devtools_collection' => 'inertia_devtools_test#collection'

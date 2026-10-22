@@ -71,6 +71,10 @@ class InertiaDevtoolsTestController < ApplicationController
     redirect_to devtools_props_path(token: 'leaked')
   end
 
+  def fragment_redirect
+    inertia_location 'http://external-website.com/callback#access_token=fragment-secret&state=public'
+  end
+
   def boom
     raise 'devtools boom'
   end
