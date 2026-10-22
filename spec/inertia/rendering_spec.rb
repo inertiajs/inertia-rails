@@ -1050,6 +1050,24 @@ RSpec.describe 'rendering inertia views', type: :request do
       end
     end
 
+    context 'cached deferred prop with rescue' do
+      let(:headers) do
+        {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Data' => 'stats',
+          'X-Inertia-Partial-Component' => 'TestComponent',
+        }
+      end
+
+      it 'returns the cached value on a cache miss and on a cache hit' do
+        2.times do
+          get cached_rescued_deferred_props_path, headers: headers
+          expect(response.parsed_body['props']['stats']).to eq({ 'count' => 42 })
+        end
+        expect(cache_store.read('inertia_rails/@2/rescued_stats_key')).to eq({ count: 42 }.to_json)
+      end
+    end
+
     context 'cached optional prop' do
       context 'on first load' do
         before { get optional_cached_props_path, headers: headers }

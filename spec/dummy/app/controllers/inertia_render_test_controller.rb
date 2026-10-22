@@ -380,4 +380,11 @@ class InertiaRenderTestController < ApplicationController
       feed: InertiaRails.defer(cache: 'feed_key', group: 'feed') { %w[fresh_item] },
     }
   end
+
+  def cached_rescued_deferred_props
+    render inertia: 'TestComponent', props: {
+      name: 'Brian',
+      stats: InertiaRails.defer(cache: 'rescued_stats_key', rescue: true) { { count: 42 } },
+    }
+  end
 end

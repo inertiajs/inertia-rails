@@ -108,6 +108,7 @@ Rails.application.routes.draw do
   get 'optional_cached_props' => 'inertia_render_test#optional_cached_props'
   get 'cached_props' => 'inertia_render_test#cached_props'
   get 'cached_deferred_props' => 'inertia_render_test#cached_deferred_props'
+  get 'cached_rescued_deferred_props' => 'inertia_render_test#cached_rescued_deferred_props'
   get 'non_inertiafied' => 'inertia_test#non_inertiafied'
   get 'api_test' => 'inertia_api_test#index'
   get 'api_external_redirect_test' => 'inertia_api_test#external_redirect'
