@@ -12,11 +12,32 @@ RSpec.describe 'Inertia configuration', type: :request do
       config.freeze
       expect { config.ssr_enabled = false }.to raise_error(FrozenError)
       expect { config.merge!(InertiaRails::Configuration.default) }.to raise_error(FrozenError)
+      expect { config.clone.ssr_enabled = false }.to raise_error(FrozenError)
 
       expect do
         merged_config = config.merge(InertiaRails::Configuration.default)
         expect(merged_config.ssr_enabled).to eq false
       end.not_to raise_error
+    end
+
+    describe '#bind_controller' do
+      it 'evaluates callables in the controller and keeps its options apart from the source' do
+        controller = Struct.new(:current_version).new('from-controller')
+        config = InertiaRails::Configuration.new(version: -> { current_version }, ssr_enabled: false)
+
+        bound = config.bind_controller(controller)
+        bound.ssr_enabled = true
+
+        expect(bound.version).to eq 'from-controller'
+        expect(config.ssr_enabled).to eq false
+
+        config.freeze
+        frozen_bound = config.bind_controller(controller)
+        frozen_bound.ssr_enabled = true
+
+        expect(frozen_bound.ssr_enabled).to eq true
+        expect(config.ssr_enabled).to eq false
+      end
     end
 
     context 'with environment variables' do

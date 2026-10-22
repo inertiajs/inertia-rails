@@ -194,11 +194,16 @@ module InertiaRails
       serializer.to_inertia
     end
 
+    # Explicit loops reduce per-element overhead on large plain-data arrays.
     def needs_transform?(value)
       case value
       when BaseProp, Proc then true
-      when Hash then value.any? { |_, v| needs_transform?(v) }
-      when Array then value.any? { |v| needs_transform?(v) }
+      when Hash
+        value.each_value { |v| return true if needs_transform?(v) }
+        false
+      when Array
+        value.each { |v| return true if needs_transform?(v) }
+        false
       else self.class.serializer?(value)
       end
     end
