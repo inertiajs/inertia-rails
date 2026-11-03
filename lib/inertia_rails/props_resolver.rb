@@ -148,6 +148,8 @@ module InertiaRails
 
           report_rescued_error(e)
           @_rescued << path
+          # Nothing was sent, so the client keeps the listeners it has.
+          @_live.delete(path)
           next
         end
       end
@@ -255,10 +257,10 @@ module InertiaRails
     end
 
     # A full load lists every live prop, sent or not, so the page subscribes to all of them. A partial
-    # reload lists only the props it asks for; the client keeps its subscriptions for the rest.
+    # reload lists the props it sends, always props included; the client keeps its subscriptions for the rest.
     def collect_live_metadata(prop, path)
       return unless prop.try(:live?)
-      return if excluded_by_partial_request?(path)
+      return if !prop.is_a?(AlwaysProp) && excluded_by_partial_request?(path)
 
       @_live[path] = prop.live_metadata
     end
