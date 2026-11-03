@@ -1006,6 +1006,50 @@ RSpec.describe InertiaRails::PropsResolver do
     end
   end
 
+  describe 'plain values answering prop predicates' do
+    it 'sends them as given rather than as prop types' do
+      record = Struct.new(:id, :deferred, :once, :rescue) do
+        def deferred? = deferred
+        def once? = once
+        def rescue? = self.rescue
+      end
+      deferred = record.new(1, true, false, false)
+      once = record.new(2, false, true, false)
+      rescued = record.new(3, false, false, true)
+
+      page = resolve({ deferred: deferred, once: once, rescued: rescued }, visit: { except_once: ['once'] })
+
+      expect(page[:props][:deferred]).to equal(deferred)
+      expect(page[:props][:once]).to equal(once)
+      expect(page[:props][:rescued]).to equal(rescued)
+
+      page = resolve_partial({ deferred: deferred, once: once, rescued: rescued }, 'deferred', 'once', 'rescued')
+
+      expect(page[:props][:deferred]).to equal(deferred)
+      expect(page[:props][:once]).to equal(once)
+      expect(page[:props][:rescued]).to equal(rescued)
+    end
+
+    it 'sends them as given while DevTools records the props' do
+      record = Struct.new(:id, :deferred, :once) do
+        def deferred? = deferred
+        def once? = once
+      end
+      deferred = record.new(1, true, false)
+      once = record.new(2, false, true)
+      recorder = Class.new { def prop_resolved(*, **) = nil }.new
+
+      resolver = described_class.new(
+        { deferred: deferred, once: once },
+        evaluator: evaluator, visit: { except_once: ['once'] }, recorder: recorder
+      )
+      props, = resolver.resolve
+
+      expect(props[:deferred]).to equal(deferred)
+      expect(props[:once]).to equal(once)
+    end
+  end
+
   describe 'to_inertia protocol' do
     it 'resolves object responding to to_inertia' do
       serializer = Object.new
