@@ -86,7 +86,9 @@ module InertiaRails
     end
 
     def deep_transform_props(props, prefix = '', parent_was_resolved: false)
-      props.each_with_object({}) do |(key, prop), transformed_props|
+      transformed_props = {}
+      # `each` yields key and value without the pair Array `each_with_object` builds per entry.
+      props.each do |key, prop|
         path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"
 
         if self.class.serializer?(prop)
@@ -156,6 +158,8 @@ module InertiaRails
           next
         end
       end
+
+      transformed_props
     end
 
     # Partial reloads refer to array elements by position, so an unrequested element stays in
