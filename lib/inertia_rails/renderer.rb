@@ -139,7 +139,7 @@ module InertiaRails
     end
 
     def partial_reload?
-      @request.headers['X-Inertia-Partial-Component'] == @component
+      @request.get_header('HTTP_X_INERTIA_PARTIAL_COMPONENT') == @component
     end
 
     def build_page
@@ -151,11 +151,11 @@ module InertiaRails
         evaluator: PropEvaluator.new(@controller),
         visit: {
           component: partial_reload?,
-          only: parse_header('X-Inertia-Partial-Data'),
-          except: parse_header('X-Inertia-Partial-Except'),
-          reset: parse_header('X-Inertia-Reset'),
-          except_once: parse_header('X-Inertia-Except-Once-Props'),
-          scroll_intent: @request.headers['X-Inertia-Infinite-Scroll-Merge-Intent'],
+          only: parse_header('HTTP_X_INERTIA_PARTIAL_DATA'),
+          except: parse_header('HTTP_X_INERTIA_PARTIAL_EXCEPT'),
+          reset: parse_header('HTTP_X_INERTIA_RESET'),
+          except_once: parse_header('HTTP_X_INERTIA_EXCEPT_ONCE_PROPS'),
+          scroll_intent: @request.get_header('HTTP_X_INERTIA_INFINITE_SCROLL_MERGE_INTENT'),
         },
         recorder: @recorder
       )
@@ -238,8 +238,9 @@ module InertiaRails
       props[:errors] = InertiaRails.always { errors }
     end
 
-    def parse_header(name)
-      (@request.headers[name] || '').split(',').compact_blank!
+    # Takes the Rack env key: `request.headers[name]` builds that key from the header name on every call.
+    def parse_header(env_key)
+      (@request.get_header(env_key) || '').split(',').compact_blank!
     end
   end
 end

@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Read Inertia request headers by their Rack env keys in the renderer, as the middleware does (@thomasklemm)
+
 ## [3.23.0] - 2026-10-16
 
 * Accept a block in `inertia_ssr_head` for fallback head elements, rendered when the response isn't server-side rendered, like inertia-laravel's `<x-inertia::head>` (@skryukov)
