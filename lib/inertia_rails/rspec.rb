@@ -106,6 +106,10 @@ InertiaRails::RSpec::MatcherFactory.define_partial_matcher(:have_once_props, :on
 InertiaRails::RSpec::MatcherFactory.define_exact_matcher(:have_exact_once_props, :once_props)
 InertiaRails::RSpec::MatcherFactory.define_key_absent_matcher(:have_no_once_prop, :once_props)
 
+InertiaRails::RSpec::MatcherFactory.define_partial_matcher(:have_live_props, :live_props)
+InertiaRails::RSpec::MatcherFactory.define_exact_matcher(:have_exact_live_props, :live_props)
+InertiaRails::RSpec::MatcherFactory.define_key_absent_matcher(:have_no_live_prop, :live_props)
+
 RSpec::Matchers.define(:have_deferred_props) do |*expected_keys, **options|
   match do |inertia|
     @result = InertiaRails::Testing::Assertions.validate_deferred_props(inertia, *expected_keys, **options)

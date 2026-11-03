@@ -40,7 +40,7 @@ RSpec helpers are automatically available in all request specs. Minitest helpers
 
 Both RSpec and Minitest provide matchers/assertions for testing Inertia responses. In RSpec, negation is done with `not_to`.
 
-The `inertia` helper gives you direct access to `inertia.props`, `inertia.component`, `inertia.view_data`, `inertia.flash`, `inertia.deferred_props`, `inertia.scroll_props`, and `inertia.once_props`.
+The `inertia` helper gives you direct access to `inertia.props`, `inertia.component`, `inertia.view_data`, `inertia.flash`, `inertia.deferred_props`, `inertia.scroll_props`, `inertia.once_props`, and `inertia.live_props`.
 
 | Description                  | RSpec                     | Minitest                                                                  |
 | ---------------------------- | ------------------------- | ------------------------------------------------------------------------- |
@@ -62,6 +62,9 @@ The `inertia` helper gives you direct access to `inertia.props`, `inertia.compon
 | Once props (partial match)   | `have_once_props`         | `assert_inertia_once_props` / `refute_inertia_once_props`                 |
 | Once props (exact match)     | `have_exact_once_props`   | `assert_inertia_once_props_equal` / `refute_inertia_once_props_equal`     |
 | Once prop key absent         | `have_no_once_prop`       | `assert_no_inertia_once_prop`                                             |
+| Live props (partial match)   | `have_live_props`         | `assert_inertia_live_props` / `refute_inertia_live_props`                 |
+| Live props (exact match)     | `have_exact_live_props`   | `assert_inertia_live_props_equal` / `refute_inertia_live_props_equal`     |
+| Live prop key absent         | `have_no_live_prop`       | `assert_no_inertia_live_prop`                                             |
 
 :::tabs key:tests
 

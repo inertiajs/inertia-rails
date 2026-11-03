@@ -277,6 +277,13 @@ class InertiaRenderTestController < ApplicationController
     }
   end
 
+  def live_props
+    render inertia: 'TestComponent', props: {
+      visitors: InertiaRails.live(:exhibit, throttle: 4000) { 3 },
+      regular: 'regular prop',
+    }
+  end
+
   def once_props_with_expires_in
     render inertia: 'TestComponent', props: {
       cached_data: InertiaRails.once(expires_in: 1.hour) { 'expensive data with expiration' },
