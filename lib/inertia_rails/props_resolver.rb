@@ -117,7 +117,7 @@ module InertiaRails
         next unless keep_prop?(prop, path, parent_was_resolved: parent_was_resolved)
 
         record_prop(prop, path)
-        rescue_enabled = prop.try(:rescue?)
+        rescue_enabled = prop.is_a?(BaseProp) && prop.try(:rescue?)
 
         begin
           value = @evaluator.call(prop)
@@ -270,13 +270,18 @@ module InertiaRails
       @partial_component
     end
 
+    # Only prop types answer the deferred and once predicates; plain values are data,
+    # even when they respond to `deferred?` or `once?` themselves.
     def keep_prop?(prop, path, parent_was_resolved: false)
       return true if prop.is_a?(AlwaysProp)
-      return false if excluded_by_once_cache?(prop, path)
+
+      prop_type = prop.is_a?(BaseProp)
+      return false if prop_type && excluded_by_once_cache?(prop, path)
       return false if !parent_was_resolved && excluded_by_partial_request?(path)
 
       # Precedence: Evaluate IgnoreOnFirstLoadProp only after partial keys have been checked
-      return false if (prop.is_a?(IgnoreOnFirstLoadProp) || prop.try(:deferred?)) && !rendering_partial_component?
+      return false if prop_type && (prop.is_a?(IgnoreOnFirstLoadProp) || prop.try(:deferred?)) &&
+                      !rendering_partial_component?
 
       true
     end
