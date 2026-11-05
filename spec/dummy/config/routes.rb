@@ -94,6 +94,7 @@ Rails.application.routes.draw do
   get 'nested_paths_test' => 'inertia_render_test#nested_paths_test'
   get 'reset_test' => 'inertia_render_test#reset_test'
   get 'once_props' => 'inertia_render_test#once_props'
+  get 'live_props' => 'inertia_render_test#live_props'
   get 'once_props_with_expires_in' => 'inertia_render_test#once_props_with_expires_in'
   get 'once_props_with_custom_key' => 'inertia_render_test#once_props_with_custom_key'
   get 'deferred_once_props' => 'inertia_render_test#deferred_once_props'

@@ -119,11 +119,25 @@ RSpec.describe 'Live props' do
       }
     end
 
-    it 'lists only the props the reload asks for; the client keeps the rest' do
+    it 'lists the props the reload asks for and the always props it sends anyway' do
       page = resolve_partial(props, 'order')
 
       expect(page[:props]).to eq(order: 'order', flash: 'flash')
-      expect(page[:liveProps].keys).to eq(%w[order])
+      expect(page[:liveProps].keys).to eq(%w[order flash])
+    end
+
+    it 'lists an always prop the reload excepts, since it is sent anyway' do
+      page = resolve(props, visit: { component: true, except: %w[flash stats] })
+
+      expect(page[:props]).to eq(order: 'order', flash: 'flash')
+      expect(page[:liveProps].keys).to eq(%w[order flash])
+    end
+
+    it 'leaves out a rescued prop, so the client keeps its listeners' do
+      page = resolve_partial({ stats: InertiaRails.defer(rescue: true, live: :stats) { raise 'boom' } }, 'stats')
+
+      expect(page[:rescuedProps]).to eq(['stats'])
+      expect(page).not_to have_key(:liveProps)
     end
   end
 end

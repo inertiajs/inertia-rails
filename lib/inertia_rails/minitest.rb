@@ -116,6 +116,10 @@ module InertiaRails
     AssertionFactory.define_exact_assertion(Helpers, :once_props, :once_props)
     AssertionFactory.define_key_absent_assertion(Helpers, :once_prop, :once_props)
 
+    AssertionFactory.define_partial_assertion(Helpers, :live_props, :live_props)
+    AssertionFactory.define_exact_assertion(Helpers, :live_props, :live_props)
+    AssertionFactory.define_key_absent_assertion(Helpers, :live_prop, :live_props)
+
     AssertionFactory.define_component_assertion(Helpers)
     AssertionFactory.define_response_assertion(Helpers)
     AssertionFactory.define_deferred_props_assertion(Helpers)
