@@ -1737,6 +1737,15 @@ RSpec.describe 'rendering inertia views', type: :request do
     it 'expands them into nested props' do
       expect(response.parsed_body['props']).to eq('auth' => { 'user' => 'Brandon', 'role' => 'admin' })
     end
+
+    it 'expands them the same when they come before a closure they extend' do
+      expected = response.body
+
+      get dotted_first_props_path, headers: { 'X-Inertia' => true }
+
+      expect(response.parsed_body['props']).to eq('auth' => { 'user' => 'Brandon', 'role' => 'admin' })
+      expect(response.body).to eq(expected.sub('/dotted_props', '/dotted_first_props'))
+    end
   end
 end
 

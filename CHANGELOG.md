@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Redact URL fragments containing sensitive parameters before DevTools stores URL headers or redirect locations. Harmless fragments and live redirect responses are unchanged (@thomasklemm)
 * Read Inertia request headers by their Rack env keys in the renderer, as the middleware does (@thomasklemm)
 * Embed cached props (`InertiaRails.cache` and `cache:` options) into the page as they are, instead of parsing the cached JSON and encoding it again on every request. This needs Active Support 8.1, which embeds `JSON::Fragment` values; with older versions, or an encoder that doesn't embed fragments, cached props work as before (@brodienguyen)
+* Keep dot-notation prop keys that come before a closure or `to_inertia` object they extend, so `{ 'user.name' => 'J', user: -> { { id: 1 } } }` resolves the same in either order (@skryukov)
 
 ## [3.23.0] - 2026-10-16
 

@@ -1458,6 +1458,120 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props][:auth][:user][:email]).to eq('jonathan@example.com')
       expect(page[:props][:auth][:user][:permissions]).to eq(%w[edit-posts delete-posts])
     end
+
+    describe 'that comes before its parent key' do
+      it 'is written into what a parent closure returns, as when it comes after' do
+        user = -> { { id: 1 } }
+
+        expect(resolve({ 'user.name' => 'Jonathan', user: user })[:props]).to eq(user: { id: 1, name: 'Jonathan' })
+        expect(resolve({ user: user, 'user.name' => 'Jonathan' })[:props]).to eq(user: { id: 1, name: 'Jonathan' })
+      end
+
+      it 'gives the same props in the same key order as when it comes after' do
+        serializer = Object.new
+        def serializer.to_inertia = { id: 3 }
+        dotted = {
+          'auth.user.name' => 'Jonathan',
+          'auth.can' => -> { true },
+          'auth.secret' => InertiaRails.optional { 'hidden' },
+          'team.name' => 'Core',
+          'owner.name' => 'Brandon',
+          'settings.theme': 'dark',
+        }
+        parents = {
+          auth: -> { { user: -> { { id: 1 } } } },
+          team: { id: 2 },
+          owner: serializer,
+          settings: -> { { locale: 'en' } },
+        }
+
+        before = resolve(dotted.merge(parents))
+        after = resolve(parents.merge(dotted))
+
+        expect(after[:props]).to eq(
+          auth: { user: { id: 1, name: 'Jonathan' }, can: true },
+          team: { id: 2, name: 'Core' },
+          owner: { id: 3, name: 'Brandon' },
+          settings: { locale: 'en', theme: 'dark' }
+        )
+        expect(before[:props].to_json).to eq(after[:props].to_json)
+      end
+
+      it 'is kept below a nested hash of its parent' do
+        page = resolve({ 'auth.user.name' => 'Jonathan', auth: { user: { id: 1 } } })
+
+        expect(page[:props]).to eq(auth: { user: { id: 1, name: 'Jonathan' } })
+      end
+
+      it 'resolves on a partial reload' do
+        props = { 'user.name' => 'Jon', 'user.email' => InertiaRails.optional { 'jon@x.io' }, user: -> { { id: 1 } } }
+
+        expect(resolve_partial(props, 'user.email')[:props]).to eq(user: { email: 'jon@x.io' })
+        expect(resolve_partial(props, 'user')[:props]).to eq(user: { id: 1, name: 'Jon', email: 'jon@x.io' })
+      end
+
+      it 'evaluates a parent closure once' do
+        calls = 0
+        page = resolve({ 'user.name' => 'Jonathan', 'user.admin' => true, user: -> { { id: (calls += 1) } } })
+
+        expect(page[:props]).to eq(user: { id: 1, name: 'Jonathan', admin: true })
+        expect(calls).to eq(1)
+      end
+
+      it 'leaves the parent value itself untouched' do
+        user = { id: 1 }.freeze
+        returned = { id: 2 }
+
+        page = resolve({ 'user.name' => 'Jonathan', 'owner.name' => 'Brandon', user: user, owner: -> { returned } })
+
+        expect(page[:props]).to eq(user: { id: 1, name: 'Jonathan' }, owner: { id: 2, name: 'Brandon' })
+        expect(returned).to eq(id: 2)
+      end
+    end
+
+    describe 'that sets the same key as its parent' do
+      it 'lets the one that comes last win, so page props win over shared dot-notation keys' do
+        page = { auth: { user: 'page' } }
+
+        expect(resolve({ 'auth.user' => 'shared', auth: { user: 'page' } })[:props]).to eq(page)
+        expect(resolve({ 'auth.user' => 'shared', auth: -> { { user: 'page' } } })[:props]).to eq(page)
+        expect(resolve({ auth: { user: 'shared' }, 'auth.user' => 'page' })[:props]).to eq(page)
+        expect(resolve({ auth: -> { { user: 'shared' } }, 'auth.user' => 'page' })[:props]).to eq(page)
+      end
+
+      it 'lets a nil value the parent sets last win' do
+        page = resolve({ 'auth.user' => 'shared', 'auth.team.name' => 'shared', auth: { user: nil, team: nil } })
+
+        expect(page[:props]).to eq(auth: { user: nil, team: nil })
+      end
+
+      it 'keeps a parent given as a Symbol and as a String, with a dot-notation key between them' do
+        page = resolve({ auth: { id: 1 }, 'auth.name' => 'Jonathan', 'auth' => { role: 'admin' } })
+
+        expect(page[:props]).to eq(auth: { id: 1, role: 'admin', name: 'Jonathan' })
+      end
+    end
+
+    describe 'with a parent that is not a hash' do
+      it 'is replaced by a parent that comes last' do
+        expect(resolve({ 'auth.user' => 'shared', auth: nil })[:props]).to eq(auth: nil)
+        expect(resolve({ 'auth.user' => 'shared', auth: -> {} })[:props]).to eq(auth: nil)
+        expect(resolve({ 'auth.user' => 'shared', auth: 'page' })[:props]).to eq(auth: 'page')
+      end
+
+      it 'is replaced by a prop type that comes last' do
+        props = { 'auth.user' => 'shared', auth: InertiaRails.optional { 'page' } }
+
+        expect(resolve(props)[:props]).to eq({})
+        expect(resolve_partial(props, :auth)[:props]).to eq(auth: 'page')
+      end
+
+      it 'builds a hash over a nil or false parent that comes first' do
+        expect(resolve({ auth: nil, 'auth.can' => true })[:props]).to eq(auth: { can: true })
+        expect(resolve({ auth: false, 'auth.can' => true })[:props]).to eq(auth: { can: true })
+        expect(resolve({ auth: -> {}, 'auth.can' => true })[:props]).to eq(auth: { can: true })
+      end
+    end
   end
 
   describe 'AlwaysProp errors' do

@@ -42,6 +42,10 @@ class InertiaRenderTestController < ApplicationController
     render inertia: 'TestComponent', props: { auth: AUTH, 'auth.role' => 'admin' }
   end
 
+  def dotted_first_props
+    render inertia: 'TestComponent', props: { 'auth.role' => 'admin', auth: -> { AUTH } }
+  end
+
   def deeply_nested_props
     render inertia: 'TestComponent', props: {
       flat: 'flat param',
