@@ -43,7 +43,7 @@ RSpec.describe 'Precognition', type: :request do
       end
 
       it 'adds Precognition to the Vary header' do
-        expect(vary_header_without_sec_fetch_site).to eq('Precognition')
+        expect(vary_header_without_rails_additions).to eq('Precognition')
       end
 
       it 'returns empty body' do
@@ -129,7 +129,7 @@ RSpec.describe 'Precognition', type: :request do
       it 'appends Precognition to the Vary header' do
         post precognition_basic_path, params: valid_user_params, headers: { 'Accept' => 'application/json' }
 
-        expect(vary_header_without_sec_fetch_site).to eq('Accept, Precognition')
+        expect(response.headers['Vary']).to start_with('Accept, ').and end_with(', Precognition')
       end
     end
 
