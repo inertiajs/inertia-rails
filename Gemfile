@@ -17,7 +17,8 @@ end
 
 gem 'debug'
 gem 'generator_spec', '~> 0.10'
-gem 'json', '< 3' if rails_number <= 8.1
+# Rails before 8.1.4 passes options to JSON.parse positionally, which json 3 rejects (rails/rails#58601).
+gem 'json', '< 3' if rails_number < 8.1
 gem 'lefthook'
 gem 'puma', rails_number < 7 ? '< 7' : '>= 7'
 gem 'rails-controller-testing'

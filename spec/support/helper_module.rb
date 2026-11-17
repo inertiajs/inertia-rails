@@ -15,9 +15,10 @@ module HelperModule
     end
   end
 
-  # Rails 8.2+ appends Sec-Fetch-Site in its own after_action.
-  def vary_header_without_sec_fetch_site
-    response.headers['Vary'].to_s.split(/,\s*/).reject { |v| v == 'Sec-Fetch-Site' }.join(', ')
+  # Rails appends Accept and X-Requested-With when rendering (8.0.5.2+, 8.1.4.1+)
+  # and Sec-Fetch-Site in its own after_action (8.2+).
+  def vary_header_without_rails_additions
+    response.headers['Vary'].to_s.split(/,\s*/).excluding('Accept', 'X-Requested-With', 'Sec-Fetch-Site').join(', ')
   end
 
   # Rails' request log and the controller log use different loggers.

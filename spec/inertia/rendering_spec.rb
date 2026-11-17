@@ -47,7 +47,7 @@ RSpec.describe 'rendering inertia views', type: :request do
           get component_path
 
           expect(response.headers['X-Inertia']).to be_nil
-          expect(vary_header_without_sec_fetch_site).to eq 'X-Inertia'
+          expect(vary_header_without_rails_additions).to eq 'X-Inertia'
           expect(response.headers['Content-Type']).to eq 'text/html; charset=utf-8'
         end
       end
@@ -57,7 +57,7 @@ RSpec.describe 'rendering inertia views', type: :request do
           get vary_header_path
 
           expect(response.headers['X-Inertia']).to be_nil
-          expect(vary_header_without_sec_fetch_site).to eq 'Accept-Language, X-Inertia'
+          expect(vary_header_without_rails_additions).to eq 'Accept-Language, X-Inertia'
           expect(response.headers['Content-Type']).to eq 'text/html; charset=utf-8'
         end
       end
@@ -66,7 +66,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         it 'does not duplicate it' do
           get vary_header_with_inertia_path
 
-          expect(vary_header_without_sec_fetch_site).to eq 'Accept-Language, X-Inertia'
+          expect(vary_header_without_rails_additions).to eq 'Accept-Language, X-Inertia'
         end
       end
     end
@@ -212,7 +212,7 @@ RSpec.describe 'rendering inertia views', type: :request do
 
     it 'has the proper headers' do
       expect(response.headers['X-Inertia']).to eq 'true'
-      expect(vary_header_without_sec_fetch_site).to eq 'X-Inertia'
+      expect(vary_header_without_rails_additions).to eq 'X-Inertia'
       expect(response.headers['Content-Type']).to eq 'application/json; charset=utf-8'
     end
 

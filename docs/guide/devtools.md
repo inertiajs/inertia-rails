@@ -130,6 +130,8 @@ To disable the panel itself, toggle the extension off from your browser's extens
 
 Values under a sensitive key are replaced with `[REDACTED]` before anything is written to disk — in props, request and response bodies, and the query parameters of the request URL, the page URL, redirect locations, and URL headers such as `Referer`. Sensitive request and response headers are redacted too.
 
+A URL fragment that carries a sensitive parameter, such as `#access_token=…` or a hash-router query, is replaced whole with `[REDACTED]`: fragment syntax is up to the app, so there is no safe way to cut out one value. Other fragments are stored as they are.
+
 `devtools.redact_keys` match exactly and case-insensitively, so `api_key` is redacted but `stripe_api_key` is not. Extend the lists rather than replacing them if you only mean to add:
 
 ```ruby
@@ -142,7 +144,7 @@ Request parameters and URL query parameters also honor your app's `config.filter
 
 Redaction is key-based, so it needs a structure to walk. A body Rails has no parser for is parsed as JSON and redacted; if it isn't JSON, it is recorded as omitted rather than written out raw. That applies in both directions — an HTML page or a text blob could embed a CSRF token or a secret under no key we can match, so non-Inertia responses are only stored when they are JSON. Likewise, the request body of a non-Inertia `POST`, `PUT`, `PATCH`, or `DELETE`, such as a plain Rails form or an API call, is recorded as omitted.
 
-A URL inside a prop or a body is stored as is, query string included. A token in a URL is not a secret anyway: browsers cache it, servers log it, and the `Referer` header passes it on.
+A URL inside a prop or a body is stored as is, query string and fragment included. To hide one, put it under a redacted key.
 
 ## Storage
 
