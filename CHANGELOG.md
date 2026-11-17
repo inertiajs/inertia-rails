@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Redact URL fragments containing sensitive parameters before DevTools stores URL headers or redirect locations. Harmless fragments and live redirect responses are unchanged (@thomasklemm)
 * Read Inertia request headers by their Rack env keys in the renderer, as the middleware does (@thomasklemm)
 
 ## [3.23.0] - 2026-10-16
