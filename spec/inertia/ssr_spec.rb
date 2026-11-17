@@ -60,7 +60,7 @@ RSpec.describe 'inertia ssr', type: :request do
       it 'allows inertia to take over when inertia headers are passed' do
         get props_path, headers: { 'X-Inertia' => true, 'X-Inertia-Version' => '1.0' }
 
-        expect(vary_header_without_sec_fetch_site).to eq 'X-Inertia'
+        expect(vary_header_without_rails_additions).to eq 'X-Inertia'
         expect(response.headers['Content-Type']).to eq 'application/json; charset=utf-8'
       end
     end
