@@ -45,12 +45,10 @@ module InertiaRails
 
           filter = log_filter
           query = query&.gsub(/[^&;]+/) do |pair|
-            key, value = pair.split('=', 2)
-            sensitive = value && sensitive_query_key?(URI.decode_www_form_component(key), filter)
-            sensitive ? "#{key}=#{ENCODED_REDACTED}" : pair
+            sensitive_pair?(pair, filter) ? pair.sub(/=.*/m) { "=#{ENCODED_REDACTED}" } : pair
           end
-
-          fragment = redact_fragment(fragment, filter) if fragment
+          # Fragment syntax is up to the app, so a fragment with a secret is hidden whole.
+          fragment = REDACTED if fragment&.split(/[?&;]/)&.any? { |pair| sensitive_pair?(pair, filter) }
           base = query.nil? ? path : "#{path}?#{query}"
           fragment ? "#{base}##{fragment}" : base
         rescue StandardError
@@ -60,14 +58,9 @@ module InertiaRails
 
         private
 
-        def redact_fragment(fragment, filter)
-          sensitive = fragment.split(/[?&;]/).any? do |pair|
-            key, value = pair.split('=', 2)
-            value && sensitive_query_key?(URI.decode_www_form_component(key), filter)
-          end
-
-          # Fragment syntax is app-defined, so hide the whole fragment if it contains a secret.
-          sensitive ? REDACTED : fragment
+        def sensitive_pair?(pair, filter)
+          key, value = pair.split('=', 2)
+          value && sensitive_query_key?(URI.decode_www_form_component(key), filter)
         end
 
         def redact(value, filter)
