@@ -59,7 +59,7 @@ module InertiaRails
         @response.headers['Vary'] = vary.join(', ')
         if @request.inertia?
           @response.set_header('X-Inertia', 'true')
-          @render_method.call json: page.to_json, status: @response.status, content_type: Mime[:json]
+          @render_method.call json: page_json, status: @response.status, content_type: Mime[:json]
         else
           @controller.instance_variable_set('@_inertia_page', page)
           ssr = @configuration.ssr_enabled && ssr_render
@@ -101,6 +101,15 @@ module InertiaRails
 
     def ssr_render
       SSRRenderer.new(@configuration, page: page, cache: @ssr_cache).render
+    end
+
+    # `render json:` skips HTML escaping the same way when the app turns it off.
+    def page_json
+      if @controller.class.try(:escape_json_responses?) == false
+        page.to_json(escape: false)
+      else
+        page.to_json
+      end
     end
 
     def layout

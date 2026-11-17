@@ -8,6 +8,10 @@ class InertiaRenderTestController < ApplicationController
     }
   end
 
+  def html_props
+    render inertia: 'TestComponent', props: { name: '<b>Fish & Chips</b>' }
+  end
+
   def ssr_cache_disabled
     render inertia: 'TestComponent', props: {
       name: 'Brandon',
