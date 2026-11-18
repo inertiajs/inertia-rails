@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Skip HTML escaping of Inertia JSON responses when the app sets `config.action_controller.escape_json_responses = false` (the Rails 8.1 default), as `render json:` does (@brodienguyen)
 * Redact URL fragments containing sensitive parameters before DevTools stores URL headers or redirect locations. Harmless fragments and live redirect responses are unchanged (@thomasklemm)
 * Read Inertia request headers by their Rack env keys in the renderer, as the middleware does (@thomasklemm)
+* Scaffold generator no longer produces enveloped requests using `transform` (@bknoles)
+* Accept a block in `precognition!` and `precognition` to transform errors (@bknoles)
+* Return precognition errors with dot-notated keys, so nested errors match the field names the client looks up (@bknoles)
+* Add `flatten_errors` configuration option to flatten redirect errors to dot-notated keys; when unset, warn about errors it would change, as it will be enabled by default in 4.0 (@bknoles)
 
 ## [3.23.0] - 2026-10-16
 
@@ -47,10 +51,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Restart the SSR server promptly in the Puma plugin when the process dies during boot, instead of polling a dead port for the full boot timeout (@skryukov)
 * Fix `NoMethodError` raised when a request carrying the `X-Inertia` header reaches a non-Inertia controller such as an `ActionController::API` endpoint (@SAY-5)
 * Fix stale flash notice and use idiomatic class in Vue scaffolds (@skryukov)
-* Scaffold generator no longer produces enveloped requests using `transform` (@bknoles)
-* Accept a block in `precognition!` and `precognition` to transform errors (@bknoles)
-* Return precognition errors with dot-notated keys, so nested errors match the field names the client looks up (@bknoles)
-* Add `flatten_errors` configuration option to flatten redirect errors to dot-notated keys; when unset, warn about errors it would change, as it will be enabled by default in 4.0 (@bknoles)
 * Start the SSR server in the Puma plugin regardless of the global `ssr_enabled`, so SSR enabled per controller with `inertia_config` works (@bknoles)
 * Add lefthook with pre-commit and pre-push hooks that mirror CI/CD checks (@bknoles)
 * Add `default_title:` option to `inertia_meta_tags`, and render meta tags in the installer's layout instead of a plain `<title>` (@bknoles)
