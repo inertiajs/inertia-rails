@@ -4,14 +4,21 @@ module InertiaRails
   # Resolves props and collects metadata (deferred, merge, once, scroll)
   # for the Inertia page response.
   class PropsResolver
-    def initialize(props, evaluator:, visit: {})
+    # `ActiveSupport::OrderedOptions` answers every method, `to_inertia` included, with a key lookup.
+    def self.serializer?(value)
+      value.respond_to?(:to_inertia) && !value.is_a?(ActiveSupport::OrderedOptions)
+    end
+
+    def initialize(props, evaluator:, visit: {}, recorder: nil)
       @props = props
       @evaluator = evaluator
+      @recorder = recorder
       @partial_component = visit[:component] || false
       @partial_keys = visit[:only] || []
       @partial_except_keys = visit[:except] || []
       @reset_keys = visit[:reset] || []
       @except_once_keys = visit[:except_once] || []
+      @scroll_intent = visit[:scroll_intent]
     end
 
     # Returns [resolved_props, metadata]
@@ -38,8 +45,9 @@ module InertiaRails
     def expand_dot_notation(props)
       result = {}
       props.each do |key, value|
-        if key.is_a?(String) && key.include?('.')
-          parts = key.split('.')
+        path = key.to_s
+        if path.include?('.')
+          parts = path.split('.')
           current = result
           parts[0..-2].each { |part| current = resolve_value(current, part.to_sym) }
           current[parts.last.to_sym] = value
@@ -57,9 +65,9 @@ module InertiaRails
 
     def resolve_value(current, key)
       value = current[key]
-      value = value.to_inertia if value.respond_to?(:to_inertia)
+      value = value.to_inertia if self.class.serializer?(value)
       value = @evaluator.call(value) if value.is_a?(Proc)
-      current[key] = value || {}
+      current[key] = value.is_a?(Hash) ? value.dup : value || {}
     end
 
     def build_metadata
@@ -81,11 +89,16 @@ module InertiaRails
       props.each_with_object({}) do |(key, prop), transformed_props|
         path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"
 
-        prop = prop.to_inertia if prop.respond_to?(:to_inertia)
+        if self.class.serializer?(prop)
+          next if !parent_was_resolved && excluded_by_partial_request?(path)
+
+          prop = serialize(prop, path)
+        end
 
         if prop.is_a?(Hash) && prop.any?
           next if !parent_was_resolved && excluded_by_partial_request?(path)
 
+          record_prop(prop, path)
           nested = deep_transform_props(prop, path, parent_was_resolved: parent_was_resolved)
           transformed_props[key] = nested unless nested.empty?
           next
@@ -94,13 +107,16 @@ module InertiaRails
         if prop.is_a?(Array)
           next if !parent_was_resolved && excluded_by_partial_request?(path)
 
+          record_prop(prop, path)
           transformed_props[key] = transform_array(prop, path, parent_was_resolved: parent_was_resolved)
           next
         end
 
+        prop = prop.with_merge_intent(@scroll_intent) if prop.is_a?(ScrollProp)
         collect_metadata(prop, path)
         next unless keep_prop?(prop, path, parent_was_resolved: parent_was_resolved)
 
+        record_prop(prop, path)
         rescue_enabled = prop.try(:rescue?)
 
         begin
@@ -108,14 +124,19 @@ module InertiaRails
 
           # A closure may return a prop type — unwrap one level
           if value.is_a?(BaseProp) && !prop.is_a?(BaseProp)
+            value = value.with_merge_intent(@scroll_intent) if value.is_a?(ScrollProp)
             collect_metadata(value, path)
             next unless keep_prop?(value, path, parent_was_resolved: parent_was_resolved)
 
+            record_prop(value, path)
             value = @evaluator.call(value)
           end
 
-          # A closure may return a Hash or Array containing prop types — recurse into it
-          if prop.is_a?(Proc)
+          serialized = self.class.serializer?(value)
+          value = serialize(value, path) if serialized
+
+          # A closure or a serializer may return a Hash or Array containing prop types — recurse into it
+          if prop.is_a?(Proc) || serialized
             if value.is_a?(Hash) && value.any?
               nested = deep_transform_props(value, path, parent_was_resolved: true)
               transformed_props[key] = nested unless nested.empty?
@@ -137,17 +158,40 @@ module InertiaRails
       end
     end
 
+    # Partial reloads refer to array elements by position, so an unrequested element stays in
+    # place as `{}` (a hash) or `nil`, and is not evaluated.
     def transform_array(array, path, parent_was_resolved:)
-      return array unless needs_transform?(array)
+      return array unless needs_transform?(array) || (!parent_was_resolved && partial_request_reaches_below?(path))
 
-      array.each_with_index.filter_map do |item, i|
-        if item.is_a?(Hash)
-          nested = deep_transform_props(item, "#{path}.#{i}", parent_was_resolved: parent_was_resolved)
-          nested unless nested.empty?
+      array.each_with_index.map do |item, index|
+        item_path = "#{path}.#{index}"
+
+        case item
+        when Hash then deep_transform_props(item, item_path, parent_was_resolved: parent_was_resolved)
+        when Array then transform_array(item, item_path, parent_was_resolved: parent_was_resolved)
         else
-          @evaluator.call(item)
+          next if !parent_was_resolved && excluded_by_partial_request?(item_path)
+
+          transform_element(item, item_path, parent_was_resolved: parent_was_resolved)
         end
       end
+    end
+
+    def transform_element(item, path, parent_was_resolved:)
+      value = @evaluator.call(item)
+      return value unless self.class.serializer?(value)
+
+      value = serialize(value, path)
+      case value
+      when Hash then deep_transform_props(value, path, parent_was_resolved: parent_was_resolved)
+      when Array then transform_array(value, path, parent_was_resolved: parent_was_resolved)
+      else value
+      end
+    end
+
+    def serialize(serializer, path)
+      @recorder&.serializer_found(serializer, path)
+      serializer.to_inertia
     end
 
     def needs_transform?(value)
@@ -155,8 +199,12 @@ module InertiaRails
       when BaseProp, Proc then true
       when Hash then value.any? { |_, v| needs_transform?(v) }
       when Array then value.any? { |v| needs_transform?(v) }
-      else value.respond_to?(:to_inertia)
+      else self.class.serializer?(value)
       end
+    end
+
+    def record_prop(prop, path)
+      @recorder&.prop_resolved(path, prop, reset: reset_keys.include?(path))
     end
 
     def report_rescued_error(error)
@@ -236,21 +284,28 @@ module InertiaRails
     def excluded_by_once_cache?(prop, path)
       return false unless prop.try(:once?)
       return false if prop.try(:fresh?)
-      return false if explicitly_requested?(path)
+      return false if rendering_partial_component?
 
       once_key = (prop.once_key || path).to_s
       except_once_keys.include?(once_key)
     end
 
-    def explicitly_requested?(path)
-      return false unless rendering_partial_component? && partial_keys.present?
+    def filtering_partial_request?
+      rendering_partial_component? && (partial_keys.present? || partial_except_keys.present?)
+    end
+
+    # Arrays of plain values are skipped as a shortcut, unless a partial reload names an
+    # element inside one.
+    def partial_request_reaches_below?(path)
+      return false unless filtering_partial_request?
 
       path_prefix = "#{path}."
-      partial_keys.any? { |key| key == path || key.start_with?(path_prefix) || path.start_with?("#{key}.") }
+      partial_keys.any? { |key| key.start_with?(path_prefix) } ||
+        partial_except_keys.any? { |key| key.start_with?(path_prefix) }
     end
 
     def excluded_by_partial_request?(path)
-      return false unless rendering_partial_component? && (partial_keys.present? || partial_except_keys.present?)
+      return false unless filtering_partial_request?
 
       excluded_by_only_partial_keys?(path) || excluded_by_except_partial_keys?(path)
     end

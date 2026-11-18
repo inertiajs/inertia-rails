@@ -302,7 +302,7 @@ import Layout from './Layout'
 
 createInertiaApp({
   layout: (name) => {
-    if (name.startsWith('Public/')) {
+    if (name.startsWith('public/')) {
       return null
     }
 

@@ -2,6 +2,8 @@
 
 Since Inertia powered JavaScript apps are rendered within the document `<body>`, they are unable to render markup to the document `<head>`, as it's outside of their scope. To help with this, Inertia ships with a `<Head>` component which can be used to set the page `<title>`, `<meta>` tags, and other `<head>` elements.
 
+The `<Head>` component will only replace `<head>` elements that are not in your root layout.
+
 > [!NOTE]
 > Since v3.10.0, Inertia Rails supports managing meta tags via Rails. This allows your meta tags to work with link preview services without setting up server-side rendering. Since this isn't a part of the Inertia.js core, it's documented in the [server driven meta tags cookbook](/cookbook/server-managed-meta-tags).
 
@@ -97,6 +99,17 @@ createInertiaApp({
 })
 ```
 
+@available_since core=3.5.0
+
+The callback also receives the current [page object](/guide/the-protocol#the-page-object) as its second argument, which you may use to build titles from the page's props.
+
+```js
+createInertiaApp({
+  title: (title, page) => `${title} - ${page.props.app_name}`,
+  // ...
+})
+```
+
 After defining the `title` callback, the callback will automatically be invoked when you set a title using the `<Head>` component.
 
 > [!NOTE]
@@ -175,6 +188,8 @@ export default () => (
 ```
 
 :::
+
+Without [SSR](/guide/server-side-rendering), the callback only runs in the browser. Link previews (like in Slack) don't run JavaScript, so they show the `<title>` from your Rails layout instead. To set that title, see [Default Title](/guide/responses#default-title).
 
 ## Multiple Head Instances
 
@@ -353,13 +368,58 @@ export default () => <AppHead title="About" />
 
 :::
 
-## Inertia Attribute on Elements
+## Server-Side Head Elements
+
+You may wish to include default head elements like `<title>` or `<meta>` tags in your root layout. This creates two challenges: preventing duplicates when [SSR](/guide/server-side-rendering) is active, and ensuring the client-side `<Head>` component may replace them during navigation.
+
+### SSR Fallback
+
+@available_since rails=3.23.0
+
+`inertia_ssr_head` accepts fallback content in a block. The block renders only when the response isn't server-side rendered. When SSR is active, the `<Head>` component already provides these elements as part of the server-rendered response, so the fallback is skipped.
+
+```erb
+<%# app/views/layouts/application.html.erb %>
+<head>
+  <%= inertia_ssr_head do %>
+    <title>My App</title>
+    <meta data-inertia="description" name="description" content="My application description">
+  <% end %>
+  <%= vite_javascript_tag 'application' %>
+</head>
+```
+
+If you only need a fallback `<title>`, use the [`default_title`](/guide/responses#default-title) option of `inertia_meta_tags` instead.
+
+### The `data-inertia` Attribute
 
 @available_since core=2.2.13
 
-Inertia has historically used the `inertia` attribute to track and manage elements in the document `<head>`. However, you can now opt-in to using the more standards-compliant `data-inertia` attribute instead. According to the HTML specification, custom attributes should be prefixed with `data-` to avoid conflicts with future HTML standards.
+The client-side `<Head>` component tracks the elements it manages by marking them with a `data-inertia` attribute. By default, it leaves any other tags in your root layout untouched. Since there may only be one `<title>` tag, the `<Head>` component will always replace it. Other elements like `<meta>` and `<link>` may have multiple instances, so the component needs a way to identify which ones it should manage.
 
-To enable this for `@inertiajs/core` < 3.0, configure the `future.useDataInertiaHeadAttribute` option in your [application defaults](/guide/client-side-setup#configuring-defaults).
+You may add the `data-inertia` attribute to elements in your root layout to have the `<Head>` component adopt them. On the first client-side navigation, it will match these elements by key and replace or remove them as needed.
+
+```erb
+<%# app/views/layouts/application.html.erb %>
+<head>
+  <title>My App</title>
+  <meta data-inertia="description" name="description" content="My application description">
+  <%= vite_javascript_tag 'application' %>
+</head>
+```
+
+The `data-inertia` value corresponds to the `head-key` property on your client-side `<Head>` elements.
+
+Meta tags rendered by Inertia Rails use the older `inertia` attribute unless you enable the [`use_data_inertia_head_attribute`](/guide/configuration#use-data-inertia-head-attribute) or [`server_head`](/guide/configuration#server-head) option. Inertia.js v3 clients only recognize `data-inertia`, so the Rails generator enables this option.
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.use_data_inertia_head_attribute = true
+end
+```
+
+Inertia.js v2 clients use the `inertia` attribute by default. To switch them to `data-inertia`, enable the `future.useDataInertiaHeadAttribute` option in your [application defaults](/guide/client-side-setup#configuring-defaults):
 
 ```js
 createInertiaApp({

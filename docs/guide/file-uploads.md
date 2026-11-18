@@ -142,12 +142,7 @@ This example uses the [Inertia form helper](/guide/forms#form-helper) for conven
 
 ## Multipart Limitations
 
-Uploading files using a `multipart/form-data` request is not natively supported in some server-side frameworks when using the `PUT`, `PATCH`, or `DELETE` HTTP methods. The simplest workaround for this limitation is to simply upload files using a `POST` request instead.
-
-However, some frameworks, such as [Laravel](https://laravel.com/docs/routing#form-method-spoofing) and [Rails](https://guides.rubyonrails.org/form_helpers.html#forms-with-patch-put-or-delete-methods), support form method spoofing, which allows you to upload the files using `POST`, but have the framework handle the request as a `PUT` or `PATCH` request. This is done by including a `_method` attribute in the data of your request.
-
-> [!NOTE]
-> For more info see [`Rack::MethodOverride`](https://github.com/rack/rack/blob/main/lib/rack/method_override.rb).
+Some server-side frameworks, such as Laravel, can't read `multipart/form-data` requests sent with the `PUT`, `PATCH`, or `DELETE` HTTP methods, and have to upload files with `POST` instead. Rails has no such limitation, so you can upload files with any method:
 
 :::tabs key:frameworks
 == Vue
@@ -155,8 +150,7 @@ However, some frameworks, such as [Laravel](https://laravel.com/docs/routing#for
 ```js
 import { router } from '@inertiajs/vue3'
 
-router.post(`/users/${user.id}`, {
-  _method: 'put',
+router.patch(`/users/${user.id}`, {
   avatar: form.avatar,
 })
 ```
@@ -166,8 +160,7 @@ router.post(`/users/${user.id}`, {
 ```js
 import { router } from '@inertiajs/react'
 
-router.post(`/users/${user.id}`, {
-  _method: 'put',
+router.patch(`/users/${user.id}`, {
   avatar: form.avatar,
 })
 ```
@@ -177,10 +170,11 @@ router.post(`/users/${user.id}`, {
 ```js
 import { router } from '@inertiajs/svelte'
 
-router.post(`/users/${user.id}`, {
-  _method: 'put',
+router.patch(`/users/${user.id}`, {
   avatar: form.avatar,
 })
 ```
 
 :::
+
+If you still need to send a `POST` request that Rails handles as `PUT` or `PATCH`, use the `X-HTTP-Method-Override` header. A `_method` attribute in the data only works in form and multipart requests: Inertia sends JSON when the data contains no files, and [`Rack::MethodOverride`](https://github.com/rack/rack/blob/main/lib/rack/method_override.rb) ignores `_method` in JSON.

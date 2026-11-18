@@ -22,22 +22,30 @@ module InertiaRails
       @configuration = controller.__send__(:inertia_configuration)
       @request = request
       @response = response
+      recorder = Devtools.recorder(request)
+      @recorder = recorder if recorder&.authorized?
       @render_method = render_method
       @view_data = options.fetch(:view_data, {})
       @encrypt_history = options.fetch(:encrypt_history, @configuration.encrypt_history)
       @clear_history = options.fetch(:clear_history, controller.session[:inertia_clear_history] || false)
       @preserve_fragment = options.fetch(:preserve_fragment, controller.session[:inertia_preserve_fragment] || false)
+      @preserve_big_integers = options.fetch(:preserve_big_integers, @configuration.preserve_big_integers)
       @layout_override = options.fetch(:layout) { @configuration.layout }
       @ssr_cache = options[:ssr_cache]
 
       deep_merge = options.fetch(:deep_merge, @configuration.deep_merge_shared_data)
       passed_props = options.fetch(:props,
                                    component.is_a?(Hash) ? component : @controller.__send__(:inertia_view_assigns))
+      if PropsResolver.serializer?(passed_props)
+        @recorder&.serializer_found(passed_props)
+        passed_props = passed_props.to_inertia
+      end
       shared = shared_data
       @shared_keys = @configuration.expose_shared_prop_keys ? extract_shared_keys(shared) : nil
       @props = merge_props(shared, passed_props, deep_merge)
 
       @component = resolve_component(component)
+      start_recording(shared, passed_props, deep_merge)
 
       @controller.instance_variable_set('@_inertia_rendering', true)
       controller.inertia_meta.add(options[:meta]) if options[:meta]
@@ -51,7 +59,7 @@ module InertiaRails
         @response.headers['Vary'] = vary.join(', ')
         if @request.inertia?
           @response.set_header('X-Inertia', 'true')
-          @render_method.call json: page.to_json, status: @response.status, content_type: Mime[:json]
+          @render_method.call json: page_json, status: @response.status, content_type: Mime[:json]
         else
           @controller.instance_variable_set('@_inertia_page', page)
           ssr = @configuration.ssr_enabled && ssr_render
@@ -59,7 +67,7 @@ module InertiaRails
             payload[:ssr] = true
             @controller.instance_variable_set('@_inertia_ssr_head', ssr['head'].join.html_safe)
             @render_method.call(
-              html: ssr['body'].html_safe,
+              html: "#{ssr['body']}#{@recorder&.discovery_tag}".html_safe,
               layout: layout,
               locals: @view_data.merge(page: page),
               formats: :html
@@ -78,8 +86,30 @@ module InertiaRails
 
     private
 
+    def start_recording(shared, passed_props, deep_merge)
+      return unless @recorder
+
+      shared_keys = @shared_keys || extract_shared_keys(shared)
+      # A prop passed to the render replaces a shared one, unless the two are deep merged.
+      shared_keys -= extract_shared_keys(passed_props) unless deep_merge
+      @recorder.render_started(
+        component: @component,
+        render_source: Devtools::SourceLocator.render_source(caller_locations(1, 40), @controller),
+        shared_keys: shared_keys
+      )
+    end
+
     def ssr_render
       SSRRenderer.new(@configuration, page: page, cache: @ssr_cache).render
+    end
+
+    # `render json:` skips HTML escaping the same way when the app turns it off.
+    def page_json
+      if @controller.class.try(:escape_json_responses?) == false
+        page.to_json(escape: false)
+      else
+        page.to_json
+      end
     end
 
     def layout
@@ -118,7 +148,7 @@ module InertiaRails
     end
 
     def partial_reload?
-      @request.headers['X-Inertia-Partial-Component'] == @component
+      @request.get_header('HTTP_X_INERTIA_PARTIAL_COMPONENT') == @component
     end
 
     def build_page
@@ -127,31 +157,29 @@ module InertiaRails
 
       resolver = PropsResolver.new(
         @props,
-        evaluator: PropEvaluator.new(@controller,
-                                     scroll_intent: @request.headers['X-Inertia-Infinite-Scroll-Merge-Intent']),
+        evaluator: PropEvaluator.new(@controller),
         visit: {
           component: partial_reload?,
-          only: parse_header('X-Inertia-Partial-Data'),
-          except: parse_header('X-Inertia-Partial-Except'),
-          reset: parse_header('X-Inertia-Reset'),
-          except_once: parse_header('X-Inertia-Except-Once-Props'),
-        }
+          only: parse_header('HTTP_X_INERTIA_PARTIAL_DATA'),
+          except: parse_header('HTTP_X_INERTIA_PARTIAL_EXCEPT'),
+          reset: parse_header('HTTP_X_INERTIA_RESET'),
+          except_once: parse_header('HTTP_X_INERTIA_EXCEPT_ONCE_PROPS'),
+          scroll_intent: @request.get_header('HTTP_X_INERTIA_INFINITE_SCROLL_MERGE_INTENT'),
+        },
+        recorder: @recorder
       )
       resolved_props, metadata = resolver.resolve
 
       resolved_props = @configuration.prop_transformer(props: resolved_props)
-
-      # Add meta tags (never transformed by prop_transformer)
-      merge_meta_tags!(resolved_props)
 
       page = {
         component: @component,
         props: resolved_props,
         url: @request.original_fullpath,
         version: @configuration.version,
-        encryptHistory: @encrypt_history,
-        clearHistory: @clear_history,
       }
+      page[:encryptHistory] = @encrypt_history if @encrypt_history
+      page[:clearHistory] = @clear_history if @clear_history
 
       flash_data = @controller.__send__(:inertia_collect_flash_data)
       page[:flash] = flash_data if flash_data.present?
@@ -160,6 +188,12 @@ module InertiaRails
       page[:preserveFragment] = @preserve_fragment if @preserve_fragment
 
       page.merge!(metadata)
+      page = BigIntegers.encode(page).merge(preserveBigIntegers: true) if @preserve_big_integers
+
+      # Add meta tags (never transformed by prop_transformer or BigIntegers)
+      merge_meta_tags!(page[:props])
+      @recorder&.page_rendered(page)
+      page
     end
 
     def resolve_component(component)
@@ -213,8 +247,9 @@ module InertiaRails
       props[:errors] = InertiaRails.always { errors }
     end
 
-    def parse_header(name)
-      (@request.headers[name] || '').split(',').compact_blank!
+    # Takes the Rack env key: `request.headers[name]` builds that key from the header name on every call.
+    def parse_header(env_key)
+      (@request.get_header(env_key) || '').split(',').compact_blank!
     end
   end
 end

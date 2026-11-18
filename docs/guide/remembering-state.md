@@ -72,7 +72,7 @@ const form = useRemember(
     first_name: null,
     last_name: null,
   },
-  'Users/Create',
+  'users/new',
 )
 ```
 
@@ -87,7 +87,7 @@ export default function Profile() {
       first_name: null,
       last_name: null,
     },
-    'Users/Create',
+    'users/new',
   )
 }
 ```
@@ -95,14 +95,14 @@ export default function Profile() {
 == Svelte
 
 ```js
-import { page, useRemember } from '@inertiajs/svelte'
+import { useRemember } from '@inertiajs/svelte'
 
 const form = useRemember(
   {
     first_name: null,
     last_name: null,
   },
-  'Users/Create',
+  'users/new',
 )
 ```
 
@@ -124,7 +124,7 @@ const form = useRemember(
     first_name: null,
     last_name: null,
   },
-  `Users/Edit:${props.user.id}`,
+  `users/edit:${props.user.id}`,
 )
 ```
 
@@ -133,13 +133,13 @@ const form = useRemember(
 ```jsx
 import { useRemember } from '@inertiajs/react'
 
-export default function Profile() {
+export default function Profile({ user }) {
   const [formState, setFormState] = useRemember(
     {
-      first_name: props.user.first_name,
-      last_name: props.user.last_name,
+      first_name: user.first_name,
+      last_name: user.last_name,
     },
-    `Users/Edit:${this.user.id}`,
+    `users/edit:${user.id}`,
   )
 }
 ```
@@ -154,7 +154,7 @@ const form = useRemember(
     first_name: page.props.user.first_name,
     last_name: page.props.user.last_name,
   },
-  `Users/Edit:${page.props.user.id}`,
+  `users/edit:${page.props.user.id}`,
 )
 ```
 

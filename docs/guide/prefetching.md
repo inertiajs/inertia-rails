@@ -343,14 +343,17 @@ export default () => (
 == Svelte
 
 ```svelte
-import {inertia} from '@inertiajs/svelte'
+<script>
+  import { inertia } from '@inertiajs/svelte'
+</script>
 
 <a href="/users" use:inertia={{ prefetch: true, cacheTags: 'users' }}>Users</a>
 <a
   href="/dashboard"
   use:inertia={{ prefetch: true, cacheTags: ['dashboard', 'stats'] }}
-  >Dashboard</a
 >
+  Dashboard
+</a>
 ```
 
 :::
@@ -608,4 +611,4 @@ If a request is made within the fresh period (before the first value), the cache
 
 If a request is made during the stale period (between the two values), the stale value is served to the user, and a request is made in the background to refresh the cached data. Once the fresh data is returned, it is merged into the page so the user has the most recent data.
 
-If a request is made after the second value, the cache is considered expired, and the page and data is fetched from the sever as a regular request.
+If a request is made after the second value, the cache is considered expired, and the page and data is fetched from the server as a regular request.

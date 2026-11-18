@@ -8,6 +8,10 @@ class InertiaRenderTestController < ApplicationController
     }
   end
 
+  def html_props
+    render inertia: 'TestComponent', props: { name: '<b>Fish & Chips</b>' }
+  end
+
   def ssr_cache_disabled
     render inertia: 'TestComponent', props: {
       name: 'Brandon',
@@ -30,6 +34,12 @@ class InertiaRenderTestController < ApplicationController
       },
       always: InertiaRails.always { 'always prop' },
     }
+  end
+
+  AUTH = { user: 'Brandon' }.freeze
+
+  def dotted_props
+    render inertia: 'TestComponent', props: { auth: AUTH, 'auth.role' => 'admin' }
   end
 
   def deeply_nested_props

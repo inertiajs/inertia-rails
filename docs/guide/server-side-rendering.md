@@ -4,6 +4,10 @@ Server-side rendering pre-renders your JavaScript pages on the server, allowing 
 
 Server-side rendering uses Node.js to render your pages in a background process; therefore, Node must be available on your server for server-side rendering to function properly. Inertia's SSR server requires Node.js 22 or higher.
 
+## Starter Kits
+
+The [Inertia Rails starter kits](/guide/starter-kits) ship with optional SSR support. Each kit's README explains how to turn it on.
+
 ## Vite Plugin Setup
 
 @available_since rails=3.19.0 core=3.0.0
@@ -91,7 +95,7 @@ For production, build both bundles and start the SSR server.
 
 ```bash
 npm run build
-node public/assets-ssr/inertia.js
+node public/vite-ssr/inertia.js
 ```
 
 ### Custom SSR Entry Point
@@ -100,14 +104,17 @@ The Vite plugin reuses your `inertia.js` entry point for both browser and SSR re
 
 Most app customizations, such as registering plugins or wrapping with providers, may be handled using the [`withApp` callback](/guide/client-side-setup#customizing-the-app) in your main entry point. A separate SSR entry point is only needed when you require completely different setup logic for the server.
 
-You may create a separate `resources/js/ssr.js` file for this purpose.
+You may create a separate `app/frontend/ssr/ssr.js` file for this purpose.
 
 :::tabs key:frameworks
 
 == Vue
 
 ```js
+import { createInertiaApp } from '@inertiajs/vue3'
 import createServer from '@inertiajs/vue3/server'
+import { createSSRApp, h } from 'vue'
+import { renderToString } from 'vue/server-renderer'
 
 createServer((page) =>
   createInertiaApp({
@@ -129,6 +136,7 @@ createServer((page) =>
 == React
 
 ```jsx
+import { createInertiaApp } from '@inertiajs/react'
 import createServer from '@inertiajs/react/server'
 import ReactDOMServer from 'react-dom/server'
 
@@ -148,7 +156,9 @@ createServer((page) =>
 == Svelte
 
 ```js
+import { createInertiaApp } from '@inertiajs/svelte'
 import createServer from '@inertiajs/svelte/server'
+import { render } from 'svelte/server'
 
 createServer((page) =>
   createInertiaApp({
@@ -189,7 +199,7 @@ If you prefer not to use the Vite plugin, you may configure SSR manually.
 
 ### 1. Create an SSR entry point
 
-Create an SSR entry point file within your Laravel project.
+Create an SSR entry point file in your Rails app.
 
 :::tabs key:frameworks
 == Vue
@@ -219,14 +229,17 @@ This file will look similar to your app entry point, but it runs in Node.js inst
 == Vue
 
 ```js
+import { createInertiaApp } from '@inertiajs/vue3'
 import createServer from '@inertiajs/vue3/server'
+import { createSSRApp, h } from 'vue'
+import { renderToString } from 'vue/server-renderer'
 
 createServer((page) =>
   createInertiaApp({
     page,
     render: renderToString,
     resolve: (name) => {
-      const pages = import.meta.glob('../pges/**/*.vue')
+      const pages = import.meta.glob('../pages/**/*.vue')
       return pages[`../pages/${name}.vue`]()
     },
     setup({ App, props, plugin }) {
@@ -241,6 +254,7 @@ createServer((page) =>
 == React
 
 ```jsx
+import { createInertiaApp } from '@inertiajs/react'
 import createServer from '@inertiajs/react/server'
 import ReactDOMServer from 'react-dom/server'
 
@@ -249,7 +263,7 @@ createServer((page) =>
     page,
     render: ReactDOMServer.renderToString,
     resolve: (name) => {
-      const pages = import.meta.glob('../pges/**/*.jsx')
+      const pages = import.meta.glob('../pages/**/*.jsx')
       return pages[`../pages/${name}.jsx`]()
     },
     setup: ({ App, props }) => <App {...props} />,
@@ -260,13 +274,15 @@ createServer((page) =>
 == Svelte
 
 ```js
+import { createInertiaApp } from '@inertiajs/svelte'
 import createServer from '@inertiajs/svelte/server'
+import { render } from 'svelte/server'
 
 createServer((page) =>
   createInertiaApp({
     page,
     resolve: (name) => {
-      const pages = import.meta.glob('../pges/**/*.svelte')
+      const pages = import.meta.glob('../pages/**/*.svelte')
       return pages[`../pages/${name}.svelte`]()
     },
     setup({ App, props }) {
@@ -290,7 +306,7 @@ Next, we need to update our Vite configuration to build our new `ssr.js` file. W
 
 ### 3. Enable SSR in the Inertia's Rails adapter
 
-Update Inertia Rails adapter cinfig to turn SSR on.
+Update Inertia Rails adapter config to turn SSR on.
 
 ```ruby
 # config/initializers/inertia_rails.rb
@@ -298,6 +314,96 @@ InertiaRails.configure do |config|
   config.ssr_enabled = ViteRuby.config.ssr_build_enabled
 end
 ```
+
+### Client-Side Hydration
+
+You should also update your `inertia.js` file to use hydration instead of normal rendering. This allows <Vue>Vue</Vue><React>React</React><Svelte>Svelte</Svelte> to pick up the server-rendered HTML and make it interactive without re-rendering it.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { createApp, h } from 'vue' // [!code --]
+import { createSSRApp, h } from 'vue' // [!code ++]
+import { createInertiaApp } from '@inertiajs/vue3'
+
+createInertiaApp({
+  resolve: (name) => {
+    const pages = import.meta.glob('../pages/**/*.vue')
+    return pages[`../pages/${name}.vue`]()
+  },
+  setup({ el, App, props, plugin }) {
+    createApp({ render: () => h(App, props) }) // [!code --]
+    createSSRApp({ render: () => h(App, props) }) // [!code ++]
+      .use(plugin)
+      .mount(el)
+  },
+})
+```
+
+== React
+
+```js
+import { createInertiaApp } from '@inertiajs/react'
+import { createRoot } from 'react-dom/client' // [!code --]
+import { hydrateRoot } from 'react-dom/client' // [!code ++]
+
+createInertiaApp({
+  resolve: (name) => {
+    const pages = import.meta.glob('../pages/**/*.jsx')
+    return pages[`../pages/${name}.jsx`]()
+  },
+  setup({ el, App, props }) {
+    createRoot(el).render(<App {...props} />) // [!code --]
+    hydrateRoot(el, <App {...props} />) // [!code ++]
+  },
+})
+```
+
+== Svelte
+
+```js
+import { createInertiaApp } from '@inertiajs/svelte'
+import { mount } from 'svelte' // [!code --]
+import { hydrate, mount } from 'svelte' // [!code ++]
+
+createInertiaApp({
+  resolve: (name) => {
+    const pages = import.meta.glob('../pages/**/*.svelte')
+    return pages[`../pages/${name}.svelte`]()
+  },
+  setup({ el, App, props }) {
+    mount(App, { target: el, props }) // [!code --]
+    if (el.dataset.serverRendered === 'true') {
+      // [!code ++:5]
+      hydrate(App, { target: el, props })
+    } else {
+      mount(App, { target: el, props })
+    }
+  },
+})
+```
+
+:::
+
+### Opting Out of the Vite Plugin
+
+You may pass `ssr: false` to the Inertia plugin to disable its automatic SSR handling and manage the SSR build yourself.
+
+```js
+// vite.config.js
+export default defineConfig({
+  plugins: [
+    RubyPlugin(),
+    inertia({
+      ssr: false, // [!code ++]
+    }),
+  ],
+})
+```
+
+Vite Ruby then builds your SSR entry point on its own. Its default `ssrEntrypoint` setting (`~/ssr/ssr.{js,ts,jsx,tsx}`) already matches `app/frontend/ssr/ssr.js`, so `bin/vite build --ssr` builds it to `public/vite-ssr`. The `ssrBuildEnabled` option from step 2 adds this build to `assets:precompile`.
 
 ### Clustering
 
@@ -435,7 +541,7 @@ If none of the above finds a file, the plugin logs nothing and stays idle.
 
 #### Runtime Detection
 
-The JavaScript runtime is auto-detected from your lockfile (`bun.lockb` → Bun, `deno.lock` → Deno, otherwise Node.js). To override:
+The JavaScript runtime is auto-detected from your lockfile (`bun.lock` or `bun.lockb` → Bun, `deno.lock` → Deno, otherwise Node.js). To override:
 
 ```ruby
 # config/initializers/inertia_rails.rb
@@ -454,80 +560,11 @@ bin/vite ssr
 
 With the server running, you should be able to access your app within the browser with server-side rendering enabled. In fact, you should be able to disable JavaScript entirely and still navigate around your application.
 
-## Client-Side Hydration
-
-You should also update your `inertia.js` file to use hydration instead of normal rendering. This allows <Vue>Vue</Vue><React>React</React><Svelte>Svelte</Svelte> to pick up the server-rendered HTML and make it interactive without re-rendering it.
-
-:::tabs key:frameworks
-
-== Vue
-
-```js
-import { createApp, h } from 'vue' // [!code --]
-import { createSSRApp, h } from 'vue' // [!code ++]
-
-createInertiaApp({
-  resolve: (name) => {
-    const pages = import.meta.glob('../pages/**/*.vue')
-    return pages[`../pages/${name}.vue`]()
-  },
-  setup({ el, App, props, plugin }) {
-    createApp({ render: () => h(App, props) }) // [!code --]
-    createSSRApp({ render: () => h(App, props) }) // [!code ++]
-      .use(plugin)
-      .mount(el)
-  },
-})
-```
-
-== React
-
-```js
-import { createRoot } from 'react-dom/client' // [!code --]
-import { hydrateRoot } from 'react-dom/client' // [!code ++]
-
-createInertiaApp({
-  resolve: (name) => {
-    const pages = import.meta.glob('../pages/**/*.jsx')
-    return pages[`../pages/${name}.jsx`]()
-  },
-  setup({ el, App, props }) {
-    createRoot(el).render(<App {...props} />) // [!code --]
-    hydrateRoot(el, <App {...props} />) // [!code ++]
-  },
-})
-```
-
-== Svelte
-
-```js
-import { mount } from 'svelte' // [!code --]
-import { hydrate, mount } from 'svelte' // [!code ++]
-
-createInertiaApp({
-  resolve: (name) => {
-    const pages = import.meta.glob('../pages/**/*.svelte')
-    return pages[`../pages/${name}.svelte`]()
-  },
-  setup({ el, App, props }) {
-    mount(App, { target: el, props }) // [!code --]
-    if (el.dataset.serverRendered === 'true') {
-      // [!code ++:5]
-      hydrate(App, { target: el, props })
-    } else {
-      mount(App, { target: el, props })
-    }
-  },
-})
-```
-
-:::
-
 ## Error Handling
 
 When SSR rendering fails, Inertia gracefully falls back to client-side rendering. The Vite plugin logs detailed error information to the console, including the component name, request URL, source location, and a tailored hint to help you resolve the issue.
 
-Common SSR errors are automatically classified. Browser API errors (such as referencing `window` or `document` in server-rendered code) include guidance on moving the code to a lifecycle hook. Component resolution errors suggest checking file paths and casing.
+Common SSR errors are automatically classified. Browser API errors (such as referencing `window` or `document` in server-rendered code) include guidance on moving the code to a lifecycle hook. Components that depend on browser APIs may also be wrapped in [`WhenMounted`](#client-only-components). Component resolution errors suggest checking file paths and casing.
 
 The Rails adapter always logs SSR failures to `Rails.logger` at the `error` level, so a failure is never silent. Beyond that, exactly one of the following applies:
 
@@ -536,7 +573,7 @@ The Rails adapter always logs SSR failures to `Rails.logger` at the `error` leve
 
 ### Reporting to the Error Reporter
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 When no `on_ssr_error` callback is configured, SSR failures are reported through `Rails.error`, so error trackers that subscribe to the Rails error reporter pick them up without any extra wiring. (Requires Rails 7.0 or newer; on older versions the log line above is the only output.)
 
@@ -585,14 +622,21 @@ The callback receives an `InertiaRails::SSRError` and the page hash, giving you 
 
 ### Raising on Error
 
-For CI or E2E testing, you may prefer SSR failures to raise an exception instead of falling back silently. Set the `ssr_raise_on_error` option in your initializer.
+Since Inertia falls back to client-side rendering, SSR failures may go unnoticed. Your tests pass because the client-side render succeeds, but your users never receive server-rendered HTML. This is especially common in system tests.
+
+You may set the `ssr_raise_on_error` option in your `config/initializers/inertia_rails.rb` file to raise an exception instead of falling back, so you catch SSR issues early.
 
 ```ruby
 # config/initializers/inertia_rails.rb
 InertiaRails.configure do |config|
-  config.ssr_raise_on_error = true
+  config.ssr_raise_on_error = Rails.env.test?
 end
 ```
+
+> [!WARNING]
+> This option is not recommended for production. SSR failures will return an error response instead of falling back to client-side rendering.
+
+You may also set the `INERTIA_SSR_RAISE_ON_ERROR` environment variable to `true`, for example on CI. It only applies when your initializer does not set the option.
 
 ## SSR Response Caching
 
@@ -653,7 +697,7 @@ SSR caching is automatically disabled when the Vite dev server is running, since
 
 ### Cache Store
 
-SSR caching uses the same [`cache_store`](/guide/configuration#cache_store) as [cached props](/guide/cached-props). SSR cache keys are prefixed with `inertia_ssr/`.
+SSR caching uses the same [`cache_store`](/guide/configuration#cache-store) as [cached props](/guide/cached-props). SSR cache keys are prefixed with `inertia_ssr/`.
 
 ## Disabling SSR
 
@@ -667,11 +711,13 @@ inertia({
 ```
 
 ```ruby
-# config/initializers/inertia.rb
+# config/initializers/inertia_rails.rb
 InertiaRails.configure do |config|
   config.ssr_enabled = false
 end
 ```
+
+To keep SSR in your build but skip it in tests, see [Disabling SSR During Tests](/guide/testing#disabling-ssr-during-tests).
 
 ## Excluding Controllers from SSR
 
@@ -690,6 +736,81 @@ class DashboardController < ApplicationController
   inertia_config(ssr_enabled: -> { !complex_client_only_page? })
 end
 ```
+
+## Client-Only Components
+
+@available_since core=3.8.0
+
+Sometimes, a component relies on browser APIs such as `window` or `document` and cannot be rendered on the server. Instead of disabling SSR for the entire page, you may wrap the component in `WhenMounted`, which renders its children only after mounting in the browser. The `fallback` is rendered on the server and during hydration instead.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup>
+import { WhenMounted } from '@inertiajs/vue3'
+import Chart from '@/components/Chart.vue'
+</script>
+
+<template>
+  <WhenMounted>
+    <template #fallback>
+      <div>Loading chart...</div>
+    </template>
+
+    <Chart />
+  </WhenMounted>
+</template>
+```
+
+== React
+
+```jsx
+import { WhenMounted } from '@inertiajs/react'
+import Chart from '@/components/Chart'
+
+export default () => (
+  <WhenMounted fallback={<div>Loading chart...</div>}>
+    <Chart />
+  </WhenMounted>
+)
+```
+
+== Svelte
+
+```svelte
+<script>
+  import { WhenMounted } from '@inertiajs/svelte'
+  import Chart from '@/components/Chart.svelte'
+</script>
+
+<WhenMounted>
+  {#snippet fallback()}
+    <div>Loading chart...</div>
+  {/snippet}
+
+  <Chart />
+</WhenMounted>
+```
+
+:::
+
+The fallback only appears on the initial server-rendered page load. Subsequent visits, as well as applications not using SSR, render the children immediately.
+
+<React>
+
+JSX children are evaluated before `WhenMounted` renders, so expressions that access `window` directly still run on the server. You may pass a function as the children to defer their evaluation until the component mounts.
+
+```jsx
+<WhenMounted fallback={<div>Loading chart...</div>}>
+  {() => <Chart width={window.innerWidth} />}
+</WhenMounted>
+```
+
+</React>
+
+Note that `WhenMounted` only skips rendering on the server. The wrapped component is still part of your SSR bundle, so its module must be safe to import on the server.
 
 ## Deployment
 

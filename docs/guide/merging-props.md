@@ -6,7 +6,7 @@ Prop merging only works during [partial reloads](/guide/partial-reloads). Full p
 
 ## Merge Methods
 
-@available_since rails=3.8.0 core=2.0.8
+@available_since rails=3.6.0 core=2.0.0
 
 To merge a prop instead of overwriting it, you may use the `InertiaRails.merge` method when returning your response.
 
@@ -68,7 +68,7 @@ On the client side, Inertia handles all the merging automatically according to y
 
 ## Matching Items
 
-@available_since rails=3.8.0 core=2.0.8
+@available_since rails=3.10.0 core=2.0.13
 
 When merging arrays, you may use the `match_on` parameter to match existing items by a specific field and update them instead of appending new ones.
 
@@ -106,16 +106,16 @@ Instead of specifying which nested paths should be merged, you may use `InertiaR
 ```ruby
 class ChatController < ApplicationController
   def index
-    chat_data = [
+    chat_data = {
       messages: [
-        [id: 4, text: 'Hello there!', user: 'Alice'],
-        [id: 5, text: 'How are you?', user: 'Bob'],
+        { id: 4, text: 'Hello there!', user: 'Alice' },
+        { id: 5, text: 'How are you?', user: 'Bob' },
       ],
       online: 12,
-    ]
+    }
 
     render inertia: {
-      chat: InertiaRails.deep_merge(chat_data, match_on: 'messages.id')
+      chat: InertiaRails.deep_merge(match_on: 'messages.id') { chat_data },
     }
   end
 end
@@ -150,7 +150,7 @@ end
 
 @available_since rails=3.15.0 core=2.2.20
 
-You may pass the `once: true` argument to a deferred prop to ensure the data is resolved only once and remembered by the client across subsequent navigations.
+You may pass the `once: true` argument to a merge prop to ensure the data is resolved only once and remembered by the client across subsequent navigations.
 
 ```ruby
 class UsersController < ApplicationController

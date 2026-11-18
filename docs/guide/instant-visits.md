@@ -20,7 +20,7 @@ import { Link } from '@inertiajs/vue3'
 </script>
 
 <template>
-  <Link href="/dashboard" component="Dashboard">Dashboard</Link>
+  <Link href="/dashboard" component="dashboard/index">Dashboard</Link>
 </template>
 ```
 
@@ -30,7 +30,7 @@ import { Link } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/react'
 
 export default () => (
-  <Link href="/dashboard" component="Dashboard">
+  <Link href="/dashboard" component="dashboard/index">
     Dashboard
   </Link>
 )
@@ -43,14 +43,16 @@ export default () => (
   import { inertia, Link } from '@inertiajs/svelte'
 </script>
 
-<a href="/dashboard" use:inertia={{ component: 'Dashboard' }}>Dashboard</a>
+<a href="/dashboard" use:inertia={{ component: 'dashboard/index' }}>
+  Dashboard
+</a>
 
-<Link href="/dashboard" component="Dashboard">Dashboard</Link>
+<Link href="/dashboard" component="dashboard/index">Dashboard</Link>
 ```
 
 :::
 
-When clicked, Inertia immediately renders the `Dashboard` component while the server request fires in the background. The full props are merged in when the response arrives.
+When clicked, Inertia immediately renders the `dashboard/index` component while the server request fires in the background. The full props are merged in when the response arrives.
 
 The target component must be able to render without its page-specific props, as only [shared props](/guide/shared-data) are available on the intermediate page. You may use optional chaining or conditional rendering to handle missing props.
 
@@ -58,17 +60,17 @@ Programmatic instant visits work the same way via the `component` option on `rou
 
 ```js
 router.visit('/dashboard', {
-  component: 'Dashboard',
+  component: 'dashboard/index',
 })
 ```
 
 ## Shared Props
 
-The Rails adapter includes a `sharedProps` metadata key in the page response, listing the top-level prop keys registered via `shared_props`.
+The Rails adapter includes a `sharedProps` metadata key in the page response, listing the top-level prop keys registered via [`inertia_share`](/guide/shared-data).
 
 ```json lines
 {
-  "component": "Dashboard",
+  "component": "dashboard/index",
   "props": {
     "auth": { "user": "..." },
     "stats": {
@@ -97,7 +99,7 @@ import { Link } from '@inertiajs/vue3'
 <template>
   <Link
     href="/posts/1"
-    component="Posts/Show"
+    component="posts/show"
     :page-props="{ title: 'Loading...' }"
   >
     View Post
@@ -113,7 +115,7 @@ import { Link } from '@inertiajs/react'
 export default () => (
   <Link
     href="/posts/1"
-    component="Posts/Show"
+    component="posts/show"
     pageProps={{ title: 'Loading...' }}
   >
     View Post
@@ -130,7 +132,7 @@ export default () => (
 
 <Link
   href="/posts/1"
-  component="Posts/Show"
+  component="posts/show"
   pageProps={{ title: 'Loading...' }}
 >
   View Post
@@ -145,7 +147,7 @@ A callback may also be passed to `pageProps`. The callback receives the current 
 
 ```js
 router.visit('/posts/1', {
-  component: 'Posts/Show',
+  component: 'posts/show',
   pageProps: (currentProps, sharedProps) => ({
     ...sharedProps,
     title: 'Loading...',
@@ -158,7 +160,7 @@ router.visit('/posts/1', {
 You may disable the `sharedProps` metadata key in your configuration. The server will still resolve and include shared prop values in the response, but the metadata listing which keys are shared will be omitted. Without this list, the client cannot identify which props to carry over during instant visits.
 
 ```ruby
-# config/initializers/inertia.rb
+# config/initializers/inertia_rails.rb
 
 InertiaRails.configure do |config|
   config.expose_shared_prop_keys = false

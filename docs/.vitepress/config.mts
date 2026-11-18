@@ -165,10 +165,12 @@ export default withMermaid({
         {
           text: 'Advanced',
           items: [
+            { text: 'Big integers', link: '/guide/big-integers' },
             { text: 'Caching', link: '/guide/caching' },
             { text: 'Asset versioning', link: '/guide/asset-versioning' },
             { text: 'Code splitting', link: '/guide/code-splitting' },
             { text: 'Configuration', link: '/guide/configuration' },
+            { text: 'DevTools', link: '/guide/devtools' },
             { text: 'Error handling', link: '/guide/error-handling' },
             { text: 'Events', link: '/guide/events' },
             { text: 'Instrumentation', link: '/guide/instrumentation' },

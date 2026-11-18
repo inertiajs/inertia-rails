@@ -6,7 +6,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Skip HTML escaping of Inertia JSON responses when the app sets `config.action_controller.escape_json_responses = false` (the Rails 8.1 default), as `render json:` does (@brodienguyen)
+* Redact URL fragments containing sensitive parameters before DevTools stores URL headers or redirect locations. Harmless fragments and live redirect responses are unchanged (@thomasklemm)
+* Read Inertia request headers by their Rack env keys in the renderer, as the middleware does (@thomasklemm)
+
+## [3.23.0] - 2026-10-16
+
+* Accept a block in `inertia_ssr_head` for fallback head elements, rendered when the response isn't server-side rendered, like inertia-laravel's `<x-inertia::head>` (@skryukov)
+* Add `config.convert_fragment_redirects` (off by default and enabled by the installer, requires Inertia.js v3) to keep URL fragments on Inertia redirects: a same-origin redirect to a URL with a fragment becomes a `409` response with the `X-Inertia-Redirect` header, which the client follows with a regular Inertia visit (@skryukov)
+* Add the `preserve_big_integers` option (config, `inertia_config` and render option), which sends integers outside JavaScript's safe range as `{"$bigint": "..."}` markers that Inertia.js v3.8+ turns into `BigInt` values. The testing helpers turn them back into integers (@skryukov)
+* Leave `encryptHistory` and `clearHistory` out of the page object when they are `false`, like inertia-laravel 3.x. Clients treat a missing key as `false`; specs that compare the full page JSON need updating (@skryukov)
+* Always escape the initial page JSON in the `<script>` element instead of relying on `ActiveSupport.escape_html_entities_in_json` being on. With that setting off, a prop containing `</script>` could break out of the element (@skryukov)
+* Add `config.ssr_timeout` (default 10 seconds) for SSR requests, instead of `Net::HTTP`'s 60 seconds, so a stuck SSR server can't hold a request for a minute (@skryukov)
+* Fix SSR failing with a 500 when `ssr_url` ends with a slash (@skryukov)
+* Send `X-Inertia-Version` with the stale-version `409` response, so Inertia.js v3.6+ can skip the reload on background requests such as polling (@skryukov)
+* Keep flash messages when a stale asset version forces a page refresh, instead of losing them (@skryukov)
+* Fix dot-notated prop keys (`'auth.user' => ...`) passed to `render` or `inertia_share` reaching the client as a literal key instead of nested props (@skryukov)
+* Fix an app's `rescue_from StandardError` turning Precognition validation responses into error pages. `InertiaRails::PrecognitionResponse` now inherits from `Exception`, so bare `rescue` clauses and `Rails.error.handle` no longer swallow it either; code that caught it as a `StandardError` must rescue it by name (@skryukov)
+* Add `Precognition` to the `Vary` header of responses from actions that call `precognition!` or `precognition`, like Laravel, so HTTP caches keep validation responses apart from regular ones (@skryukov)
+* Fix `InertiaRails.scroll` merge metadata ignoring the infinite scroll merge intent since 3.19.0: loading the previous page appended its items instead of prepending them, and a `wrapper:` prop replaced the loaded items instead of merging into the wrapped key. A scroll prop shared via `inertia_share` no longer collects duplicate merge paths on every request (@skryukov)
+* Fix once props missing from partial reloads that only list `except`: the client's already-loaded once props are skipped on full visits only, as in inertia-laravel (@skryukov)
+* Skip `to_inertia` for objects a partial reload doesn't include, instead of serializing them and dropping the result (@skryukov)
 * Expose `@_inertia_page` to views on SSR responses (@onk)
+* Add [Inertia DevTools](https://inertiajs.com/docs/v3/advanced/devtools) support: record requests in development (or those `config.devtools.authorize` approves elsewhere), expose the read API the browser extension reads, and configure it under `config.devtools` (@mattwigham and @skryukov)
+* Accept an object that responds to `to_inertia` as `props:`, as prop values already were. With `inertia_prop_sources`, it can also tell DevTools where it declared each prop (@skryukov)
+* Fix `to_inertia` objects returned from a closure or a prop type's block, placed in an array, or returned from an `InertiaRails.cache` block being serialized with `as_json`, which sent the object's instance variables, such as the record it wraps, to the client. Cached prop keys move to `inertia_rails/@2/`, so entries written before this fix are never read again: every cached prop fills once after upgrading, and code that deletes cached props by their full key needs the new prefix. `ActiveSupport::OrderedOptions` is no longer mistaken for a serializer, which turned it into `null` (@skryukov)
 * Add testing helpers for scroll props and once props (@onk)
 * Skip the `XSRF-TOKEN` cookie entirely (and expire a stale one) on controllers using Rails 8.2's `:header_only` forgery protection strategy, which verifies requests via `Sec-Fetch-Site` and never reads authenticity tokens (@mattwigham)
 * Skip setting `XSRF-TOKEN` cookie when Rails 8.2's `:header_only` CSRF strategy is on (@mattwigham)
@@ -17,8 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Preserve the original exception as `cause` on `InertiaRails::SSRError`, so connection failures report the underlying error instead of only the wrapper (@bknoles)
 * Convert external (cross-origin) redirects to Inertia location responses automatically (disable with `config.convert_external_redirects = false`), and add `redirect_to url, inertia: { full_page: true }` for same-origin redirects to non-Inertia endpoints (@skryukov)
 * Fix `inertia_location` to redirect plain (non-Inertia) requests instead of responding `409 Conflict`, and stop stale asset versions from replacing location responses with a forced refresh (@skryukov)
+* Fix partial reloads addressing array elements by index (`only: ['rows.0.name']`) dropping the elements they did not name, which shifted every later element onto the wrong path. Unrequested elements now keep their slot as a placeholder (`{}` for an element written as a Hash, `null` otherwise) and are never evaluated, and an indexed `only`/`except` path is now applied to arrays of plain hashes too (@skryukov)
 * Fix meta tags ignoring per-controller `use_data_inertia_head_attribute` set via `inertia_config` (@skryukov)
-* Use SHA256 instead of MD5 for meta tag head key digests, so they no longer raise on FIPS-enabled Rubies (@skryukov)
+* Use SHA256 instead of MD5 for generated meta tag head keys (@skryukov)
 * Restart the SSR server promptly in the Puma plugin when the process dies during boot, instead of polling a dead port for the full boot timeout (@skryukov)
 * Fix `NoMethodError` raised when a request carrying the `X-Inertia` header reaches a non-Inertia controller such as an `ActionController::API` endpoint (@SAY-5)
 * Fix stale flash notice and use idiomatic class in Vue scaffolds (@skryukov)
@@ -28,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add `flatten_errors` configuration option to flatten redirect errors to dot-notated keys; when unset, warn about errors it would change, as it will be enabled by default in 4.0 (@bknoles)
 * Start the SSR server in the Puma plugin regardless of the global `ssr_enabled`, so SSR enabled per controller with `inertia_config` works (@bknoles)
 * Add lefthook with pre-commit and pre-push hooks that mirror CI/CD checks (@bknoles)
+* Add `default_title:` option to `inertia_meta_tags`, and render meta tags in the installer's layout instead of a plain `<title>` (@bknoles)
+* Use `PATCH` instead of a method override header in scaffold edit forms with file uploads (@skryukov)
 
 ## [3.22.0] - 2026-07-17
 

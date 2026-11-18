@@ -134,7 +134,50 @@ export default () => (
   Logout
 </button>
 
-<Link href="/logout" method="post">Logout</button>
+<Link href="/logout" method="post">Logout</Link>
+```
+
+:::
+
+## Typelizer
+
+When using [Typelizer route helpers](/guide/routing#typelizer) with the `Link` component, you can pass the resulting object directly to the `href` prop. The `Link` will infer the HTTP method and URL from the object. This works with any object that has `url` and `method` keys.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup>
+import { Link } from '@inertiajs/vue3'
+import { users } from '@/routes'
+</script>
+
+<template>
+  <Link :href="users.show(1)">John Doe</Link>
+</template>
+```
+
+== React
+
+```jsx
+import { Link } from '@inertiajs/react'
+import { users } from '@/routes'
+
+export default () => <Link href={users.show(1)}>John Doe</Link>
+```
+
+== Svelte
+
+```svelte
+<script>
+  import { inertia, Link } from '@inertiajs/svelte'
+  import { users } from '@/routes'
+</script>
+
+<button use:inertia={{ href: users.show(1) }} type="button">John Doe</button>
+
+<Link href={users.show(1)}>John Doe</Link>
 ```
 
 :::
@@ -481,20 +524,20 @@ import { Link } from '@inertiajs/vue3'
 
 <template>
   <!-- URL exact match...-->
-  <Link href="/users" :class="{ active: page.url === '/users' }">Users</Link>
+  <Link href="/users" :class="{ active: $page.url === '/users' }">Users</Link>
 
   <!-- Component exact match...-->
-  <Link href="/users" :class="{ active: page.component === 'Users/Index' }">
+  <Link href="/users" :class="{ active: $page.component === 'users/index' }">
     Users
   </Link>
 
   <!-- URL starts with (/users, /users/create, /users/1, etc.)...-->
-  <Link href="/users" :class="{ active: page.url.startsWith('/users') }">
+  <Link href="/users" :class="{ active: $page.url.startsWith('/users') }">
     Users
   </Link>
 
-  <!-- Component starts with (Users/Index, Users/Create, Users/Show, etc.)...-->
-  <Link href="/users" :class="{ active: page.component.startsWith('Users') }">
+  <!-- Component starts with (users/index, users/new, users/show, etc.)...-->
+  <Link href="/users" :class="{ active: $page.component.startsWith('users/') }">
     Users
   </Link>
 </template>
@@ -503,32 +546,32 @@ import { Link } from '@inertiajs/vue3'
 == React
 
 ```jsx
-import { usePage } from '@inertiajs/react'
+import { Link, usePage } from '@inertiajs/react'
 
 export default () => {
   const { url, component } = usePage()
 
   return (
     <>
-      // URL exact match...
+      {/* URL exact match... */}
       <Link href="/users" className={url === '/users' ? 'active' : ''}>
         Users
       </Link>
-      // Component exact match...
+      {/* Component exact match... */}
       <Link
         href="/users"
-        className={component === 'Users/Index' ? 'active' : ''}
+        className={component === 'users/index' ? 'active' : ''}
       >
         Users
       </Link>
-      // URL starts with (/users, /users/create, /users/1, etc.)...
+      {/* URL starts with (/users, /users/create, /users/1, etc.)... */}
       <Link href="/users" className={url.startsWith('/users') ? 'active' : ''}>
         Users
       </Link>
-      // Component starts with (Users/Index, Users/Create, Users/Show, etc.)...
+      {/* Component starts with (users/index, users/new, users/show, etc.)... */}
       <Link
         href="/users"
-        className={component.startsWith('Users') ? 'active' : ''}
+        className={component.startsWith('users/') ? 'active' : ''}
       >
         Users
       </Link>
@@ -548,7 +591,7 @@ export default () => {
 <a href="/users" use:inertia class:active={page.url === '/users'}>Users</a>
 
 <!-- Component exact match... -->
-<a href="/users" use:inertia class:active={page.component === 'Users/Index'}>
+<a href="/users" use:inertia class:active={page.component === 'users/index'}>
   Users
 </a>
 
@@ -557,8 +600,8 @@ export default () => {
   Users
 </Link>
 
-<!-- Component starts with (Users/Index, Users/Create, Users/Show, etc.)... -->
-<Link href="/users" class={page.component.startsWith('Users') ? 'active' : ''}>
+<!-- Component starts with (users/index, users/new, users/show, etc.)... -->
+<Link href="/users" class={page.component.startsWith('users/') ? 'active' : ''}>
   Users
 </Link>
 ```

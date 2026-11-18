@@ -11,6 +11,7 @@ RSpec.describe InertiaRails::Renderer do
     it "has a deprecated #{method_name} accessor" do
       configuration = double('configuration',
                              encrypt_history: true,
+                             preserve_big_integers: false,
                              deep_merge_shared_data: false,
                              clear_history: false,
                              expose_shared_prop_keys: true,
@@ -22,7 +23,7 @@ RSpec.describe InertiaRails::Renderer do
                           session: {},
                           inertia_shared_data: {})
 
-      request = double('request', headers: {})
+      request = double('request', headers: {}, env: {})
       response = double('response', headers: {}, set_header: nil)
       render_method = ->(args) {}
 

@@ -49,7 +49,7 @@ declare module '@inertiajs/core' {
 ```
 
 > [!NOTE]
-> The `import` statement (or `export {}`) is required to make this file a module. Without it, `declare module` replaces the module definition instead of augmenting it. Your `tsconfig.json` also needs to include `.d.ts` files, so make sure a pattern like `"@/**/*.d.ts"` is present in the `include` array.
+> The `import` statement (or `export {}`) is required to make this file a module. Without it, `declare module` replaces the module definition instead of augmenting it. Your `tsconfig.json` also needs to include `.d.ts` files, so make sure a pattern like `"app/frontend/**/*.d.ts"` is present in the `include` array.
 
 ### Shared Page Props
 
@@ -434,31 +434,60 @@ interface UserResponse {
 const http = useHttp<UserForm, UserResponse>({ name: '', email: '' })
 ```
 
-### Per-Request Response Types
+## Layout Callbacks
 
-Each HTTP method accepts its own generic type parameter, allowing you to override the response type on a per-call basis. This is useful when different endpoints return different response shapes.
+The `LayoutCallback` type provides type safety for [layout callbacks](/guide/layouts#callback-props). The callback receives the page's props (typed via your global `sharedPageProps` configuration) and should return a valid layout definition.
 
-```ts
-interface OrderResponse {
-  orderId: string
-  total: number
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script lang="ts">
+import Layout from './Layout.vue'
+import type { LayoutCallback } from '@inertiajs/vue3'
+
+const callback: LayoutCallback = (props) => {
+  return [Layout, { title: props.auth.user?.name }]
 }
 
-// Override the response type per request...
-const user: UserResponse = await http.post<UserResponse>('/api/users')
-const order: OrderResponse = await http.get<OrderResponse>('/api/orders/123')
-const submitted: UserResponse = await http.submit<UserResponse>(
-  'post',
-  '/api/users',
-)
-
-// The onSuccess callback is also typed...
-await http.post<UserResponse>('/api/users', {
-  onSuccess: (response) => {
-    console.log(response.id, response.name)
-  },
-})
+export default {
+  layout: callback,
+}
+</script>
 ```
+
+== React
+
+```tsx
+import type { LayoutCallback } from '@inertiajs/react'
+import Layout from './Layout'
+
+const Profile = () => <h1>Profile</h1>
+
+const callback: LayoutCallback = (props) => {
+  return [Layout, { title: props.auth.user?.name }]
+}
+
+Profile.layout = callback
+
+export default Profile
+```
+
+== Svelte
+
+```svelte
+<script module lang="ts">
+  import Layout from './Layout.svelte'
+  import type { LayoutCallback } from '@inertiajs/svelte'
+
+  export const layout: LayoutCallback = (props) => {
+    return [Layout, { title: props.auth.user?.name }]
+  }
+</script>
+```
+
+:::
 
 ## Remembering State
 
@@ -578,7 +607,7 @@ interface UserPageProps {
 }
 
 router.push<UserPageProps>({
-  component: 'Users/Show',
+  component: 'users/show',
   url: '/users/1',
   props: { user: { id: 1, name: 'John' } },
 })

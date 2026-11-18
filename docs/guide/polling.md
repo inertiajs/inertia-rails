@@ -201,6 +201,61 @@ export default () => {
 
 :::
 
+@available_since core=3.7.0
+
+The poll helper also returns a reactive `polling` value that reflects whether the poll is running, making it ideal for rendering a pause or resume button. The value doesn't indicate whether a request is in flight.
+
+:::tabs key:frameworks
+
+== Vue
+
+```vue
+<script setup>
+import { usePoll } from '@inertiajs/vue3'
+
+const { start, stop, polling } = usePoll(2000)
+</script>
+
+<template>
+  <button v-if="polling" @click="stop">Pause updates</button>
+  <button v-else @click="start">Resume updates</button>
+</template>
+```
+
+== React
+
+```jsx
+import { usePoll } from '@inertiajs/react'
+
+export default () => {
+  const { start, stop, polling } = usePoll(2000)
+
+  return polling ? (
+    <button onClick={stop}>Pause updates</button>
+  ) : (
+    <button onClick={start}>Resume updates</button>
+  )
+}
+```
+
+== Svelte
+
+```svelte
+<script>
+  import { usePoll } from '@inertiajs/svelte'
+
+  const poll = usePoll(2000)
+</script>
+
+{#if poll.polling}
+  <button onclick={poll.stop}>Pause updates</button>
+{:else}
+  <button onclick={poll.start}>Resume updates</button>
+{/if}
+```
+
+:::
+
 ## Concurrency Mode
 
 @available_since core=3.2.0
@@ -255,9 +310,13 @@ usePoll(
 
 :::
 
-## Throttling
+## Background Tabs
 
-By default, the poll helper will throttle requests by 90% when the browser tab is in the background. If you'd like to disable this behavior, you can pass the `keepAlive` option to the poll helper.
+@available_since core=3.9.0
+
+By default, the poll helper throttles requests by 90% when the browser tab is in the background. You may control this behavior with the `background` option, which accepts one of three values: `throttle`, `pause`, or `continue`.
+
+The `pause` mode stops polling entirely while the tab is hidden. Once the tab becomes visible again, polling resumes, firing a request immediately if the interval has already elapsed since the last one. The `continue` mode keeps polling at the regular interval, even while the tab is hidden.
 
 :::tabs key:frameworks
 
@@ -270,7 +329,7 @@ usePoll(
   2000,
   {},
   {
-    keepAlive: true,
+    background: 'pause',
   },
 )
 ```
@@ -284,7 +343,7 @@ usePoll(
   2000,
   {},
   {
-    keepAlive: true,
+    background: 'pause',
   },
 )
 ```
@@ -298,9 +357,12 @@ usePoll(
   2000,
   {},
   {
-    keepAlive: true,
+    background: 'pause',
   },
 )
 ```
 
 :::
+
+> [!NOTE]
+> The `keepAlive` option is deprecated in favor of `background: 'continue'`.

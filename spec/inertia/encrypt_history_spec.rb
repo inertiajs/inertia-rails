@@ -4,11 +4,11 @@ RSpec.describe 'Inertia encrypt history', type: :request do
   let(:headers) { { 'X-Inertia' => true } }
 
   context 'with default config' do
-    it 'returns encryptHistory false' do
+    it 'omits encryptHistory' do
       get encrypt_history_default_config_path, headers: headers
 
-      expect(response.parsed_body['encryptHistory']).to eq(false)
-      expect(response.parsed_body['clearHistory']).to eq(false)
+      expect(response.parsed_body).not_to have_key('encryptHistory')
+      expect(response.parsed_body).not_to have_key('clearHistory')
     end
   end
 
@@ -17,16 +17,16 @@ RSpec.describe 'Inertia encrypt history', type: :request do
       get encrypt_history_encrypt_history_path, headers: headers
 
       expect(response.parsed_body['encryptHistory']).to eq(true)
-      expect(response.parsed_body['clearHistory']).to eq(false)
+      expect(response.parsed_body).not_to have_key('clearHistory')
     end
   end
 
   context 'with override config' do
-    it 'returns encryptHistory false' do
+    it 'omits encryptHistory' do
       get encrypt_history_override_config_path, headers: headers
 
-      expect(response.parsed_body['encryptHistory']).to eq(false)
-      expect(response.parsed_body['clearHistory']).to eq(false)
+      expect(response.parsed_body).not_to have_key('encryptHistory')
+      expect(response.parsed_body).not_to have_key('clearHistory')
     end
   end
 
@@ -49,7 +49,7 @@ RSpec.describe 'Inertia encrypt history', type: :request do
       expect(response.body).to include('&quot;clearHistory&quot;:true')
 
       get empty_test_path, headers: headers
-      expect(response.parsed_body['clearHistory']).to eq(false)
+      expect(response.parsed_body).not_to have_key('clearHistory')
     end
   end
 
@@ -65,7 +65,7 @@ RSpec.describe 'Inertia encrypt history', type: :request do
       expect(response.body).to include('&quot;clearHistory&quot;:true')
 
       get empty_test_path, headers: headers
-      expect(response.parsed_body['clearHistory']).to eq(false)
+      expect(response.parsed_body).not_to have_key('clearHistory')
     end
   end
 

@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 module InertiaRails
-  class PrecognitionResponse < StandardError
+  # Not a StandardError, so an app's `rescue_from StandardError` or bare `rescue` can't swallow it.
+  class PrecognitionResponse < Exception # rubocop:disable Lint/InheritException
     attr_reader :errors
 
     def initialize(errors)

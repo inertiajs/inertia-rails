@@ -22,17 +22,15 @@ module InertiaRails
       @deferred
     end
 
-    def call(controller, scroll_intent: nil, **)
-      @value = super(controller)
-      configure_merge_intent(scroll_intent)
-      @value
-    end
-
     def metadata
       ScrollMetadata.extract(@metadata, **@options)
     end
 
-    private
+    def with_merge_intent(scroll_intent)
+      dup.tap { |copy| copy.configure_merge_intent(scroll_intent) }
+    end
+
+    protected
 
     def configure_merge_intent(scroll_intent)
       scroll_intent == 'prepend' ? prepend(@wrapper || true) : append(@wrapper || true)

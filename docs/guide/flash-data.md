@@ -1,6 +1,6 @@
 # Flash Data
 
-@available_since rails=3.17.0 core=2.3.3
+@available_since rails=3.16.0 core=2.3.3
 
 Flash data lets you send one-time data to your frontend that won't reappear when users navigate through browser history. Unlike regular props, flash data isn't persisted in history state, making it ideal for success messages, newly created IDs, or other temporary values.
 
@@ -335,4 +335,4 @@ You may configure the flash data type globally using [TypeScript's declaration m
 
 ## Testing
 
-For information on testing flash data, see the [testing documentation](/guide/testing#testing-flash-data).
+For information on testing flash data, see the [testing documentation](/guide/testing#test-flash-messages).

@@ -66,7 +66,7 @@ createInertiaApp({
 
 :::
 
-## Using Webpacker/Shakapacker
+## Using Shakapacker
 
 To use code splitting with Webpack, you will first need to enable [dynamic imports](https://github.com/tc39/proposal-dynamic-import) via a Babel plugin. Let's install it now.
 

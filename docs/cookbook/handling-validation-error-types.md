@@ -147,7 +147,7 @@ You can add a helper on the Rails backend to convert error arrays into single st
 2. Use the helper when redirecting with errors:
 
    ```ruby
-   redirect_back inertia: inertia_errors(model)
+   redirect_back_or_to root_path, inertia: inertia_errors(model)
    ```
 
 This ensures the errors sent to the frontend are single strings, matching Inertia's default expectations.

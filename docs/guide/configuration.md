@@ -7,7 +7,7 @@ Inertia Rails can be configured globally or in a specific controller (and subcla
 Use the `InertiaRails.configure` method to set global configuration options. If using global configuration, we recommend you place the code inside an initializer:
 
 ```ruby
-# config/initializers/inertia.rb
+# config/initializers/inertia_rails.rb
 
 InertiaRails.configure do |config|
   # Example: force a full-reload if the deployed assets change.
@@ -42,7 +42,7 @@ Inertia Rails supports setting any configuration option via environment variable
 
 **Default**: `->(path:, action:) { "#{path}/#{action}" }`
 
-Use `component_path_resolver` to customize component path resolution when [`default_render`](#default_render) config value is set to `true`. The value should be callable and will receive the `path` and `action` parameters, returning a string component path. See [Automatically determine component name](/guide/responses#automatically-determine-component-name).
+Use `component_path_resolver` to customize component path resolution when [`default_render`](#default-render) config value is set to `true`. The value should be callable and will receive the `path` and `action` parameters, returning a string component path. See [Custom Path Resolver](/guide/responses#custom-path-resolver).
 
 ### `prop_transformer`
 
@@ -111,6 +111,15 @@ When enabled, you instruct Inertia to encrypt your app's history, it uses
 the browser's built-in [`crypto` api](https://developer.mozilla.org/en-US/docs/Web/API/Crypto)
 to encrypt the current page's data before pushing it to the history state.
 
+### `preserve_big_integers`
+
+**Default**: `false`
+**ENV**: `INERTIA_PRESERVE_BIG_INTEGERS`
+
+@available_since rails=3.23.0 core=3.8.0
+
+When enabled, integers outside JavaScript's safe range reach your components as native `BigInt` values instead of losing precision. See [Big Integers](/guide/big-integers) for details.
+
 ### `ssr_enabled` _(experimental)_
 
 **Default**: `false`
@@ -128,7 +137,7 @@ Requires a JavaScript server to be available at `ssr_url`. [_Example_](https://g
 
 **Default**: `nil` (disabled)
 
-@available_since rails=3.21.0
+@available_since rails=3.19.0
 
 Cache SSR responses to avoid redundant Node.js render requests for identical page data. Accepts `true`, `false`/`nil`, or a Hash of `Rails.cache.fetch` options (e.g. `{ expires_in: 1.hour }`). Lambdas are supported and evaluated in the controller context. Can be overridden per render call.
 
@@ -143,6 +152,76 @@ The URL of the SSR server. When `nil`, auto-detects from the Vite dev server.
 
 > [!NOTE]
 > Inertia SSR expects the server to respond at `/render` (production) or `/__inertia_ssr` (dev). If you set a server address, `/render` is appended automatically unless the URL already ends with `/render` or `/__inertia_ssr`.
+
+### `ssr_timeout`
+
+**Default**: `10`
+**ENV**: `INERTIA_SSR_TIMEOUT`
+
+@available_since rails=3.23.0
+
+Seconds to wait for the SSR server to connect and respond. When the wait runs out, the page falls back to client-side rendering, as on any other SSR error.
+
+### `ssr_raise_on_error`
+
+**Default**: `false`
+**ENV**: `INERTIA_SSR_RAISE_ON_ERROR`
+
+@available_since rails=3.19.0
+
+When enabled, SSR failures raise `InertiaRails::SSRError` instead of falling back to client-side rendering. The failure is still logged and passed to `on_ssr_error` if you defined one, but it is not reported to `Rails.error`. Not recommended for production.
+
+```ruby
+InertiaRails.configure do |config|
+  config.ssr_raise_on_error = Rails.env.test?
+end
+```
+
+See [Raising on Error](/guide/server-side-rendering#raising-on-error).
+
+### `on_ssr_error`
+
+**Default**: `nil`
+
+@available_since rails=3.19.0
+
+A callable that receives the `InertiaRails::SSRError` and the page hash when SSR fails. Defining it replaces the automatic report to `Rails.error`.
+
+```ruby
+InertiaRails.configure do |config|
+  config.on_ssr_error = ->(error, page) do
+    Rails.logger.warn("SSR failed for #{page[:component]}: #{error.message}")
+  end
+end
+```
+
+See [Customizing Error Handling](/guide/server-side-rendering#customizing-error-handling).
+
+### `ssr_bundle`
+
+**Default**: `nil`
+**ENV**: `INERTIA_SSR_BUNDLE`
+
+@available_since rails=3.19.0
+
+A path, or an array of paths, to your SSR bundle. When set, Inertia Rails only attempts SSR if one of the files exists, and renders on the client otherwise. The check is skipped while the Vite dev server is running. The [Puma plugin](/guide/server-side-rendering#puma-plugin) also starts the first path that exists.
+
+```ruby
+InertiaRails.configure do |config|
+  config.ssr_bundle = 'public/vite-ssr/ssr.js'
+end
+```
+
+When `nil`, every render attempts SSR, and the Puma plugin finds the bundle on its own (see [Bundle Resolution](/guide/server-side-rendering#bundle-resolution)). Keep it `nil` when the web server cannot see the bundle, for example when the SSR server runs in a separate container.
+
+### `ssr_runtime`
+
+**Default**: `nil` (auto-detected)
+**ENV**: `INERTIA_SSR_RUNTIME`
+
+@available_since rails=3.20.0
+
+The JavaScript runtime the [Puma plugin](/guide/server-side-rendering#puma-plugin) uses to run the SSR bundle, such as `"node"`, `"bun"`, or `"deno"`. When `nil`, it is detected from your lockfile. The Puma plugin only reads the global setting. See [Runtime Detection](/guide/server-side-rendering#runtime-detection).
 
 ### `version` _(recommended)_
 
@@ -204,7 +283,7 @@ This setting has no effect on controllers using Rails 8.2's `:header_only` forge
 **Default**: `true`
 **ENV**: `INERTIA_CONVERT_EXTERNAL_REDIRECTS`
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 Whether to automatically convert redirects to external (cross-origin) URLs into Inertia location responses (`409 Conflict` with the `X-Inertia-Location` header) for Inertia requests.
 
@@ -222,6 +301,15 @@ end
 
 > [!NOTE]
 > The origin comparison relies on the request scheme as Rails sees it (`X-Forwarded-Proto` is honored, as it is everywhere in Rails). If your app is behind a proxy, make sure it forwards this header — otherwise every absolute `https://` redirect to your own host will look cross-origin and trigger a full page visit.
+
+### `convert_fragment_redirects`
+
+**Default**: `false`
+**ENV**: `INERTIA_CONVERT_FRAGMENT_REDIRECTS`
+
+@available_since rails=3.23.0 core=3.0.0
+
+Whether to keep URL fragments on Inertia redirects to URLs like `/articles/1#comments`, by responding with `409 Conflict` and the `X-Inertia-Redirect` header. See [Redirecting to Fragments](/guide/redirects#redirecting-to-fragments).
 
 ### `flash_keys`
 
@@ -309,7 +397,7 @@ When enabled, the HTML output looks like:
 
 > [!NOTE]
 > When using this option make sure your client-side Inertia setup is configured to read the page data from the `<script>` element.
-> See the [client side setup](/guide/client-side-setup#script-element-for-page-data) for more details.
+> See the [upgrade guide](/guide/upgrade-guide#future-options-removed) for more details.
 
 ### `flatten_errors`
 
@@ -377,7 +465,7 @@ When set to `true`, Inertia Rails uses the [`data-*` attribute](https://develope
 **Default**: `false`
 **ENV**: `INERTIA_SERVER_HEAD`
 
-@available_since rails=master core=3.5.0
+@available_since rails=3.23.0 core=3.5.0
 
 When enabled, [server driven meta tags](/cookbook/server-managed-meta-tags) are serialized into the `head` prop as ready-to-render HTML strings for the `serverHead` option of `createInertiaApp` (Inertia.js v3.5+), instead of structured objects for the client-side cookbook component.
 
@@ -414,7 +502,7 @@ createInertiaApp({
 
 **Default**: `nil`
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 A callable applied to the `<title>` tag of [server driven meta tags](/cookbook/server-managed-meta-tags). It receives the current title (or `nil` when the page sets none), runs in the controller context, and its result becomes the title — so it can also provide a default for pages without one:
 
@@ -425,3 +513,15 @@ end
 ```
 
 See [Title Template](/cookbook/server-managed-meta-tags#title-template) for details.
+
+### `devtools.enabled`
+
+**Default**: `nil`
+
+@available_since rails=3.23.0 core=3.6.0
+
+Whether to record requests for the [Inertia DevTools](/guide/devtools) extension. `nil` records in development only; `true` or `false` force it on or off everywhere. Also settable with the `INERTIA_DEVTOOLS_ENABLED` environment variable.
+
+DevTools settings live under `config.devtools` and are global: `inertia_config` does not take them. `enabled`, `storage_path`, `ttl`, and `limit` can also be set with `INERTIA_DEVTOOLS_<NAME>` environment variables.
+
+See [DevTools](/guide/devtools) for the rest of the `devtools` settings.

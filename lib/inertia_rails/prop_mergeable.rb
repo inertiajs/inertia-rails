@@ -20,6 +20,12 @@ module InertiaRails
       super
     end
 
+    def initialize_copy(source)
+      super
+      @appends_at_paths = @appends_at_paths.dup
+      @prepends_at_paths = @prepends_at_paths.dup
+    end
+
     def appends_at_root?
       @append && merges_at_root?
     end

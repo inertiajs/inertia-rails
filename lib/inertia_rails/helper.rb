@@ -2,8 +2,11 @@
 
 module InertiaRails
   module Helper
-    def inertia_ssr_head
-      controller.instance_variable_get('@_inertia_ssr_head')
+    def inertia_ssr_head(&block)
+      head = controller.instance_variable_get('@_inertia_ssr_head')
+      return capture(&block) if head.nil? && block
+
+      head
     end
 
     def inertia_headers
@@ -21,12 +24,10 @@ module InertiaRails
       controller.instance_variable_get('@_inertia_page')
     end
 
-    def inertia_meta_tags
-      # SSR responses deliver the meta tags through inertia_ssr_head instead.
-      return ''.html_safe unless inertia_ssr_head.nil?
-
+    def inertia_meta_tags(default_title: nil)
       config = controller.send(:inertia_configuration)
-      meta_tag_data = (inertia_page || {}).dig(:props, config.meta_prop) || []
+      # SSR responses deliver the meta tags through inertia_ssr_head instead.
+      meta_tag_data = (inertia_ssr_head.nil? && inertia_page&.dig(:props, config.meta_prop)) || []
       attribute = config.head_attribute
 
       meta_tags = meta_tag_data.map do |inertia_meta_tag|
@@ -35,6 +36,9 @@ module InertiaRails
         inertia_meta_tag.to_tag(tag, inertia_attribute: attribute)
       end
 
+      head = inertia_ssr_head || safe_join(meta_tags)
+      meta_tags << tag.title(default_title) if default_title && !head.include?('<title')
+
       safe_join(meta_tags, "\n")
     end
 
@@ -42,20 +46,29 @@ module InertiaRails
       config = controller.send(:inertia_configuration)
       id ||= config.root_dom_id
 
-      if config.use_script_element_for_initial_page
-        script_options = { 'data-page': id, type: 'application/json' }
-        if respond_to?(:content_security_policy_nonce, true)
-          nonce = content_security_policy_nonce
-          script_options[:nonce] = nonce if nonce.present?
+      root =
+        if config.use_script_element_for_initial_page
+          script_options = { 'data-page': id, type: 'application/json' }
+          if respond_to?(:content_security_policy_nonce, true)
+            nonce = content_security_policy_nonce
+            script_options[:nonce] = nonce if nonce.present?
+          end
+
+          safe_join([
+                      tag.script(ERB::Util.json_escape(page.to_json).html_safe, **script_options),
+                      tag.div(id: id)
+                    ], "\n")
+        else
+          tag.div(id: id, 'data-page': page.to_json)
         end
 
-        safe_join([
-                    tag.script(page.to_json.html_safe, **script_options),
-                    tag.div(id: id)
-                  ], "\n")
-      else
-        tag.div(id: id, 'data-page': page.to_json)
-      end
+      devtools_tag = inertia_devtools_tag
+      devtools_tag ? safe_join([root, devtools_tag], "\n") : root
+    end
+
+    # Rendered by `inertia_root`; call it yourself if your layout builds the root element.
+    def inertia_devtools_tag
+      InertiaRails::Devtools.recorder(request)&.discovery_tag
     end
   end
 end

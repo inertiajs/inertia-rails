@@ -60,11 +60,11 @@ RSpec.describe InertiaRails::PropCacheable do
         expect(result).to be_a(InertiaRails::RawJson)
         expect(result.to_json).to eq({ items: [1, 2, 3] }.to_json)
         expect(call_count).to eq(1)
-        expect(cache_store.read('inertia_rails/test_key')).to eq({ items: [1, 2, 3] }.to_json)
+        expect(cache_store.read('inertia_rails/@2/test_key')).to eq({ items: [1, 2, 3] }.to_json)
       end
 
       it 'returns RawJson on cache hit without evaluating block' do
-        cache_store.write('inertia_rails/test_key', '{"items":[1,2,3]}')
+        cache_store.write('inertia_rails/@2/test_key', '{"items":[1,2,3]}')
 
         call_count = 0
         prop = prop_class.new(cache: 'test_key') do
@@ -84,7 +84,7 @@ RSpec.describe InertiaRails::PropCacheable do
         prop = prop_class.new(cache: %w[stats user_1]) { { count: 42 } }
         prop.call(controller)
 
-        expect(cache_store.read('inertia_rails/stats/user_1')).to eq({ count: 42 }.to_json)
+        expect(cache_store.read('inertia_rails/@2/stats/user_1')).to eq({ count: 42 }.to_json)
       end
     end
 
@@ -93,10 +93,10 @@ RSpec.describe InertiaRails::PropCacheable do
         prop = prop_class.new(cache: { key: 'test_key', expires_in: 1.second }) { 'value' }
         prop.call(controller)
 
-        expect(cache_store.read('inertia_rails/test_key')).to eq('"value"')
+        expect(cache_store.read('inertia_rails/@2/test_key')).to eq('"value"')
 
         travel 2.seconds
-        expect(cache_store.read('inertia_rails/test_key')).to be_nil
+        expect(cache_store.read('inertia_rails/@2/test_key')).to be_nil
       end
     end
 
@@ -108,7 +108,7 @@ RSpec.describe InertiaRails::PropCacheable do
         prop = prop_class.new(cache: ar_object) { { name: 'Bob' } }
         prop.call(controller)
 
-        expect(cache_store.read('inertia_rails/users/1-20260410')).to eq({ name: 'Bob' }.to_json)
+        expect(cache_store.read('inertia_rails/@2/users/1-20260410')).to eq({ name: 'Bob' }.to_json)
       end
     end
 

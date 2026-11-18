@@ -47,7 +47,7 @@ RSpec.describe 'rendering inertia views', type: :request do
           get component_path
 
           expect(response.headers['X-Inertia']).to be_nil
-          expect(vary_header_without_sec_fetch_site).to eq 'X-Inertia'
+          expect(vary_header_without_rails_additions).to eq 'X-Inertia'
           expect(response.headers['Content-Type']).to eq 'text/html; charset=utf-8'
         end
       end
@@ -57,7 +57,7 @@ RSpec.describe 'rendering inertia views', type: :request do
           get vary_header_path
 
           expect(response.headers['X-Inertia']).to be_nil
-          expect(vary_header_without_sec_fetch_site).to eq 'Accept-Language, X-Inertia'
+          expect(vary_header_without_rails_additions).to eq 'Accept-Language, X-Inertia'
           expect(response.headers['Content-Type']).to eq 'text/html; charset=utf-8'
         end
       end
@@ -66,7 +66,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         it 'does not duplicate it' do
           get vary_header_with_inertia_path
 
-          expect(vary_header_without_sec_fetch_site).to eq 'Accept-Language, X-Inertia'
+          expect(vary_header_without_rails_additions).to eq 'Accept-Language, X-Inertia'
         end
       end
     end
@@ -212,7 +212,7 @@ RSpec.describe 'rendering inertia views', type: :request do
 
     it 'has the proper headers' do
       expect(response.headers['X-Inertia']).to eq 'true'
-      expect(vary_header_without_sec_fetch_site).to eq 'X-Inertia'
+      expect(vary_header_without_rails_additions).to eq 'X-Inertia'
       expect(response.headers['Content-Type']).to eq 'application/json; charset=utf-8'
     end
 
@@ -222,6 +222,49 @@ RSpec.describe 'rendering inertia views', type: :request do
 
     it 'has the proper status code' do
       expect(response.status).to eq 200
+    end
+  end
+
+  context 'subsequent requests with HTML characters in props' do
+    let(:escaped_name) { '\\u003cb\\u003eFish \\u0026 Chips\\u003c/b\\u003e' }
+
+    def visit
+      get html_props_path, headers: { 'X-Inertia' => true }
+    end
+
+    it 'returns the props unchanged' do
+      visit
+      expect(response.parsed_body['props']).to eq('name' => '<b>Fish & Chips</b>')
+    end
+
+    context 'when the app escapes JSON responses' do
+      before do
+        if InertiaRenderTestController.respond_to?(:escape_json_responses?)
+          allow(InertiaRenderTestController).to receive(:escape_json_responses?).and_return(true)
+        end
+        visit
+      end
+
+      it { is_expected.to include escaped_name }
+    end
+
+    context 'when the app does not escape JSON responses',
+            if: ActionController::Base.respond_to?(:escape_json_responses?) do
+      before do
+        allow(InertiaRenderTestController).to receive(:escape_json_responses?).and_return(false)
+        visit
+      end
+
+      it { is_expected.to include '<b>Fish & Chips</b>' }
+      it { is_expected.not_to include escaped_name }
+    end
+  end
+
+  context 'with an object that responds to to_inertia as props' do
+    before { get serializer_props_path, headers: { 'X-Inertia' => true } }
+
+    it 'renders the props it returns' do
+      expect(response.parsed_body['props']).to include('count' => 1, 'course' => { 'title' => 'Ruby' })
     end
   end
 
@@ -710,6 +753,20 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'scroll props merge intent' do
+    it 'prepends the scroll prop when loading the previous page' do
+      get '/scroll_test', headers: {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Data' => 'users',
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Infinite-Scroll-Merge-Intent' => 'prepend',
+      }
+
+      expect(response.parsed_body['prependProps']).to eq(['users'])
+      expect(response.parsed_body['mergeProps']).to be_nil
+    end
+  end
+
   context 'shared scroll props rendering' do
     let(:headers) { { 'X-Inertia' => true } }
 
@@ -951,7 +1008,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       end
 
       it 'writes to cache store' do
-        expect(cache_store.read('inertia_rails/stats_key')).to eq({ count: 42 }.to_json)
+        expect(cache_store.read('inertia_rails/@2/stats_key')).to eq({ count: 42 }.to_json)
       end
 
       it 'returns RawJson on second request' do
@@ -975,7 +1032,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         end
 
         it 'does not write to cache on first load' do
-          expect(cache_store.read('inertia_rails/feed_key')).to be_nil
+          expect(cache_store.read('inertia_rails/@2/feed_key')).to be_nil
         end
       end
 
@@ -995,7 +1052,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         end
 
         it 'writes result to cache' do
-          expect(cache_store.read('inertia_rails/feed_key')).to eq(%w[fresh_item].to_json)
+          expect(cache_store.read('inertia_rails/@2/feed_key')).to eq(%w[fresh_item].to_json)
         end
       end
 
@@ -1009,7 +1066,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         end
 
         before do
-          cache_store.write('inertia_rails/feed_key', '["cached_item"]')
+          cache_store.write('inertia_rails/@2/feed_key', '["cached_item"]')
           get cached_deferred_props_path, headers: headers
         end
 
@@ -1028,7 +1085,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         end
 
         it 'does not write to cache on first load' do
-          expect(cache_store.read('inertia_rails/categories_key')).to be_nil
+          expect(cache_store.read('inertia_rails/@2/categories_key')).to be_nil
         end
       end
 
@@ -1048,7 +1105,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         end
 
         it 'writes result to cache' do
-          expect(cache_store.read('inertia_rails/categories_key')).to eq(%w[category1 category2].to_json)
+          expect(cache_store.read('inertia_rails/@2/categories_key')).to eq(%w[category1 category2].to_json)
         end
       end
 
@@ -1062,7 +1119,7 @@ RSpec.describe 'rendering inertia views', type: :request do
         end
 
         before do
-          cache_store.write('inertia_rails/categories_key', '["cached_cat"]')
+          cache_store.write('inertia_rails/@2/categories_key', '["cached_cat"]')
           get optional_cached_props_path, headers: headers
         end
 
@@ -1555,6 +1612,14 @@ RSpec.describe 'rendering inertia views', type: :request do
           )
         end
       end
+    end
+  end
+
+  context 'with dot-notated prop keys' do
+    before { get dotted_props_path, headers: { 'X-Inertia' => true } }
+
+    it 'expands them into nested props' do
+      expect(response.parsed_body['props']).to eq('auth' => { 'user' => 'Brandon', 'role' => 'admin' })
     end
   end
 end

@@ -8,4 +8,5 @@ InertiaRails.configure do |config|
   config.use_data_inertia_head_attribute = true
   config.server_head = true
   config.flatten_errors = true
+  config.convert_fragment_redirects = true
 end

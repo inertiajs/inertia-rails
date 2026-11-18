@@ -211,8 +211,79 @@ router.visit(url, { method: 'post' })
 
 :::
 
-> [!WARNING]
-> Uploading files via `put` or `patch` is not supported in Rails. Instead, make the request via `post`, including a `_method` attribute or a `X-HTTP-METHOD-OVERRIDE` header set to `put` or `patch`. For more info see [`Rack::MethodOverride`](https://github.com/rack/rack/blob/main/lib/rack/method_override.rb).
+## Typelizer
+
+When using [Typelizer route helpers](/guide/routing#typelizer), you can pass the resulting object directly to any router method. The router will infer the HTTP method and URL from the object. This works with any object that has `url` and `method` keys.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+import { users } from '@/routes'
+
+router.visit(users.show(1))
+router.post(users.create())
+router.delete(users.destroy(1))
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+import { users } from '@/routes'
+
+router.visit(users.show(1))
+router.post(users.create())
+router.delete(users.destroy(1))
+```
+
+== Svelte
+
+```js
+import { router } from '@inertiajs/svelte'
+import { users } from '@/routes'
+
+router.visit(users.show(1))
+router.post(users.create())
+router.delete(users.destroy(1))
+```
+
+:::
+
+If you provide both a route object and the `method` option, the `method` option will take precedence. For example, `resources` routes send both `PATCH` and `PUT` requests to `update`, so you can make a `PUT` request with the `update` helper.
+
+:::tabs key:frameworks
+
+== Vue
+
+```js
+import { router } from '@inertiajs/vue3'
+import { users } from '@/routes'
+
+router.visit(users.update(1), { method: 'put' })
+```
+
+== React
+
+```js
+import { router } from '@inertiajs/react'
+import { users } from '@/routes'
+
+router.visit(users.update(1), { method: 'put' })
+```
+
+== Svelte
+
+```js
+import { router } from '@inertiajs/svelte'
+import { users } from '@/routes'
+
+router.visit(users.update(1), { method: 'put' })
+```
+
+:::
 
 ## Data
 
@@ -506,7 +577,7 @@ import { router } from '@inertiajs/vue3'
 
 router.push({
   url: '/users',
-  component: 'Users',
+  component: 'users/index',
   props: { search: 'John' },
   clearHistory: false,
   encryptHistory: false,
@@ -526,7 +597,7 @@ import { router } from '@inertiajs/react'
 
 router.push({
   url: '/users',
-  component: 'Users',
+  component: 'users/index',
   props: { search: 'John' },
   clearHistory: false,
   encryptHistory: false,
@@ -546,7 +617,7 @@ import { router } from '@inertiajs/svelte'
 
 router.push({
   url: '/users',
-  component: 'Users',
+  component: 'users/index',
   props: { search: 'John' },
   clearHistory: false,
   encryptHistory: false,
@@ -572,7 +643,7 @@ If you need access to the current page's props, you may pass a function to the `
 ```js
 import { router } from '@inertiajs/vue3'
 
-router.push({ url: '/users', component: 'Users' })
+router.push({ url: '/users', component: 'users/index' })
 
 router.replace({
   props: (currentProps) => ({ ...currentProps, search: 'John' }),
@@ -584,7 +655,7 @@ router.replace({
 ```js
 import { router } from '@inertiajs/react'
 
-router.push({ url: '/users', component: 'Users' })
+router.push({ url: '/users', component: 'users/index' })
 
 router.replace({
   props: (currentProps) => ({ ...currentProps, search: 'John' }),
@@ -596,7 +667,7 @@ router.replace({
 ```js
 import { router } from '@inertiajs/svelte'
 
-router.push({ url: '/users', component: 'Users' })
+router.push({ url: '/users', component: 'users/index' })
 
 router.replace({
   props: (currentProps) => ({ ...currentProps, search: 'John' }),

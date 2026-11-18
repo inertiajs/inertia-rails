@@ -28,7 +28,7 @@ end
 
 When redirecting after a `PUT`, `PATCH`, or `DELETE` request, you must use a `303` response code, otherwise the subsequent request will not be treated as a `GET` request. A `303` redirect is very similar to a `302` redirect; however, the follow-up request is explicitly changed to a `GET` request.
 
-If you're using one of our official server-side adapters, all redirects will automatically be converted to `303` redirects.
+The Rails adapter does this for you: it converts `301` and `302` redirects to `303` when they respond to an Inertia `PUT`, `PATCH`, or `DELETE` request.
 
 ## Preserving Fragments
 
@@ -66,6 +66,25 @@ You may preserve the fragment by passing `preserve_fragment` on the redirect res
 redirect_to article_path(article), inertia: { preserve_fragment: true }
 ```
 
+## Redirecting to Fragments
+
+@available_since rails=3.23.0 core=3.0.0
+
+A redirect target may contain its own fragment, such as `/articles/1#comments`. By default, the fragment is lost when Inertia follows the redirect. Enable `convert_fragment_redirects` to keep it. Apps set up with the installer have it enabled.
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.convert_fragment_redirects = true
+end
+```
+
+```ruby
+redirect_to article_path(article, anchor: 'comments')
+```
+
+Inertia Rails then returns a `409 Conflict` response with the URL in the `X-Inertia-Redirect` header, and the client visits `/articles/1#comments`.
+
 ## External Redirects
 
 Sometimes it's necessary to redirect outside of your Inertia app: to another website, or to a non-Inertia endpoint in your own app. These destinations can't be visited as Inertia pages — the client has to leave the SPA with a full `window.location` visit. The server triggers that visit by responding with an Inertia location response: `409 Conflict` with the destination URL in the `X-Inertia-Location` header.
@@ -74,7 +93,7 @@ Inertia Rails generates these responses in two ways: automatically for cross-ori
 
 ### Cross-Origin Redirects
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 A regular redirect to another origin works out of the box — Inertia Rails automatically converts it into an Inertia location response for Inertia requests:
 
@@ -90,7 +109,7 @@ You can disable this behavior with the [`convert_external_redirects`](/guide/con
 
 ### Same-Origin Redirects
 
-@available_since rails=master
+@available_since rails=3.23.0
 
 Redirects to a non-Inertia endpoint on the same origin can't be converted automatically: a `Location` header doesn't reveal whether its target renders an Inertia page, and converting every same-origin redirect would turn regular Inertia navigation into full page loads. A plain `redirect_to` fails differently here — the browser follows the redirect transparently, the non-Inertia endpoint responds without the `X-Inertia` header, and the client rejects it as an invalid Inertia response.
 

@@ -38,6 +38,9 @@ Both methods accept an ActiveModel-like object (calls `valid?` automatically) or
 - For valid data, responds with `204 No Content` with `Precognition: true` and `Precognition-Success: true` headers
 - For invalid data, responds with `422 Unprocessable Entity` with errors as JSON and a `Precognition: true` header
 
+> [!NOTE]
+> `precognition!` raises `InertiaRails::PrecognitionResponse`, which inherits from `Exception`, so `rescue_from StandardError` handlers and bare `rescue` clauses don't catch it. A `rescue_from Exception` handler still does, so don't use one for error pages.
+
 ## One call per action
 
 You can only call `precognition!` or `precognition` once per controller action. Calling it a second time raises `InertiaRails::DoublePrecognitionError`. This is intentional — precognition validates a single form submission, so there should be exactly one validation point per action.
@@ -135,7 +138,7 @@ end
 
 Since precognition requests reuse your existing controller actions, it's important to place the `precognition!` call **before** any side-effect-producing code (saving records, sending emails, calling external APIs, enqueuing jobs). The `precognition!` method halts the action on precognition requests, so any code after it only runs during real form submissions.
 
-You can also enable [`precognition_prevent_writes`](/guide/configuration#precognition_prevent_writes) to automatically block database writes during precognition requests as an extra safety net.
+You can also enable [`precognition_prevent_writes`](/guide/configuration#precognition-prevent-writes) to automatically block database writes during precognition requests as an extra safety net.
 
 ## Field-specific validation
 

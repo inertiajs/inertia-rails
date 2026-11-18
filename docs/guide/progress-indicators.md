@@ -388,7 +388,7 @@ router.on('finish', (event) => {
 
 In addition to these configurations, Inertia.js provides two visit options to control the loading indicator on a per-request basis: `showProgress` and `async`. These options offer greater control over how Inertia.js handles asynchronous requests and manages progress indicators.
 
-### Showprogress
+### Show Progress
 
 The `showProgress` option provides fine-grained control over the visibility of the loading indicator during requests.
 

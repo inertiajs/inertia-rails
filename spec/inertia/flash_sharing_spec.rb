@@ -22,6 +22,15 @@ RSpec.describe 'flash data shared via redirect', type: :request do
       expect(parsed['flash']).to eq({ 'toast' => 'Hello!' })
     end
 
+    it 'keeps flash through a stale-version refresh' do
+      post redirect_with_inertia_flash_path, headers: headers
+      get response.headers['Location'], headers: headers.merge('X-Inertia-Version' => 'stale')
+      expect(response.status).to eq 409
+
+      get empty_test_path, headers: headers
+      expect(response.parsed_body['flash']).to eq('toast' => 'Hello!')
+    end
+
     it 'clears flash after rendering' do
       post redirect_with_inertia_flash_path, headers: headers
       get response.headers['Location'], headers: headers

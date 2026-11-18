@@ -86,8 +86,8 @@ const description = computed(() => {
 
 <template>
   <div>
-    <h1>{{ title }}</h1>
-    <div>{{ description }}</div>
+    <h1>{{ title ?? `${status}: Error` }}</h1>
+    <div>{{ description ?? 'Sorry, something went wrong.' }}</div>
   </div>
 </template>
 ```
@@ -112,8 +112,8 @@ export default function ErrorPage({ status }) {
 
   return (
     <div>
-      <h1>{title}</h1>
-      <div>{description}</div>
+      <h1>{title ?? `${status}: Error`}</h1>
+      <div>{description ?? 'Sorry, something went wrong.'}</div>
     </div>
   )
 }
@@ -141,8 +141,8 @@ export default function ErrorPage({ status }) {
 </script>
 
 <div>
-  <h1>{title[status]}</h1>
-  <div>{description[status]}</div>
+  <h1>{title[status] ?? `${status}: Error`}</h1>
+  <div>{description[status] ?? 'Sorry, something went wrong.'}</div>
 </div>
 ```
 
