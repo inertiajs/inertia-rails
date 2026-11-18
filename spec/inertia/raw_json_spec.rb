@@ -9,9 +9,26 @@ RSpec.describe InertiaRails::RawJson do
   end
 
   describe '#as_json' do
-    it 'returns a value compatible with JSON encoding' do
-      raw = described_class.new('[1,2,3]')
-      expect { ActiveSupport::JSON.encode(data: raw) }.not_to raise_error
+    let(:json) { '{"items":[1,2,3]}' }
+
+    context 'when the encoder embeds fragments', if: InertiaRails::RawJson.encoder_embeds_fragments? do
+      it 'hands the encoder a JSON::Fragment to write as it is' do
+        raw = described_class.new(json)
+
+        expect(raw.as_json).to eq(JSON::Fragment.new(json))
+        expect(ActiveSupport::JSON.encode(data: raw)).to eq(%({"data":#{json}}))
+      end
+    end
+
+    context 'when the encoder does not embed fragments' do
+      before { allow(described_class).to receive(:encoder_embeds_fragments?).and_return(false) }
+
+      it 'returns the parsed data for the encoder to serialize again' do
+        raw = described_class.new(json)
+
+        expect(raw.as_json).to eq({ 'items' => [1, 2, 3] })
+        expect(ActiveSupport::JSON.encode(data: raw)).to eq(%({"data":#{json}}))
+      end
     end
   end
 
@@ -53,6 +70,13 @@ RSpec.describe InertiaRails::RawJson do
 
       parsed = JSON.parse(hash.to_json)
       expect(parsed['data']).to eq([1, 2, 3])
+    end
+  end
+
+  describe '.encoder_embeds_fragments?' do
+    it 'is true where Active Support embeds JSON::Fragment values (Active Support 8.1+)' do
+      expected = defined?(JSON::Fragment) && ActiveSupport.gem_version >= Gem::Version.new('8.1')
+      expect(described_class.encoder_embeds_fragments?).to eq(expected)
     end
   end
 end
