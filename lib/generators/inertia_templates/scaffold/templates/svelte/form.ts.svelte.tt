@@ -5,10 +5,10 @@
 
   import type { <%= inertia_model_type %> } from './types'
 
-  let { <%= singular_table_name %>, submitText, ...restProps } = $props<{
+  let { <%= singular_table_name %>, submitText, ...restProps }: {
     <%= singular_table_name %>: <%= inertia_model_type %>
     submitText: string
-  } & ComponentProps<typeof Form>>()
+  } & ComponentProps<typeof Form> = $props()
 </script>
 
 <Form

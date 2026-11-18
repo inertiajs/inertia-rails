@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Accept a block in `precognition!` and `precognition` to transform errors (@bknoles)
 * Return precognition errors with dot-notated keys, so nested errors match the field names the client looks up (@bknoles)
 * Add `flatten_errors` configuration option to flatten redirect errors to dot-notated keys; when unset, warn about errors it would change, as it will be enabled by default in 4.0 (@bknoles)
+* Fix type errors in Svelte TypeScript scaffolds: props are typed with an annotation instead of `$props<T>()`, which current Svelte versions reject (@skryukov)
 
 ## [3.23.0] - 2026-10-16
 
