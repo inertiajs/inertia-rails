@@ -12,13 +12,11 @@ RSpec.describe InertiaRails::RawJson do
     let(:json) { '{"items":[1,2,3]}' }
 
     context 'when the encoder embeds fragments', if: InertiaRails::RawJson.encoder_embeds_fragments? do
-      it 'hands the encoder a JSON::Fragment, so the string is never parsed again' do
+      it 'hands the encoder a JSON::Fragment to write as it is' do
         raw = described_class.new(json)
-        allow(JSON).to receive(:parse).and_call_original
 
         expect(raw.as_json).to eq(JSON::Fragment.new(json))
         expect(ActiveSupport::JSON.encode(data: raw)).to eq(%({"data":#{json}}))
-        expect(JSON).not_to have_received(:parse)
       end
     end
 

@@ -49,7 +49,7 @@ RSpec.describe InertiaRails::PropCacheable do
     end
 
     context 'with cache: string key' do
-      it 'evaluates block on cache miss, caches, and returns the cached JSON' do
+      it 'evaluates block on cache miss, caches, and returns RawJson' do
         call_count = 0
         prop = prop_class.new(cache: 'test_key') do
           call_count += 1
@@ -57,12 +57,13 @@ RSpec.describe InertiaRails::PropCacheable do
         end
 
         result = prop.call(controller)
-        expect(ActiveSupport::JSON.encode(result)).to eq({ items: [1, 2, 3] }.to_json)
+        expect(result).to be_a(InertiaRails::RawJson)
+        expect(result.to_json).to eq({ items: [1, 2, 3] }.to_json)
         expect(call_count).to eq(1)
         expect(cache_store.read('inertia_rails/@2/test_key')).to eq({ items: [1, 2, 3] }.to_json)
       end
 
-      it 'returns the cached JSON on cache hit without evaluating block' do
+      it 'returns RawJson on cache hit without evaluating block' do
         cache_store.write('inertia_rails/@2/test_key', '{"items":[1,2,3]}')
 
         call_count = 0
@@ -72,7 +73,8 @@ RSpec.describe InertiaRails::PropCacheable do
         end
 
         result = prop.call(controller)
-        expect(ActiveSupport::JSON.encode(result)).to eq('{"items":[1,2,3]}')
+        expect(result).to be_a(InertiaRails::RawJson)
+        expect(result.to_json).to eq('{"items":[1,2,3]}')
         expect(call_count).to eq(0)
       end
     end
