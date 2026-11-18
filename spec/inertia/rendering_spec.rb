@@ -1017,7 +1017,7 @@ RSpec.describe 'rendering inertia views', type: :request do
       end
 
       it 'embeds the cached JSON without parsing it again on a cache hit',
-         if: InertiaRails::RawJson.fragment_embeddable? do
+         if: InertiaRails::RawJson.encoder_embeds_fragments? do
         allow(JSON).to receive(:parse).and_call_original
         get cached_props_path, headers: headers
 

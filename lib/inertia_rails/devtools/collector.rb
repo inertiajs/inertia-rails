@@ -54,8 +54,8 @@ module InertiaRails
 
       private
 
-      # The page as the client receives it. as_json would turn a cached prop's
-      # JSON::Fragment into a plain struct, so the page goes through the encoder.
+      # The page as the client receives it. as_json would leave a cached prop
+      # as a JSON::Fragment, so the page goes through the encoder.
       def page_json
         @page_json ||= JSON.parse(ActiveSupport::JSON.encode(@page))
       end

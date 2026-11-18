@@ -156,9 +156,7 @@ module InertiaRails
             end
           end
 
-          # Serializing inside the rescue catches errors from lazy values. Cached JSON is
-          # already serialized, and as_json would turn its fragment into a plain struct.
-          transformed_props[key] = rescue_enabled && !json_fragment?(value) ? value.as_json : value
+          transformed_props[key] = rescue_enabled ? value.as_json : value
         rescue StandardError => e
           raise unless rescue_enabled
 
@@ -205,10 +203,6 @@ module InertiaRails
     def serialize(serializer, path)
       @recorder&.serializer_found(serializer, path)
       serializer.to_inertia
-    end
-
-    def json_fragment?(value)
-      defined?(::JSON::Fragment) && value.is_a?(::JSON::Fragment)
     end
 
     def plain_leaf?(value)

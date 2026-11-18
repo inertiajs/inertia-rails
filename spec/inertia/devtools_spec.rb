@@ -423,12 +423,12 @@ RSpec.describe 'InertiaRails DevTools', type: :request do
         expect(recorded['propValues'].keys).not_to include('auth.user')
       end
 
-      it 'records a cached prop as its data on a cache miss and on a cache hit' do
+      it 'records a cached prop as its redacted data on a cache miss and on a cache hit' do
         allow(InertiaRails).to receive(:cache_store).and_return(ActiveSupport::Cache::MemoryStore.new)
 
         2.times do
           get devtools_cached_path
-          expect(entry['propValues']).to include('stats' => { 'count' => 42 })
+          expect(entry['propValues']).to include('stats' => { 'count' => 42, 'password' => '[REDACTED]' })
         end
       end
 

@@ -9,9 +9,28 @@ RSpec.describe InertiaRails::RawJson do
   end
 
   describe '#as_json' do
-    it 'returns a value compatible with JSON encoding' do
-      raw = described_class.new('[1,2,3]')
-      expect { ActiveSupport::JSON.encode(data: raw) }.not_to raise_error
+    let(:json) { '{"items":[1,2,3]}' }
+
+    context 'when the encoder embeds fragments', if: InertiaRails::RawJson.encoder_embeds_fragments? do
+      it 'hands the encoder a JSON::Fragment, so the string is never parsed again' do
+        raw = described_class.new(json)
+        allow(JSON).to receive(:parse).and_call_original
+
+        expect(raw.as_json).to eq(JSON::Fragment.new(json))
+        expect(ActiveSupport::JSON.encode(data: raw)).to eq(%({"data":#{json}}))
+        expect(JSON).not_to have_received(:parse)
+      end
+    end
+
+    context 'when the encoder does not embed fragments' do
+      before { allow(described_class).to receive(:encoder_embeds_fragments?).and_return(false) }
+
+      it 'returns the parsed data for the encoder to serialize again' do
+        raw = described_class.new(json)
+
+        expect(raw.as_json).to eq({ 'items' => [1, 2, 3] })
+        expect(ActiveSupport::JSON.encode(data: raw)).to eq(%({"data":#{json}}))
+      end
     end
   end
 
@@ -56,40 +75,10 @@ RSpec.describe InertiaRails::RawJson do
     end
   end
 
-  describe '.fragment_embeddable?' do
+  describe '.encoder_embeds_fragments?' do
     it 'is true where Active Support embeds JSON::Fragment values (Active Support 8.1+)' do
       expected = defined?(JSON::Fragment) && ActiveSupport.gem_version >= Gem::Version.new('8.1')
-      expect(described_class.fragment_embeddable?).to eq(expected)
-    end
-  end
-
-  describe '.wrap' do
-    let(:json) { '{"items":[1,2,3]}' }
-
-    it 'embeds the string in ActiveSupport::JSON.encode and JSON.generate' do
-      wrapped = described_class.wrap(json)
-
-      expect(ActiveSupport::JSON.encode(data: wrapped)).to eq(%({"data":#{json}}))
-      expect(JSON.generate(data: wrapped)).to eq(%({"data":#{json}}))
-    end
-
-    context 'when the encoder embeds fragments', if: InertiaRails::RawJson.fragment_embeddable? do
-      it 'returns a JSON::Fragment that is never parsed again' do
-        wrapped = described_class.wrap(json)
-        expect(wrapped).to be_a(JSON::Fragment)
-
-        allow(JSON).to receive(:parse).and_call_original
-        ActiveSupport::JSON.encode(data: wrapped)
-        expect(JSON).not_to have_received(:parse)
-      end
-    end
-
-    context 'when the encoder does not embed fragments' do
-      before { allow(described_class).to receive(:fragment_embeddable?).and_return(false) }
-
-      it 'returns a RawJson' do
-        expect(described_class.wrap(json)).to be_a(described_class)
-      end
+      expect(described_class.encoder_embeds_fragments?).to eq(expected)
     end
   end
 end

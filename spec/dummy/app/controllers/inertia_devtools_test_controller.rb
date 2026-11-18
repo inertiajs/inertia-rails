@@ -40,7 +40,8 @@ class InertiaDevtoolsTestController < ApplicationController
   end
 
   def cached
-    render inertia: 'DevtoolsComponent', props: { stats: InertiaRails.cache('devtools_stats') { { count: 42 } } }
+    render inertia: 'DevtoolsComponent',
+           props: { stats: InertiaRails.cache('devtools_stats') { { count: 42, password: 'secret' } } }
   end
 
   def rescued

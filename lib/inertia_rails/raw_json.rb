@@ -5,25 +5,17 @@ module InertiaRails
   # into a larger JSON structure without re-serialization.
   #
   # - JSON.generate calls #to_json, embedding the raw string.
-  # - ActiveSupport::JSON.encode calls #as_json first, which
-  #   returns parsed Ruby data that the encoder re-serializes.
+  # - ActiveSupport::JSON.encode calls #as_json first. It gets a JSON::Fragment
+  #   where the encoder writes one as it is, and parsed Ruby data to
+  #   re-serialize everywhere else.
   class RawJson
-    class << self
-      # Returns a JSON::Fragment when the app's JSON encoder embeds fragments
-      # as they are (Active Support 8.1+), so the string is never parsed again.
-      # Otherwise returns a RawJson.
-      def wrap(json_string)
-        fragment_embeddable? ? ::JSON::Fragment.new(json_string) : new(json_string)
-      end
+    # Ask the encoder itself. Active Support 8.1 writes a fragment as it is;
+    # older versions and replacements such as Oj turn it into {"json": "..."}.
+    def self.encoder_embeds_fragments?
+      return @encoder_embeds_fragments if defined?(@encoder_embeds_fragments)
 
-      # Checked once by encoding a fragment, since older encoders and
-      # replacements such as Oj serialize it as a plain struct instead.
-      def fragment_embeddable?
-        return @fragment_embeddable if defined?(@fragment_embeddable)
-
-        @fragment_embeddable = defined?(::JSON::Fragment) &&
-                               ActiveSupport::JSON.encode([::JSON::Fragment.new('1')]) == '[1]'
-      end
+      @encoder_embeds_fragments = defined?(::JSON::Fragment) &&
+                                  ActiveSupport::JSON.encode(::JSON::Fragment.new('"raw"')) == '"raw"'
     end
 
     def initialize(json_string)
@@ -35,7 +27,7 @@ module InertiaRails
     end
 
     def as_json(*)
-      JSON.parse(@json_string)
+      self.class.encoder_embeds_fragments? ? ::JSON::Fragment.new(@json_string) : JSON.parse(@json_string)
     end
   end
 end
