@@ -54,8 +54,10 @@ module InertiaRails
 
       private
 
+      # The page as the client receives it. as_json would leave a cached prop
+      # as a JSON::Fragment, so the page goes through the encoder.
       def page_json
-        @page_json ||= @page.as_json
+        @page_json ||= JSON.parse(ActiveSupport::JSON.encode(@page))
       end
 
       def component_path

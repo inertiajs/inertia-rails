@@ -39,6 +39,11 @@ class InertiaDevtoolsTestController < ApplicationController
     render inertia: 'DevtoolsComponent', props: { blob: 'x' * 300_000 }
   end
 
+  def cached
+    render inertia: 'DevtoolsComponent',
+           props: { stats: InertiaRails.cache('devtools_stats') { { count: 42, password: 'secret' } } }
+  end
+
   def rescued
     render inertia: 'DevtoolsComponent', props: { failing: InertiaRails.defer(rescue: true) { raise 'rescued' } }
   end

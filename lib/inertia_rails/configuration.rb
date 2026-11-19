@@ -127,7 +127,7 @@ module InertiaRails
       end
     end
 
-    protected attr_reader :controller
+    protected attr_accessor :controller
     protected attr_reader :options
 
     def initialize(controller: nil, **attrs)
@@ -139,8 +139,11 @@ module InertiaRails
       raise ArgumentError, "Unknown options for #{self.class}: #{attrs.keys}"
     end
 
+    # Copy already validated options; binding happens several times per request.
     def bind_controller(controller)
-      Configuration.new(**@options, controller: controller)
+      bound = dup
+      bound.controller = controller
+      bound
     end
 
     def freeze
@@ -234,6 +237,11 @@ module InertiaRails
     end
 
     private
+
+    def initialize_dup(source)
+      super
+      @options = @options.dup
+    end
 
     def evaluate_option(value)
       return value unless value.respond_to?(:call)
