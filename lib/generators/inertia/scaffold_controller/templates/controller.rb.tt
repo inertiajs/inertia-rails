@@ -2,8 +2,9 @@
 class <%= controller_class_name %>Controller < <%= parent_controller %>
   before_action :set_<%= singular_table_name %>, only: %i[ show edit update destroy ]
 
-<% if regular_class_path.any? -%>
-  wrap_parameters :<%= singular_table_name %>
+<% if wraps_json_params? -%>
+  # Form fields are flat, so skip wrapping JSON params under `<%= singular_table_name %>`.
+  wrap_parameters false
 
 <% end -%>
   # GET <%= route_url %>
@@ -73,11 +74,9 @@ class <%= controller_class_name %>Controller < <%= parent_controller %>
     # Only allow a list of trusted parameters through.
     def <%= "#{singular_table_name}_params" %>
       <%- if attributes_names.empty? -%>
-      params.fetch(:<%= singular_table_name %>, {})
-      <%- elsif Rails::VERSION::MAJOR >= 8 -%>
-      params.expect(<%= singular_table_name %>: [<%= permitted_params %>])
+      params.permit
       <%- else -%>
-      params.require(:<%= singular_table_name %>).permit(<%= permitted_params %>)
+      params.permit(<%= permitted_params %>)
       <%- end -%>
     end
 

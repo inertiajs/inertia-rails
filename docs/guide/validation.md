@@ -34,9 +34,14 @@ Finally, since Inertia apps never generate `422` responses, Inertia needs anothe
 
 In order for your server-side validation errors to be available client-side, your server-side framework must share them via the `errors` prop. Inertia's Rails adapter does this automatically.
 
+> [!TIP]
+> Both flat errors (`inertia: { errors: user.errors }`) and nested/enveloped errors (`inertia: { errors: { user: user.errors } }`) are valid. Nested errors are flattened to dot-notated keys, so the client receives `errors['user.email_address']` either way, matching what [precognition](/guide/precognition) returns and what `invalid('user.email_address')` looks up. This requires the [`flatten_errors`](/guide/configuration#flatten_errors) config option, enabled in apps set up with the installer. See [Forms and Envelopes](/cookbook/forms-and-envelopes) for a full walkthrough.
+
 ## Displaying Errors
 
 Since validation errors are made available client-side as page component props, you can conditionally display them based on their existence. Remember, when using Rails server adapter, the `errors` prop will automatically be available to your page.
+
+`user.errors` gives each field an array of messages, so the examples join them.
 
 :::tabs key:frameworks
 
@@ -64,13 +69,13 @@ function submit() {
   <form @submit.prevent="submit">
     <label for="first_name">First name:</label>
     <input id="first_name" v-model="form.first_name" />
-    <div v-if="errors.first_name">{{ errors.first_name }}</div>
+    <div v-if="errors.first_name">{{ errors.first_name.join(', ') }}</div>
     <label for="last_name">Last name:</label>
     <input id="last_name" v-model="form.last_name" />
-    <div v-if="errors.last_name">{{ errors.last_name }}</div>
+    <div v-if="errors.last_name">{{ errors.last_name.join(', ') }}</div>
     <label for="email">Email:</label>
     <input id="email" v-model="form.email" />
-    <div v-if="errors.email">{{ errors.email }}</div>
+    <div v-if="errors.email">{{ errors.email.join(', ') }}</div>
     <button type="submit">Submit</button>
   </form>
 </template>
@@ -111,13 +116,13 @@ export default function Edit() {
         value={values.first_name}
         onChange={handleChange}
       />
-      {errors.first_name && <div>{errors.first_name}</div>}
+      {errors.first_name && <div>{errors.first_name.join(', ')}</div>}
       <label htmlFor="last_name">Last name:</label>
       <input id="last_name" value={values.last_name} onChange={handleChange} />
-      {errors.last_name && <div>{errors.last_name}</div>}
+      {errors.last_name && <div>{errors.last_name.join(', ')}</div>}
       <label htmlFor="email">Email:</label>
       <input id="email" value={values.email} onChange={handleChange} />
-      {errors.email && <div>{errors.email}</div>}
+      {errors.email && <div>{errors.email.join(', ')}</div>}
       <button type="submit">Submit</button>
     </form>
   )
@@ -128,6 +133,8 @@ export default function Edit() {
 
 ```svelte
 <script>
+  import { router } from '@inertiajs/svelte'
+
   let { errors = {} } = $props()
 
   let values = {
@@ -149,15 +156,15 @@ export default function Edit() {
 >
   <label for="first_name">First name:</label>
   <input id="first_name" bind:value={values.first_name} />
-  {#if errors.first_name}<div>{errors.first_name}</div>{/if}
+  {#if errors.first_name}<div>{errors.first_name.join(', ')}</div>{/if}
 
   <label for="last_name">Last name:</label>
   <input id="last_name" bind:value={values.last_name} />
-  {#if errors.last_name}<div>{errors.last_name}</div>{/if}
+  {#if errors.last_name}<div>{errors.last_name.join(', ')}</div>{/if}
 
   <label for="email">Email:</label>
   <input id="email" bind:value={values.email} />
-  {#if errors.email}<div>{errors.email}</div>{/if}
+  {#if errors.email}<div>{errors.email.join(', ')}</div>{/if}
 
   <button type="submit">Submit</button>
 </form>
@@ -165,7 +172,10 @@ export default function Edit() {
 
 :::
 
-When using the Vue adapters, you may also access the errors via the `page.props.errors` object.
+When using the Vue adapters, you may also access the errors via the `$page.props.errors` object.
+
+> [!TIP]
+> If form data is wrapped in an envelope, you must access Precognition errors with flat, dot-notated keys, e.g. `invalid('user.name')` and `errors['user.name']`. With [`flatten_errors`](/guide/configuration#flatten_errors) enabled, full form submissions return the same flat keys.
 
 ## Repopulating Input
 
@@ -178,7 +188,7 @@ So, the only work remaining is to display any validation errors using the `error
 ## Error Bags
 
 > [!NOTE]
-> Error bags are a Laravel-specific feature that relies on Laravel's `ViewErrorBag` system. In Rails, this feature is typically unnecessary because:
+> Inertia Rails doesn't support error bags. The client sends an `X-Inertia-Error-Bag` header for visits made with the `errorBag` option, but the server ignores it, so those forms show no errors. In Rails, error bags are rarely needed because:
 >
 > - Forms submit to separate controller actions, so only one set of errors is returned per request
 > - The [form helper](/guide/forms.md) automatically scopes validation errors to each form instance
