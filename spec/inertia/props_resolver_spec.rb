@@ -1490,6 +1490,12 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(resolve({ 'auth.user' => 'Jonathan', auth: 'guest' })[:props]).to eq({ auth: 'guest' })
     end
 
+    it 'writes a dot-notation key over the same key given as a String' do
+      page = resolve({ user: { 'name' => 'old', 'id' => 1 }, 'user.name' => 'Jonathan' })
+
+      expect(page[:props]).to eq({ user: { 'name' => 'Jonathan', 'id' => 1 } })
+    end
+
     it 'dot-notation prop merges when parent is a closure' do
       page = resolve({
                        auth: lambda {

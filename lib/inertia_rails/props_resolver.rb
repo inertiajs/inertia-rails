@@ -82,6 +82,7 @@ module InertiaRails
 
     def write_dotted(target, parts, value, keep:)
       key, *rest = parts
+      key = key.to_s if target.key?(key.to_s)
       if rest.empty?
         target[key] = value unless keep && target.key?(key)
       elsif evaluated_later?(target[key])
