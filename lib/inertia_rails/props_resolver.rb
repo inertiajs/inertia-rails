@@ -7,6 +7,11 @@ module InertiaRails
     SKIP = Object.new.freeze
     private_constant :SKIP
 
+    # Known by class, and so not asked whether they have `to_inertia`.
+    PLAIN_CLASSES = [String, Symbol, Integer, Float, NilClass, TrueClass, FalseClass]
+                    .to_h { |plain_class| [plain_class, true] }.compare_by_identity.freeze
+    private_constant :PLAIN_CLASSES
+
     # `ActiveSupport::OrderedOptions` answers every method, `to_inertia` included, with a key lookup.
     def self.serializer?(value)
       value.respond_to?(:to_inertia) && !value.is_a?(ActiveSupport::OrderedOptions)
@@ -153,6 +158,7 @@ module InertiaRails
     # Any value, wherever it sits: a serializer, closure or prop type is asked for what it holds,
     # until plain data is left to walk.
     def resolve_value(value)
+      return value if PLAIN_CLASSES[value.class]
       return resolve_returned(value, to_inertia(value)) if self.class.serializer?(value)
 
       case value
@@ -247,6 +253,8 @@ module InertiaRails
     end
 
     def plain_leaf?(value)
+      return true if PLAIN_CLASSES[value.class]
+
       case value
       when BaseProp, Proc, Hash, Array then false
       else !self.class.serializer?(value)
@@ -255,6 +263,8 @@ module InertiaRails
 
     # Explicit loops reduce per-element overhead on large plain-data arrays.
     def needs_transform?(value)
+      return false if PLAIN_CLASSES[value.class]
+
       case value
       when BaseProp, Proc then true
       when Hash
