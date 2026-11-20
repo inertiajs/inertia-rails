@@ -4,6 +4,9 @@ module InertiaRails
   # Resolves props and collects metadata (deferred, merge, once, scroll)
   # for the Inertia page response.
   class PropsResolver
+    SKIP = Object.new.freeze
+    private_constant :SKIP
+
     # `ActiveSupport::OrderedOptions` answers every method, `to_inertia` included, with a key lookup.
     def self.serializer?(value)
       value.respond_to?(:to_inertia) && !value.is_a?(ActiveSupport::OrderedOptions)
@@ -33,9 +36,11 @@ module InertiaRails
       @_scroll = {}
       @_rescued = []
 
+      @keys = []
+      @whole = false
+
       props = expand_dot_notation(@props)
-      resolved = deep_transform_props(props)
-      [resolved, build_metadata]
+      [resolve_hash(props), build_metadata]
     end
 
     private
@@ -108,140 +113,137 @@ module InertiaRails
       metadata
     end
 
-    def deep_transform_props(props, prefix = '', parent_was_resolved: false, filter_nested_props: false)
-      plain_leaves = @recorder.nil? && (parent_was_resolved || !filtering_partial_request?)
-      transformed_props = {}
-      # `each` yields key and value without the pair Array `each_with_object` builds per entry.
-      props.each do |key, prop|
-        # Plain data needs no path, metadata or evaluation unless a partial reload or DevTools looks at it.
-        if plain_leaves && plain_leaf?(prop)
-          transformed_props[key] = prop
-          next
-        end
+    # A hash leaves out what is not sent.
+    # Speed: where nothing is skipped, a plain value is sent as it is, without a step to its key.
+    def resolve_hash(hash)
+      plain_leaves = nothing_to_check_on_plain_leaves?
+      props = {}
+      hash.each do |key, value|
+        next props[key] = value if plain_leaves && plain_leaf?(value)
 
-        path = prefix.empty? ? key.to_s : "#{prefix}.#{key}"
-
-        if self.class.serializer?(prop)
-          next if !parent_was_resolved && excluded_by_partial_request?(path)
-
-          prop = serialize(prop, path)
-        end
-
-        if prop.is_a?(Hash) && prop.any?
-          next if !parent_was_resolved && excluded_by_partial_request?(path)
-
-          record_prop(prop, path)
-          nested = deep_transform_props(prop, path, parent_was_resolved: parent_was_resolved,
-                                                    filter_nested_props: filter_nested_props)
-          transformed_props[key] = nested unless nested.empty?
-          next
-        end
-
-        if prop.is_a?(Array)
-          next if !parent_was_resolved && excluded_by_partial_request?(path)
-
-          record_prop(prop, path)
-          transformed_props[key] = transform_array(prop, path, parent_was_resolved: parent_was_resolved,
-                                                               filter_nested_props: filter_nested_props)
-          next
-        end
-
-        prop = prop.with_merge_intent(@scroll_intent) if prop.is_a?(ScrollProp)
-        collect_metadata(prop, path)
-        resolved_child = parent_was_resolved && !(filter_nested_props && (prop.is_a?(BaseProp) || prop.is_a?(Proc)))
-        next unless keep_prop?(prop, path, parent_was_resolved: resolved_child)
-
-        record_prop(prop, path)
-        rescue_enabled = prop.is_a?(BaseProp) && prop.try(:rescue?)
-
-        begin
-          value = @evaluator.call(prop)
-
-          # A closure may return a prop type — unwrap one level
-          if value.is_a?(BaseProp) && !prop.is_a?(BaseProp)
-            value = value.with_merge_intent(@scroll_intent) if value.is_a?(ScrollProp)
-            collect_metadata(value, path)
-            next unless keep_prop?(value, path, parent_was_resolved: resolved_child)
-
-            record_prop(value, path)
-            value = @evaluator.call(value)
-          end
-
-          serialized = self.class.serializer?(value)
-          value = serialize(value, path) if serialized
-
-          # A closure or a serializer may return a Hash or Array containing prop types — recurse into it
-          if prop.is_a?(Proc) || serialized || needs_transform?(value)
-            resolved_parent = parent_was_resolved || serialized || !prop.is_a?(BaseProp) ||
-                              (prop.is_a?(AlwaysProp) && excluded_by_partial_request?(path))
-            filter_children = filter_nested_props || (prop.is_a?(BaseProp) && !serialized)
-            if value.is_a?(Hash) && value.any?
-              value = deep_transform_props(value, path, parent_was_resolved: resolved_parent,
-                                                        filter_nested_props: filter_children)
-              next if value.empty? && !prop.is_a?(AlwaysProp)
-            elsif value.is_a?(Array)
-              value = transform_array(value, path, parent_was_resolved: resolved_parent,
-                                                   filter_nested_props: filter_children)
-            end
-          end
-
-          transformed_props[key] = rescue_enabled ? value.as_json : value
-        rescue StandardError => e
-          raise unless rescue_enabled
-
-          report_rescued_error(e)
-          @_rescued << path
-          next
-        end
+        prop = at(key) { resolve_prop(value) }
+        props[key] = prop unless prop.equal?(SKIP)
       end
-
-      transformed_props
+      props
     end
 
-    # Partial reloads refer to array elements by position, so an unrequested element stays in
-    # place as `{}` (a hash) or `nil`, and is not evaluated.
-    def transform_array(array, path, parent_was_resolved:, filter_nested_props: false)
-      return array unless needs_transform?(array) || (!parent_was_resolved && partial_request_reaches_below?(path))
+    def resolve_prop(value)
+      return SKIP if skipped? && !value.is_a?(AlwaysProp)
 
-      array.each_with_index.map do |item, index|
-        item_path = "#{path}.#{index}"
-
-        if filter_nested_props && (item.is_a?(BaseProp) || item.is_a?(Proc))
-          next deep_transform_props({ index => item }, path, parent_was_resolved: parent_was_resolved,
-                                                             filter_nested_props: true)[index]
-        end
-
-        case item
-        when Hash then deep_transform_props(item, item_path, parent_was_resolved: parent_was_resolved,
-                                                             filter_nested_props: filter_nested_props)
-        when Array then transform_array(item, item_path, parent_was_resolved: parent_was_resolved,
-                                                         filter_nested_props: filter_nested_props)
-        else
-          next if !parent_was_resolved && excluded_by_partial_request?(item_path)
-
-          transform_element(item, item_path, parent_was_resolved: parent_was_resolved,
-                                             filter_nested_props: filter_nested_props)
-        end
-      end
+      record(value) unless value.is_a?(BaseProp)
+      resolve_value(value)
     end
 
-    def transform_element(item, path, parent_was_resolved:, filter_nested_props: false)
-      value = @evaluator.call(item)
-      return value unless self.class.serializer?(value)
+    # An array keeps every place, since partial reloads refer to elements by position.
+    def resolve_array(array)
+      return array unless needs_transform?(array) || partial_request_reaches_below?
 
-      value = serialize(value, path)
+      array.each_with_index.map { |item, index| at(index) { resolve_element(item) } }
+    end
+
+    # A hash stays a hash, with what is left of it. Anything else that is not sent leaves `nil`.
+    def resolve_element(item)
+      return resolve_hash(item) if item.is_a?(Hash)
+      return if skipped?
+
+      element = resolve_value(item)
+      element unless element.equal?(SKIP)
+    end
+
+    # Any value, wherever it sits: a serializer, closure or prop type is asked for what it holds,
+    # until plain data is left to walk.
+    def resolve_value(value)
+      return resolve_returned(value, to_inertia(value)) if self.class.serializer?(value)
+
       case value
-      when Hash then deep_transform_props(value, path, parent_was_resolved: parent_was_resolved,
-                                                       filter_nested_props: filter_nested_props)
-      when Array then transform_array(value, path, parent_was_resolved: parent_was_resolved,
-                                                   filter_nested_props: filter_nested_props)
+      when BaseProp then resolve_prop_type(value)
+      when Proc then resolve_returned(value, @evaluator.call(value))
+      when Hash then skip_if_emptied(value, resolve_hash(value))
+      when Array then resolve_array(value)
       else value
       end
     end
 
-    def serialize(serializer, path)
-      @recorder&.serializer_found(serializer, path)
-      serializer.to_inertia
+    # What returns itself has nothing more to give.
+    def resolve_returned(from, returned)
+      returned.equal?(from) ? returned : resolve_value(returned)
+    end
+
+    def resolve_prop_type(prop)
+      prop = prop.with_merge_intent(@scroll_intent) if prop.is_a?(ScrollProp)
+      collect_metadata(prop, path)
+      return SKIP if waits_for_partial_reload?(prop) || excluded_by_once_cache?(prop, path)
+
+      record(prop)
+      prop.try(:rescue?) ? evaluate_rescued(prop) : evaluate(prop)
+    end
+
+    # An always prop ignores `only` and `except`, and so does everything it returns.
+    def evaluate(prop)
+      returned = @evaluator.call(prop)
+      prop.is_a?(AlwaysProp) ? whole { resolve_value(returned) } : resolve_value(returned)
+    end
+
+    # `as_json` runs here so that an error raised while serializing the prop is rescued too.
+    def evaluate_rescued(prop)
+      resolved = evaluate(prop)
+      return SKIP if resolved.equal?(SKIP)
+
+      resolved.as_json
+    rescue StandardError => e
+      report_rescued_error(e)
+      @_rescued << path
+      SKIP
+    end
+
+    # A hash the walk emptied is not sent. One given empty is sent as it is.
+    def skip_if_emptied(hash, props)
+      props.empty? && !hash.empty? ? SKIP : props
+    end
+
+    # Steps down to `key` for the length of the block.
+    def at(key)
+      outer = @path
+      @keys << key
+      @path = outer && "#{outer}.#{key}"
+      yield
+    ensure
+      @keys.pop
+      @path = outer
+    end
+
+    # The name the client knows the prop by. Built only when asked for.
+    # `join` alone would flatten a key that is an Array.
+    def path
+      @path ||= @keys.reduce { |path, key| "#{path}.#{key}" }.to_s
+    end
+
+    def whole
+      outer = @whole
+      @whole = true
+      yield
+    ensure
+      @whole = outer
+    end
+
+    def skipped?
+      !@whole && filtering_partial_request? && excluded_by_partial_request?(path)
+    end
+
+    def to_inertia(value)
+      return value unless self.class.serializer?(value)
+
+      @recorder&.serializer_found(value, path)
+      value.to_inertia
+    end
+
+    def record(value)
+      @recorder&.prop_resolved(path, value, reset: reset_keys.include?(path))
+    end
+
+    # DevTools records every prop, plain values too.
+    def nothing_to_check_on_plain_leaves?
+      @recorder.nil? && (@whole || !filtering_partial_request?)
     end
 
     def plain_leaf?(value)
@@ -265,10 +267,6 @@ module InertiaRails
       end
     end
 
-    def record_prop(prop, path)
-      @recorder&.prop_resolved(path, prop, reset: reset_keys.include?(path))
-    end
-
     def report_rescued_error(error)
       # `Rails.error` (the Error Reporter) was introduced in Rails 7.0. Fall back
       # to the logger on older versions so rescued errors are never silently lost.
@@ -280,8 +278,6 @@ module InertiaRails
     end
 
     def collect_metadata(prop, path)
-      return unless prop.is_a?(BaseProp)
-
       collect_deferred_metadata(prop, path)
       collect_merge_metadata(prop, path)
       collect_once_metadata(prop, path)
@@ -332,20 +328,9 @@ module InertiaRails
       @partial_component
     end
 
-    # Only prop types answer the deferred and once predicates; plain values are data,
-    # even when they respond to `deferred?` or `once?` themselves.
-    def keep_prop?(prop, path, parent_was_resolved: false)
-      return true if prop.is_a?(AlwaysProp)
-
-      prop_type = prop.is_a?(BaseProp)
-      return false if prop_type && excluded_by_once_cache?(prop, path)
-      return false if !parent_was_resolved && excluded_by_partial_request?(path)
-
-      # Precedence: Evaluate IgnoreOnFirstLoadProp only after partial keys have been checked
-      return false if prop_type && (prop.is_a?(IgnoreOnFirstLoadProp) || prop.try(:deferred?)) &&
-                      !rendering_partial_component?
-
-      true
+    # Optional and deferred props wait for a partial reload.
+    def waits_for_partial_reload?(prop)
+      (prop.is_a?(IgnoreOnFirstLoadProp) || prop.try(:deferred?)) && !rendering_partial_component?
     end
 
     def excluded_by_once_cache?(prop, path)
@@ -363,7 +348,7 @@ module InertiaRails
 
     # Arrays of plain values are skipped as a shortcut, unless a partial reload names an
     # element inside one.
-    def partial_request_reaches_below?(path)
+    def partial_request_reaches_below?
       return false unless filtering_partial_request?
 
       path_prefix = "#{path}."

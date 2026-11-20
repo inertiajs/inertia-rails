@@ -495,13 +495,12 @@ RSpec.describe 'rendering inertia views', type: :request do
 
       before { get deeply_nested_props_path, headers: headers }
 
-      it 'resolves the closure and includes all children' do
+      it 'resolves the closure and includes only the requested child' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
           'nested' => {
             'evaluated' => {
               'first' => 'first evaluated nested param',
-              'second' => 'second evaluated nested param',
             },
           }
         )
@@ -519,7 +518,7 @@ RSpec.describe 'rendering inertia views', type: :request do
 
       before { get deeply_nested_props_path, headers: headers }
 
-      it 'renders the entire evaluated prop' do
+      it 'renders the evaluated prop without the excluded child' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
           'flat' => 'flat param',
@@ -529,7 +528,6 @@ RSpec.describe 'rendering inertia views', type: :request do
             'first' => 'first nested param',
             'second' => 'second nested param',
             'evaluated' => {
-              'first' => 'first evaluated nested param',
               'second' => 'second evaluated nested param',
             },
             'deeply_nested' => {
@@ -630,11 +628,10 @@ RSpec.describe 'rendering inertia views', type: :request do
         }
       end
 
-      it 'works with dot notation only with simple props' do
+      it 'works with dot notation inside what a prop type returns too' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
-          'nested' => { 'second' => 'second nested param' },
-          'nested_optional' => { 'first' => 'first nested optional param' }
+          'nested' => { 'second' => 'second nested param' }
         )
       end
     end

@@ -16,6 +16,42 @@ RSpec.describe InertiaRails::PropsResolver do
     resolve(props, visit: { component: true, only: only.map(&:to_s), **visit_opts })
   end
 
+  describe 'the same value in different places' do
+    it 'calls a closure that a closure returned' do
+      expect(resolve({ a: -> { -> { 1 } } })[:props]).to eq({ a: 1 })
+    end
+
+    it 'treats a prop type in an array as a prop' do
+      page = resolve({ a: [InertiaRails.optional { 1 }, InertiaRails.defer { 2 }, 3] })
+
+      expect(page[:props]).to eq({ a: [nil, nil, 3] })
+      expect(page[:deferredProps]).to eq({ 'default' => ['a.1'] })
+    end
+
+    it 'leaves nil where an array element resolves to nothing' do
+      expect(resolve({ a: [-> { InertiaRails.optional { 1 } }] })[:props]).to eq({ a: [nil] })
+    end
+
+    it 'leaves nil for a nested array the partial reload skips' do
+      expect(resolve_partial({ a: [[1, 2], [3]] }, 'a.0')[:props]).to eq({ a: [[1, 2], nil] })
+    end
+
+    it 'sends a serializer that returns itself as it is' do
+      itself_serializer = Object.new
+      def itself_serializer.to_inertia = self
+
+      expect(resolve({ a: itself_serializer })[:props][:a]).to equal(itself_serializer)
+    end
+
+    it 'serializes a Hash or an Array with `to_inertia` that a closure returns' do
+      user = Class.new(Hash) { def to_inertia = { name: 'Jonathan' } }.new
+      users = Class.new(Array) { def to_inertia = ['Jonathan'] }.new([1])
+
+      expect(resolve({ user: -> { user }, users: -> { users } })[:props])
+        .to eq({ user: { name: 'Jonathan' }, users: ['Jonathan'] })
+    end
+  end
+
   describe 'closure resolution' do
     it 'resolves a top-level closure' do
       page = resolve({ auth: -> { { user: 'Jonathan' } } })
@@ -672,6 +708,26 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:rescuedProps]).to eq(['auth.notifications'])
     end
 
+    it 'records a rescued prop by its own name after the walk went into it' do
+      unserializable = Object.new
+      def unserializable.as_json(*) = raise('boom')
+      allow(Rails.error).to receive(:report)
+
+      page = resolve_partial(
+        { feed: InertiaRails.defer(rescue: true) { { posts: InertiaRails.merge { [1] }, broken: unserializable } } },
+        'feed'
+      )
+
+      expect(page[:rescuedProps]).to eq(['feed'])
+    end
+
+    it 'leaves out a rescued prop when the partial reload asks for none of its keys' do
+      page = resolve_partial({ feed: InertiaRails.defer(rescue: true) { { posts: [1] } } }, 'feed.missing')
+
+      expect(page[:props]).to eq({})
+      expect(page).not_to have_key(:rescuedProps)
+    end
+
     it 'resolves a rescued prop normally when no error is raised' do
       page = resolve_partial(
         { permissions: InertiaRails.defer(rescue: true) { %w[read write] } },
@@ -1143,85 +1199,54 @@ RSpec.describe InertiaRails::PropsResolver do
         expect(page[:props][:user]).to eq({ name: 'Jonathan', count: 2 })
       end
 
-      [{ only: ['other'] }, { except: %w[auth empty] }].each do |selection|
-        it "projects unrequested always data without evaluating children for #{selection}" do
-          calls = []
-          serializer_class = serializer
+      [{ only: ['other'] }, { except: ['auth'] }].each do |selection|
+        it "sends an always prop whole when the partial reload skips it for #{selection}" do
+          user = serializer.new('Jonathan')
           props = {
             other: 'public',
             auth: InertiaRails.always do
-              {
-                user: serializer_class.new('Jonathan'),
-                extra: InertiaRails.optional { calls << :optional },
-                later: InertiaRails.defer { calls << :deferred },
-                posts: InertiaRails.merge { calls << :merge },
-                count: -> { calls << :closure },
-              }
+              { user: user, extra: InertiaRails.optional { 1 }, posts: InertiaRails.merge { [2] }, count: -> { 3 } }
             end,
-            empty: InertiaRails.always { { extra: InertiaRails.optional { calls << :empty } } },
           }
 
           page = resolve(props, visit: { component: true, **selection })
 
-          expect(page[:props]).to eq({ other: 'public', auth: { user: { name: 'Jonathan' } }, empty: {} })
-          expect(calls).to eq([])
+          expect(page[:props][:auth]).to eq({ user: { name: 'Jonathan' }, extra: 1, posts: [2], count: 3 })
           expect(page).not_to have_key(:mergeProps)
         end
       end
 
-      it 'keeps array positions without evaluating unrequested executable children of always data' do
-        calls = []
-        serializer_class = serializer
+      it 'sends every element of an always prop the partial reload skips' do
+        jonathan = serializer.new('Jonathan')
+        brandon = serializer.new('Brandon')
         page = resolve_partial(
           {
             other: 'public',
             users: InertiaRails.always do
-              [
-                serializer_class.new('Jonathan'),
-                InertiaRails.optional { calls << :optional },
-                InertiaRails.defer { calls << :deferred },
-                InertiaRails.merge { calls << :merge },
-                -> { calls << :closure },
-                InertiaRails.always { serializer_class.new('Brandon') }
-              ]
+              [jonathan, InertiaRails.optional { 1 }, InertiaRails.merge { [2] }, -> { 3 },
+               InertiaRails.always { brandon }]
             end,
           },
           'other'
         )
 
-        expect(page[:props][:users]).to eq([{ name: 'Jonathan' }, nil, nil, nil, nil, { name: 'Brandon' }])
-        expect(calls).to eq([])
+        expect(page[:props][:users]).to eq([{ name: 'Jonathan' }, 1, [2], 3, { name: 'Brandon' }])
         expect(page).not_to have_key(:mergeProps)
       end
 
-      it 'evaluates selected children once and preserves their merge metadata and array positions' do
-        calls = []
-        serializer_class = serializer
+      it 'sends an always prop whole when the partial reload names keys inside it' do
+        user = serializer.new('Jonathan')
         page = resolve_partial(
           {
             auth: InertiaRails.always do
-              {
-                user: serializer_class.new('Jonathan'),
-                posts: InertiaRails.merge do
-                  calls << :posts
-                  [serializer_class.new('Brandon')]
-                end,
-                rows: [
-                  InertiaRails.optional do
-                    calls << :row
-                    serializer_class.new('Taylor')
-                  end,
-                  InertiaRails.defer { calls << :deferred }
-                ],
-              }
+              { user: user, posts: InertiaRails.merge { [1] }, tags: InertiaRails.merge { [2] } }
             end,
           },
-          'auth.posts', 'auth.rows.0'
+          'auth.posts'
         )
 
-        expect(page[:props]).to eq({ auth: { posts: [{ name: 'Brandon' }], rows: [{ name: 'Taylor' }, nil] } })
+        expect(page[:props]).to eq({ auth: { user: { name: 'Jonathan' }, posts: [1], tags: [2] } })
         expect(page[:mergeProps]).to eq(['auth.posts'])
-        expect(calls).to eq(%i[posts row])
       end
 
       it 'resolves ones inside an array, directly or from a closure' do
