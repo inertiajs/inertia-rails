@@ -29,8 +29,7 @@ module InertiaRails
 
       # Like a page, with the global settings: a controller's `inertia_config` is out of reach here.
       def pushed(props)
-        props = InertiaRails.configuration.prop_transformer(props: resolve(props))
-        InertiaRails.configuration.preserve_big_integers ? BigIntegers.encode(props) : props
+        InertiaRails.configuration.prop_transformer(props: resolve(props))
       end
 
       # Keys stay literal: the client writes "order.total" by path, and only for props it listens to.

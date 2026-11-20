@@ -68,15 +68,12 @@ RSpec.describe 'Live prop broadcasts' do
       expect(server).to have_received(:broadcast).with('inertia:refresh', envelope)
     end
 
-    it 'wraps big integers in pushed values when preserve_big_integers is on' do
-      InertiaRails.broadcast(:plain, props: { id: 2**60 })
+    # The client only turns `$bigint` markers into BigInt values when it parses a page.
+    it 'leaves big integers in pushed values unmarked, even with preserve_big_integers on' do
       allow(InertiaRails.configuration).to receive(:preserve_big_integers).and_return(true)
-      InertiaRails.broadcast(:feed, props: { id: 2**60, count: 3 })
+      InertiaRails.broadcast(:feed, props: { id: 2**60 })
 
-      expect(server).to have_received(:broadcast).with('inertia:plain', envelope(props: { id: 2**60 }))
-      expect(server).to have_received(:broadcast).with(
-        'inertia:feed', envelope(props: { id: { '$bigint' => (2**60).to_s }, count: 3 })
-      )
+      expect(server).to have_received(:broadcast).with('inertia:feed', envelope(props: { id: 2**60 }))
     end
 
     it 'refuses prop types and non-hash props' do
