@@ -84,21 +84,34 @@ module InertiaRails
       key, *rest = parts
       if rest.empty?
         target[key] = value unless keep && target.key?(key)
+      elsif evaluated_later?(target[key])
+        target[key] = write_dotted_later(target[key], parts, value, keep: keep)
       elsif (inner = hash_at(target, key, keep: keep))
         write_dotted(inner, rest, value, keep: keep)
       end
     end
 
-    # Returns the hash under `key` as a copy, evaluating a closure or serializer found there.
+    def evaluated_later?(value)
+      value.is_a?(Proc) || self.class.serializer?(value)
+    end
+
+    # A closure or serializer is asked for its hash when the walk gets to it,
+    # so one that a partial reload skips is never called.
+    def write_dotted_later(parent, parts, value, keep:)
+      key = parts.first
+      write = lambda do
+        evaluated = { key => self.class.serializer?(parent) ? parent.to_inertia : @evaluator.call(parent) }
+        write_dotted(evaluated, parts, value, keep: keep)
+        evaluated[key]
+      end
+      -> { write.call }
+    end
+
+    # Returns the hash under `key` as a copy.
     # With `keep`, a value that is not a hash stays and `nil` is returned.
     def hash_at(current, key, keep:)
       value = current[key]
-      value = value.to_inertia if self.class.serializer?(value)
-      value = @evaluator.call(value) if value.is_a?(Proc)
-      if keep && current.key?(key) && !value.is_a?(Hash)
-        current[key] = value
-        return
-      end
+      return if keep && current.key?(key) && !value.is_a?(Hash)
 
       current[key] = value.is_a?(Hash) ? value.dup : value || {}
     end

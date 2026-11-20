@@ -1466,6 +1466,20 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props][:auth][:user]).to eq('Jonathan')
     end
 
+    it 'does not call a closure that a dot-notation key extends when the partial reload skips it' do
+      called = false
+      props = { auth: -> { called = true }, 'auth.user' => 'Jonathan', other: 1 }
+
+      expect(resolve_partial(props, 'other')[:props]).to eq({ other: 1 })
+      expect(called).to be false
+    end
+
+    it 'merges a dot-notation key into what a closure returned by a closure holds' do
+      page = resolve({ auth: -> { -> { { id: 1 } } }, 'auth.name' => 'Jonathan' })
+
+      expect(page[:props]).to eq({ auth: { id: 1, name: 'Jonathan' } })
+    end
+
     it 'dot-notation prop merges when parent is a closure' do
       page = resolve({
                        auth: lambda {
