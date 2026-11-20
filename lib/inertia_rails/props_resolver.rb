@@ -311,7 +311,7 @@ module InertiaRails
       return unless prop.try(:deferred?) && !rendering_partial_component?
       return if excluded_by_once_cache?(prop, path)
 
-      (@_deferred[prop.group] ||= []) << path
+      (@_deferred[prop.group.to_s] ||= []) << path
     end
 
     def collect_merge_metadata(prop, path)

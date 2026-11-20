@@ -241,6 +241,12 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props][:app][:auth][:permissions]).to eq(['admin'])
     end
 
+    it 'lists a deferred group once when it is named as a Symbol and as a String' do
+      page = resolve({ a: InertiaRails.defer(group: :side) { 1 }, b: InertiaRails.defer(group: 'side') { 2 } })
+
+      expect(page[:deferredProps]).to eq({ 'side' => %w[a b] })
+    end
+
     it 'dot-notation optional prop is excluded from initial load' do
       page = resolve({
                        'auth.user.permissions' => InertiaRails.optional { ['edit-posts'] },
