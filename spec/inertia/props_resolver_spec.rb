@@ -717,7 +717,6 @@ RSpec.describe InertiaRails::PropsResolver do
     it 'records a rescued prop by its own name after the walk went into it' do
       unserializable = Object.new
       def unserializable.as_json(*) = raise('boom')
-      allow(Rails.error).to receive(:report)
 
       page = resolve_partial(
         { feed: InertiaRails.defer(rescue: true) { { posts: InertiaRails.merge { [1] }, broken: unserializable } } },
