@@ -107,13 +107,13 @@ module InertiaRails
       -> { write.call }
     end
 
-    # Returns the hash under `key` as a copy.
-    # With `keep`, a value that is not a hash stays and `nil` is returned.
+    # Returns the hash under `key` as a copy. A value that is not a hash is replaced by an empty one,
+    # unless `keep` is given: then it stays and `nil` is returned.
     def hash_at(current, key, keep:)
       value = current[key]
       return if keep && current.key?(key) && !value.is_a?(Hash)
 
-      current[key] = value.is_a?(Hash) ? value.dup : value || {}
+      current[key] = value.is_a?(Hash) ? value.dup : {}
     end
 
     def build_metadata

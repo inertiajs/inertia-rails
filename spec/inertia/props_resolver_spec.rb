@@ -1480,6 +1480,16 @@ RSpec.describe InertiaRails::PropsResolver do
       expect(page[:props]).to eq({ auth: { id: 1, name: 'Jonathan' } })
     end
 
+    it 'lets a dot-notation key replace an earlier parent that is not a hash' do
+      expect(resolve({ auth: 'guest', 'auth.user' => 'Jonathan' })[:props]).to eq({ auth: { user: 'Jonathan' } })
+      expect(resolve({ auth: InertiaRails.optional { 1 }, 'auth.user' => 'Jonathan' })[:props])
+        .to eq({ auth: { user: 'Jonathan' } })
+    end
+
+    it 'keeps a later parent that is not a hash over an earlier dot-notation key' do
+      expect(resolve({ 'auth.user' => 'Jonathan', auth: 'guest' })[:props]).to eq({ auth: 'guest' })
+    end
+
     it 'dot-notation prop merges when parent is a closure' do
       page = resolve({
                        auth: lambda {
