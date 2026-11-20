@@ -133,6 +133,14 @@ RSpec.describe 'Live props' do
       expect(page[:liveProps].keys).to eq(%w[order flash])
     end
 
+    it 'lists a live prop that an always prop returns, since it is sent anyway' do
+      auth = InertiaRails.always { { feed: InertiaRails.live(:feed) { 'feed' } } }
+      page = resolve_partial({ order: 'order', auth: auth }, 'order')
+
+      expect(page[:props]).to eq(order: 'order', auth: { feed: 'feed' })
+      expect(page[:liveProps]).to eq('auth.feed' => { listeners: [listener('inertia:feed')] })
+    end
+
     it 'leaves out a rescued prop, so the client keeps its listeners' do
       page = resolve_partial({ stats: InertiaRails.defer(rescue: true, live: :stats) { raise 'boom' } }, 'stats')
 

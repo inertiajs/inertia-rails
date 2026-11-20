@@ -280,13 +280,10 @@ module InertiaRails
       prop.match_on&.each { |ms| @_match_on << "#{path}.#{ms}" }
     end
 
-    # A full load lists every live prop, sent or not, so the page subscribes to all of them. A partial
-    # reload lists the props it sends, always props included; the client keeps its subscriptions for the rest.
+    # Lists every live prop the walk reaches, sent or not, so a page subscribes to its deferred props too.
+    # The client keeps its subscriptions for the props a partial reload skips.
     def collect_live_metadata(prop, path)
-      return unless prop.try(:live?)
-      return if !prop.is_a?(AlwaysProp) && excluded_by_partial_request?(path)
-
-      @_live[path] = prop.live_metadata
+      @_live[path] = prop.live_metadata if prop.try(:live?)
     end
 
     def collect_once_metadata(prop, path)
