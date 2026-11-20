@@ -17,12 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Apply the `only` and `except` paths of partial reloads inside closures and prop types too, and send always props whole (@skryukov)
 * Fix crashes with dot-notation prop keys over non-hash or String-keyed values, and with a defer group named as both a Symbol and a String (@skryukov)
 * Resolve plain props faster (@skryukov)
+* Add live props: `InertiaRails.live` and the `live:` option on deferred, optional, once, always and cached props subscribe a prop to an Action Cable stream, and `InertiaRails.broadcast` or `inertia_broadcasts` in a model reloads it on every page that shows it. Requires Inertia.js v3.11+. The testing helpers check the live props of a page with `have_live_props` and `assert_inertia_live_props` (@skryukov, @cole-robertson)
 
 ## [3.23.0] - 2026-10-16
 
 * Accept a block in `inertia_ssr_head` for fallback head elements, rendered when the response isn't server-side rendered, like inertia-laravel's `<x-inertia::head>` (@skryukov)
-* Add live props: `InertiaRails.live` and the `live:` option on deferred, optional, once, always and cached props subscribe a prop to an Action Cable stream, and `InertiaRails.broadcast` or `inertia_broadcasts` in a model reloads it on every page that shows it. Requires the live props client from Inertia.js (inertiajs/inertia#3232) (@skryukov)
-* Add live props: `InertiaRails.live` and the `live:` option on deferred, optional, once, always and cached props subscribe a prop to an Action Cable stream, and `InertiaRails.broadcast` or `inertia_broadcasts` in a model reloads it on every page that shows it. Requires the live props client from Inertia.js (inertiajs/inertia#3232). The testing helpers check the live props of a page with `have_live_props` and `assert_inertia_live_props` (@skryukov)
 * Add `config.convert_fragment_redirects` (off by default and enabled by the installer, requires Inertia.js v3) to keep URL fragments on Inertia redirects: a same-origin redirect to a URL with a fragment becomes a `409` response with the `X-Inertia-Redirect` header, which the client follows with a regular Inertia visit (@skryukov)
 * Add the `preserve_big_integers` option (config, `inertia_config` and render option), which sends integers outside JavaScript's safe range as `{"$bigint": "..."}` markers that Inertia.js v3.8+ turns into `BigInt` values. The testing helpers turn them back into integers (@skryukov)
 * Leave `encryptHistory` and `clearHistory` out of the page object when they are `false`, like inertia-laravel 3.x. Clients treat a missing key as `false`; specs that compare the full page JSON need updating (@skryukov)

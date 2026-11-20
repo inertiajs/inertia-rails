@@ -1,11 +1,8 @@
 # Live Props
 
-@available_since rails=master
+@available_since rails=master core=3.11.0
 
 Live props refresh themselves when the server broadcasts a change. You mark a prop as live on a stream, broadcast to that stream when data changes, and every page showing the prop reloads it over Action Cable. If you know Turbo, this is `turbo_stream_from` and `broadcasts_refreshes` for Inertia props.
-
-> [!NOTE]
-> Live props need the live props client from Inertia core ([inertiajs/inertia#3232](https://github.com/inertiajs/inertia/pull/3232)), which isn't released yet.
 
 ## Setup
 
@@ -17,7 +14,13 @@ First, install the Action Cable client:
 npm install @rails/actioncable
 ```
 
-Then pass the Action Cable transport to `createInertiaApp`:
+With TypeScript, also install its types:
+
+```bash
+npm install -D @types/rails__actioncable
+```
+
+Then pass the Action Cable transport to `createInertiaApp`. Give it a function that creates the consumer, so the connection opens only when a page subscribes, and never during [server-side rendering](/guide/server-side-rendering):
 
 :::tabs key:frameworks
 
@@ -29,7 +32,7 @@ import { actionCable } from '@inertiajs/core/actionCable'
 import { createConsumer } from '@rails/actioncable'
 
 createInertiaApp({
-  live: actionCable({ consumer: createConsumer() }),
+  live: actionCable({ consumer: () => createConsumer() }),
   // ...
 })
 ```
@@ -42,7 +45,7 @@ import { actionCable } from '@inertiajs/core/actionCable'
 import { createConsumer } from '@rails/actioncable'
 
 createInertiaApp({
-  live: actionCable({ consumer: createConsumer() }),
+  live: actionCable({ consumer: () => createConsumer() }),
   // ...
 })
 ```
@@ -55,7 +58,7 @@ import { actionCable } from '@inertiajs/core/actionCable'
 import { createConsumer } from '@rails/actioncable'
 
 createInertiaApp({
-  live: actionCable({ consumer: createConsumer() }),
+  live: actionCable({ consumer: () => createConsumer() }),
   // ...
 })
 ```
@@ -68,13 +71,6 @@ Finally, make sure your app has `app/channels/inertia_channel.rb`. The install g
 class InertiaChannel < InertiaRails::LiveChannel
 end
 ```
-
-> [!TIP]
-> With [server-side rendering](/guide/server-side-rendering), `createConsumer()` can't run on the server because it reads `document`. Create the consumer in the browser only:
->
-> ```js
-> const consumer = typeof window !== 'undefined' ? createConsumer() : undefined
-> ```
 
 ## Making a Prop Live
 
@@ -120,6 +116,16 @@ InertiaRails.defer(live: @exhibit, throttle: 4.seconds) { @exhibit.related }
 ```
 
 Broadcasts that arrive close together are merged into one partial reload.
+
+To change the default for every prop, pass `throttle` to the transport. Reloads also pause while the browser tab is hidden and resume when the user returns, unless you set `pauseWhenHidden` to `false`:
+
+```js
+actionCable({
+  consumer: () => createConsumer(),
+  throttle: 2000,
+  pauseWhenHidden: false,
+})
+```
 
 ### Several Streams
 
@@ -202,7 +208,9 @@ InertiaRails.broadcast(@order, props: { status: @order.status })
 
 Keys are prop names as the page lists them, so a nested prop takes its full path: `props: { 'stats.revenue' => 42 }`. Props a page listens to on that stream but the broadcast doesn't carry are reloaded as usual.
 
-Pushed values go through the global [`prop_transformer`](/guide/configuration#prop-transformer) and [`preserve_big_integers`](/guide/configuration#preserve-big-integers) settings. If the transformer renames a top-level prop, the page reloads that prop instead. Settings from `inertia_config` or `render` don't apply to broadcasts, so don't push values for props a transformer from `inertia_config` renames.
+Pushed values go through the global [`prop_transformer`](/guide/configuration#prop-transformer). If the transformer renames a top-level prop, the page reloads that prop instead. Settings from `inertia_config` or `render` don't apply to broadcasts, so don't push values for props a transformer from `inertia_config` renames.
+
+Pushed values don't keep [big integers](/guide/big-integers) exact, because the client only restores them when it loads a page. Broadcast without `props:` for a prop that holds them.
 
 ## Client Side
 
@@ -263,6 +271,20 @@ export default function Guestbook() {
 
 :::
 
+### Live Events
+
+Inertia fires a cancelable [`live` event](/guide/events) before it updates a live prop. Return `false` to skip the update, for example to show a "New data available" button, and apply it later with `router.reload`:
+
+```js
+import { router } from '@inertiajs/vue3'
+
+router.on('live', (event) => {
+  showRefreshButton(() => router.reload({ only: event.detail.props }))
+
+  return false
+})
+```
+
 ## Authorization
 
 The page object carries signed stream names, and the channel only subscribes to names it signed. Rendering a page is what grants the right to listen to its streams, the same model as Turbo streams.
@@ -294,11 +316,11 @@ With a fixed key such as `cache: 'stats'`, a live reload returns the cached valu
 
 ## AnyCable
 
-Live props work with [AnyCable](https://anycable.io) without changes. When AnyCable is configured, stream names are signed in its format with its `streams_secret`, so anycable-go can serve subscriptions on its own, without calling Rails:
+Live props work with [AnyCable](https://anycable.io) without changes. On the client, import `createConsumer` from `@anycable/web` instead of `@rails/actioncable`. When AnyCable is configured, stream names are signed in its format with its `streams_secret`, so anycable-go can serve subscriptions on its own, without calling Rails:
 
 ```js
 actionCable({
-  consumer: createConsumer(),
+  consumer: () => createConsumer(),
   identifier: ({ name }) => ({ channel: '$pubsub', signed_stream_name: name }),
 })
 ```
