@@ -1605,10 +1605,10 @@ RSpec.describe InertiaRails::PropsResolver do
         expect(page[:props]).to eq(auth: { user: nil, team: nil })
       end
 
-      it 'keeps a parent given as a Symbol and as a String, with a dot-notation key between them' do
+      it 'keeps the later of a parent given as a Symbol and as a String, with a dot-notation key between them' do
         page = resolve({ auth: { id: 1 }, 'auth.name' => 'Jonathan', 'auth' => { role: 'admin' } })
 
-        expect(page[:props]).to eq(auth: { id: 1, role: 'admin', name: 'Jonathan' })
+        expect(page[:props]).to eq(auth: { role: 'admin', name: 'Jonathan' })
       end
     end
 

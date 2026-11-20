@@ -44,78 +44,13 @@ module InertiaRails
       @keys = []
       @whole = false
 
-      props = expand_dot_notation(@props)
+      props = DottedKeys.new(@props).expand
       [resolve_hash(props), build_metadata]
     end
 
     private
 
     attr_reader :partial_keys, :partial_except_keys, :reset_keys, :except_once_keys
-
-    def expand_dot_notation(props)
-      dotted, plain = props.partition { |key, _| key.to_s.include?('.') }
-      result = merge_plain_keys(plain)
-      position = props.each_key.with_index.to_h { |key, index| [key.to_s, index] }
-
-      dotted.each do |key, value|
-        parts = key.to_s.split('.')
-        parent_position = position[parts.first]
-        # A dotted key that came before the plain key it extends leaves what that key sets itself,
-        # so the later key wins either way.
-        came_first = !parent_position.nil? && position[key.to_s] < parent_position
-        write_dotted(result, parts.map(&:to_sym), value, keep: came_first)
-      end
-      result
-    end
-
-    # A key may be given twice, as a String and as a Symbol.
-    def merge_plain_keys(plain)
-      plain.each_with_object({}) do |(key, value), result|
-        key = key.to_sym
-        if value.is_a?(Hash) && result[key].is_a?(Hash)
-          result[key].merge!(value)
-        else
-          result[key] = value
-        end
-      end
-    end
-
-    def write_dotted(target, parts, value, keep:)
-      key, *rest = parts
-      key = key.to_s if target.key?(key.to_s)
-      if rest.empty?
-        target[key] = value unless keep && target.key?(key)
-      elsif evaluated_later?(target[key])
-        target[key] = write_dotted_later(target[key], parts, value, keep: keep)
-      elsif (inner = hash_at(target, key, keep: keep))
-        write_dotted(inner, rest, value, keep: keep)
-      end
-    end
-
-    def evaluated_later?(value)
-      value.is_a?(Proc) || self.class.serializer?(value)
-    end
-
-    # A closure or serializer is asked for its hash when the walk gets to it,
-    # so one that a partial reload skips is never called.
-    def write_dotted_later(parent, parts, value, keep:)
-      key = parts.first
-      write = lambda do
-        evaluated = { key => self.class.serializer?(parent) ? parent.to_inertia : @evaluator.call(parent) }
-        write_dotted(evaluated, parts, value, keep: keep)
-        evaluated[key]
-      end
-      -> { write.call }
-    end
-
-    # Returns the hash under `key` as a copy. A value that is not a hash is replaced by an empty one,
-    # unless `keep` is given: then it stays and `nil` is returned.
-    def hash_at(current, key, keep:)
-      value = current[key]
-      return if keep && current.key?(key) && !value.is_a?(Hash)
-
-      current[key] = value.is_a?(Hash) ? value.dup : {}
-    end
 
     def build_metadata
       metadata = {}
