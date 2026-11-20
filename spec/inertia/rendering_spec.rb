@@ -268,6 +268,113 @@ RSpec.describe 'rendering inertia views', type: :request do
     end
   end
 
+  context 'with serializers nested in prop type results' do
+    let(:user) { { 'name' => 'Ada' } }
+    let(:always_prop) { { 'user' => user, 'users' => [user] } }
+
+    it 'projects nested hashes and arrays on the initial request without exposing internal fields' do
+      get nested_serializer_props_path, headers: { 'X-Inertia' => true }
+
+      expect(response.parsed_body['props']).to eq(
+        'direct' => { 'user' => user },
+        'always' => always_prop,
+        'once' => [{ 'user' => user, 'evaluations' => 1 }],
+        'merged' => [{ 'user' => user }]
+      )
+      expect(response.parsed_body['onceProps']).to eq('once' => { 'prop' => 'once' })
+      expect(response.parsed_body['mergeProps']).to eq(['merged'])
+      expect(response.parsed_body['deferredProps']).to eq(
+        'default' => %w[deferred filtered rescuable late_hash late_array]
+      )
+    end
+
+    it 'does not embed internal serializer fields in the initial HTML page' do
+      get nested_serializer_props_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('Ada')
+      expect(response.body).not_to include('password_digest')
+    end
+
+    it 'projects deferred and optional serializers on a partial request' do
+      get nested_serializer_props_path, headers: {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Partial-Data' => 'deferred,optional',
+      }
+
+      expect(response.parsed_body['props']).to eq(
+        'always' => always_prop,
+        'deferred' => { 'users' => [user] },
+        'optional' => { 'user' => user }
+      )
+      expect(response.parsed_body['deferredProps']).to be_nil
+    end
+
+    it 'does not evaluate an unrequested child of a deferred prop' do
+      get nested_serializer_props_path, headers: {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Partial-Data' => 'filtered.user',
+      }
+
+      expect(response.parsed_body['props']).to eq(
+        'always' => always_prop,
+        'filtered' => { 'user' => user }
+      )
+    end
+
+    it 'honors an except filter within a deferred prop' do
+      get nested_serializer_props_path, headers: {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Partial-Data' => 'filtered',
+        'X-Inertia-Partial-Except' => 'filtered.ignored',
+      }
+
+      expect(response.parsed_body['props']).to eq(
+        'always' => always_prop,
+        'filtered' => { 'user' => user }
+      )
+    end
+
+    it 'rescues an error from a nested serializer within a deferred prop' do
+      get nested_serializer_props_path, headers: {
+        'X-Inertia' => true,
+        'X-Inertia-Partial-Component' => 'TestComponent',
+        'X-Inertia-Partial-Data' => 'rescuable',
+      }
+
+      expect(response.parsed_body['props']).to eq('always' => always_prop)
+      expect(response.parsed_body['rescuedProps']).to eq(['rescuable'])
+    end
+
+    %w[late_hash late_array].each do |prop|
+      it "rescues a late serialization error beside a nested serializer in #{prop}" do
+        get nested_serializer_props_path, headers: {
+          'X-Inertia' => true,
+          'X-Inertia-Partial-Component' => 'TestComponent',
+          'X-Inertia-Partial-Data' => prop,
+        }
+
+        expect(response.parsed_body['props']).to eq('always' => always_prop)
+        expect(response.parsed_body['rescuedProps']).to eq([prop])
+      end
+    end
+
+    it 'uses fresh serializer projections on consecutive requests' do
+      get nested_serializer_props_path, params: { viewer: 'Ada' }, headers: { 'X-Inertia' => true }
+      expect(response.parsed_body['props']['always']).to eq(always_prop)
+
+      get nested_serializer_props_path, params: { viewer: 'Bob' }, headers: { 'X-Inertia' => true }
+      expect(response.parsed_body['props']['always']).to eq(
+        'user' => { 'name' => 'Bob' },
+        'users' => [{ 'name' => 'Bob' }]
+      )
+      expect(response.body).not_to include('Ada', 'password_digest')
+    end
+  end
+
   context 'partial rendering' do
     let(:page) do
       InertiaRails::Renderer.new('TestComponent', controller, request, response, '',
@@ -388,13 +495,12 @@ RSpec.describe 'rendering inertia views', type: :request do
 
       before { get deeply_nested_props_path, headers: headers }
 
-      it 'resolves the closure and includes all children' do
+      it 'resolves the closure and includes only the requested child' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
           'nested' => {
             'evaluated' => {
               'first' => 'first evaluated nested param',
-              'second' => 'second evaluated nested param',
             },
           }
         )
@@ -412,7 +518,7 @@ RSpec.describe 'rendering inertia views', type: :request do
 
       before { get deeply_nested_props_path, headers: headers }
 
-      it 'renders the entire evaluated prop' do
+      it 'renders the evaluated prop without the excluded child' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
           'flat' => 'flat param',
@@ -422,7 +528,6 @@ RSpec.describe 'rendering inertia views', type: :request do
             'first' => 'first nested param',
             'second' => 'second nested param',
             'evaluated' => {
-              'first' => 'first evaluated nested param',
               'second' => 'second evaluated nested param',
             },
             'deeply_nested' => {
@@ -523,11 +628,10 @@ RSpec.describe 'rendering inertia views', type: :request do
         }
       end
 
-      it 'works with dot notation only with simple props' do
+      it 'works with dot notation inside what a prop type returns too' do
         expect(response.parsed_body['props']).to eq(
           'always' => 'always prop',
-          'nested' => { 'second' => 'second nested param' },
-          'nested_optional' => { 'first' => 'first nested optional param' }
+          'nested' => { 'second' => 'second nested param' }
         )
       end
     end
@@ -1629,6 +1733,15 @@ RSpec.describe 'rendering inertia views', type: :request do
 
     it 'expands them into nested props' do
       expect(response.parsed_body['props']).to eq('auth' => { 'user' => 'Brandon', 'role' => 'admin' })
+    end
+
+    it 'expands them the same when they come before a closure they extend' do
+      expected = response.body
+
+      get dotted_first_props_path, headers: { 'X-Inertia' => true }
+
+      expect(response.parsed_body['props']).to eq('auth' => { 'user' => 'Brandon', 'role' => 'admin' })
+      expect(response.body).to eq(expected.sub('/dotted_props', '/dotted_first_props'))
     end
   end
 end

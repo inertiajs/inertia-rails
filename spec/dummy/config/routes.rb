@@ -23,6 +23,7 @@ Rails.application.routes.draw do
   get 'serializer_props' => 'inertia_serializer_test#show'
   get 'broken_serializer_props' => 'inertia_serializer_test#broken'
   get 'lazy_serializer_props' => 'inertia_serializer_test#lazy'
+  get 'nested_serializer_props' => 'inertia_serializer_test#nested'
   get 'ssr_cache_disabled' => 'inertia_render_test#ssr_cache_disabled'
   get 'view_data' => 'inertia_render_test#view_data'
   get 'component' => 'inertia_render_test#component'
@@ -116,6 +117,7 @@ Rails.application.routes.draw do
   get 'api_external_redirect_test' => 'inertia_api_test#external_redirect'
   get 'deeply_nested_props' => 'inertia_render_test#deeply_nested_props'
   get 'dotted_props' => 'inertia_render_test#dotted_props'
+  get 'dotted_first_props' => 'inertia_render_test#dotted_first_props'
 
   get 'instance_props_test' => 'inertia_rails_mimic#instance_props_test'
   get 'default_render_test' => 'inertia_rails_mimic#default_render_test'

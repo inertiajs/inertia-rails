@@ -6,12 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Resolve nested `to_inertia` objects returned by prop types through their public projections instead of exposing internal instance variables, including deferred and partial responses (@thomasklemm)
 * Send plain prop values that respond to `deferred?`, `once?` or `rescue?` as data instead of treating them as prop types, and resolve plain props with fewer allocations (@thomasklemm)
 * Reduce controller configuration binding and plain-data prop scanning overhead without caching request-dependent configuration or changing prop evaluation order (@thomasklemm)
 * Skip HTML escaping of Inertia JSON responses when the app sets `config.action_controller.escape_json_responses = false` (the Rails 8.1 default), as `render json:` does (@brodienguyen)
 * Redact URL fragments containing sensitive parameters before DevTools stores URL headers or redirect locations. Harmless fragments and live redirect responses are unchanged (@thomasklemm)
 * Read Inertia request headers by their Rack env keys in the renderer, as the middleware does (@thomasklemm)
 * Embed cached props (`InertiaRails.cache` and `cache:` options) into the page as they are, instead of parsing the cached JSON and encoding it again on every request. This needs Active Support 8.1, which embeds `JSON::Fragment` values; with older versions, or an encoder that doesn't embed fragments, cached props work as before (@brodienguyen)
+* Keep dot-notation prop keys that come before a closure or `to_inertia` object they extend, so `{ 'user.name' => 'J', user: -> { { id: 1 } } }` resolves the same in either order (@skryukov)
+* Apply the `only` and `except` paths of partial reloads inside closures and prop types too, and send always props whole (@skryukov)
+* Fix crashes with dot-notation prop keys over non-hash or String-keyed values, and with a defer group named as both a Symbol and a String (@skryukov)
+* Resolve plain props faster (@skryukov)
 
 ## [3.23.0] - 2026-10-16
 

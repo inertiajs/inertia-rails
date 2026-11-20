@@ -16,6 +16,23 @@ class InertiaSerializerTestController < ApplicationController
     def inertia_prop_sources = raise('broken sources')
   end
 
+  class NestedUserSerializer
+    def initialize(name)
+      @name = name
+      @password_digest = 'private password digest'
+    end
+
+    def to_inertia = { name: @name }
+  end
+
+  class RaisingSerializer
+    def to_inertia = raise('unrequested serializer')
+  end
+
+  class LateFailure
+    def as_json(*) = raise('late serialization')
+  end
+
   def show
     render inertia: 'Courses/Index', props: CoursesSerializer.new
   end
@@ -26,5 +43,23 @@ class InertiaSerializerTestController < ApplicationController
 
   def lazy
     render inertia: 'Courses/Index', props: { course: -> { CourseSerializer.new } }
+  end
+
+  def nested
+    name = params.fetch(:viewer, 'Ada')
+    evaluations = 0
+
+    render inertia: 'TestComponent', props: {
+      direct: { user: NestedUserSerializer.new(name) },
+      always: InertiaRails.always { { user: NestedUserSerializer.new(name), users: [NestedUserSerializer.new(name)] } },
+      once: InertiaRails.once { [{ user: NestedUserSerializer.new(name), evaluations: (evaluations += 1) }] },
+      merged: InertiaRails.merge { [{ user: NestedUserSerializer.new(name) }] },
+      deferred: InertiaRails.defer { { users: [NestedUserSerializer.new(name)] } },
+      optional: InertiaRails.optional { { user: NestedUserSerializer.new(name) } },
+      filtered: InertiaRails.defer { { user: NestedUserSerializer.new(name), ignored: RaisingSerializer.new } },
+      rescuable: InertiaRails.defer(rescue: true) { { user: RaisingSerializer.new } },
+      late_hash: InertiaRails.defer(rescue: true) { { user: NestedUserSerializer.new(name), lazy: LateFailure.new } },
+      late_array: InertiaRails.defer(rescue: true) { [NestedUserSerializer.new(name), LateFailure.new] },
+    }
   end
 end
