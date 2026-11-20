@@ -35,7 +35,7 @@ module InertiaRails
       # Keys stay literal: the client writes "order.total" by path, and only for props it listens to.
       def resolve(value)
         case value
-        when BaseProp then raise ArgumentError, 'Broadcast props take values, not prop types'
+        when BaseProp, Proc then raise ArgumentError, 'Broadcast props take values, not prop types or closures'
         when Hash then value.transform_values { |inner| resolve(inner) }
         when Array then value.map { |inner| resolve(inner) }
         else PropsResolver.serializer?(value) ? resolve(value.to_inertia) : value

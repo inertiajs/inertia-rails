@@ -76,9 +76,11 @@ RSpec.describe 'Live prop broadcasts' do
       expect(server).to have_received(:broadcast).with('inertia:feed', envelope(props: { id: 2**60 }))
     end
 
-    it 'refuses prop types and non-hash props' do
+    it 'refuses prop types, closures and non-hash props' do
       expect { InertiaRails.broadcast(:feed, props: { feed: InertiaRails.defer { 1 } }) }
         .to raise_error(ArgumentError, /not prop types/)
+      expect { InertiaRails.broadcast(:feed, props: { stats: { count: -> { 1 } } }) }
+        .to raise_error(ArgumentError, /not prop types or closures/)
       expect { InertiaRails.broadcast(:feed, props: [1]) }.to raise_error(ArgumentError, /hash/)
     end
 
