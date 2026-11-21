@@ -14,11 +14,7 @@ First, install the Action Cable client:
 npm install @rails/actioncable
 ```
 
-With TypeScript, also install its types:
-
-```bash
-npm install -D @types/rails__actioncable
-```
+With TypeScript, also install its types with `npm install -D @types/rails__actioncable`.
 
 Then pass the Action Cable transport to `createInertiaApp`. Give it a function that creates the consumer, so the connection opens only when a page subscribes, and never during [server-side rendering](/guide/server-side-rendering):
 
@@ -93,49 +89,6 @@ Here `exhibit` listens to the exhibit's stream, and `guestbook` listens to its o
 
 A live prop behaves like a regular prop: it's included on full page loads and on partial reloads that ask for it.
 
-### Other Prop Types
-
-The `defer`, `optional`, `once`, and `always` props take a `live:` option. A deferred or optional prop subscribes right away, even before it loads.
-
-```ruby
-render inertia: {
-  related: InertiaRails.defer(live: @exhibit) { @exhibit.related },
-  catalog_size: InertiaRails.once(live: :exhibits) { Exhibit.count },
-}
-```
-
-Live updates aren't supported on merge props, deep merge props, or scroll props. Passing `live:` to them raises an `ArgumentError`.
-
-### Throttling
-
-By default, the client reloads a live prop at most once a second. Use `throttle:` to change that for a prop, in milliseconds or as a duration:
-
-```ruby
-InertiaRails.live(@exhibit, :visitors, throttle: 4000) { @exhibit.visitors_count }
-InertiaRails.defer(live: @exhibit, throttle: 4.seconds) { @exhibit.related }
-```
-
-Broadcasts that arrive close together are merged into one partial reload.
-
-To change the default for every prop, pass `throttle` to the transport. Reloads also pause while the browser tab is hidden and resume when the user returns, unless you set `pauseWhenHidden` to `false`:
-
-```js
-actionCable({
-  consumer: () => createConsumer(),
-  throttle: 2000,
-  pauseWhenHidden: false,
-})
-```
-
-### Several Streams
-
-A prop that depends on more than one record can listen to several streams with `streams:`. Each element is one stream, and an inner array forms a single stream:
-
-```ruby
-InertiaRails.live(streams: [@order, [current_user, :alerts]]) { alerts_for(@order) }
-InertiaRails.defer(live: { streams: [@order, current_user] }) { summary_for(@order) }
-```
-
 ## Broadcasting Changes
 
 Call `InertiaRails.broadcast` with the same arguments the prop listens to. Every page showing the prop reloads it with a partial reload.
@@ -155,62 +108,7 @@ end
 
 The broadcast carries no data. Each page reloads the prop through your controller, with the current user's session, so it only sees what that user is allowed to see.
 
-`InertiaRails.broadcast_later` does the same from a background job, so a failing cable server doesn't fail the request. It takes the same arguments, except `props:`.
-
-### Skipping the Sender
-
-Broadcasts reach every page, including the one whose request caused the change. Pass `to_others: true` to skip that page:
-
-```ruby
-InertiaRails.broadcast(@exhibit, :guestbook, to_others: true)
-```
-
-Use it when the sender already has fresh data, for example after a redirect. Leave it off when the sender updates through `useHttp` or a request without a redirect, or its page stays stale.
-
-### From Models
-
-`inertia_broadcasts` and `inertia_broadcasts_to` work like Turbo's `broadcasts_refreshes` and `broadcasts_refreshes_to`, through background jobs:
-
-```ruby
-class Exhibit < ApplicationRecord
-  # Create refreshes the :exhibits stream, update and destroy refresh the exhibit's own stream
-  inertia_broadcasts
-end
-
-class GuestbookEntry < ApplicationRecord
-  belongs_to :exhibit, touch: true
-
-  inertia_broadcasts_to ->(entry) { [entry.exhibit, :guestbook] }
-end
-```
-
-> [!NOTE]
-> As with Turbo, `inertia_broadcasts` doesn't refresh the `:exhibits` stream when a single exhibit changes. If an index page must show those updates too, add `inertia_broadcasts_to ->(_exhibit) { :exhibits }`.
-
-To make many changes without broadcasting, wrap them in `suppressing_inertia_broadcasts`. It covers that model's broadcasts on the current thread. Broadcasts start on commit, so keep any transaction inside the block:
-
-```ruby
-Exhibit.suppressing_inertia_broadcasts do
-  Exhibit.find_each { |exhibit| exhibit.update!(visitors: 0) }
-end
-```
-
-### Pushing Values
-
-A broadcast can carry new values with `props:`. Pages write them straight into the prop, with no request:
-
-```ruby
-InertiaRails.broadcast(@order, props: { status: @order.status })
-```
-
-> [!WARNING]
-> Pushed values go to every page subscribed to the stream, whoever is looking at it. Only push data every subscriber may see. For anything user-specific, broadcast without `props:` and let each page reload.
-
-Keys are prop names as the page lists them, so a nested prop takes its full path: `props: { 'stats.revenue' => 42 }`. Props a page listens to on that stream but the broadcast doesn't carry are reloaded as usual.
-
-Pushed values go through the global [`prop_transformer`](/guide/configuration#prop-transformer). If the transformer renames a top-level prop, the page reloads that prop instead. Settings from `inertia_config` or `render` don't apply to broadcasts, so don't push values for props a transformer from `inertia_config` renames.
-
-Pushed values don't keep [big integers](/guide/big-integers) exact, because the client only restores them when it loads a page. Broadcast without `props:` for a prop that holds them.
+`InertiaRails.broadcast_later` does the same from a background job, so a failing cable server doesn't fail the request. It takes the same arguments, except [`props:`](#pushing-values).
 
 ## Client Side
 
@@ -271,7 +169,105 @@ export default function Guestbook() {
 
 :::
 
-### Live Events
+## Broadcasting from Models
+
+`inertia_broadcasts` and `inertia_broadcasts_to` work like Turbo's `broadcasts_refreshes` and `broadcasts_refreshes_to`, through background jobs:
+
+```ruby
+class Exhibit < ApplicationRecord
+  # Create refreshes the :exhibits stream, update and destroy refresh the exhibit's own stream
+  inertia_broadcasts
+end
+
+class GuestbookEntry < ApplicationRecord
+  belongs_to :exhibit, touch: true
+
+  inertia_broadcasts_to ->(entry) { [entry.exhibit, :guestbook] }
+end
+```
+
+> [!NOTE]
+> As with Turbo, `inertia_broadcasts` doesn't refresh the `:exhibits` stream when a single exhibit changes. If an index page must show those updates too, add `inertia_broadcasts_to ->(_exhibit) { :exhibits }`.
+
+To make many changes without broadcasting, wrap them in `suppressing_inertia_broadcasts`. It covers that model's broadcasts on the current thread. Broadcasts start on commit, so keep any transaction inside the block:
+
+```ruby
+Exhibit.suppressing_inertia_broadcasts do
+  Exhibit.find_each { |exhibit| exhibit.update!(visitors: 0) }
+end
+```
+
+## Other Prop Types
+
+The `defer`, `optional`, `once`, and `always` props take a `live:` option. A deferred or optional prop subscribes right away, even before it loads.
+
+```ruby
+render inertia: {
+  related: InertiaRails.defer(live: @exhibit) { @exhibit.related },
+  catalog_size: InertiaRails.once(live: :exhibits) { Exhibit.count },
+}
+```
+
+Live updates aren't supported on merge props, deep merge props, or scroll props. Passing `live:` to them raises an `ArgumentError`.
+
+## Several Streams
+
+A prop that depends on more than one record can listen to several streams with `streams:`. Each element is one stream, and an inner array forms a single stream:
+
+```ruby
+InertiaRails.live(streams: [@order, [current_user, :alerts]]) { alerts_for(@order) }
+InertiaRails.defer(live: { streams: [@order, current_user] }) { summary_for(@order) }
+```
+
+## Skipping the Sender
+
+Broadcasts reach every page, including the one whose request caused the change. Pass `to_others: true` to skip that page:
+
+```ruby
+InertiaRails.broadcast(@exhibit, :guestbook, to_others: true)
+```
+
+Use it when the sender already has fresh data, for example after a redirect. Leave it off when the sender updates through `useHttp` or a request without a redirect, or its page stays stale.
+
+## Pushing Values
+
+A broadcast can carry new values with `props:`. Pages write them straight into the prop, with no request:
+
+```ruby
+InertiaRails.broadcast(@order, props: { status: @order.status })
+```
+
+> [!WARNING]
+> Pushed values go to every page subscribed to the stream, whoever is looking at it. Only push data every subscriber may see. For anything user-specific, broadcast without `props:` and let each page reload.
+
+Keys are prop names as the page lists them, so a nested prop takes its full path: `props: { 'stats.revenue' => 42 }`. Props a page listens to on that stream but the broadcast doesn't carry are reloaded as usual.
+
+Pushed values go through the global [`prop_transformer`](/guide/configuration#prop-transformer). If the transformer renames a top-level prop, the page reloads that prop instead. Settings from `inertia_config` or `render` don't apply to broadcasts, so don't push values for props a transformer from `inertia_config` renames.
+
+Pushed values don't keep [big integers](/guide/big-integers) exact, because the client only restores them when it loads a page. Broadcast without `props:` for a prop that holds them.
+
+## Throttling
+
+By default, the client reloads a live prop at most once a second. Use `throttle:` to change that for a prop, in milliseconds or as a duration:
+
+```ruby
+InertiaRails.live(@exhibit, :visitors, throttle: 4000) { @exhibit.visitors_count }
+InertiaRails.defer(live: @exhibit, throttle: 4.seconds) { @exhibit.related }
+```
+
+Broadcasts that arrive close together are merged into one partial reload.
+
+To change the default for every prop, pass `throttle` to the transport. Reloads also pause while the browser tab is hidden and resume when the user returns, unless you set `pauseWhenHidden` to `false`:
+
+```js
+actionCable({
+  consumer: () => createConsumer(),
+  throttle: 2000,
+  pauseWhenHidden: false,
+})
+```
+
+## Live Events
 
 Inertia fires a cancelable [`live` event](/guide/events) before it updates a live prop. Return `false` to skip the update, for example to show a "New data available" button, and apply it later with `router.reload`:
 
