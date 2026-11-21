@@ -33,7 +33,7 @@ RSpec.describe 'Puma Inertia SSR plugin' do
       const server = http.createServer((req, res) => {
         if (req.url === '/health') {
           res.writeHead(200, {'Content-Type': 'application/json'});
-          res.end(JSON.stringify({status: 'OK', timestamp: Date.now()}));
+          res.end(JSON.stringify({status: 'OK', timestamp: Date.now(), execArgv: process.execArgv}));
         } else if (req.url === '/render') {
           let body = '';
           req.on('data', c => body += c);
@@ -196,6 +196,36 @@ RSpec.describe 'Puma Inertia SSR plugin' do
 
       response = Net::HTTP.get_response(URI("#{ssr_url}/health"))
       expect(response.code).to eq('200')
+    end
+  end
+
+  context 'when Puma runs in cluster mode and reaps the SSR process' do
+    it 'restarts the SSR server after it exits' do
+      write_puma_config('workers 2')
+      start_puma(env: { 'INERTIA_SSR_URL' => ssr_url, 'INERTIA_SSR_BUNDLE' => write_ssr_bundle })
+      wait_for_port(ssr_port, timeout: 35)
+
+      Net::HTTP.post(URI("#{ssr_url}/shutdown"), '') # the SSR process exits; Puma's master may reap it first
+
+      wait_for_port_closed(ssr_port)
+      wait_for_port(ssr_port, timeout: 15)
+      expect(puma_log).not_to include('ECHILD')
+    end
+  end
+
+  context 'when the runtime setting has arguments' do
+    it 'passes the arguments to the runtime' do
+      write_puma_config
+      start_puma(env: {
+                   'INERTIA_SSR_URL' => ssr_url,
+                   'INERTIA_SSR_BUNDLE' => write_ssr_bundle,
+                   'INERTIA_SSR_RUNTIME' => 'node --max-old-space-size=128 --no-warnings',
+                 })
+      wait_for_port(ssr_port, timeout: 35)
+
+      health = JSON.parse(Net::HTTP.get(URI("#{ssr_url}/health")))
+
+      expect(health['execArgv']).to eq(%w[--max-old-space-size=128 --no-warnings])
     end
   end
 end
