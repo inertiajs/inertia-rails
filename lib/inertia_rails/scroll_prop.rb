@@ -3,6 +3,7 @@
 module InertiaRails
   class ScrollProp < BaseProp
     prepend PropMergeable
+    prepend PropLiveable
 
     attr_reader :group
 
