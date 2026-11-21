@@ -4,7 +4,7 @@
   import type { <%= inertia_model_type %> } from './types'
   import Form from './form.svelte'
 
-  let { <%= singular_table_name %> } = $props<{ <%= singular_table_name %>: <%= inertia_model_type %> }>()
+  let { <%= singular_table_name %> }: { <%= singular_table_name %>: <%= inertia_model_type %> } = $props()
 </script>
 
 <svelte:head>

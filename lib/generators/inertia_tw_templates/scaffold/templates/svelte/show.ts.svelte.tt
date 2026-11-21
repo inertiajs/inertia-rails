@@ -3,9 +3,9 @@
   import <%= inertia_component_name %> from './<%= singular_name %>.svelte'
   import type { <%= inertia_model_type %> } from './types'
 
-  let { <%= singular_table_name %> } = $props<{
+  let { <%= singular_table_name %> }: {
     <%= singular_table_name %>: <%= inertia_model_type %>
-  }>()
+  } = $props()
 </script>
 
 <svelte:head>
