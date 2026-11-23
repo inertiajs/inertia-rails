@@ -66,7 +66,13 @@ RSpec.describe InertiaRails::LiveStream do
         AnyCable.define_singleton_method(:config) { config }
       end
 
-      it 'signs exactly like AnyCable, so anycable-go accepts the names' do
+      it 'uses the Rails signing key by default even when AnyCable is loaded' do
+        expect(described_class.verified(anycable_signed)).to be_nil
+      end
+
+      it 'signs exactly like AnyCable when the app opts into direct subscriptions' do
+        allow(InertiaRails.configuration).to receive(:live_streams_secret).and_return(AnyCable.config.streams_secret)
+
         expect(described_class.signed('inertia:gid://dummy/Exhibit/1:guestbook')).to eq(anycable_signed)
         expect(described_class.verified(anycable_signed)).to eq('inertia:gid://dummy/Exhibit/1:guestbook')
       end

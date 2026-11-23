@@ -111,7 +111,7 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
       expect { generator }.not_to raise_error
       expect(destination_root).to(have_structure do
         directory('app/channels') do
-          file('inertia_channel.rb') { contains('class InertiaChannel < InertiaRails::LiveChannel') }
+          file('inertia_channel.rb') { contains('include InertiaRails::LiveChannel') }
         end
       end)
     end

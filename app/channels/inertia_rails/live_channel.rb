@@ -2,7 +2,9 @@
 
 module InertiaRails
   # A valid signed stream name is the only check, as with Turbo's streams channel.
-  class LiveChannel < ActionCable::Channel::Base
+  module LiveChannel
+    private
+
     def subscribed
       if (name = LiveStream.verified(params[:stream]))
         stream_from name

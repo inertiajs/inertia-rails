@@ -70,9 +70,8 @@ module InertiaRails
         OpenSSL::HMAC.hexdigest('SHA256', secret, value)
       end
 
-      # Shares AnyCable's secret when there is one, so anycable-go accepts the names we sign.
       def secret
-        (AnyCable.config.streams_secret if defined?(AnyCable)) ||
+        InertiaRails.configuration.live_streams_secret.presence ||
           Rails.application.key_generator.generate_key('inertia_rails/live_streams')
       end
     end

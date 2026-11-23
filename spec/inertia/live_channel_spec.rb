@@ -4,13 +4,19 @@ require 'rails_helper'
 require 'action_cable'
 
 RSpec.describe 'InertiaRails::LiveChannel' do
+  let(:channel_class) { Class.new(ActionCable::Channel::Base) { include InertiaRails::LiveChannel } }
+
+  it 'provides the subscription behavior as a mixin' do
+    expect(InertiaRails::LiveChannel).to be_an_instance_of(Module)
+  end
+
   # Rails 8.2 replaced Action Cable's channel test stubs, so the spec brings its own connection.
   def subscribe(stream)
     connection = double('connection', identifiers: [])
-    channel = InertiaRails::LiveChannel.new(connection, 'id', { stream: stream }.with_indifferent_access)
+    channel = channel_class.new(connection, 'id', { stream: stream }.with_indifferent_access)
     allow(channel).to receive(:stream_from)
     allow(channel).to receive(:reject)
-    channel.subscribed
+    channel.send(:subscribed)
     channel
   end
 
