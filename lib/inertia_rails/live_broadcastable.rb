@@ -16,7 +16,10 @@ module InertiaRails
       end
 
       def inertia_broadcasts_to(stream)
-        after_commit -> { inertia_broadcast_later(stream.try(:call, self) || send(stream)) }
+        after_commit do
+          target = stream.respond_to?(:call) ? stream.call(self) : send(stream)
+          inertia_broadcast_later(target) unless target.nil?
+        end
       end
 
       def suppressing_inertia_broadcasts

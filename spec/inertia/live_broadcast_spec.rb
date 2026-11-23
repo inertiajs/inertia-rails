@@ -143,7 +143,7 @@ RSpec.describe 'Live prop broadcasts' do
         def self.model_name = ActiveModel::Name.new(self)
 
         %i[after_create_commit after_update_commit after_destroy_commit after_commit].each do |name|
-          define_singleton_method(name) { |callback| callbacks[name] << callback }
+          define_singleton_method(name) { |callback = nil, &block| callbacks[name] << (callback || block) }
         end
 
         include InertiaRails::LiveBroadcastable
@@ -178,6 +178,16 @@ RSpec.describe 'Live prop broadcasts' do
 
       expect(InertiaRails::LiveBroadcast).to have_received(:broadcast_later).with(:parent)
       expect(InertiaRails::LiveBroadcast).to have_received(:broadcast_later).with(%i[parent guestbook])
+    end
+
+    it 'skips a missing target from either a method or a callable' do
+      allow(instance).to receive(:exhibit).and_return(nil)
+      model.inertia_broadcasts_to :exhibit
+      model.inertia_broadcasts_to :exhibit.to_proc
+
+      run(:after_commit)
+
+      expect(InertiaRails::LiveBroadcast).not_to have_received(:broadcast_later)
     end
 
     it 'suppressing_inertia_broadcasts skips them inside the block and restores after an error' do
