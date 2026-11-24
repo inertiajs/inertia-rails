@@ -269,6 +269,21 @@ class InertiaMinitestTest < ActionDispatch::IntegrationTest
     assert_equal 'cached_data', inertia.once_props[:cached_data][:prop]
   end
 
+  test 'assert_inertia_live_props works with a block' do
+    get live_props_path
+    assert_inertia_live_props { |live_props| live_props[:visitors][:throttle] == 4000 }
+  end
+
+  test 'assert_no_inertia_live_prop works for a regular prop' do
+    get live_props_path
+    assert_no_inertia_live_prop :regular
+  end
+
+  test 'inertia.live_props returns live props directly' do
+    get live_props_path
+    assert_equal 4000, inertia.live_props[:visitors][:throttle]
+  end
+
   # Partial reload helpers
 
   test 'inertia_reload_only reloads only specified props' do

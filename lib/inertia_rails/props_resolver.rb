@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module InertiaRails
-  # Resolves props and collects metadata (deferred, merge, once, scroll)
+  # Resolves props and collects metadata (deferred, merge, once, scroll, live)
   # for the Inertia page response.
   class PropsResolver
     SKIP = Object.new.freeze
@@ -39,6 +39,7 @@ module InertiaRails
       @_match_on = []
       @_once = {}
       @_scroll = {}
+      @_live = {}
       @_rescued = []
 
       @keys = []
@@ -62,6 +63,7 @@ module InertiaRails
       metadata[:deepMergeProps] = @_deep_merge unless @_deep_merge.empty?
       metadata[:matchPropsOn] = @_match_on unless @_match_on.empty?
       metadata[:onceProps] = @_once unless @_once.empty?
+      metadata[:liveProps] = @_live unless @_live.empty?
       metadata[:rescuedProps] = @_rescued unless @_rescued.empty?
 
       metadata
@@ -148,6 +150,8 @@ module InertiaRails
     rescue StandardError => e
       report_rescued_error(e)
       @_rescued << path
+      # Nothing was sent, so the client keeps the listeners it has.
+      @_live.delete(path)
       SKIP
     end
 
@@ -240,6 +244,7 @@ module InertiaRails
       collect_deferred_metadata(prop, path)
       collect_merge_metadata(prop, path)
       collect_once_metadata(prop, path)
+      collect_live_metadata(prop, path)
     end
 
     def collect_deferred_metadata(prop, path)
@@ -273,6 +278,12 @@ module InertiaRails
       end
 
       prop.match_on&.each { |ms| @_match_on << "#{path}.#{ms}" }
+    end
+
+    # Lists every live prop the walk reaches, sent or not, so a page subscribes to its deferred props too.
+    # The client keeps its subscriptions for the props a partial reload skips.
+    def collect_live_metadata(prop, path)
+      @_live[path] = prop.live_metadata if prop.try(:live?)
     end
 
     def collect_once_metadata(prop, path)

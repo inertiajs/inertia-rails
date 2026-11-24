@@ -563,6 +563,42 @@ RSpec.describe InertiaRails::RSpec, type: :request do
     end
   end
 
+  describe 'live props matchers' do
+    let(:visitors) do
+      { listeners: [{ channel: { name: InertiaRails::LiveStream.signed('inertia:exhibit'), type: 'public' },
+                      events: ['refresh'], }],
+        throttle: 4000, }
+    end
+
+    context 'with live props' do
+      before { get live_props_path }
+
+      it 'has live props' do
+        expect(inertia).to have_live_props(visitors: visitors)
+      end
+
+      it 'has exact live props' do
+        expect(inertia).to have_exact_live_props(visitors: visitors)
+      end
+
+      it 'has no live prop for a regular prop' do
+        expect(inertia).to have_no_live_prop(:regular)
+      end
+
+      it 'can retrieve live props directly' do
+        expect(inertia.live_props[:visitors][:throttle]).to eq 4000
+      end
+    end
+
+    context 'without live props' do
+      before { get props_path }
+
+      it 'has no live props' do
+        expect(inertia.live_props).to be_empty
+      end
+    end
+  end
+
   describe 'evaluate_optional_props setting' do
     context 'when enabled' do
       before do

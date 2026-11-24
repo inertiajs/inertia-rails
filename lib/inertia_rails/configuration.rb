@@ -29,6 +29,9 @@ module InertiaRails
       # that Inertia.js (v3.8+) turns into BigInt values.
       preserve_big_integers: false,
 
+      # Set to AnyCable.config.streams_secret to allow direct signed-stream subscriptions.
+      live_streams_secret: nil,
+
       # SSR options.
       ssr_enabled: false,
       # URL of the SSR server. When nil, defaults to DEFAULT_SSR_URL.

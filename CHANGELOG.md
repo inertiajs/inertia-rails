@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Apply the `only` and `except` paths of partial reloads inside closures and prop types too, and send always props whole (@skryukov)
 * Fix crashes with dot-notation prop keys over non-hash or String-keyed values, and with a defer group named as both a Symbol and a String (@skryukov)
 * Resolve plain props faster (@skryukov)
+* Add live props: `InertiaRails.live` and the `live:` option on deferred, optional, once, always and cached props subscribe a prop to an Action Cable stream, and `InertiaRails.broadcast` or `inertia_broadcasts` in a model reloads it on every page that shows it. Requires Inertia.js v3.11+. The testing helpers check the live props of a page with `have_live_props` and `assert_inertia_live_props` (@skryukov, @cole-robertson)
 
 ## [3.23.0] - 2026-10-16
 
