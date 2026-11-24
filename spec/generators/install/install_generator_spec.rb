@@ -111,15 +111,38 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
       expect { generator }.not_to raise_error
       expect(destination_root).to(have_structure do
         directory('app/channels') do
-          file('inertia_channel.rb') { contains('include InertiaRails::LiveChannel') }
+          file('application_cable/channel.rb') { contains('class Channel < ActionCable::Channel::Base') }
+          file('inertia_channel.rb') do
+            contains('class InertiaChannel < ApplicationCable::Channel')
+            contains('include InertiaRails::LiveChannel')
+          end
         end
       end)
     end
 
-    it 'skips the channel when the app has no Action Cable' do
+    it 'preserves an existing application channel and its callbacks' do
+      stub_const('ActionCable', Module.new)
+      base_channel = File.join(destination_root, 'app/channels/application_cable/channel.rb')
+      existing = <<~RUBY
+        module ApplicationCable
+          class Channel < ActionCable::Channel::Base
+            before_subscribe :require_membership
+          end
+        end
+      RUBY
+      FileUtils.mkdir_p(File.dirname(base_channel))
+      File.write(base_channel, existing)
+
+      generator
+
+      expect(File.read(base_channel)).to eq(existing)
+    end
+
+    it 'skips the channels when the app has no Action Cable' do
       hide_const('ActionCable')
 
       expect { generator }.not_to raise_error
+      expect(File).not_to exist(File.join(destination_root, 'app/channels/application_cable/channel.rb'))
       expect(File).not_to exist(File.join(destination_root, 'app/channels/inertia_channel.rb'))
     end
   end

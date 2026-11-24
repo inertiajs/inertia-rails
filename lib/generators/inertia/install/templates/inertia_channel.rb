@@ -2,10 +2,12 @@
 
 # Streams live props to the browser. Inertia's Action Cable transport subscribes here by default.
 # see https://inertia-rails.dev/guide/live-props
-class InertiaChannel < ActionCable::Channel::Base
+class InertiaChannel < ApplicationCable::Channel
   include InertiaRails::LiveChannel
 
   # Add authorization on top of the signed stream names:
+  #   private
+  #
   #   def subscribed
   #     current_user ? super : reject
   #   end

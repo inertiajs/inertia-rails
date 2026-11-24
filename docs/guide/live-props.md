@@ -61,10 +61,22 @@ createInertiaApp({
 
 :::
 
-Finally, make sure your app has `app/channels/inertia_channel.rb`. The install generator creates it in apps that use Action Cable. In an existing app, add it yourself:
+The Inertia install generator creates `InertiaChannel` in apps that use Action Cable. For manual setup, add the following channel:
 
 ```ruby
-class InertiaChannel < InertiaRails::LiveChannel
+# app/channels/inertia_channel.rb
+class InertiaChannel < ApplicationCable::Channel
+  include InertiaRails::LiveChannel
+end
+```
+
+If this is your app's first channel and you don't have `ApplicationCable::Channel` yet, add it too:
+
+```ruby
+# app/channels/application_cable/channel.rb
+module ApplicationCable
+  class Channel < ActionCable::Channel::Base
+  end
 end
 ```
 
@@ -288,7 +300,11 @@ The page object carries signed stream names, and the channel only subscribes to 
 To check more on subscribe, override `subscribed` in your `InertiaChannel`:
 
 ```ruby
-class InertiaChannel < InertiaRails::LiveChannel
+class InertiaChannel < ApplicationCable::Channel
+  include InertiaRails::LiveChannel
+
+  private
+
   def subscribed
     current_user ? super : reject
   end
@@ -312,7 +328,18 @@ With a fixed key such as `cache: 'stats'`, a live reload returns the cached valu
 
 ## AnyCable
 
-Live props work with [AnyCable](https://anycable.io) without changes. On the client, import `createConsumer` from `@anycable/web` instead of `@rails/actioncable`. When AnyCable is configured, stream names are signed in its format with its `streams_secret`, so anycable-go can serve subscriptions on its own, without calling Rails:
+To use [AnyCable](https://anycable.io) with `InertiaChannel`, import `createConsumer` from `@anycable/web` and keep the client setup above. Subscription checks in your Rails channel run as usual.
+
+To let anycable-go handle subscriptions directly, configure Inertia Rails to sign stream names with the same streams secret as anycable-go:
+
+```ruby
+# config/initializers/inertia_rails.rb
+InertiaRails.configure do |config|
+  config.live_streams_secret = AnyCable.config.streams_secret
+end
+```
+
+Then subscribe to AnyCable's `$pubsub` channel on the client:
 
 ```js
 actionCable({
@@ -321,4 +348,4 @@ actionCable({
 })
 ```
 
-Checks in `InertiaChannel#subscribed` don't run in this mode.
+Direct subscriptions skip Rails channel callbacks. If your app relies on those callbacks for authorization, leave `live_streams_secret` unset and subscribe through `InertiaChannel`.

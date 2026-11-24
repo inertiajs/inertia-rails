@@ -119,7 +119,7 @@ module Inertia
 
         say 'Copying InertiaController'
         copy_file 'inertia_controller.rb', file_path('app/controllers/inertia_controller.rb')
-        copy_file 'inertia_channel.rb', file_path('app/channels/inertia_channel.rb') if defined?(ActionCable)
+        install_channels if defined?(ActionCable)
 
         if application_layout.exist?
           say "Adding #{inertia_entrypoint} script tag to the application layout"
@@ -145,6 +145,12 @@ module Inertia
           say_error '+  <%= vite_react_refresh_tag %>' if react?
           say_error "+  <%= #{vite_tag} %>"
         end
+      end
+
+      def install_channels
+        base_channel = 'app/channels/application_cable/channel.rb'
+        copy_file 'application_cable/channel.rb', file_path(base_channel) unless file?(base_channel)
+        copy_file 'inertia_channel.rb', file_path('app/channels/inertia_channel.rb')
       end
 
       def install_typescript
