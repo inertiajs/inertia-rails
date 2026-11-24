@@ -41,7 +41,7 @@ module InertiaRails
       @_rescued = []
 
       @keys = []
-      @whole = false
+      @whole = @filter.nil?
 
       props = DottedKeys.new(@props).expand
       [resolve_hash(props), build_metadata]
@@ -83,20 +83,19 @@ module InertiaRails
         # With only=rows.0.name, rows[1] still appears as {} unless it has a direct InertiaRails.always prop.
         next if selection == :none && !value.is_a?(AlwaysProp)
 
-        kind = value_kind(value) if plain_leaves
-        next props[key] = value if kind == :plain
+        next props[key] = value if plain_leaves && PLAIN_CLASSES[value.class]
 
-        prop = at(key) { resolve_prop(value, kind) }
+        prop = at(key) { resolve_prop(value) }
         props[key] = prop unless prop.equal?(SKIP)
       end
       props
     end
 
-    def resolve_prop(value, kind)
+    def resolve_prop(value)
       return SKIP if skipped? && !value.is_a?(AlwaysProp)
 
       record(value) unless value.is_a?(BaseProp)
-      resolve_value(value, kind || value_kind(value))
+      resolve_value(value)
     end
 
     # An array keeps every place, since partial reloads refer to elements by position.
@@ -207,7 +206,7 @@ module InertiaRails
     end
 
     def hash_selection
-      return :all if @whole || @filter.nil?
+      return :all if @whole
       return :partial if @keys.empty?
       return :none unless @filter.selected?(path)
 
