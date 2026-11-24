@@ -80,7 +80,7 @@ module InertiaRails
       plain_leaves = @recorder.nil? && selection == :all
       props = {}
       hash.each do |key, value|
-        # An excluded hash still occupies its array slot. Only an always prop can add a key to it.
+        # With only=rows.0.name, rows[1] still appears as {} unless it has a direct InertiaRails.always prop.
         next if selection == :none && !value.is_a?(AlwaysProp)
 
         kind = value_kind(value) if plain_leaves
