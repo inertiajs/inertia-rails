@@ -53,6 +53,25 @@ RSpec.describe 'Live prop broadcasts' do
       )
     end
 
+    it 'honors to_inertia on hash and array subclasses' do
+      user = Class.new(Hash) { def to_inertia = slice(:name) }.new
+      user.merge!(name: 'Ada', internal: true)
+      users = Class.new(Array) { def to_inertia = take(1) }.new([user, :hidden])
+
+      InertiaRails.broadcast(:feed, props: { users: users })
+
+      expect(server).to have_received(:broadcast).with('inertia:feed', envelope(props: { users: [{ name: 'Ada' }] }))
+    end
+
+    it 'keeps the outer hash as the map of prop names' do
+      props = Class.new(Hash) { def to_inertia = 'not a prop map' }.new
+      props[:score] = 42
+
+      InertiaRails.broadcast(:feed, props: props)
+
+      expect(server).to have_received(:broadcast).with('inertia:feed', envelope(props: { score: 42 }))
+    end
+
     it 'runs pushed values through the prop transformer, like a page' do
       allow(InertiaRails.configuration).to receive(:prop_transformer) do |props:|
         props.except(:secret).deep_transform_keys { |key| key.to_s.camelize(:lower) }
