@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
 require 'net/http'
+require 'shellwords'
 
 Puma::Plugin.create do
   BOOT_TIMEOUT = 30 # rubocop:disable Lint/ConstantDefinitionInBlock
+  STOP_GRACE = 5 # rubocop:disable Lint/ConstantDefinitionInBlock
+  REAPED = :reaped # rubocop:disable Lint/ConstantDefinitionInBlock
 
   def start(launcher)
     @log_writer = launcher.log_writer
@@ -36,7 +39,7 @@ Puma::Plugin.create do
     bundle = resolve_bundle
     return unless bundle
 
-    runtime = resolve_runtime
+    command = [*Shellwords.split(resolve_runtime), bundle]
     uri = URI(resolve_base_url)
     consecutive_crashes = 0
     delay = 1
@@ -45,9 +48,11 @@ Puma::Plugin.create do
       break if vite_dev_server_running?
 
       begin
-        @pid = spawn(runtime, bundle)
+        @pid = spawn(*command)
+        # Process.detach waits in its own thread, so a child Puma's cluster master already reaped still reads as exited.
+        @waiter = Process.detach(@pid)
       rescue Errno::ENOENT
-        log "! Inertia SSR: '#{runtime}' not found in PATH"
+        log "! Inertia SSR: '#{command.first}' not found in PATH"
         break
       end
 
@@ -62,7 +67,7 @@ Puma::Plugin.create do
         log "! Inertia SSR: server failed to respond within #{BOOT_TIMEOUT}s"
       end
 
-      _, status = Process.wait2(@pid) unless status
+      status ||= wait_for_exit
       break unless @running
 
       consecutive_crashes += 1
@@ -71,7 +76,7 @@ Puma::Plugin.create do
         break
       end
 
-      log "! Inertia SSR: process exited (status: #{status.exitstatus}), restarting in #{delay}s..."
+      log "! Inertia SSR: process exited (status: #{describe(status)}), restarting in #{delay}s..."
       sleep delay
       delay = [delay * 2, 16].min
     end
@@ -79,33 +84,31 @@ Puma::Plugin.create do
 
   def stop_ssr
     @running = false
-    return unless @pid
+    return unless @pid && @waiter&.alive?
 
-    Process.waitpid(@pid, Process::WNOHANG)
-
-    # /shutdown correctly handles cluster mode
-    begin
-      uri = URI(resolve_base_url)
-      Net::HTTP.start(uri.host, uri.port, open_timeout: 2, read_timeout: 5) do |http|
-        http.post('/shutdown', '')
-      end
-      Process.wait(@pid)
-    rescue StandardError
-      Process.kill('TERM', @pid)
-      Process.wait(@pid)
-    end
-  rescue Errno::ESRCH, Errno::ECHILD
+    request_shutdown
+    wait_for_exit(STOP_GRACE) || force_kill
+  rescue Errno::ESRCH
     # already exited
   ensure
     @pid = nil
+  end
+
+  # /shutdown correctly handles cluster mode
+  def request_shutdown
+    uri = URI(resolve_base_url)
+    Net::HTTP.start(uri.host, uri.port, open_timeout: 2, read_timeout: 5) do |http|
+      http.post('/shutdown', '')
+    end
+  rescue StandardError
+    Process.kill('TERM', @pid)
   end
 
   def wait_for_boot(uri)
     BOOT_TIMEOUT.times do
       return [:stopping, nil] unless @running
 
-      _, status = Process.wait2(@pid, Process::WNOHANG)
-      return [:exited, status] if status
+      return [:exited, exit_status] unless @waiter.alive?
 
       begin
         Net::HTTP.start(uri.host, uri.port, open_timeout: 1, read_timeout: 1) do |http|
@@ -117,6 +120,30 @@ Puma::Plugin.create do
       end
     end
     [:timeout, nil]
+  end
+
+  # Waits for the SSR process to exit, at most `seconds` when given. Returns its status, or nil while it runs.
+  def wait_for_exit(seconds = nil)
+    return unless @waiter.join(seconds)
+
+    exit_status
+  end
+
+  def force_kill
+    Process.kill('KILL', @pid)
+    @waiter.join
+    exit_status
+  end
+
+  # The process's status, or REAPED when Puma's cluster master collected it first.
+  def exit_status
+    @waiter.value || REAPED
+  end
+
+  def describe(status)
+    return 'unknown' if REAPED.equal?(status)
+
+    status.exitstatus || "signal #{status.termsig}"
   end
 
   def resolve_runtime
