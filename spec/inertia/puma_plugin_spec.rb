@@ -201,7 +201,7 @@ RSpec.describe 'Puma Inertia SSR plugin' do
 
   context 'when Puma runs in cluster mode and reaps the SSR process' do
     it 'restarts the SSR server after it exits' do
-      write_puma_config('workers 2')
+      write_puma_config("workers 2\npreload_app!")
       start_puma(env: { 'INERTIA_SSR_URL' => ssr_url, 'INERTIA_SSR_BUNDLE' => write_ssr_bundle })
       wait_for_port(ssr_port, timeout: 35)
 
