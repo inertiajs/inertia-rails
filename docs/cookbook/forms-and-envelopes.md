@@ -11,7 +11,7 @@ The format for the `name` attributes of the fields in an Inertia `<Form />` impa
 The Inertia scaffold generator creates flat attribute names:
 
 ```jsx
-<Form>
+<Form action="/users" method="post">
   <input type="email" name="email_address" />
 </Form>
 ```
@@ -33,7 +33,7 @@ The short version: you may freely choose to use or avoid envelopes, but Inertia 
 A `<Form />` component with flat keys, and using Precognition, naturally has consistent keys across the `name` attributes and calls to `validate()`, `invalid()`, and `errors`:
 
 ```jsx
-<Form>
+<Form action="/users" method="post">
   {({ errors, invalid, validate }) => (
     <>
       <input
@@ -74,6 +74,8 @@ Since there is no `user` envelope on the submitted data, this controller:
 
 > [!NOTE]
 > `params.permit(...)` checks every request parameter, including the `id` from the URL on `update`. With the default `action_on_unpermitted_parameters` setting, that only adds an "Unpermitted parameter" line to the development log. If your app sets it to `:raise`, use an [envelope](#enveloped-inertia-forms) instead.
+>
+> Rails uses the top-level `action` and `controller` keys for routing. If your model has a field with either name, use an envelope with a different name, such as `event[action]`.
 
 What would it take to wrap the form data in an envelope?
 
@@ -82,7 +84,7 @@ What would it take to wrap the form data in an envelope?
 Here's the same `<Form />` component with an explicit envelope added to the `name` attributes. The key names remain consistent across the `name` attributes and calls to `validate()`, `invalid()`, and `errors`:
 
 ```jsx
-<Form>
+<Form action="/users" method="post">
   {({ errors, invalid, validate }) => (
     <>
       <input
@@ -128,7 +130,7 @@ The code is still explicit and consistent, although it is more verbose than our 
 The `<Form />` component includes a `transform` prop that allows us to write flat `name` attributes and add an envelope before submitting the form:
 
 ```jsx
-<Form transform={(data) => ({ user: data })}>
+<Form action="/users" method="post" transform={(data) => ({ user: data })}>
   {({ errors, invalid, validate }) => (
     <>
       <input
@@ -153,7 +155,7 @@ What if we tackled the envelope on the server instead?
 Rails ships with a `wrap_parameters` controller method that copies request parameters for a model into an enveloped hash. It's enabled by default on JSON requests, and Inertia `<Form />` submissions are usually in JSON format. So, this `<Form />` will Just Work™ with the controller below.
 
 ```jsx
-<Form>
+<Form action="/users" method="post">
   <input type="email" name="email_address" />
   ...
 </Form>

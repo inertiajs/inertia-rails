@@ -410,6 +410,8 @@ When enabled, the HTML output looks like:
 
 When enabled, errors passed to `inertia: { errors: ... }` in a redirect are flattened to dot-notated keys: `{ user: { name: [...] } }` becomes `{ "user.name" => [...] }`, and indexed association keys like `addresses[0].street` become `addresses.0.street`. These are the keys the Inertia client looks up, and the same keys [precognition](/guide/precognition#transforming-error-keys) responses always use. So `errors['user.name']` and `invalid('user.name')` work the same after a precognition request and a full form submission.
 
+If two entries flatten to the same field, the later entry supplies its messages. For example, `{ "profile.bio" => ["too long"], profile: { bio: ["is blank"] } }` produces `{ "profile.bio" => ["is blank"] }`.
+
 When `nil`, errors are left untouched, and a deprecation warning is logged whenever flattening would change them. Flattening will be enabled by default starting with InertiaRails 4.0. Set it to `false` to keep errors untouched and disable the warning.
 
 The `inertia_rails:install` generator enables it in new apps. To enable it in an existing app:

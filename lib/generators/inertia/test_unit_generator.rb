@@ -12,11 +12,10 @@ module Inertia
         # the Rails default.
         namespace 'inertia:test_unit'
 
-        # Our templates override the default ones (e.g. flat params instead of enveloped).
-        # The parent's source_root is appended so un-overridden templates (system_test.rb.tt etc.)
-        # still fall through to the Rails defaults.
-        source_paths.unshift(File.expand_path('./test_unit/templates', __dir__))
-        source_paths << ::TestUnit::Generators::ScaffoldGenerator.source_root
+        # Search application overrides before the bundled scaffold templates.
+        source_paths.concat(superclass.source_paths)
+        source_paths << File.expand_path('./test_unit/templates', __dir__)
+        source_root superclass.source_root
 
         private
 
