@@ -17,6 +17,13 @@ module Inertia
         # still fall through to the Rails defaults.
         source_paths.unshift(File.expand_path('./test_unit/templates', __dir__))
         source_paths << ::TestUnit::Generators::ScaffoldGenerator.source_root
+
+        private
+
+        def flat_attributes_literal
+          pairs = attributes_hash.map { |name, value| "#{name}: #{value}" }
+          pairs.empty? ? '{}' : "{ #{pairs.join(', ')} }"
+        end
       end
     end
   end
