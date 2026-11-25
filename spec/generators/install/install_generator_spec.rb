@@ -102,6 +102,51 @@ RSpec.describe Inertia::Generators::InstallGenerator, type: :generator do
     end
   end
 
+  context 'with Action Cable' do
+    before { prepare_application }
+
+    it 'creates the channel live props subscribe to' do
+      stub_const('ActionCable', Module.new)
+
+      expect { generator }.not_to raise_error
+      expect(destination_root).to(have_structure do
+        directory('app/channels') do
+          file('application_cable/channel.rb') { contains('class Channel < ActionCable::Channel::Base') }
+          file('inertia_channel.rb') do
+            contains('class InertiaChannel < ApplicationCable::Channel')
+            contains('include InertiaRails::LiveChannel')
+          end
+        end
+      end)
+    end
+
+    it 'preserves an existing application channel and its callbacks' do
+      stub_const('ActionCable', Module.new)
+      base_channel = File.join(destination_root, 'app/channels/application_cable/channel.rb')
+      existing = <<~RUBY
+        module ApplicationCable
+          class Channel < ActionCable::Channel::Base
+            before_subscribe :require_membership
+          end
+        end
+      RUBY
+      FileUtils.mkdir_p(File.dirname(base_channel))
+      File.write(base_channel, existing)
+
+      generator
+
+      expect(File.read(base_channel)).to eq(existing)
+    end
+
+    it 'skips the channels when the app has no Action Cable' do
+      hide_const('ActionCable')
+
+      expect { generator }.not_to raise_error
+      expect(File).not_to exist(File.join(destination_root, 'app/channels/application_cable/channel.rb'))
+      expect(File).not_to exist(File.join(destination_root, 'app/channels/inertia_channel.rb'))
+    end
+  end
+
   context 'with --framework=svelte' do
     let(:framework) { :svelte }
 

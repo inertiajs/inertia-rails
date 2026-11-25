@@ -223,6 +223,8 @@ When `nil`, every render attempts SSR, and the Puma plugin finds the bundle on i
 
 The JavaScript runtime the [Puma plugin](/guide/server-side-rendering#puma-plugin) uses to run the SSR bundle, such as `"node"`, `"bun"`, or `"deno"`. When `nil`, it is detected from your lockfile. The Puma plugin only reads the global setting. See [Runtime Detection](/guide/server-side-rendering#runtime-detection).
 
+The value may carry arguments, split like a shell command line, to pass flags to the runtime: `"node --max-old-space-size=256"`.
+
 ### `version` _(recommended)_
 
 **Default**: `nil`

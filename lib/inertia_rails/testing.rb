@@ -16,12 +16,8 @@ module InertiaRails
     module PropsResolverOptionalInTests
       private
 
-      def keep_prop?(prop, path, parent_was_resolved: false)
-        return true if InertiaRails::Testing.evaluate_optional_props &&
-                       (prop.is_a?(IgnoreOnFirstLoadProp) || prop.try(:deferred?)) &&
-                       !rendering_partial_component?
-
-        super
+      def waits_for_partial_reload?(prop)
+        !InertiaRails::Testing.evaluate_optional_props && super
       end
     end
 
@@ -34,7 +30,7 @@ module InertiaRails
     end
 
     class TestResponse
-      attr_reader :view_data, :props, :component, :flash, :deferred_props, :scroll_props, :once_props
+      attr_reader :view_data, :props, :component, :flash, :deferred_props, :scroll_props, :once_props, :live_props
 
       def call(params)
         assign_locals(params)
@@ -66,6 +62,7 @@ module InertiaRails
         @deferred_props = (page[:deferredProps] || {}).with_indifferent_access
         @scroll_props = (page[:scrollProps] || {}).with_indifferent_access
         @once_props = (page[:onceProps] || {}).with_indifferent_access
+        @live_props = (page[:liveProps] || {}).with_indifferent_access
       end
 
       private

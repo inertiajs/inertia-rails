@@ -42,6 +42,10 @@ class InertiaRenderTestController < ApplicationController
     render inertia: 'TestComponent', props: { auth: AUTH, 'auth.role' => 'admin' }
   end
 
+  def dotted_first_props
+    render inertia: 'TestComponent', props: { 'auth.role' => 'admin', auth: -> { AUTH } }
+  end
+
   def deeply_nested_props
     render inertia: 'TestComponent', props: {
       flat: 'flat param',
@@ -277,6 +281,13 @@ class InertiaRenderTestController < ApplicationController
   def once_props
     render inertia: 'TestComponent', props: {
       cached_data: InertiaRails.once { 'expensive data' },
+      regular: 'regular prop',
+    }
+  end
+
+  def live_props
+    render inertia: 'TestComponent', props: {
+      visitors: InertiaRails.live(:exhibit, throttle: 4000) { 3 },
       regular: 'regular prop',
     }
   end

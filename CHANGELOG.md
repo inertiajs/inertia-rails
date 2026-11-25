@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Fix the Puma SSR plugin dying when Puma's cluster master reaps the SSR process: an already reaped process now counts as exited and is restarted instead of raising `Errno::ECHILD` in the plugin thread
+* Stopping the Puma SSR plugin kills an SSR process that ignores `/shutdown` after 5 seconds, instead of waiting for it forever
+* Let `ssr_runtime` carry arguments for the runtime, e.g. `"node --max-old-space-size=256"`
+* Resolve nested `to_inertia` objects returned by prop types through their public projections instead of exposing internal instance variables, including deferred and partial responses (@thomasklemm)
 * Send plain prop values that respond to `deferred?`, `once?` or `rescue?` as data instead of treating them as prop types, and resolve plain props with fewer allocations (@thomasklemm)
 * Reduce controller configuration binding and plain-data prop scanning overhead without caching request-dependent configuration or changing prop evaluation order (@thomasklemm)
 * Skip HTML escaping of Inertia JSON responses when the app sets `config.action_controller.escape_json_responses = false` (the Rails 8.1 default), as `render json:` does (@brodienguyen)
@@ -17,6 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Return precognition errors with dot-notated keys, so nested errors match the field names the client looks up (@bknoles)
 * Add `flatten_errors` configuration option to flatten redirect errors to dot-notated keys; when unset, warn about errors it would change, as it will be enabled by default in 4.0 (@bknoles)
 * Fix type errors in Svelte TypeScript scaffolds: props are typed with an annotation instead of `$props<T>()`, which current Svelte versions reject (@skryukov)
+* Keep dot-notation prop keys that come before a closure or `to_inertia` object they extend, so `{ 'user.name' => 'J', user: -> { { id: 1 } } }` resolves the same in either order (@skryukov)
+* Apply the `only` and `except` paths of partial reloads inside closures and prop types too, and send always props whole (@skryukov)
+* Fix crashes with dot-notation prop keys over non-hash or String-keyed values, and with a defer group named as both a Symbol and a String (@skryukov)
+* Resolve plain props faster (@skryukov)
+* Add live props: `InertiaRails.live` and the `live:` option on deferred, optional, once, always and cached props subscribe a prop to an Action Cable stream, and `InertiaRails.broadcast` or `inertia_broadcasts` in a model reloads it on every page that shows it. Requires Inertia.js v3.11+. The testing helpers check the live props of a page with `have_live_props` and `assert_inertia_live_props` (@skryukov, @cole-robertson)
 
 ## [3.23.0] - 2026-10-16
 
