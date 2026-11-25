@@ -84,7 +84,7 @@ Puma::Plugin.create do
 
   def stop_ssr
     @running = false
-    return unless @pid
+    return unless @pid && @waiter&.alive?
 
     request_shutdown
     wait_for_exit(STOP_GRACE) || force_kill
