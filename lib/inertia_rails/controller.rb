@@ -106,12 +106,12 @@ module InertiaRails
 
     private
 
-    def precognition!(model_or_errors)
-      InertiaRails.precognition!(model_or_errors)
+    def precognition!(model_or_errors, &block)
+      InertiaRails.precognition!(model_or_errors, &block)
     end
 
-    def precognition(model_or_errors)
-      errors = InertiaRails::Precognition.validate(model_or_errors)
+    def precognition(model_or_errors, &block)
+      errors = InertiaRails::Precognition.validate(model_or_errors, &block)
       return if errors.nil?
 
       render_precognition(errors)
@@ -210,7 +210,7 @@ module InertiaRails
 
       if (inertia_errors = inertia[:errors])
         if inertia_errors.respond_to?(:to_hash)
-          session[:inertia_errors] = inertia_errors.to_hash
+          session[:inertia_errors] = inertia_redirect_errors(inertia_errors.to_hash)
         else
           InertiaRails.deprecator.warn(
             'Object passed to `inertia: { errors: ... }` must respond to `to_hash`. Pass a hash-like object instead.'
@@ -221,6 +221,23 @@ module InertiaRails
 
       session[:inertia_clear_history] = inertia[:clear_history] if inertia[:clear_history]
       session[:inertia_preserve_fragment] = true if inertia[:preserve_fragment]
+    end
+
+    def inertia_redirect_errors(errors)
+      flatten_errors = inertia_configuration.flatten_errors
+      return errors if flatten_errors == false
+
+      flat = ValidationErrors.flatten(errors)
+      return flat if flatten_errors
+      return errors if flat == errors.transform_keys(&:to_s)
+
+      InertiaRails.deprecator.warn(
+        'Errors passed to `inertia: { errors: ... }` will be flattened to dot-notated keys ' \
+        '(`{ user: { name: [...] } }` to `{ "user.name" => [...] }`) by default starting with InertiaRails 4.0. ' \
+        'To opt-in now, set `config.flatten_errors = true`. ' \
+        'To disable this warning, set it to `false`.'
+      )
+      errors
     end
 
     def validate_full_page_redirect_status!(response_options)

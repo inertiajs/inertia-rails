@@ -218,6 +218,15 @@ export default withMermaid({
                 },
               ],
             },
+            {
+              text: 'Other',
+              items: [
+                {
+                  text: 'Forms and Envelopes',
+                  link: '/cookbook/forms-and-envelopes',
+                },
+              ],
+            },
           ],
         },
       ],
