@@ -1,6 +1,6 @@
 # Live Props
 
-@available_since rails=master core=3.11.0
+@available_since rails=3.24.0 core=3.11.0
 
 Live props refresh themselves when the server broadcasts a change. You mark a prop as live on a stream, broadcast to that stream when data changes, and every page showing the prop reloads it over Action Cable. If you know Turbo, this is `turbo_stream_from` and `broadcasts_refreshes` for Inertia props.
 

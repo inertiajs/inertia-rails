@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.24.0] - 2026-11-26
+
 * Honor `to_inertia` on arrays and hashes nested in array props, and speed up partial reloads with nested `only` and `except` paths. Pass `ActiveSupport::OrderedOptions` as `options.to_h` to send its keys (@skryukov).
 * Fix the Puma SSR plugin dying when Puma's cluster master reaps the SSR process: an already reaped process now counts as exited and is restarted instead of raising `Errno::ECHILD` in the plugin thread
 * Stopping the Puma SSR plugin kills an SSR process that ignores `/shutdown` after 5 seconds, instead of waiting for it forever
