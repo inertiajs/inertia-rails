@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 * Honor `to_inertia` on arrays and hashes nested in array props, and speed up partial reloads with nested `only` and `except` paths. Pass `ActiveSupport::OrderedOptions` as `options.to_h` to send its keys (@skryukov).
+* Fix the Puma SSR plugin dying when Puma's cluster master reaps the SSR process: an already reaped process now counts as exited and is restarted instead of raising `Errno::ECHILD` in the plugin thread
+* Stopping the Puma SSR plugin kills an SSR process that ignores `/shutdown` after 5 seconds, instead of waiting for it forever
+* Let `ssr_runtime` carry arguments for the runtime, e.g. `"node --max-old-space-size=256"`
 * Resolve nested `to_inertia` objects returned by prop types through their public projections instead of exposing internal instance variables, including deferred and partial responses (@thomasklemm)
 * Send plain prop values that respond to `deferred?`, `once?` or `rescue?` as data instead of treating them as prop types, and resolve plain props with fewer allocations (@thomasklemm)
 * Reduce controller configuration binding and plain-data prop scanning overhead without caching request-dependent configuration or changing prop evaluation order (@thomasklemm)

@@ -524,6 +524,8 @@ The recommended way to run the SSR server in production is with the built-in Pum
 plugin :inertia_ssr
 ```
 
+In cluster mode, the plugin reads your Inertia configuration in the Puma master process, so Rails must be preloaded. If preloading is off, add `preload_app!` to `config/puma.rb`. If your deployment uses phased restarts, [run SSR separately](#manual) with `bin/vite ssr`.
+
 The plugin automatically starts and stops the SSR Node.js process alongside Puma. It handles health checks, automatic restarts on crashes, and graceful shutdown. No separate process management (systemd, Procfile, etc.) is needed.
 
 The plugin starts the SSR server whenever the SSR bundle is found, even if `ssr_enabled` is `false` globally, so SSR enabled per controller with `inertia_config` works. It is a no-op when the bundle is not found or the Vite dev server is running, so it is safe to add unconditionally.
