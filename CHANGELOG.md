@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Ask prop types for `deferred?`, `merge?`, `once?`, `fresh?`, `live?` and `rescue?` without `try`, which allocated for each question (@thomasklemm)
+
 ## [3.24.0] - 2026-11-26
 
 * Honor `to_inertia` on arrays and hashes nested in array props, and speed up partial reloads with nested `only` and `except` paths. Pass `ActiveSupport::OrderedOptions` as `options.to_h` to send its keys (@skryukov).
