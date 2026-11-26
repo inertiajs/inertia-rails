@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Linter
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -48,13 +48,13 @@ jobs:
     continue-on-error: ${{ matrix.rails == 'main' }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup System
         run: sudo apt-get install libsqlite3-dev
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 22.x
 
