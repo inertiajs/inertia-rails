@@ -139,7 +139,7 @@ module InertiaRails
       return SKIP if waits_for_partial_reload?(prop) || excluded_by_once_cache?(prop, path)
 
       record(prop)
-      prop.try(:rescue?) ? evaluate_rescued(prop) : evaluate(prop)
+      prop.respond_to?(:rescue?) && prop.rescue? ? evaluate_rescued(prop) : evaluate(prop)
     end
 
     # An always prop ignores `only` and `except`, and so does everything it returns.
@@ -262,14 +262,14 @@ module InertiaRails
     end
 
     def collect_deferred_metadata(prop, path)
-      return unless prop.try(:deferred?) && !rendering_partial_component?
+      return unless prop.respond_to?(:deferred?) && prop.deferred? && !rendering_partial_component?
       return if excluded_by_once_cache?(prop, path)
 
       (@_deferred[prop.group.to_s] ||= []) << path
     end
 
     def collect_merge_metadata(prop, path)
-      return unless prop.try(:merge?)
+      return unless prop.respond_to?(:merge?) && prop.merge?
       return if excluded_by_partial_request?
 
       resetting = reset_keys.include?(path)
@@ -297,11 +297,11 @@ module InertiaRails
     # Lists every live prop the walk reaches, sent or not, so a page subscribes to its deferred props too.
     # The client keeps its subscriptions for the props a partial reload skips.
     def collect_live_metadata(prop, path)
-      @_live[path] = prop.live_metadata if prop.try(:live?)
+      @_live[path] = prop.live_metadata if prop.respond_to?(:live?) && prop.live?
     end
 
     def collect_once_metadata(prop, path)
-      return unless prop.try(:once?)
+      return unless prop.respond_to?(:once?) && prop.once?
       return if excluded_by_partial_request?
 
       once_key = (prop.once_key || path).to_s
@@ -314,12 +314,13 @@ module InertiaRails
 
     # Optional and deferred props wait for a partial reload.
     def waits_for_partial_reload?(prop)
-      (prop.is_a?(IgnoreOnFirstLoadProp) || prop.try(:deferred?)) && !rendering_partial_component?
+      (prop.is_a?(IgnoreOnFirstLoadProp) || (prop.respond_to?(:deferred?) && prop.deferred?)) &&
+        !rendering_partial_component?
     end
 
     def excluded_by_once_cache?(prop, path)
-      return false unless prop.try(:once?)
-      return false if prop.try(:fresh?)
+      return false unless prop.respond_to?(:once?) && prop.once?
+      return false if prop.respond_to?(:fresh?) && prop.fresh?
       return false if rendering_partial_component?
 
       once_key = (prop.once_key || path).to_s
