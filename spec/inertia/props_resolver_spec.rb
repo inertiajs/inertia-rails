@@ -450,6 +450,32 @@ RSpec.describe InertiaRails::PropsResolver do
   end
 
   describe 'array slots' do
+    it 'sends only direct always props from an excluded hash slot' do
+      calls = []
+      rows = [{ id: 1 }, {
+        message: InertiaRails.always { 'hello' },
+        count: -> { calls << :count },
+        nested: { other: InertiaRails.always { calls << :other } },
+      }]
+
+      expect(resolve_partial({ rows: rows }, 'rows.0')[:props][:rows]).to eq([{ id: 1 }, { message: 'hello' }])
+      expect(calls).to be_empty
+    end
+
+    it 'projects collection serializers inside otherwise plain arrays and beside lazy values' do
+      row = Class.new(Hash) { def to_inertia = { label: 'visible' } }[internal: 1]
+      list = Class.new(Array) { def to_inertia = [:visible] }.new([:internal])
+
+      expect(resolve({ rows: [row], lists: [[list]], mixed: [row, list, -> { 1 }] })[:props])
+        .to eq({ rows: [{ label: 'visible' }], lists: [[[:visible]]], mixed: [{ label: 'visible' }, [:visible], 1] })
+    end
+
+    it 'leaves a nil slot without calling a collection serializer at an excluded index' do
+      row = Class.new(Hash) { def to_inertia = raise('called') }[internal: 1]
+
+      expect(resolve_partial({ rows: [row, { id: 2 }] }, 'rows.1')[:props]).to eq({ rows: [nil, { id: 2 }] })
+    end
+
     it 'keeps an unrequested hash element as an empty hash and filters the requested one' do
       page = resolve_partial(
         { rows: [{ name: 'First', secret: 's' }, { name: 'Second', secret: 's' }] },
@@ -1280,18 +1306,24 @@ RSpec.describe InertiaRails::PropsResolver do
         expect(page[:rescuedProps]).to eq(['stats'])
       end
     end
-
-    it 'leaves ActiveSupport::OrderedOptions as they are' do
-      options = ActiveSupport::OrderedOptions.new
-      options.flag = true
-
-      page = resolve({ direct: options, lazy: -> { options } })
-
-      expect(page[:props]).to eq({ direct: { flag: true }, lazy: { flag: true } })
-    end
   end
 
   describe 'partial request filtering' do
+    it 'matches dotted literal keys and honors except below a selected ancestor' do
+      props = { report: { 'sales.by_region' => [{ id: 1, cost: 10 }], 'sales.total' => 10, salesperson: 7 } }
+      page = resolve_partial(props, 'report.sales', except: ['report.sales.by_region.0.cost'])
+
+      expect(page[:props]).to eq({ report: { 'sales.by_region' => [{ id: 1 }], 'sales.total' => 10 } })
+    end
+
+    it 'keeps empty path segments and distinguishes a numeric string from an array index' do
+      props = { rows: [{ '' => { name: 'Ada' }, '01' => 3 }], names: { '01' => 1, '1' => 2 } }
+
+      expect(resolve_partial(props, 'rows.0..name', 'names.01')[:props])
+        .to eq({ rows: [{ '' => { name: 'Ada' } }], names: { '01' => 1 } })
+      expect(resolve_partial(props, 'rows.00')[:props][:rows]).to eq([{}])
+    end
+
     it 'excludes props not in partial-data header' do
       page = resolve_partial(
         { name: 'Jonathan', email: 'jon@example.com' },

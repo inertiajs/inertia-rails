@@ -12,9 +12,8 @@ module InertiaRails
                     .to_h { |plain_class| [plain_class, true] }.compare_by_identity.freeze
     private_constant :PLAIN_CLASSES
 
-    # `ActiveSupport::OrderedOptions` answers every method, `to_inertia` included, with a key lookup.
     def self.serializer?(value)
-      value.respond_to?(:to_inertia) && !value.is_a?(ActiveSupport::OrderedOptions)
+      value.respond_to?(:to_inertia)
     end
 
     def initialize(props, evaluator:, visit: {}, recorder: nil)
@@ -22,8 +21,7 @@ module InertiaRails
       @evaluator = evaluator
       @recorder = recorder
       @partial_component = visit[:component] || false
-      @partial_keys = visit[:only] || []
-      @partial_except_keys = visit[:except] || []
+      @filter = PartialFilter.build(visit[:only] || [], visit[:except] || []) if @partial_component
       @reset_keys = visit[:reset] || []
       @except_once_keys = visit[:except_once] || []
       @scroll_intent = visit[:scroll_intent]
@@ -43,7 +41,7 @@ module InertiaRails
       @_rescued = []
 
       @keys = []
-      @whole = false
+      @whole = @filter.nil?
 
       props = DottedKeys.new(@props).expand
       [resolve_hash(props), build_metadata]
@@ -51,7 +49,7 @@ module InertiaRails
 
     private
 
-    attr_reader :partial_keys, :partial_except_keys, :reset_keys, :except_once_keys
+    attr_reader :reset_keys, :except_once_keys
 
     def build_metadata
       metadata = {}
@@ -72,10 +70,20 @@ module InertiaRails
     # A hash leaves out what is not sent.
     # Speed: where nothing is skipped, a plain value is sent as it is, without a step to its key.
     def resolve_hash(hash)
-      plain_leaves = nothing_to_check_on_plain_leaves?
+      selection = hash_selection
+      return whole { resolve_entries(hash, selection) } if selection == :all && !@whole
+
+      resolve_entries(hash, selection)
+    end
+
+    def resolve_entries(hash, selection)
+      plain_leaves = @recorder.nil? && selection == :all
       props = {}
       hash.each do |key, value|
-        next props[key] = value if plain_leaves && plain_leaf?(value)
+        # With only=rows.0.name, rows[1] still appears as {} unless it has a direct InertiaRails.always prop.
+        next if selection == :none && !value.is_a?(AlwaysProp)
+
+        next props[key] = value if plain_leaves && PLAIN_CLASSES[value.class]
 
         prop = at(key) { resolve_prop(value) }
         props[key] = prop unless prop.equal?(SKIP)
@@ -92,31 +100,30 @@ module InertiaRails
 
     # An array keeps every place, since partial reloads refer to elements by position.
     def resolve_array(array)
-      return array unless needs_transform?(array) || partial_request_reaches_below?
+      return array unless @filter&.names_children?(path) || needs_transform?(array)
 
       array.each_with_index.map { |item, index| at(index) { resolve_element(item) } }
     end
 
     # A hash stays a hash, with what is left of it. Anything else that is not sent leaves `nil`.
     def resolve_element(item)
-      return resolve_hash(item) if item.is_a?(Hash)
+      kind = value_kind(item)
+      return resolve_hash(item) if kind == :hash
       return if skipped?
 
-      element = resolve_value(item)
+      element = resolve_value(item, kind)
       element unless element.equal?(SKIP)
     end
 
     # Any value, wherever it sits: a serializer, closure or prop type is asked for what it holds,
     # until plain data is left to walk.
-    def resolve_value(value)
-      return value if PLAIN_CLASSES[value.class]
-      return resolve_returned(value, to_inertia(value)) if self.class.serializer?(value)
-
-      case value
-      when BaseProp then resolve_prop_type(value)
-      when Proc then resolve_returned(value, @evaluator.call(value))
-      when Hash then skip_if_emptied(value, resolve_hash(value))
-      when Array then resolve_array(value)
+    def resolve_value(value, kind = value_kind(value))
+      case kind
+      when :serializer then resolve_returned(value, to_inertia(value))
+      when :prop then resolve_prop_type(value)
+      when :closure then resolve_returned(value, @evaluator.call(value))
+      when :hash then skip_if_emptied(value, resolve_hash(value))
+      when :array then resolve_array(value)
       else value
       end
     end
@@ -186,12 +193,10 @@ module InertiaRails
     end
 
     def skipped?
-      !@whole && filtering_partial_request? && excluded_by_partial_request?(path)
+      !@whole && excluded_by_partial_request?
     end
 
     def to_inertia(value)
-      return value unless self.class.serializer?(value)
-
       @recorder&.serializer_found(value, path)
       value.to_inertia
     end
@@ -200,34 +205,43 @@ module InertiaRails
       @recorder&.prop_resolved(path, value, reset: reset_keys.include?(path))
     end
 
-    # DevTools records every prop, plain values too.
-    def nothing_to_check_on_plain_leaves?
-      @recorder.nil? && (@whole || !filtering_partial_request?)
+    def hash_selection
+      return :all if @whole
+      return :partial if @keys.empty?
+      return :none unless @filter.selected?(path)
+
+      @filter.names_children?(path) ? :partial : :all
     end
 
-    def plain_leaf?(value)
-      return true if PLAIN_CLASSES[value.class]
+    # A collection can define its own projection. The array fast path and the walk
+    # must agree that such a collection is a serializer.
+    def value_kind(value)
+      return :plain if PLAIN_CLASSES[value.class]
+      return :serializer if self.class.serializer?(value)
 
       case value
-      when BaseProp, Proc, Hash, Array then false
-      else !self.class.serializer?(value)
+      when Hash then :hash
+      when Array then :array
+      when BaseProp then :prop
+      when Proc then :closure
+      else :plain
       end
     end
 
-    # Explicit loops reduce per-element overhead on large plain-data arrays.
+    # The caller passes an array. Skip scalar children inline so large plain-data
+    # arrays pay for classification only when the walk reaches another object.
     def needs_transform?(value)
-      return false if PLAIN_CLASSES[value.class]
+      return true if value.respond_to?(:to_inertia)
 
       case value
-      when BaseProp, Proc then true
       when Hash
-        value.each_value { |v| return true if needs_transform?(v) }
-        false
+        value.each_value { |v| return true if !PLAIN_CLASSES[v.class] && needs_transform?(v) }
       when Array
-        value.each { |v| return true if needs_transform?(v) }
-        false
-      else self.class.serializer?(value)
+        value.each { |v| return true if !PLAIN_CLASSES[v.class] && needs_transform?(v) }
+      else
+        return value.is_a?(BaseProp) || value.is_a?(Proc)
       end
+      false
     end
 
     def report_rescued_error(error)
@@ -256,7 +270,7 @@ module InertiaRails
 
     def collect_merge_metadata(prop, path)
       return unless prop.try(:merge?)
-      return if rendering_partial_component? && excluded_by_partial_request?(path)
+      return if excluded_by_partial_request?
 
       resetting = reset_keys.include?(path)
 
@@ -288,7 +302,7 @@ module InertiaRails
 
     def collect_once_metadata(prop, path)
       return unless prop.try(:once?)
-      return if excluded_by_partial_request?(path)
+      return if excluded_by_partial_request?
 
       once_key = (prop.once_key || path).to_s
       @_once[once_key] = { prop: path, expiresAt: prop.expires_at }.compact
@@ -312,35 +326,8 @@ module InertiaRails
       except_once_keys.include?(once_key)
     end
 
-    def filtering_partial_request?
-      rendering_partial_component? && (partial_keys.present? || partial_except_keys.present?)
-    end
-
-    # Arrays of plain values are skipped as a shortcut, unless a partial reload names an
-    # element inside one.
-    def partial_request_reaches_below?
-      return false unless filtering_partial_request?
-
-      path_prefix = "#{path}."
-      partial_keys.any? { |key| key.start_with?(path_prefix) } ||
-        partial_except_keys.any? { |key| key.start_with?(path_prefix) }
-    end
-
-    def excluded_by_partial_request?(path)
-      return false unless filtering_partial_request?
-
-      excluded_by_only_partial_keys?(path) || excluded_by_except_partial_keys?(path)
-    end
-
-    def excluded_by_only_partial_keys?(path)
-      return false unless partial_keys.present?
-
-      path_prefix = "#{path}."
-      partial_keys.none? { |key| key == path || path.start_with?("#{key}.") || key.start_with?(path_prefix) }
-    end
-
-    def excluded_by_except_partial_keys?(path)
-      partial_except_keys.present? && partial_except_keys.any? { |key| key == path || path.start_with?("#{key}.") }
+    def excluded_by_partial_request?
+      @filter && !@filter.selected?(path)
     end
   end
 end

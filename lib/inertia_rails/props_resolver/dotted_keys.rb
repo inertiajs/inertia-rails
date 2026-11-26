@@ -9,8 +9,16 @@ module InertiaRails
       end
 
       def expand
-        dotted, plain = @props.partition { |key, _| key.to_s.include?('.') }
-        result = plain.to_h { |key, value| [key.to_sym, value] }
+        result = {}
+        dotted = []
+        @props.each do |key, value|
+          if key.to_s.include?('.')
+            dotted << [key, value]
+          else
+            result[key.to_sym] = value
+          end
+        end
+
         dotted.each do |key, value|
           path = key.to_s.split('.').map(&:to_sym)
           Key.new(path, value, overwrite: given_after?(key, path.first)).write_to(result)
