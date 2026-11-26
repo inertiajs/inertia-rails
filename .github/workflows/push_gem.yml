@@ -36,7 +36,7 @@ jobs:
           ruby-version: '4.0'
 
       - name: Publish to RubyGems
-        uses: rubygems/release-gem@1c162a739e8b4cb21a676e97b087e8268d8fc40b # v1.1.2
+        uses: rubygems/release-gem@2654a0fe0dc39725c07fe84d7fe863a084f2424e # v1.5.0
 
       - name: Create GitHub release
         run: |
